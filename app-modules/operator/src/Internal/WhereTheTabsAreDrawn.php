@@ -9,6 +9,7 @@ use function array_any;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
+use Modules\Operator\Internal\Screens\WhatThisServiceWaitsFor;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
@@ -34,7 +35,7 @@ final readonly class WhereTheTabsAreDrawn
     {
         return match ($class) {
             HowThisStackIs::class => TheTabs::Health,
-            WhatThisStackRuns::class, WhatToDoWithThis::class, WhatThisServiceSaid::class => TheTabs::Services,
+            WhatThisStackRuns::class, WhatToDoWithThis::class, WhatThisServiceSaid::class, WhatThisServiceWaitsFor::class => TheTabs::Services,
             HowCurrentThisStackIs::class => TheTabs::Updates,
             WhatWouldBePutRight::class => TheTabs::Repairs,
             default => null,

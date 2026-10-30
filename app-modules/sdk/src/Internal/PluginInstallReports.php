@@ -68,15 +68,26 @@ final readonly class PluginInstallReports
             TheShapesTaken::these(...self::taking($install)),
             TheGrantsAsked::these(...GrantRows::askedBy($install, APluginId::called($would->id()))),
             TheUpstreamsWritten::these(...SharingRows::in($install)),
+            TheWaitingRead::in($install, PluginsAreUnreadable::missing(WireField::Waiting)),
         );
         $proofs = WhatAProofsVerdictWas::proofs($install);
         $checks = self::checks($install);
 
         if (array_key_exists(WireField::Reversed->value, $install) && $install[WireField::Reversed->value] !== null) {
-            return APluginInstall::putBack($would, $changing, $proofs, $checks, self::putBack($install));
+            return APluginInstall::putBack($would, $changing, $proofs, $checks, self::putBack($install), self::secured($install));
         }
 
-        return APluginInstall::reported($would, recorded: $install[WireField::Recorded->value], changing: $changing, proofs: $proofs, checks: $checks);
+        return APluginInstall::reported($would, recorded: $install[WireField::Recorded->value], changing: $changing, proofs: $proofs, checks: $checks, secured: self::secured($install));
+    }
+
+    /**
+     * What asking the egress guard to hold its control credential came to, or blank where the stack said nothing of it.
+     *
+     * @param array<mixed> $install
+     */
+    private static function secured(array $install): string
+    {
+        return Optional::text($install, PluginsField::Secured, PluginsAreUnreadable::missing(PluginsField::Secured));
     }
 
     /**

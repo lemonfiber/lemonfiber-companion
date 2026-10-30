@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\TheServicesWaiting;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Kernel\Api\WhatFormsThereAre;
@@ -97,7 +98,16 @@ final class AStackThatSupervises implements Supervising
     public static function with(Daemons $daemons): self
     {
         return new self(
-            static fn(): WhatIsRunning => WhatIsRunning::these($daemons, WhatElseIsRunning::nothing()),
+            static fn(): WhatIsRunning => WhatIsRunning::these($daemons, WhatElseIsRunning::nothing(), TheServicesWaiting::none()),
+            static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
+        );
+    }
+
+    /** A stack running these and holding these back until the operator gives them what they wait for. */
+    public static function holdingBack(Daemons $daemons, TheServicesWaiting $waiting): self
+    {
+        return new self(
+            static fn(): WhatIsRunning => WhatIsRunning::these($daemons, WhatElseIsRunning::nothing(), $waiting),
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
         );
     }
@@ -112,7 +122,7 @@ final class AStackThatSupervises implements Supervising
     public static function alsoRunning(Daemons $daemons, WhatElseIsRunning $elsewhere): self
     {
         return new self(
-            static fn(): WhatIsRunning => WhatIsRunning::these($daemons, $elsewhere),
+            static fn(): WhatIsRunning => WhatIsRunning::these($daemons, $elsewhere, TheServicesWaiting::none()),
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
         );
     }
@@ -160,7 +170,7 @@ final class AStackThatSupervises implements Supervising
     public static function withButRefusing(Daemons $daemons, Obstacle $why): self
     {
         return new self(
-            static fn(): WhatIsRunning => WhatIsRunning::these($daemons, WhatElseIsRunning::nothing()),
+            static fn(): WhatIsRunning => WhatIsRunning::these($daemons, WhatElseIsRunning::nothing(), TheServicesWaiting::none()),
             static fn(): Underway => Underway::met($why),
         );
     }
@@ -191,7 +201,7 @@ final class AStackThatSupervises implements Supervising
 
                 $hasAnswered = true;
 
-                return WhatIsRunning::these($first, WhatElseIsRunning::nothing());
+                return WhatIsRunning::these($first, WhatElseIsRunning::nothing(), TheServicesWaiting::none());
             },
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
         );
@@ -216,7 +226,7 @@ final class AStackThatSupervises implements Supervising
                 $listing = $hasAnswered ? $andThen : $first;
                 $hasAnswered = true;
 
-                return WhatIsRunning::these($listing, WhatElseIsRunning::nothing());
+                return WhatIsRunning::these($listing, WhatElseIsRunning::nothing(), TheServicesWaiting::none());
             },
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
         );

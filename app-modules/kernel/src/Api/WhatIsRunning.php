@@ -27,16 +27,17 @@ final readonly class WhatIsRunning
     private function __construct(
         private Daemons|Obstacle $answer,
         private WhatElseIsRunning $elsewhere,
+        private TheServicesWaiting $waiting,
     ) {}
 
     /**
-     * The stack answered: what it is running, and what it is not.
+     * The stack answered: what it is running, what it is not, and what it holds back.
      *
-     * Both lists together because the machine reports them in one payload, and
+     * All three together because the machine reports them in one payload, and
      * asking twice would be two moments — a container could be in neither
      * answer or in both, and nothing downstream could tell.
      *
-     * They arrive as two arguments rather than one widened list because they
+     * The first two arrive as two arguments rather than one widened list because they
      * are two different kinds of thing. {@see Daemons} is everything *this
      * stack* runs; a container it never declared is not that, and the rule
      * forbids showing one as though it were. The contract draws the same line
@@ -44,9 +45,9 @@ final readonly class WhatIsRunning
      * service with the fields left blank, because a service carries a profile
      * and a criticality and there is no honest value for either here.
      */
-    public static function these(Daemons $daemons, WhatElseIsRunning $elsewhere): self
+    public static function these(Daemons $daemons, WhatElseIsRunning $elsewhere, TheServicesWaiting $waiting): self
     {
-        return new self($daemons, $elsewhere);
+        return new self($daemons, $elsewhere, $waiting);
     }
 
     /**
@@ -61,10 +62,22 @@ final readonly class WhatIsRunning
         return $this->elsewhere;
     }
 
+    /**
+     * Every service the stack holds back until the operator gives what it needs to start.
+     *
+     * Listed here and nowhere else: a service held back is not among what the
+     * stack runs, because it is waiting rather than failing to start. Outside
+     * {@see either()} for {@see whatElseIsRunning()}'s reason.
+     */
+    public function waiting(): TheServicesWaiting
+    {
+        return $this->waiting;
+    }
+
     /** It did not, and this is what the operator met instead. */
     public static function met(Obstacle $why): self
     {
-        return new self($why, WhatElseIsRunning::nothing());
+        return new self($why, WhatElseIsRunning::nothing(), TheServicesWaiting::none());
     }
 
     /**

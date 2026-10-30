@@ -109,6 +109,7 @@ function whatAStackRunningNothingSends(): array
             'forms' => [],
             'services' => [],
             'undeclared' => [],
+            'waiting' => [],
         ],
     ];
 }

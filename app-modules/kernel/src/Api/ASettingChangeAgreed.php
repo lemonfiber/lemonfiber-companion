@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 /**
- * The operator's yes to changing one setting, quoting the rehearsal that said what the change would do.
+ * The operator's yes to changing one or more settings in one act, quoting the rehearsal that said what the change would do.
  */
 final readonly class ASettingChangeAgreed
 {

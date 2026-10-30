@@ -18,6 +18,9 @@ enum WhereAConnectionStands: string
     /** Written and read back. */
     case Wired = 'wired';
 
+    /** Written, and in force once the service that reads it started again. */
+    case Restarted = 'restarted';
+
     /** Present and correct; nothing was done. */
     case AlreadyWired = 'already-wired';
 

@@ -34,6 +34,15 @@
         <x-design::body>{{ __('health.no_form_running') }}</x-design::body>
     @endif
 
+    @forelse ($this->answer()->waiting as $waiting)
+        @if ($loop->first)
+            <x-operator::heading>{{ __('plugins.waiting.heading') }}</x-operator::heading>
+        @endif
+        <x-operator::a-service-waiting :waiting="$waiting" />
+        <x-design::link :label="__('plugins.waiting.open', ['service' => $waiting->service])" :goes="$this->goes()->aboutItsService(AStacksScreen::Waiting, $waiting->id)" />
+    @empty
+    @endforelse
+
     {{-- A port per service, not a rack. The verbs live behind it, on the
          screen about that one service — a list is read and a verb is chosen,
          and the two acts do not want the same frame. What the row carries is

@@ -23,3 +23,14 @@ it('draws chips side by side, wrapping, each chosen or not', function (): void {
         ->and(data_get($drawn, 'children.1.props.a11y_label'))->toBe('Storage 6')
         ->and(data_get($drawn, 'children.1.props.on_change'))->toBeInt();
 });
+
+it('draws a chip that is not a choice now as one that cannot be tapped, and every other as one that can', function (): void {
+    $markup = '<x-design::chips>'
+        . '<x-design::chip label="pia" tap="choose(\'pia\')" :disabled="true" />'
+        . '<x-design::chip label="mullvad" tap="choose(\'mullvad\')" />'
+        . '</x-design::chips>';
+    $drawn = WhatMarkupDraws::drawn($markup);
+
+    expect(data_get($drawn, 'children.0.props.disabled'))->toBeTrue()
+        ->and(data_get($drawn, 'children.1.props.disabled') ?? false)->toBeFalse();
+});

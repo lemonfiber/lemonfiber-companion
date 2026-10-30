@@ -674,5 +674,45 @@ final readonly class UnreadOnEnvelopesMToZ
             'path' => 'WiringEnvelope.wired[].reaches.native',
             'because' => 'The upstream\'s own API an ask reaches in place of the adapter that fronts it. The screen names the service the ask reaches, which is what an operator acts on, and no requirement asks which API it talks in.',
         ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.service',
+            'because' => 'The service a run or an unreplaced certificate is about. `target` names what the change was against and `does` says what going back did, and both are drawn; the service beside them is the instruction the stack carried out with.',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.running',
+            'because' => 'Whether going back leaves a service running. `does` says the run went back, which is drawn; whether that left it running or stopped is what the services listing shows, and no requirement asks a reversal to say it again (`N1-R17`).',
+        ],
+        [
+            'path' => 'SeedEnvelope.wirings[].state.service',
+            'because' => 'The service restarted to take a wiring up. The wiring is drawn as restarted beside the service it belongs to; no requirement asks for the service that was restarted apart from it (`N1-R17`).',
+        ],
+        [
+            'path' => 'SettingsEnvelope.settings[].readers[].met',
+            'because' => 'Whether the settings a service writes a setting under hold what it needs now. A setting\'s choices are drawn with each value\'s needs (`N25-R27`), and a service held back is drawn with what it waits for (`N25-R29`); no requirement asks for the variable\'s own condition beside them (`N1-R17`).',
+        ],
+        [
+            'path' => 'SettingsEnvelope.settings[].readers[].needs',
+            'because' => 'The values of other settings under which a service reads a setting into its variable, for `SettingsEnvelope.settings[].readers[].met`\'s reason.',
+        ],
+        [
+            'path' => 'SettingsEnvelope.secrets[].readers[].met',
+            'because' => 'As `SettingsEnvelope.settings[].readers[].met`: a secret is never entered from the phone (`N25-R13`), and a service waiting on one is drawn with it (`N25-R29`).',
+        ],
+        [
+            'path' => 'SettingsEnvelope.secrets[].readers[].needs',
+            'because' => 'As `SettingsEnvelope.settings[].readers[].needs`, for a secret.',
+        ],
+        [
+            'path' => 'SubstitutionEnvelope.substitution.starts',
+            'because' => 'The parts a choice of filler would start. The choice is drawn as the capability, the service that would answer it and what it would leave unanswered; no `N` requirement asks it to name each part it starts (`N1-R17`).',
+        ],
+        [
+            'path' => 'SubstitutionEnvelope.substitution.stops',
+            'because' => 'The parts a choice of filler would take out of its form, for `SubstitutionEnvelope.substitution.starts`\'s reason.',
+        ],
+        [
+            'path' => 'SubstitutionEnvelope.unran',
+            'because' => 'Each part a choice of filler was to stop or start and could not, with why. Whether the choice was written is `applied`, which is read, and what runs afterwards is what the services listing shows; no requirement asks a choice to name each part (`N1-R17`).',
+        ],
     ];
 }

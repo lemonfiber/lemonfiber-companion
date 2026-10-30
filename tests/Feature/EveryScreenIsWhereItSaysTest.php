@@ -191,10 +191,12 @@ it('every way this app asks where a machine is hands back a path the router know
         // `is_string` as well as resolvable: an accessor that handed back
         // anything else is a `@navigate` with an array in it, which the
         // router cannot be asked about at all.
-        $path = $method->invoke($where, aSampleOf($method->getParameters()[0]));
+        foreach (everyWayToAsk($method) as $arguments) {
+            $path = $method->invoke($where, ...$arguments);
 
-        if (! is_string($path) || NativeRouter::resolve($path) === null) {
-            $unknown[] = sprintf('%s() hands back a path the router does not know', $method->getName());
+            if (! is_string($path) || NativeRouter::resolve($path) === null) {
+                $unknown[] = sprintf('%s() hands back a path the router does not know', $method->getName());
+            }
         }
     }
 
@@ -207,6 +209,26 @@ it('every way this app asks where a machine is hands back a path the router know
         implode("\n  ", $unknown),
     ));
 });
+
+/**
+ * Every set of arguments to ask one accessor with: a sample of each, and every screen about a service where it takes the screen.
+ *
+ * @return list<list<object|string>>
+ */
+function everyWayToAsk(ReflectionMethod $accessor): array
+{
+    $parameters = $accessor->getParameters();
+    $first = $parameters[0]->getType();
+
+    if (! $first instanceof ReflectionNamedType || $first->getName() !== AStacksScreen::class) {
+        return [array_map(aSampleOf(...), $parameters)];
+    }
+
+    return array_map(
+        static fn(AStacksScreen $screen): array => [$screen, ...array_map(aSampleOf(...), array_slice($parameters, 1))],
+        array_values(array_filter(AStacksScreen::cases(), static fn(AStacksScreen $screen): bool => $screen->alsoNeedsAService())),
+    );
+}
 
 /**
  * Something one accessor on `WhereAStackIs` can be handed, by what it takes.
@@ -426,5 +448,5 @@ it('which builder a screen needs is read off its own pattern', function (): void
     ));
 
     expect(array_map(static fn(AStacksScreen $screen): string => $screen->name, $needingAService))
-        ->toBe(['Doing', 'Logs', 'Title', 'Found', 'RunBack', 'PutBack', 'LetGo', 'Downloads', 'InviteNamed', 'TakeOut', 'Device', 'PluginSettings', 'WordAbout', 'Trace', 'Accept', 'Run', 'RunChecks']);
+        ->toBe(['Doing', 'Logs', 'Waiting', 'Title', 'Found', 'RunBack', 'PutBack', 'LetGo', 'Downloads', 'InviteNamed', 'TakeOut', 'Device', 'PluginSettings', 'WordAbout', 'Trace', 'Accept', 'Run', 'RunChecks']);
 });

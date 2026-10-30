@@ -758,7 +758,7 @@ it('every state a wired connection can end in has a case', function (): void {
     // nearest, so a new one on the wire has to be met here first.
     $words = TheWireUnions::theArmsIn(TheGeneratedEnvelopes::theGeneratedEnvelope('SeedEnvelope'), 'state');
 
-    expect($words)->toHaveCount(14);
+    expect($words)->toHaveCount(15);
     expect(TheWireUnions::valuesOf(WhereAConnectionStands::cases()))->toBe($words);
 });
 

@@ -30,6 +30,8 @@ final readonly class APluginInstallAsShown
      * @param list<string>                $broke      every check it made worse, by title
      * @param list<string>                $unsettled  every check nothing could be concluded about, by title
      * @param HowPuttingARunBackWent|null $putBack    what putting it back came to, where it was
+     * @param list<AServiceWaitingAsShown> $waiting   every service it would leave held back, with what each waits for
+     * @param string                      $secured    what asking its egress guard to take up its control credential came to, or empty where it held it at once or has none
      */
     public function __construct(
         public APluginAsShown $plugin,
@@ -47,5 +49,7 @@ final readonly class APluginInstallAsShown
         public array $broke,
         public array $unsettled,
         public ?HowPuttingARunBackWent $putBack,
+        public array $waiting,
+        public string $secured,
     ) {}
 }

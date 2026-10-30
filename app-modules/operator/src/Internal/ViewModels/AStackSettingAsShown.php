@@ -13,6 +13,7 @@ final readonly class AStackSettingAsShown
      * @param bool                           $isSet     whether the operator recorded a value
      * @param string                         $value     that value, blank where none is recorded
      * @param list<AServiceReadingItAsShown> $readers   each service that reads it
+     * @param list<AChoiceAsShown>           $choices   every value it accepts, or none where it is typed
      */
     public function __construct(
         public string $name,
@@ -20,5 +21,6 @@ final readonly class AStackSettingAsShown
         public bool $isSet,
         public string $value,
         public array $readers,
+        public array $choices,
     ) {}
 }

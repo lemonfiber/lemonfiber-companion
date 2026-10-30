@@ -101,6 +101,9 @@ enum PluginsField: string implements NamesAWireField
     /** Where an update did not hold, what putting the version it replaced back came to. */
     case Restored = 'restored';
 
+    /** What asking the egress guard among an install's services to hold its control credential came to, where it was more than held at once. */
+    case Secured = 'secured';
+
     /** Whether everything the version put back placed is on the machine again. */
     case Placed = 'placed';
 

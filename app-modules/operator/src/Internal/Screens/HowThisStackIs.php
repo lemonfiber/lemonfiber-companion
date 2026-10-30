@@ -283,7 +283,7 @@ final class HowThisStackIs extends NativeComponent
             return $this->goes()->to(AStacksScreen::Health);
         }
 
-        return $this->goes()->logsOf(ServiceId::called($named));
+        return $this->goes()->aboutItsService(AStacksScreen::Logs, ServiceId::called($named));
     }
 
     /** Where one stopped item got to, followed through every service. */

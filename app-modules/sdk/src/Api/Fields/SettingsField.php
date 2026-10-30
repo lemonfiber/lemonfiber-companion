@@ -34,4 +34,10 @@ enum SettingsField: string implements NamesAWireField
 
     /** Every service whose entry a change regenerates. */
     case Regenerates = 'regenerates';
+
+    /** Every service held back a change starts, having given the last thing it waited for. */
+    case Starts = 'starts';
+
+    /** Whether a value a setting accepts is a choice now. */
+    case Open = 'open';
 }

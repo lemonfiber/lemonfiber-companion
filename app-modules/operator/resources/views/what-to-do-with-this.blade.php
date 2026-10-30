@@ -335,7 +335,7 @@
     @unless ($this->thing()->isAForm)
         <x-operator::quiet-action
             :label="__('health.read_its_logs')"
-            :goes="$this->goes()->logsOf($this->thing()->service->id)"
+            :goes="$this->goes()->aboutItsService(AStacksScreen::Logs, $this->thing()->service->id)"
             :carries="$this->thing()->service->carriedToTheLogs()"
         />
     @endunless

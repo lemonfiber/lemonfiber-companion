@@ -16,6 +16,7 @@ use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\APluginInstall;
 use Modules\Kernel\Api\AProof;
 use Modules\Kernel\Api\ARunPutBack;
+use Modules\Kernel\Api\AServiceWaiting;
 use Modules\Kernel\Api\ChangesAndWhy;
 use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\ServiceId;
@@ -26,12 +27,14 @@ use Modules\Kernel\Api\ThePluginChanges;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\ThePluginSources;
 use Modules\Kernel\Api\TheProofs;
+use Modules\Kernel\Api\TheServicesWaiting;
 use Modules\Kernel\Api\TheSettingsItOverrides;
 use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Kernel\Api\TheUpstreamsWritten;
 use Modules\Kernel\Api\TheVersionsItMovesBetween;
 use Modules\Kernel\Api\WhatAnInstallChanges;
 use Modules\Kernel\Api\WhatAProofCameTo;
+use Modules\Kernel\Api\WhatAServiceWaitsFor;
 use Modules\Kernel\Api\WhatPuttingTheOldVersionBackCameTo;
 use Modules\Kernel\Api\WhatTheChecksMade;
 use Modules\Kernel\Api\WhatWentBack;
@@ -44,7 +47,7 @@ function anInstallRecorded(WhatAProofCameTo $cameTo, WhatTheChecksMade $checks, 
     return APluginInstall::reported(
         APluginAsItArrives::held(),
         recorded: $recorded,
-        changing: WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these()),
+        changing: WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these(), TheServicesWaiting::none()),
         proofs: TheProofs::these(AProof::of('answers', 'It answers', 'GET /', '', $cameTo)),
         checks: $checks,
     );
@@ -64,7 +67,7 @@ it('is installed only where it was recorded, no proof failed and the checks foun
 it('is never installed once it was put back, however its proofs and checks came out', function (): void {
     $putBack = APluginInstall::putBack(
         APluginAsItArrives::held(),
-        WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these()),
+        WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these(), TheServicesWaiting::none()),
         TheProofs::these(AProof::of('answers', 'It answers', 'GET /', '', WhatAProofCameTo::passed())),
         WhatTheChecksMade::of(PluginLines::none(), PluginLines::none()),
         ARunPutBack::reported(WhetherItWasRehearsed::CarriedOut, WhatWentBack::these(), ChangesAndWhy::these(), ChangesAndWhy::these()),
@@ -133,7 +136,7 @@ it('asks for each password of another service it would hand the plugin apart fro
     $install = APluginInstall::reported(
         APluginAsItArrives::held(),
         recorded: false,
-        changing: WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these($asked), TheUpstreamsWritten::these()),
+        changing: WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these($asked), TheUpstreamsWritten::these(), TheServicesWaiting::none()),
         proofs: TheProofs::these(),
         checks: WhatTheChecksMade::notAsked(),
     );
@@ -141,4 +144,28 @@ it('asks for each password of another service it would hand the plugin apart fro
     expect(iterator_to_array($install->approvals(), preserve_keys: false))->toBe([APluginAsItArrives::APPROVAL, APluginAsItArrives::GRANT_APPROVAL])
         ->and(iterator_to_array($install->granting(), preserve_keys: false))->toBe([$asked])
         ->and(iterator_to_array(APluginAsItArrives::theGrantingReading()->approvals(), preserve_keys: false))->toBe([APluginAsItArrives::APPROVAL, APluginAsItArrives::GRANT_APPROVAL]);
+});
+
+it('says what securing its egress guard came to in the stack\'s words, and nothing where nothing was said', function (): void {
+    $changing = WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these(), TheServicesWaiting::none());
+    $checks = WhatTheChecksMade::of(PluginLines::none(), PluginLines::none());
+    $putBack = ARunPutBack::reported(WhetherItWasRehearsed::CarriedOut, WhatWentBack::these(), ChangesAndWhy::these(), ChangesAndWhy::these());
+
+    expect(anInstallRecorded(WhatAProofCameTo::passed(), $checks)->secured())->toBe('')
+        ->and(APluginInstall::reported(APluginAsItArrives::held(), recorded: true, changing: $changing, proofs: TheProofs::these(), checks: $checks, secured: ' gluetun, restarted to take it up ')->secured())->toBe('gluetun, restarted to take it up')
+        ->and(APluginInstall::putBack(APluginAsItArrives::held(), $changing, TheProofs::these(), $checks, $putBack)->secured())->toBe('')
+        ->and(APluginInstall::putBack(APluginAsItArrives::held(), $changing, TheProofs::these(), $checks, $putBack, ' the guard did not take it up ')->secured())->toBe('the guard did not take it up');
+});
+
+it('names every service it would leave held back', function (): void {
+    $waiting = TheServicesWaiting::these(AServiceWaiting::for(ServiceId::called('gluetun'), WhatAServiceWaitsFor::aSecret('vpn.key')));
+    $install = APluginInstall::reported(
+        APluginAsItArrives::held(),
+        recorded: false,
+        changing: WhatAnInstallChanges::these(ThePluginChanges::these(), TheContestsLeft::these(), TheSettingsItOverrides::these(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these(), $waiting),
+        proofs: TheProofs::these(),
+        checks: WhatTheChecksMade::notAsked(),
+    );
+
+    expect($install->waiting())->toBe($waiting);
 });

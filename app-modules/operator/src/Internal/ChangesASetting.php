@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use function array_keys;
+
 use Closure;
 
+use function in_array;
 use function is_string;
 
 use Modules\Kernel\Api\ARefusalInItsWords;
@@ -22,15 +25,20 @@ use Modules\Kernel\Api\TheSettingAsChanged;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
 use Modules\Operator\Internal\Presenters\HowASettingChangeReads;
+use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
 use Native\Mobile\Attributes\Poll;
 
 /**
- * Changing one of the settings a screen lists: rehearsed, agreed to, and followed.
+ * Changing one or more of the settings a screen lists in one act: rehearsed, agreed to, and followed.
  *
  * A setting is changed or put back to its default by a rehearsal first, and the
- * yes carries the offer that rehearsal answered. Which settings may be changed
- * is the screen's to say, through `itsSetting()`; a secret is never one.
+ * yes carries the offer that rehearsal answered. A setting that lists its
+ * choices is given one of them, never a typed value. Where the stack refuses a
+ * change, each setting on the screen that hangs together with one the change
+ * moves is offered in the same change, so settings that depend on each other
+ * move together. Which settings may be changed is the screen's to say, through
+ * `itsSetting()`; a secret is never one.
  *
  * The screen that uses it takes {@see \Modules\Kernel\Api\SettingWhatServicesRead}
  * as a protected `$tuning` and {@see \Modules\Kernel\Api\SecureStorage} as a
@@ -68,7 +76,89 @@ trait ChangesASetting
 
         $this->startAgain();
         $this->changing = new ASettingBeingChanged($setting, toDefault: false);
-        $this->typed = $held->value()->said();
+        $this->typed = $held->choices()->isEmpty() || Among::theChoices($held->choices(), $held->value()->said()) ? $held->value()->said() : '';
+    }
+
+    /** Choose one of the values a setting the change moves lists; a value it does not list, or a setting the change does not move, chooses nothing. */
+    public function choose(string $setting, string $value): void
+    {
+        $open = $this->changing;
+        $held = $this->itsSetting($setting);
+
+        if (is_string($this->following) || ! $open instanceof ASettingBeingChanged || $open->toDefault || ! $open->moves($setting) || ! $held instanceof ASetting || ! Among::theChoices($held->choices(), $value)) {
+            return;
+        }
+
+        $this->startAgain();
+
+        if ($setting === $open->named) {
+            $this->typed = $value;
+
+            return;
+        }
+
+        $this->changing = $open->choosing($setting, $value);
+    }
+
+    /** Move one of the settings the stack's refusal left behind in the same change; any other moves nothing. */
+    public function alsoMove(string $setting): void
+    {
+        $open = $this->changing;
+
+        if (is_string($this->following) || ! $open instanceof ASettingBeingChanged || ! in_array($setting, $this->toMoveAlongside(), strict: true)) {
+            return;
+        }
+
+        $this->startAgain();
+        $this->changing = $open->alsoMoving($setting);
+    }
+
+    /** Leave a setting moved alongside out of the change. */
+    public function leaveOut(string $setting): void
+    {
+        $open = $this->changing;
+
+        if (is_string($this->following) || ! $open instanceof ASettingBeingChanged) {
+            return;
+        }
+
+        $this->startAgain();
+        $this->changing = $open->leaving($setting);
+    }
+
+    /**
+     * The settings offered in the same change once the stack refused it: each on the screen that hangs together with one the change moves and that it does not move yet, and, where the change gives values, that lists the values to choose among.
+     *
+     * @return list<string>
+     */
+    public function toMoveAlongside(): array
+    {
+        $open = $this->changing;
+        $read = $this->read;
+
+        if (! $open instanceof ASettingBeingChanged || ! $read instanceof TheServicesSettings || ! $this->howItIsGoing()->refused instanceof ARefusalAsShown) {
+            return [];
+        }
+
+        $moved = [];
+
+        foreach ([$open->named, ...array_keys($open->alongside)] as $named) {
+            $setting = Among::theSettings($read->settings(), $named);
+
+            if ($setting instanceof ASetting) {
+                $moved[] = $setting;
+            }
+        }
+
+        $offered = [];
+
+        foreach ($read->settings()->hangingTogetherWith(...$moved) as $setting) {
+            if ($this->itsSetting($setting->name()) instanceof ASetting && ($open->toDefault || ! $setting->choices()->isEmpty())) {
+                $offered[] = $setting->name();
+            }
+        }
+
+        return $offered;
     }
 
     /** Close the open setting without asking the stack anything. */
@@ -88,16 +178,18 @@ trait ChangesASetting
         $this->going = null;
     }
 
-    /** Ask what giving the open setting what is typed would do, writing nothing. */
+    /** Ask what the change would do, writing nothing: the open setting given what is typed or chosen, or put back, with each setting moved alongside. */
     public function rehearse(): void
     {
         $open = $this->changing;
+        $held = $open instanceof ASettingBeingChanged ? $this->itsSetting($open->named) : null;
+        $change = $open?->asked($this->typed);
 
-        if (is_string($this->following) || ! $open instanceof ASettingBeingChanged || $open->toDefault || ! $this->itsSetting($open->named) instanceof ASetting) {
+        if (is_string($this->following) || ! $held instanceof ASetting || ! $change instanceof ASettingChange || ! $this->rehearsable($open, $held)) {
             return;
         }
 
-        $this->ask(ASettingChange::toHold($open->named, $this->typed));
+        $this->ask($change);
     }
 
     /** Ask what putting one of the screen's settings back to its default would do, writing nothing. */
@@ -153,6 +245,14 @@ trait ChangesASetting
 
     /** The setting of that name the screen lists, as last read, or none; a secret is never one. */
     abstract protected function itsSetting(string $setting): ?ASetting;
+
+    /** Whether the open change is one to rehearse now: a value among the setting's choices where it lists any, or settings put back alongside the one already rehearsed. */
+    private function rehearsable(ASettingBeingChanged $open, ASetting $held): bool
+    {
+        return $open->toDefault
+            ? $open->alongside !== []
+            : $held->choices()->isEmpty() || Among::theChoices($held->choices(), $this->typed);
+    }
 
     /** Take what the stream said of the settings in place of what was read. */
     private function hearTheSettings(): void

@@ -30,6 +30,7 @@ use Modules\Kernel\Api\TheRecipes;
 use Modules\Kernel\Api\TheSecretsRead;
 use Modules\Kernel\Api\TheServicesReadingIt;
 use Modules\Kernel\Api\TheServicesSettings;
+use Modules\Kernel\Api\TheServicesWaiting;
 use Modules\Kernel\Api\TheSettingAsChanged;
 use Modules\Kernel\Api\TheSettingsRead;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
@@ -44,6 +45,7 @@ use Modules\Kernel\Api\WhoseASettingIs;
 use Modules\Operator\Internal\Screens\WhatTheStackItselfReads;
 use Modules\Stacks\Api\AStacksScreen;
 use Tests\Support\AroundThePhone;
+use Tests\Support\ASettingChangeAsReported;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExtendsItself;
@@ -116,9 +118,8 @@ function aChangeToTheDomain(WhatTheSettingRunDid $did, ?ASettingChange $change =
     $change ??= ASettingChange::toHold('domain', 'lemon.example.org');
 
     return TheSettingAsChanged::said(
-        $change,
-        ASettingValue::value('home.example.org'),
-        WhatTheChangeReaches::said(Services::these(ServiceId::called('caddy')), Services::these(ServiceId::called('caddy')), '', ''),
+        ASettingChangeAsReported::moves($change, ASettingValue::value('home.example.org')),
+        WhatTheChangeReaches::said(Services::these(ServiceId::called('caddy')), Services::these(ServiceId::called('caddy')), Services::none(), TheServicesWaiting::none(), ''),
         $did,
         AnOffer::named('settings-set:domain:3'),
         everythingTheMachineHolds($did === WhatTheSettingRunDid::Applied ? 'lemon.example.org' : 'home.example.org'),
@@ -284,7 +285,7 @@ it('rehearses what is typed, and writes the change the rehearsal described, carr
     $screen->whileItRuns();
     $rehearsed = WhatTheDeviceWouldDraw::by($screen);
 
-    expect(array_map(static fn(ASettingChange $change): string => sprintf('%s %s=%s', $change->how()->asked(), $change->setting(), $change->value()->said()), $tuning->rehearsed()))->toBe(['settings-set domain=lemon.example.org'])
+    expect(array_map(ASettingChangeAsReported::said(...), $tuning->rehearsed()))->toBe(['settings-set domain=lemon.example.org'])
         ->and($rehearsed->said())->toContain(__(WhatTheSettingRunDid::Rehearsed->saidOnTheScreen()), __('plugins.settings.restarts', ['services' => 'caddy']))
         ->and($rehearsed->offers())->toContain(__('plugins.settings.agree'))
         ->and($tuning->carriedOut())->toBe([]);
@@ -293,11 +294,10 @@ it('rehearses what is typed, and writes the change the rehearsal described, carr
     $screen->whileItRuns();
 
     expect(array_map(static fn(ASettingChangeAgreed $agreed): string => sprintf(
-        '%s=%s %s',
-        $agreed->change()->setting(),
-        $agreed->change()->value()->said(),
+        '%s %s',
+        ASettingChangeAsReported::said($agreed->change()),
         $agreed->offer()->either(named: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut($named), none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'))->said,
-    ), $tuning->carriedOut()))->toBe(['domain=lemon.example.org settings-set:domain:3'])
+    ), $tuning->carriedOut()))->toBe(['settings-set domain=lemon.example.org settings-set:domain:3'])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(WhatTheSettingRunDid::Applied->saidOnTheScreen()), 'lemon.example.org');
 });
 
@@ -307,7 +307,7 @@ it('rehearses putting a setting no plugin reads back to its default, and nothing
     $screen->backToDefault('vpn.countries');
     $screen->backToDefault('domain');
 
-    expect(array_map(static fn(ASettingChange $change): string => sprintf('%s %s', $change->how()->asked(), $change->setting()), $tuning->rehearsed()))->toBe(['settings-clear domain'])
+    expect(array_map(ASettingChangeAsReported::said(...), $tuning->rehearsed()))->toBe(['settings-clear domain'])
         ->and($screen->changing?->toDefault)->toBeTrue();
 });
 

@@ -30,6 +30,8 @@ final class AStackSetting extends Component
      * @param TheSettingChangeTurnedOutToBe $going        where the screen's change has got to
      * @param AnOffer                       $offerToSet   what giving a setting a value is offered as
      * @param AnOffer                       $offerToClear what putting a setting back to its default is offered as
+     * @param string                        $typed        what is typed or chosen for the setting the screen holds open
+     * @param list<string>                  $toMoveAlongside each setting offered in the same change once the stack refused it
      */
     public function __construct(
         public readonly AStackSettingAsShown $setting,
@@ -39,6 +41,8 @@ final class AStackSetting extends Component
         public readonly AnOffer $offerToClear,
         public readonly bool $settingsWouldNotOpen,
         public readonly WhereAStackIs $goes,
+        public readonly string $typed,
+        public readonly array $toMoveAlongside,
     ) {}
 
     public function render(): View

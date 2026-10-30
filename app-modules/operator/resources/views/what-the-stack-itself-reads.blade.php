@@ -21,6 +21,8 @@
                 :offer-to-clear="$this->offered(ChangingASetting::Clear)"
                 :settings-would-not-open="$this->theSettingsWouldNotOpen"
                 :goes="$this->goes()"
+                :typed="$this->typed"
+                :to-move-alongside="$this->toMoveAlongside()"
             />
         @empty
             <x-design::note>{{ __('plugins.settings.own_no_settings') }}</x-design::note>

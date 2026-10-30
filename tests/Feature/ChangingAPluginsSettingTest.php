@@ -39,6 +39,7 @@ use Modules\Kernel\Api\TheRecipes;
 use Modules\Kernel\Api\TheSecretsRead;
 use Modules\Kernel\Api\TheServicesReadingIt;
 use Modules\Kernel\Api\TheServicesSettings;
+use Modules\Kernel\Api\TheServicesWaiting;
 use Modules\Kernel\Api\TheSettingAsChanged;
 use Modules\Kernel\Api\TheSettingsRead;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
@@ -53,6 +54,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhoseASettingIs;
 use Modules\Operator\Internal\Screens\HowThisPluginIsSet;
 use Tests\Support\AroundThePhone;
+use Tests\Support\ASettingChangeAsReported;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExtendsItself;
@@ -130,9 +132,8 @@ function aChangeToTheCountries(WhatTheSettingRunDid $did, ?ASettingChange $chang
     $change ??= ASettingChange::toHold('vpn.countries', 'Germany');
 
     return TheSettingAsChanged::said(
-        $change,
-        ASettingValue::value('Belgium'),
-        WhatTheChangeReaches::said(Services::these(ServiceId::called('gluetun')), $restarts ?? Services::these(ServiceId::called('gluetun'), ServiceId::called('qbittorrent')), $consequence, $unrestarted),
+        ASettingChangeAsReported::moves($change, ASettingValue::value('Belgium'), $consequence),
+        WhatTheChangeReaches::said(Services::these(ServiceId::called('gluetun')), $restarts ?? Services::these(ServiceId::called('gluetun'), ServiceId::called('qbittorrent')), Services::none(), TheServicesWaiting::none(), $unrestarted),
         $did,
         AnOffer::named('settings-set:vpn.countries:7'),
         theMachinesSettings($did === WhatTheSettingRunDid::Applied ? 'Germany' : 'Belgium'),
@@ -275,7 +276,7 @@ it('rehearses what is typed, follows the work, and draws it labelled as a rehear
 
     expect($screen->awaitsAnOutcome())->toBeTrue()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('plugins.settings.working'))
-        ->and(array_map(static fn(ASettingChange $change): string => sprintf('%s %s=%s', $change->how()->asked(), $change->setting(), $change->value()->said()), $tuning->rehearsed()))->toBe(['settings-set vpn.countries=Germany']);
+        ->and(array_map(ASettingChangeAsReported::said(...), $tuning->rehearsed()))->toBe(['settings-set vpn.countries=Germany']);
 
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
@@ -284,7 +285,7 @@ it('rehearses what is typed, follows the work, and draws it labelled as a rehear
         ->and(array_map(static fn(Job $job): string => $job->shown(), $tuning->followed()))->toBe([AStackThatTunesItsSettings::THE_REHEARSAL])
         ->and($drawn->said())->toContain(
             __(WhatTheSettingRunDid::Rehearsed->saidOnTheScreen()),
-            __('plugins.settings.to', ['value' => 'Germany']),
+            __('plugins.settings.moves_to', ['setting' => 'vpn.countries', 'value' => 'Germany']),
             __('plugins.settings.was', ['was' => 'Belgium']),
             __('plugins.settings.restarts', ['services' => 'gluetun, qbittorrent']),
             __('plugins.settings.regenerates', ['services' => 'gluetun']),
@@ -300,11 +301,10 @@ it('writes the change the rehearsal described, carrying back its offer, and draw
     $screen->agree();
 
     expect(array_map(static fn(ASettingChangeAgreed $agreed): string => sprintf(
-        '%s=%s %s',
-        $agreed->change()->setting(),
-        $agreed->change()->value()->said(),
+        '%s %s',
+        ASettingChangeAsReported::said($agreed->change()),
         $agreed->offer()->either(named: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut($named), none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'))->said,
-    ), $tuning->carriedOut()))->toBe(['vpn.countries=Germany settings-set:vpn.countries:7']);
+    ), $tuning->carriedOut()))->toBe(['settings-set vpn.countries=Germany settings-set:vpn.countries:7']);
 
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
@@ -355,7 +355,7 @@ it('rehearses putting a setting back to its default, and says where that restart
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect(array_map(static fn(ASettingChange $change): string => $change->how()->asked(), $tuning->rehearsed()))->toBe(['settings-clear'])
-        ->and($drawn->said())->toContain(__('plugins.settings.to_default'), __('plugins.settings.restarts_nothing'))
+        ->and($drawn->said())->toContain(__('plugins.settings.moves_to_default', ['setting' => 'vpn.countries']), __('plugins.settings.restarts_nothing'))
         ->and($drawn->offers())->toContain(__('plugins.settings.agree_back'))
         ->and($drawn->offers())->not->toContain(__('plugins.settings.rehearse'));
 

@@ -276,6 +276,27 @@ it('names each adapter that would write the files of the service it fronts, and 
         ->and($plain->said())->not->toContain(aPluginsLine('plugins.writes_files_of', ['adapter' => 'tdarr-adapter', 'upstream' => 'tdarr']));
 });
 
+it('names each service the install would leave held back, with what it waits for, and says where none would', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(tdarrRehearsed(aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theWaitingReading()),
+    )));
+    $plain = WhatTheDeviceWouldDraw::by(tdarrRehearsed(aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theReading()),
+    )));
+
+    expect($drawn->said())->toContain(
+        aPluginsLine('plugins.waiting.once_installed'),
+        aPluginsLine('plugins.waiting.held_back', ['service' => 'tdarr']),
+        aPluginsLine('plugins.waiting.choice', ['setting' => 'tdarr.gpu', 'choices' => 'nvidia, none']),
+        aPluginsLine('plugins.waiting.secret', ['secret' => 'tdarr.key']),
+    )
+        ->and($drawn->said())->not->toContain(aPluginsLine('plugins.waiting.none_once_installed'))
+        ->and($plain->said())->toContain(aPluginsLine('plugins.waiting.none_once_installed'))
+        ->and($plain->said())->not->toContain(aPluginsLine('plugins.waiting.held_back', ['service' => 'tdarr']));
+});
+
 it('names an adapter writing its upstream\'s files in an update\'s rehearsal too', function (): void {
     $extending = aStackWithTdarr(HowExtendingItIsGoing::underway(Job::named('j-1')), HowExtendingItIsGoing::done(APluginAsItArrives::theSharingUpdateReading()));
     $screen = thePluginsListed($extending);
@@ -387,6 +408,26 @@ it('draws a plugin the stack refuses to rehearse as its refusal, with nothing to
         ->and($drawn->said())->toContain('This plugin declares native content, which this build refuses')
         ->and($drawn->offers())->not->toContain(aPluginsLine('plugins.install'))
         ->and($drawn->offers())->toContain(aPluginsLine('plugins.back'));
+});
+
+it('says what securing its egress guard came to after the yes, and nothing of it where there was nothing to say', function (): void {
+    $after = static function (ThePlugins $installed): WhatTheDeviceWouldDraw {
+        $screen = tdarrRehearsed(aStackWithTdarr(
+            HowExtendingItIsGoing::underway(Job::named('j-1')),
+            HowExtendingItIsGoing::done(APluginAsItArrives::theReading()),
+            HowExtendingItIsGoing::underway(Job::named('j-2')),
+            HowExtendingItIsGoing::done($installed),
+        ));
+        $screen->approve(0);
+        $screen->agree();
+        $screen->whileItRuns();
+
+        return WhatTheDeviceWouldDraw::by($screen);
+    };
+    $secured = aPluginsLine('plugins.secured', ['secured' => 'gluetun, restarted to take it up']);
+
+    expect($after(APluginAsItArrives::theSecuredInstall())->said())->toContain($secured)
+        ->and($after(APluginAsItArrives::theInstall())->said())->not->toContain($secured);
 });
 
 it('says installed only where the record was written, its proofs held and nothing broke', function (): void {

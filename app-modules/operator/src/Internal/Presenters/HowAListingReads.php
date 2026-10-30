@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\TheServicesWaiting;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
@@ -44,10 +45,11 @@ final readonly class HowAListingReads
         return $this->stoppedBy(HowTheReadingWent::theSessionEnded());
     }
 
-    /** The stack answered, and this is what it is running. */
-    public function these(Daemons $daemons): WhatThisStackRunsTurnedOutToBe
+    /** The stack answered, and this is what it is running, and what it holds back. */
+    public function these(Daemons $daemons, TheServicesWaiting $waiting): WhatThisStackRunsTurnedOutToBe
     {
-        return $this->read($daemons, HowTheReadingWent::itCameBack(), AgoAsShown::saysNothing(), waits: false);
+        return $this->read($daemons, HowTheReadingWent::itCameBack(), AgoAsShown::saysNothing(), waits: false)
+            ->holdingBack(new HowAServiceWaitingReads()->these($waiting));
     }
 
     /**

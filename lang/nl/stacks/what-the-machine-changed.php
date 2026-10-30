@@ -68,6 +68,8 @@ return [
             'resettle' => 'De instelling die lemonfiber bijhoudt wordt teruggezet naar wat ze was',
             'rehold' => 'Het geheim dat lemonfiber bewaart wordt teruggezet naar wat het was',
             'regrant' => 'Een toegang die aan een plug-in was verleend wordt teruggegeven, of de verlening die het gaf wordt beëindigd',
+            'unreplaced' => 'Het interne certificaat van de mediaserver blijft zoals het is; alleen het opnieuw vervangen zet het terug',
+            'run' => 'Een service wordt weer gestart, of weer gestopt',
             'leave' => 'Je eigen overlay blijft staan zoals hij is',
         ],
     ],

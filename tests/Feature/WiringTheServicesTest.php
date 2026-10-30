@@ -123,6 +123,7 @@ function aRunOfEveryConnection(): TheWiring
         aConnectionEnded('L', HowAConnectionEnded::failed('401 Unauthorized: the API key is wrong')),
         aConnectionEnded('M', HowAConnectionEnded::because(WhereAConnectionStands::Refused, 'Two arrs share one root folder')),
         aConnectionEnded('N', HowAConnectionEnded::because(WhereAConnectionStands::Unmatched, 'NZBGet names no adapter lemonfiber pairs with Sonarr')),
+        aConnectionEnded('O', HowAConnectionEnded::plainly(WhereAConnectionStands::Restarted)),
     );
 }
 
@@ -231,8 +232,9 @@ it('draws every connection in the state the stack gave it, skipped apart from fa
         'stacks.wiring.state.failed',
         'stacks.wiring.state.refused',
         'stacks.wiring.state.unmatched',
+        'stacks.wiring.state.restarted',
     ])->and(array_map(static fn(AConnectionAsShown $connection): string => $connection->connection, $run->connections))
-        ->toBe(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N'])
+        ->toBe(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.wiring.state.drifted'));
 });
 
@@ -387,7 +389,7 @@ it('asking again reads the services afresh and keeps the report a run came to', 
     $screen->again();
     $screen->answer();
 
-    expect(theRunDrawn($screen)->connections)->toHaveCount(14)
+    expect(theRunDrawn($screen)->connections)->toHaveCount(15)
         ->and($supervising->askings())->toBe(2)
         ->and($wiring->asked())->toBe(['wire', 'after:j-1']);
 });

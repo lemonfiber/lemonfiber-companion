@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 /**
- * What a run of a setting's action came to: the change, what it held before, what it reaches, what the run did, and every setting after it.
+ * What a run of a settings action came to: each setting it moves, what the change reaches, what the run did, and every setting after it.
  */
 final readonly class TheSettingAsChanged
 {
     private function __construct(
-        private ASettingChange $change,
-        private ASettingValue $was,
+        private TheSettingMoves $moves,
         private WhatTheChangeReaches $reaches,
         private WhatTheSettingRunDid $did,
         private AnOffer $offer,
@@ -19,30 +18,24 @@ final readonly class TheSettingAsChanged
     ) {}
 
     /** The report, as the stack wrote it. */
-    public static function said(ASettingChange $change, ASettingValue $was, WhatTheChangeReaches $reaches, WhatTheSettingRunDid $did, AnOffer $offer, TheServicesSettings $settings): self
+    public static function said(TheSettingMoves $moves, WhatTheChangeReaches $reaches, WhatTheSettingRunDid $did, AnOffer $offer, TheServicesSettings $settings): self
     {
-        return new self($change, $was, $reaches, $did, $offer, $settings);
+        return new self($moves, $reaches, $did, $offer, $settings);
     }
 
-    /** The setting, by its name. */
-    public function setting(): string
+    /** Each setting the change moves. */
+    public function moves(): TheSettingMoves
     {
-        return $this->change->setting();
+        return $this->moves;
     }
 
-    /** What it is to hold, or nothing where it goes back to its default. */
-    public function value(): ASettingValue
+    /** The change the moves make. */
+    public function change(): ASettingChange
     {
-        return $this->change->value();
+        return $this->moves->change();
     }
 
-    /** What it held before. */
-    public function was(): ASettingValue
-    {
-        return $this->was;
-    }
-
-    /** What the change reaches beyond the setting. */
+    /** What the change reaches beyond the settings. */
     public function reaches(): WhatTheChangeReaches
     {
         return $this->reaches;
@@ -69,9 +62,6 @@ final readonly class TheSettingAsChanged
     /** Whether this is a rehearsal of that change. */
     public function rehearses(ASettingChange $change): bool
     {
-        return $this->did === WhatTheSettingRunDid::Rehearsed
-            && $this->change->how() === $change->how()
-            && $this->change->setting() === $change->setting()
-            && $this->change->value()->said() === $change->value()->said();
+        return $this->did === WhatTheSettingRunDid::Rehearsed && $this->change()->isTheSameAs($change);
     }
 }

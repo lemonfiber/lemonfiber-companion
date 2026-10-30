@@ -6,6 +6,8 @@ namespace Modules\Kernel\Api;
 
 use Closure;
 
+use function trim;
+
 /**
  * What installing a plugin would do, or did: the plugin, every change, every proof, and how it ended.
  *
@@ -29,18 +31,19 @@ final readonly class APluginInstall
         private TheProofs $proofs,
         private WhatTheChecksMade $checks,
         private ?ARunPutBack $putBack,
+        private string $secured,
     ) {}
 
-    /** The account of an install nothing was put back from: a reading, or one that was recorded. */
-    public static function reported(APlugin $would, bool $recorded, WhatAnInstallChanges $changing, TheProofs $proofs, WhatTheChecksMade $checks): self
+    /** The account of an install nothing was put back from: a reading, or one that was recorded, with what asking the egress guard among its services to take up its control credential came to, in the stack's words, where there is anything to say. */
+    public static function reported(APlugin $would, bool $recorded, WhatAnInstallChanges $changing, TheProofs $proofs, WhatTheChecksMade $checks, string $secured = ''): self
     {
-        return new self($would, $recorded, $changing, $proofs, $checks, null);
+        return new self($would, $recorded, $changing, $proofs, $checks, null, trim($secured));
     }
 
-    /** The account of an install that did not hold, and what putting it back came to. Nothing put back is recorded. */
-    public static function putBack(APlugin $would, WhatAnInstallChanges $changing, TheProofs $proofs, WhatTheChecksMade $checks, ARunPutBack $putBack): self
+    /** The account of an install that did not hold, and what putting it back came to, with what asking its egress guard came to as for {@see reported()}. Nothing put back is recorded. */
+    public static function putBack(APlugin $would, WhatAnInstallChanges $changing, TheProofs $proofs, WhatTheChecksMade $checks, ARunPutBack $putBack, string $secured = ''): self
     {
-        return new self($would, recorded: false, changing: $changing, proofs: $proofs, checks: $checks, putBack: $putBack);
+        return new self($would, recorded: false, changing: $changing, proofs: $proofs, checks: $checks, putBack: $putBack, secured: trim($secured));
     }
 
     /** The plugin, as the install settles it. */
@@ -89,6 +92,18 @@ final readonly class APluginInstall
     public function sharing(): TheUpstreamsWritten
     {
         return $this->changing->sharing();
+    }
+
+    /** Every service it would leave held back until the operator gives what it needs to start. */
+    public function waiting(): TheServicesWaiting
+    {
+        return $this->changing->waiting();
+    }
+
+    /** What asking the egress guard to hold its control credential came to where it was more than held at once, or blank: a reading, held at once, or no guard among its services. */
+    public function secured(): string
+    {
+        return $this->secured;
     }
 
     /** Every approval it asks for apart from the offer, as the stack spells each: its recipes' values, then its services' shapes, then the credentials it would hand the plugin. */

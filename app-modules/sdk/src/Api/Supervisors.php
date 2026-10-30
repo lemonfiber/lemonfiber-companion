@@ -95,7 +95,7 @@ final readonly class Supervisors implements Supervising
         try {
             $envelope = $client->read(Api::STATUS_ENDPOINT);
 
-            return WhatIsRunning::these(Rosters::in($envelope), Rosters::whatElseIsRunning($envelope));
+            return WhatIsRunning::these(Rosters::in($envelope), Rosters::whatElseIsRunning($envelope), Rosters::whatIsWaiting($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatIsRunning::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|RosterIsUnreadable $why) {

@@ -143,6 +143,7 @@ final readonly class WhatTheWiringCameTo
                 Required::text($state, WireField::Detail, SeedIsUnreadable::entry(SeedField::Wirings, $position, WireField::Detail)),
             ),
             WhereAConnectionStands::Wired,
+            WhereAConnectionStands::Restarted,
             WhereAConnectionStands::AlreadyWired,
             WhereAConnectionStands::Drifted,
             WhereAConnectionStands::Stale,

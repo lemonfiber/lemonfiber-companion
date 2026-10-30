@@ -107,6 +107,7 @@ final readonly class HowTheWiringReads
     {
         return match ($state) {
             WhereAConnectionStands::Wired => 'stacks.wiring.state.wired',
+            WhereAConnectionStands::Restarted => 'stacks.wiring.state.restarted',
             WhereAConnectionStands::AlreadyWired => 'stacks.wiring.state.already_wired',
             WhereAConnectionStands::Drifted => 'stacks.wiring.state.drifted',
             WhereAConnectionStands::Stale => 'stacks.wiring.state.stale',

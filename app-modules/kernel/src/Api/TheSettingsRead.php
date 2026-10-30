@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function array_any;
 use function array_filter;
 use function array_values;
 
@@ -45,7 +46,17 @@ final readonly class TheSettingsRead implements IteratorAggregate
         return new self(array_values(array_filter($this->settings, static fn(ASetting $one): bool => $one->whose()->is($whose))));
     }
 
-    /** @return Traversable<int, ASetting> */
+    /** The setting of that name, or none. */
+    /** The settings that hang together with any of these, apart from these themselves, in the order it holds them. */
+    public function hangingTogetherWith(ASetting ...$moved): self
+    {
+        return new self(array_values(array_filter(
+            $this->settings,
+            static fn(ASetting $one): bool => ! array_any($moved, static fn(ASetting $setting): bool => $setting->name() === $one->name())
+                && array_any($moved, static fn(ASetting $setting): bool => $one->hangsTogetherWith($setting)),
+        )));
+    }
+
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->settings);

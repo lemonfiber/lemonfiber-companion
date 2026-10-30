@@ -76,7 +76,7 @@ it('carries nothing beside a state that says nothing more', function (WhereAConn
 
     expect([$ended->state(), $ended->said(), $ended->ours(), $ended->yours()])->toBe([$state, '', '', '']);
 })->with([
-    WhereAConnectionStands::Wired, WhereAConnectionStands::AlreadyWired, WhereAConnectionStands::Drifted, WhereAConnectionStands::Stale,
+    WhereAConnectionStands::Wired, WhereAConnectionStands::Restarted, WhereAConnectionStands::AlreadyWired, WhereAConnectionStands::Drifted, WhereAConnectionStands::Stale,
     WhereAConnectionStands::Adopted, WhereAConnectionStands::Unmanaged, WhereAConnectionStands::WouldAdopt,
 ]);
 
