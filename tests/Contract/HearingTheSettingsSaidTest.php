@@ -54,8 +54,9 @@ function theSettingsSaid(array $changed = []): array
         'kind' => 'settings',
         'data' => [
             'rehearsed' => false,
-            'settings' => [['name' => 'vpn.countries', 'whose' => ['of' => 'namespace', 'namespace' => 'gluetun'], 'readers' => [['service' => 'gluetun', 'variable' => 'SERVER_COUNTRIES']], 'value' => 'Belgium']],
+            'settings' => [['name' => 'vpn.countries', 'whose' => ['of' => 'namespace', 'namespace' => 'gluetun'], 'readers' => [['service' => 'gluetun', 'variable' => 'SERVER_COUNTRIES', 'needs' => [], 'met' => true]], 'value' => 'Belgium']],
             'secrets' => [],
+            'waiting' => [],
             ...$changed,
         ],
     ];

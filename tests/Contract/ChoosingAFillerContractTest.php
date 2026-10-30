@@ -70,6 +70,8 @@ function whatAStackSaysAFillComesTo(array $changed = [], array $choice = [], arr
         'leaves_unfilled' => [['by' => 'tdarr', 'capability' => 'transcoder']],
         'now' => 'plex',
         'setting' => 'media-server=plex',
+        'starts' => [],
+        'stops' => [],
         'was' => 'jellyfin',
         ...$choice,
     ];
