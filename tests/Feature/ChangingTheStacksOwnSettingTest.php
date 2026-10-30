@@ -37,6 +37,7 @@ use Modules\Kernel\Api\WhatTheChangeReaches;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
 use Modules\Kernel\Api\WhatVouchesForAPlugin;
+use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\WhereASecretCameFrom;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhoseASettingIs;
@@ -46,6 +47,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExtendsItself;
+use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatTunesItsSettings;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TheWordCarriedOut;
@@ -138,10 +140,15 @@ function aStackThatSetsItsOwn(?WhatBecameOfTheWork $rehearsal = null): AStackTha
 }
 
 /** The screen of the machine's own settings, with a stack it knows and the guard installed. */
-function theStacksOwnSettingsScreen(AStackThatTunesItsSettings $tuning, ?AStackThatExtendsItself $extending = null, bool $signedIn = true): WhatTheStackItselfReads
-{
+function theStacksOwnSettingsScreen(
+    AStackThatTunesItsSettings $tuning,
+    ?AStackThatExtendsItself $extending = null,
+    bool $signedIn = true,
+    ?AStackThatSpeaksUp $hearing = null,
+    ?AKeychainInMemory $keychain = null,
+): WhatTheStackItselfReads {
     $stack = theStackWhoseOwnSettingsAreSet();
-    $keychain = AKeychainInMemory::working();
+    $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
@@ -153,7 +160,7 @@ function theStacksOwnSettingsScreen(AStackThatTunesItsSettings $tuning, ?AStackT
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
-        AroundThePhone::listening(),
+        AroundThePhone::listening($hearing),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -193,6 +200,28 @@ it('reads the plugins and the settings afresh, a frame apart, when asked again',
         ->and($tuning->askings())->toBe(1)
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('domain')
         ->and($tuning->askings())->toBe(2);
+});
+
+it('draws the settings the stream says, without reading them again', function (): void {
+    $tuning = aStackThatSetsItsOwn();
+    $screen = theStacksOwnSettingsScreen($tuning, hearing: AStackThatSpeaksUp::holdingOpen(WhatWasHeard::aSignOfLife()->settledAs(everythingTheMachineHolds('lemon.example.org'))));
+
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $screen->listen();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain('lemon.example.org')
+        ->and($drawn)->not->toContain('home.example.org')
+        ->and($tuning->askings())->toBe(1);
+});
+
+it('draws what it read on every later frame without asking for the session again', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $screen = theStacksOwnSettingsScreen(aStackThatSetsItsOwn(), keychain: $keychain);
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $keychain->forget(theStackWhoseOwnSettingsAreSet()->id());
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('domain');
 });
 
 it('lists every setting and secret no installed plugin reads, grouped as the core\'s and by namespace, and nothing a plugin reads', function (): void {

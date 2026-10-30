@@ -97,6 +97,24 @@ it('names each owner once, the core first, then each namespace in the order it i
         ->and($owners[1]->is(WhoseASettingIs::theNamespaces('gluetun')))->toBeTrue();
 });
 
+it('names each namespace after the ones listed before it', function (): void {
+    $nobody = TheServicesReadingIt::these();
+    $held = TheServicesSettings::of(
+        TheSettingsRead::these(
+            ASetting::read('gluetun.countries', WhoseASettingIs::theNamespaces('gluetun'), $nobody, ASettingValue::value('NL')),
+            ASetting::read('LEMONFIBER_DOMAIN', WhoseASettingIs::theCores(), $nobody, ASettingValue::nothing()),
+            ASetting::read('sonarr.root', WhoseASettingIs::theNamespaces('sonarr'), $nobody, ASettingValue::value('/tv')),
+        ),
+        TheSecretsRead::these(),
+    );
+    $owners = iterator_to_array($held->owners(), preserve_keys: false);
+
+    expect($owners)->toHaveCount(3)
+        ->and($owners[0]->is(WhoseASettingIs::theCores()))->toBeTrue()
+        ->and($owners[1]->is(WhoseASettingIs::theNamespaces('gluetun')))->toBeTrue()
+        ->and($owners[2]->is(WhoseASettingIs::theNamespaces('sonarr')))->toBeTrue();
+});
+
 it('names no owner where nothing is held', function (): void {
     expect(iterator_to_array(TheServicesSettings::of(TheSettingsRead::these(), TheSecretsRead::these())->owners(), preserve_keys: false))->toBe([]);
 });
