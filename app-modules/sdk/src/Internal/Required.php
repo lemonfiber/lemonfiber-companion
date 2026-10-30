@@ -49,11 +49,21 @@ final readonly class Required
      */
     public static function text(array $table, NamesAWireField $field, InvalidArgumentException $refused): string
     {
-        if (! array_key_exists($field->value, $table) || ! is_string($table[$field->value]) || trim($table[$field->value]) === '') {
+        if (! array_key_exists($field->value, $table) || ! self::isText($table[$field->value])) {
             throw $refused;
         }
 
         return $table[$field->value];
+    }
+
+    /**
+     * Whether a value is text with something in it.
+     *
+     * @phpstan-assert-if-true =non-empty-string $said
+     */
+    public static function isText(mixed $said): bool
+    {
+        return is_string($said) && trim($said) !== '';
     }
 
     /**

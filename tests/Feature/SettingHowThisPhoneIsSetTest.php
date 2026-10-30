@@ -30,6 +30,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Operator\Internal\Screens\HowThisPhoneIsSet;
 use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
+use Modules\Operator\Internal\WhereAskingForNotificationsStands;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Modules\Wayfinding\Api\WhoTheSettingsSpeakTo;
 use Native\Mobile\Edge\NativeRouter;
@@ -61,10 +62,11 @@ function thePhonesSettingsOver(
     ?ANotifierInMemory $notifier = null,
     ?TheAppsSettings $apps = null,
     ?WakesInMemory $wakes = null,
+    ?LockingAfter $locking = null,
 ): HowThisPhoneIsSet {
     $kept ??= ConnectionSettingsInMemory::empty();
     $wakes ??= WakesInMemory::thatWake();
-    $locking = new LockingAfter(ASealInMemory::working(), $kept, $device, FrozenClock::at(Instant::atEpochSeconds(0)));
+    $locking ??= new LockingAfter(ASealInMemory::working(), $kept, $device, FrozenClock::at(Instant::atEpochSeconds(0)));
 
     return new HowThisPhoneIsSet(
         $locking,
@@ -187,7 +189,7 @@ it('lets go of the readings older than a shorter time the moment it is chosen', 
     $screen->keepReadingsFor('SevenDays');
 
     expect($store->forgetEverything()->howMany())->toBe(1)
-        ->and(trans_choice($screen->keepReadings()->said, $screen->keepReadings()->count))->toBe(trans_choice('settings.days', 7))
+        ->and([$screen->keepReadings()->said, $screen->keepReadings()->count])->toBe(['settings.days', 7])
         ->and($readings->keptFor()->is(KeptFor::SevenDays))->toBeTrue()
         ->and($settings->forgetEverything()->howMany())->toBe(1);
 });
@@ -210,6 +212,7 @@ it('opens a field for a count of days, and keeps a count it is given', function 
     $screen->keepReadingsFor('Other');
     $typing = WhatTheDeviceWouldDraw::by($screen);
     $tree = (string) json_encode(WhatTheDeviceWouldDraw::tree($screen));
+    $opened = [$screen->days, $screen->daysRefused];
 
     $screen->days = '45';
     $screen->saveDays();
@@ -220,9 +223,58 @@ it('opens a field for a count of days, and keeps a count it is given', function 
         ->and($typing->offers())->toContain(__('settings.save'))
         ->and($tree)->toContain('"keyboard":"number"')
         ->and($screen->typingDays)->toBeFalse()
-        ->and(trans_choice($screen->keepReadings()->said, $screen->keepReadings()->count))->toBe(trans_choice('settings.days', 45))
+        ->and([$screen->keepReadings()->said, $screen->keepReadings()->count])->toBe(['settings.days', 45])
         ->and(array_column($chosen, 'word'))->toBe(['Other'])
+        ->and($opened)->toBe(['', false])
         ->and($store->forgetEverything()->howMany())->toBe(1);
+});
+
+it('marks only Other in force while a count is typed, whatever is kept, and the choice kept otherwise', function (string $kept): void {
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked());
+    $screen->keepReadingsFor($kept);
+    $before = $screen->keepReadings()->offered;
+    $screen->keepReadingsFor('Other');
+    $chosen = static fn(array $offered): array => array_column(array_filter($offered, static fn(mixed $choice): bool => $choice instanceof AChoiceOfASettingAsShown && $choice->chosen), 'word');
+
+    expect($chosen($before))->toBe([$kept])
+        ->and($chosen($screen->keepReadings()->offered))->toBe(['Other'])
+        ->and($screen->days)->toBe('')
+        ->and($screen->daysRefused)->toBeFalse();
+})->with(['a named count' => ['NinetyDays'], 'until removed' => ['UntilRemoved']]);
+
+it('lets go of a refused count, and what was typed, once a choice is kept', function (): void {
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked());
+    $screen->keepReadingsFor('Other');
+    $screen->days = 'a week';
+    $screen->saveDays();
+    $screen->keepReadingsFor('SevenDays');
+
+    expect($screen->daysRefused)->toBeFalse()
+        ->and($screen->days)->toBe('');
+});
+
+it('reads each setting, and whether the phone can keep anything, once', function (): void {
+    $device = ADeviceThatKnowsYou::unlocked();
+    $kept = ConnectionSettingsInMemory::empty();
+    $keychain = AKeychainInMemory::working();
+    [$readings] = readingsADayAndSixtyDaysOld();
+    $stacks = theLoftAndTheAttic();
+    $locking = new LockingAfter(ASealInMemory::working(), $kept, $device, FrozenClock::at(Instant::atEpochSeconds(0)));
+    $screen = thePhonesSettingsOver($device, $kept, $keychain, readings: $readings, stacks: $stacks, locking: $locking);
+    $screen->lockAfter();
+    $screen->keepReadings();
+    $screen->stacksInOrder();
+    $screen->keepsNothing();
+    $elsewhere = thePhonesSettingsOver($device, $kept, readings: $readings, stacks: $stacks, locking: $locking);
+    $elsewhere->lockAfterIs(LockAfter::OneHour->name);
+    $elsewhere->keepReadingsFor('SevenDays');
+    $elsewhere->putStacksInOrder(Reorderable::sent([str_repeat('b', Nonce::SHORTEST), str_repeat('a', Nonce::SHORTEST)]));
+    $screen->keepsNothing();
+
+    expect($screen->lockAfter()->said)->toBe(LockAfter::Immediately->said())
+        ->and([$screen->keepReadings()->said, $screen->keepReadings()->count])->toBe(['settings.days', 30])
+        ->and(array_column($screen->stacksInOrder(), 'name'))->toBe(['The loft', 'The attic'])
+        ->and($keychain->timesAskedIfAvailable())->toBe(1);
 });
 
 it('refuses a count of days it cannot keep readings for, and keeps the field open', function (string $typed): void {
@@ -266,6 +318,7 @@ it('asks on this screen before it clears saved data, and keeps it when told to',
         ->and($asking->offers())->toContain(__('settings.clear'))
         ->and($asking->offers())->toContain(__('settings.keep_it'))
         ->and($screen->lockAfter()->said)->toBe(LockAfter::OneHour->said())
+        ->and($screen->confirmingTheClear)->toBeFalse()
         ->and($kept->forgetEverything()->howMany())->toBe(1);
 });
 
@@ -391,6 +444,17 @@ it('speaks in its own words when opened from anywhere but a member\'s Profile', 
     'a word it does not know' => [[AScreenWithoutAStack::SETTINGS_SPEAK_TO => 'the_neighbours']],
 ]);
 
+it('reads whether notifications are on once, however often the screen asks', function (): void {
+    $kept = ConnectionSettingsInMemory::empty();
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), $kept);
+    $screen->notificationsAreOn();
+    $read = $kept->timesRead();
+    $screen->notificationsAreOn();
+    $screen->notificationsAreOn();
+
+    expect($kept->timesRead())->toBe($read);
+});
+
 it('offers notifications off until the operator turns them on, and asks the phone nothing to draw them', function (): void {
     $notifier = ANotifierInMemory::unasked();
     $drawn = WhatTheDeviceWouldDraw::by(thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: $notifier));
@@ -419,7 +483,7 @@ it('says why before it asks the phone, saying it may tell late or not at all whi
 
     expect($notifier->timesAsked())->toBe(1)
         ->and($screen->notificationsAreOn())->toBeTrue()
-        ->and($screen->explainingNotifications)->toBeFalse()
+        ->and($screen->askingForNotifications)->toBeNull()
         ->and($wakes->isAsked())->toBeTrue();
 });
 
@@ -435,13 +499,13 @@ it('keeps notifications on when read again, and turns them off at once without a
 
     $screen->notificationsTurned(on: true);
 
-    expect($screen->explainingNotifications)->toBeFalse();
+    expect($screen->askingForNotifications)->toBeNull();
 
     $screen->notificationsTurned(on: false);
     $screen->notifying = null;
 
     expect($screen->notificationsAreOn())->toBeFalse()
-        ->and($screen->explainingNotifications)->toBeFalse()
+        ->and($screen->askingForNotifications)->toBeNull()
         ->and($notifier->timesAsked())->toBe(1)
         ->and($wakes->isAsked())->toBeFalse();
 });
@@ -466,14 +530,13 @@ it('says where to turn notifications on where the phone was told no, offers the 
 it('keeps notifications off where the phone says no to the prompt, and says where to turn them on', function (): void {
     $wakes = WakesInMemory::thatWake();
     $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), notifier: ANotifierInMemory::refused(), wakes: $wakes);
-    $screen->explainingNotifications = true;
+    $screen->askingForNotifications = WhereAskingForNotificationsStands::Explained;
 
     $screen->allowNotifications();
 
     expect($screen->notificationsAreOn())->toBeFalse()
         ->and($wakes->isAsked())->toBeFalse()
-        ->and($screen->notificationsDeclined)->toBeTrue()
-        ->and($screen->explainingNotifications)->toBeTrue();
+        ->and($screen->askingForNotifications)->toBe(WhereAskingForNotificationsStands::Declined);
 });
 
 it('closes the reason without asking anything when the operator says not now', function (): void {
@@ -483,7 +546,7 @@ it('closes the reason without asking anything when the operator says not now', f
 
     $screen->notNow();
 
-    expect($screen->explainingNotifications)->toBeFalse()
+    expect($screen->askingForNotifications)->toBeNull()
         ->and($screen->notificationsAreOn())->toBeFalse()
         ->and($notifier->timesAsked())->toBe(0);
 });

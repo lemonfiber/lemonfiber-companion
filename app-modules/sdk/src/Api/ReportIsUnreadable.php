@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use function array_map;
-use function implode;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\Category;
@@ -14,6 +13,7 @@ use Modules\Kernel\Api\Overall;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
 use Modules\Sdk\Api\Fields\DoctorField;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -134,7 +134,7 @@ final class ReportIsUnreadable extends InvalidArgumentException
             'The doctor envelope says its %s is `%s`, and this app reads %s. Guessing which of them was meant is how a check that could not run gets shown as one that passed.',
             $field,
             $said,
-            implode(', ', array_map(static fn(string $word): string => sprintf('`%s`', $word), $read)),
+            TheWordsItReads::quoted(...$read),
         ));
     }
 }

@@ -15,7 +15,7 @@ use Tests\Support\Tree;
 // nothing at the point of measurement and turns one number into seventeen.
 //
 // The trees are the ones `phpunit.xml` measures rather than the modules, which
-// is the same list `G7` holds to a bar and `scripts/mutation.php` mutates. Read
+// is the same list `G7` holds to a bar and the mutation gate mutates. Read
 // from the modules instead, this was silent about `bridge/src` and
 // `bootstrap/Composition` — 2,900 lines inside the global floor and outside
 // every per-directory one.

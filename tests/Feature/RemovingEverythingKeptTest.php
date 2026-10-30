@@ -126,6 +126,17 @@ it('sends the yes against the list shown, and says the way in went where the ans
         ->and($keychain->isHolding(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id()))->toBeFalse();
 });
 
+it('offers no yes where the list the stack answered with is not one waiting on a yes', function (): void {
+    $forgetting = AStackThatForgets::answering(
+        WhatBecameOfTheWork::answered(TheForgetting::said(whatWouldGoFromTheLoft(), WhereForgettingGot::notAsked())),
+        WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)),
+    );
+    $screen = theListShownToForget($forgetting);
+
+    expect($screen->shownToForget)->toBeNull()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('stacks.forget.forget_it'));
+});
+
 it('sends no yes without the list on the screen', function (): void {
     $forgetting = aStackThatListsThenRemoves();
     theScreenThatForgets($forgetting)->forgetEverything();
@@ -160,7 +171,7 @@ it('says the session ended where it went while what would go was asked', functio
     $keychain->forget(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id());
     $screen->whileForgettingRuns();
 
-    expect($screen->howForgettingIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($screen->howForgettingIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->awaitsAnOutcome())->toBeFalse();
 });
 

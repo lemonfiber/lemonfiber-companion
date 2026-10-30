@@ -37,10 +37,8 @@ final readonly class WhatAMemberTurnedOutToBeOwed
      */
     private function __construct(
         public bool $isSignedIn,
-        public string $met,
-        public string $remedy,
         public array $sentences,
-        private ?Obstacle $why = null,
+        public ?WhatStoppedAMember $stopped = null,
     ) {}
 
     /**
@@ -50,7 +48,7 @@ final readonly class WhatAMemberTurnedOutToBeOwed
      */
     public static function these(array $sentences): self
     {
-        return new self(isSignedIn: true, met: '', remedy: '', sentences: $sentences);
+        return new self(isSignedIn: true, sentences: $sentences);
     }
 
     /**
@@ -61,7 +59,7 @@ final readonly class WhatAMemberTurnedOutToBeOwed
      */
     public static function theSessionEnded(): self
     {
-        return new self(isSignedIn: false, met: '', remedy: '', sentences: []);
+        return new self(isSignedIn: false, sentences: []);
     }
 
     /**
@@ -78,29 +76,7 @@ final readonly class WhatAMemberTurnedOutToBeOwed
     {
         return $why->meansWeAreSignedOut()
             ? self::theSessionEnded()
-            : new self(isSignedIn: true, met: WhatAMemberIsTold::met($why), remedy: WhatAMemberIsTold::remedy($why), sentences: [], why: $why);
-    }
-
-    /** Whether what stood in the way is put right on this app's page in the phone's settings. */
-    public function isPutRightInTheAppsSettings(): bool
-    {
-        return $this->why instanceof Obstacle && $this->why->isPutRightInTheAppsSettings();
-    }
-
-    /**
-     * What the obstacle's sentences are filled with: the facts it was met with, or nothing.
-     *
-     * @return array<string, int>
-     */
-    public function filling(): array
-    {
-        return $this->why instanceof Obstacle ? WhatAnObstacleNames::in($this->why) : [];
-    }
-
-    /** Whether {@see $met} and {@see $remedy} are the core's own text, drawn as written, rather than catalogue keys. */
-    public function isInTheStacksWords(): bool
-    {
-        return $this->why instanceof Obstacle && WhatAMemberIsTold::isInTheStacksWords($this->why);
+            : new self(isSignedIn: true, sentences: [], stopped: WhatStoppedAMember::by($why));
     }
 
     /**
@@ -114,6 +90,6 @@ final readonly class WhatAMemberTurnedOutToBeOwed
      */
     public function cameBack(): bool
     {
-        return $this->isSignedIn && $this->met === '';
+        return $this->isSignedIn && ! $this->stopped instanceof WhatStoppedAMember;
     }
 }

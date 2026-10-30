@@ -332,7 +332,8 @@ it('says what the operator met where the stack did not answer', function (): voi
             ->and($screen->answer()->went->isSignedIn)->toBeTrue($why->value)
             ->and($screen->howMany())->toBe(0, $why->value)
             ->and(__($screen->answer()->went->met))->not->toBe($screen->answer()->went->met, $why->value)
-            ->and(__($screen->answer()->went->remedy))->not->toBe($screen->answer()->went->remedy, $why->value);
+            ->and(__($screen->answer()->went->remedy))->not->toBe($screen->answer()->went->remedy, $why->value)
+            ->and($screen->answer()->went->filling())->toBe($why === KindOfObstacle::VersionsDisagree ? ['answered' => AnObstacleOfEachKind::A_NEWER_VERSION, 'spoken' => AnObstacleOfEachKind::THE_VERSION_READ] : [], $why->value);
     }
 });
 

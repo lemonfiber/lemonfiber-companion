@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Bootstrap\Composition\NativePHP\ScreenRouter;
 use Bootstrap\Composition\NativePHP\TheTheme;
+use Illuminate\Support\Facades\Event;
 use Modules\Design\Api\ThemeToken;
 use Modules\Design\Api\WhichThemeIsOnTheGlass;
 use Modules\Design\Api\WhoseTheme;
@@ -21,7 +22,7 @@ use Tests\Support\Fakes\AScreenComingToTheFront;
 use Tests\Support\Fakes\AScreenOpenedOverAnother;
 
 // Runs the composition root rather than reading it, so its mutants are judged
-// here: see `scripts/mutation.php`.
+// here, by its `holds:` group.
 pest()->group('holds:bootstrap/Composition');
 
 // Whose session a screen is drawn for decides the theme it is drawn in: the
@@ -162,6 +163,19 @@ it('hands each screen to the theme as it comes to the front, built or uncovered'
     theRouterAnnounces($router, [$uncovered], new ScreenResumed(AScreenComingToTheFront::class, '/'));
 
     expect($handed)->toBe([$built, $uncovered]);
+});
+
+it('announces each screen\'s lifecycle to the application as the package does', function (): void {
+    $heard = Event::fake([ScreenMounted::class, ScreenResumed::class]);
+    $router = new ScreenRouter(static fn(): AScreenComingToTheFront => AScreenComingToTheFront::aboutNoStack(), static function (): void {});
+    $mounted = new ScreenMounted(AScreenComingToTheFront::class, '/');
+    $resumed = new ScreenResumed(AScreenComingToTheFront::class, '/');
+
+    theRouterAnnounces($router, [], $mounted);
+    theRouterAnnounces($router, [AScreenComingToTheFront::aboutNoStack()], $resumed);
+
+    $heard->assertDispatched(ScreenMounted::class, static fn(ScreenMounted $event): bool => $event === $mounted);
+    $heard->assertDispatched(ScreenResumed::class, static fn(ScreenResumed $event): bool => $event === $resumed);
 });
 
 /** `createComponent`, which is protected because only the router calls it. */

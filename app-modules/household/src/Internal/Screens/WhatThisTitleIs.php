@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal\Screens;
 
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Household\Internal\OffersTheAppsSettings;
@@ -32,6 +30,8 @@ use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 use Override;
+
+use function trim;
 
 /**
  * One title on a member's shelf, in full, opened from its poster or from Home's hero.
@@ -101,9 +101,10 @@ final class WhatThisTitleIs extends NativeComponent implements HearsThePlayer
     public function playTheEpisode(string $episode): void
     {
         $page = $this->page();
+        $pressed = $this->holding($episode);
 
-        if ($page instanceof HoldingId && $episode !== '') {
-            $this->pressed($page, $this->titles->theEpisode($this->stack(), $page, HoldingId::called($episode)));
+        if ($page instanceof HoldingId && $pressed instanceof HoldingId) {
+            $this->pressed($page, $this->titles->theEpisode($this->stack(), $page, $pressed));
         }
     }
 
@@ -186,8 +187,12 @@ final class WhatThisTitleIs extends NativeComponent implements HearsThePlayer
     /** The title the route names, or none where it names nothing. */
     private function page(): ?HoldingId
     {
-        $named = $this->param('service');
+        return $this->holding($this->around->aboutOn($this));
+    }
 
-        return is_string($named) && $named !== '' ? HoldingId::called($named) : null;
+    /** The holding `$named` names, or none where it names nothing. */
+    private function holding(string $named): ?HoldingId
+    {
+        return trim($named) === '' ? null : HoldingId::called($named);
     }
 }

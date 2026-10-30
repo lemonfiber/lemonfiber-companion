@@ -46,8 +46,8 @@ final class QuietAction extends Component
      */
     public function __construct(
         public readonly string $label,
-        public readonly string $tap = '',
-        public readonly string $goes = '',
+        public readonly ?string $tap = null,
+        public readonly ?string $goes = null,
         public readonly array $carries = [],
     ) {}
 

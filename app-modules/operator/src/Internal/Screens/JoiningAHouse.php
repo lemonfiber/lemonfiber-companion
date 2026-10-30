@@ -113,8 +113,8 @@ final class JoiningAHouse extends NativeComponent
     /** Whether the person chooses their password, with the claim their invitation carries, rather than signing in with one. */
     public bool $choosing = false;
 
-    /** Whether the name in the field is the one a join link named, drawn as a field the person cannot type into; the link's own name is what is offered. */
-    public bool $nameIsTheLinks = false;
+    /** The one account a join link names, which is the only one it may lead to and is drawn as a field the person cannot type into; nothing where the house was found by a code. */
+    public ?AMembersName $namedByTheLink = null;
 
     /** The house a join link would add, held until the person says somebody in their house sent it; nothing is pinned or kept meanwhile. */
     private ?Stack $offered = null;
@@ -124,9 +124,6 @@ final class JoiningAHouse extends NativeComponent
 
     /** The claim the person chooses their password with, while they do; never kept past this screen. */
     private ?AClaim $claim = null;
-
-    /** The one account a join link names, which is the only one it may lead to; nothing where the house was found by a code. */
-    private ?AMembersName $namedByTheLink = null;
 
     public function __construct(
         private readonly Scanning $camera,
@@ -150,7 +147,7 @@ final class JoiningAHouse extends NativeComponent
     /** Open the house a join link names where the phone opened this screen at one. */
     public function mount(): void
     {
-        $opened = (string) parse_url($this->nativeRouter?->currentUri() ?? '', PHP_URL_QUERY);
+        $opened = (string) parse_url((string) $this->nativeRouter?->currentUri(), PHP_URL_QUERY);
 
         if ($opened !== '') {
             $this->handed(sprintf('%s?%s', AJoinLink::AT, $opened));
@@ -162,7 +159,6 @@ final class JoiningAHouse extends NativeComponent
     {
         $this->met = null;
         $this->namedByTheLink = null;
-        $this->nameIsTheLinks = false;
         $this->forgetTheHouse();
 
         $this->readACode($this->camera, function (string $handed): void {
@@ -202,7 +198,7 @@ final class JoiningAHouse extends NativeComponent
     {
         $named = $this->namedByTheLink instanceof AMembersName ? $this->namedByTheLink->forTheExchange() : trim($this->theirName);
 
-        if ($named === '' || $this->joined === '') {
+        if ($named === '' || $this->joined === '' || trim($this->typed) === '') {
             return;
         }
 
@@ -296,7 +292,6 @@ final class JoiningAHouse extends NativeComponent
     private function goingOnWith(AJoinLink $link): self
     {
         $this->namedByTheLink = $link->name();
-        $this->nameIsTheLinks = true;
         $named = $link->name()->forTheExchange();
 
         return $link->leadsTo(

@@ -9,7 +9,6 @@ use function array_map;
 use function is_array;
 use function is_bool;
 use function is_int;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\RemovalEnvelope;
@@ -18,9 +17,8 @@ use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\WhatTheRemovalFound;
 use Modules\Sdk\Api\Fields\RemovalField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * Reads the `removal` envelope into what taking somebody out cost, or did.
@@ -116,7 +114,7 @@ final readonly class Removals
         $said = [];
 
         foreach ($data[WireField::Findings->value] as $finding) {
-            if (! is_string($finding) || trim($finding) === '') {
+            if (! Required::isText($finding)) {
                 throw RemovalIsUnreadable::missing(WireField::Findings);
             }
 
@@ -147,10 +145,6 @@ final readonly class Removals
      */
     private static function text(array $data, NamesAWireField $field): string
     {
-        if (! array_key_exists($field->value, $data) || ! is_string($data[$field->value]) || trim($data[$field->value]) === '') {
-            throw RemovalIsUnreadable::missing($field);
-        }
-
-        return $data[$field->value];
+        return Required::text($data, $field, RemovalIsUnreadable::missing($field));
     }
 }

@@ -12,13 +12,13 @@
 @elseif ($this->wasAgreedTo())
     {{-- What the stack did, drawn from its report and never from the record's
          rows above it. --}}
-    @if (! $this->done()->went->cameBack())
+    @if (! $this->done()->stands->went->cameBack())
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->done()->went"
+            :went="$this->done()->stands->went"
             :goes="$this->goes()"
         />
-    @elseif ($this->done()->isWorking)
+    @elseif ($this->done()->stands->isWorking())
         <x-operator::emphasis>{{ __('stacks.run_back.putting_back') }}</x-operator::emphasis>
 
         {{-- The stack says what went back once it has finished, and not while
@@ -32,7 +32,7 @@
         <x-operator::refused-in-its-words :refused="$this->done()->refused" />
         <x-design::body>{{ __('stacks.run_back.refused_same_answer') }}</x-design::body>
         <x-operator::action :label="__('stacks.record.road_in')" :goes="$this->goes()->to(AStacksScreen::Record)" />
-    @elseif ($this->done()->hasEnded)
+    @elseif ($this->done()->stands->hasEnded())
         {{-- Not a failure: it may well have gone back, and the record is where
              to look. --}}
         <x-operator::emphasis>{{ __('stacks.run_back.no_outcome') }}</x-operator::emphasis>

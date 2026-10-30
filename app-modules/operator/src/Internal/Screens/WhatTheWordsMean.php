@@ -73,8 +73,7 @@ final class WhatTheWordsMean extends NativeComponent
     /**
      * What somebody has typed into the search box.
      *
-     * Public and handed to the view by name, for
-     * {@see WhatThisServiceSaid::$looking}'s reason.
+     * Public, for {@see WhatThisServiceSaid::$looking}'s reason.
      */
     public string $looking = '';
 
@@ -139,7 +138,7 @@ final class WhatTheWordsMean extends NativeComponent
         $held = $this->held;
         $looking = LookingFor::text($this->looking);
 
-        if (! $held instanceof TheGlossary || new HowTheWordsRead()->this($held, $looking, $this->open, $this->asked)->mayAsk === '') {
+        if (! $held instanceof TheGlossary || new HowTheWordsRead()->this($held, $looking, $this->open, $this->asked)->mayAsk === null) {
             return;
         }
 
@@ -165,7 +164,7 @@ final class WhatTheWordsMean extends NativeComponent
 
     public function render(): View
     {
-        return view('operator::what-the-words-mean', ['looking' => $this->looking]);
+        return view('operator::what-the-words-mean');
     }
 
     /** What came back, asked once and narrowed on every read. */
@@ -217,7 +216,7 @@ final class WhatTheWordsMean extends NativeComponent
         return $this->explaining->wordOn($stack, $session, $word)->either(
             explained: fn(AWord $entry): TheGlossary => $this->held = TheGlossary::of(...[...$held, $entry]),
             unexplained: function () use ($word, $held): TheGlossary {
-                $this->asked = new AWordAskedAbout($word->said(), unexplained: true, met: '');
+                $this->asked = new AWordAskedAbout($word->said(), unexplained: true, met: null);
 
                 return $held;
             },

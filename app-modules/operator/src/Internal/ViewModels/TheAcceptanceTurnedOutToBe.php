@@ -8,19 +8,13 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class TheAcceptanceTurnedOutToBe
 {
     /**
-     * @param HowTheReadingWent    $went      whether the stack answered, or what stood in the way
-     * @param bool                 $isWorking whether the stack is still at it
-     * @param bool                 $hasEnded  whether the stack has no outcome for it any more
+     * @param WhereTheWorkStands    $stands      where the work stands, and whether the stack could be asked at all
      * @param ARefusalAsShown|null $refused   the stack's refusal, where it refused
-     * @param bool                 $answered  whether the stack finished and reported
-     * @param bool                 $accepted  whether that report shows the warning accepted
+     * @param ?bool                $accepted  whether the report the stack finished with shows the warning accepted, where it finished
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking,
-        public bool $hasEnded,
-        public ?ARefusalAsShown $refused,
-        public bool $answered,
-        public bool $accepted,
+        public WhereTheWorkStands $stands,
+        public ?ARefusalAsShown $refused = null,
+        public ?bool $accepted = null,
     ) {}
 }

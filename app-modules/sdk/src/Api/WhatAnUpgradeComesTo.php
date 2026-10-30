@@ -7,17 +7,16 @@ namespace Modules\Sdk\Api;
 use function array_key_exists;
 use function is_array;
 use function is_bool;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\UpgradeEnvelope;
 use Modules\Kernel\Api\OneKindUpgraded;
 use Modules\Kernel\Api\TheUpgrade;
 use Modules\Sdk\Api\Fields\UpgradeField;
+use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\WhatAQualityAnswerCarries;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * Reads the `upgrade` envelope into what upgrading the library comes to, kind by kind.
@@ -86,9 +85,8 @@ final readonly class WhatAnUpgradeComesTo
         }
 
         $found = [];
-        $position = 0;
 
-        foreach ($data[WireField::Media->value] as $row) {
+        foreach (InTheOrderSent::rows($data[WireField::Media->value]) as $position => $row) {
             if (! is_array($row)) {
                 throw QualityIsUnreadable::entry(UpgradeEnvelope::KIND->value, WireField::Media, UpgradeField::MediaType, $position);
             }
@@ -99,7 +97,6 @@ final readonly class WhatAnUpgradeComesTo
                 self::inMedia($row, WireField::SizePerHour, $position),
                 WhatAQualityAnswerCarries::asking($row, UpgradeEnvelope::KIND->value),
             );
-            $position++;
         }
 
         return $found;
@@ -112,10 +109,6 @@ final readonly class WhatAnUpgradeComesTo
      */
     private static function inMedia(array $row, NamesAWireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw QualityIsUnreadable::entry(UpgradeEnvelope::KIND->value, WireField::Media, $field, $position);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, QualityIsUnreadable::entry(UpgradeEnvelope::KIND->value, WireField::Media, $field, $position));
     }
 }

@@ -6,17 +6,17 @@
     <x-design::title>{{ __('stacks.handoff.title') }}</x-design::title>
     <x-design::note>{{ $this->named() }}</x-design::note>
 
-    @if (! $this->going()->went->cameBack())
+    @if (! $this->going()->stands->went->cameBack())
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->going()->went"
+            :went="$this->going()->stands->went"
             :goes="$this->goes()"
             ask-again="show()"
         />
-    @elseif ($this->going()->isWorking)
+    @elseif ($this->going()->stands->isWorking())
         <x-design::standing :said="__('stacks.invitation.working')" tone="working" />
     @elseif ($this->going()->handoff !== null)
-        @if ($this->going()->handoff->heading !== '')
+        @if ($this->going()->handoff->heading !== null)
             <x-design::heading>{{ __($this->going()->handoff->heading) }}</x-design::heading>
         @endif
         @if ($this->going()->handoff->reason !== '')
@@ -26,17 +26,17 @@
         {{-- The address as a code, then the same address to type. It is the
              server's address and nothing more: whoever holds it still signs
              in as somebody. --}}
-        @if ($this->going()->handoff->handsOver)
+        @if ($this->going()->handoff->handing !== null)
             <x-design::card>
-                <x-design::scannable :rows="$this->going()->handoff->squares" :missing="__('stacks.invitation.no_code')" />
-                <x-design::verbatim>{{ $this->going()->handoff->address }}</x-design::verbatim>
-                @if ($this->going()->handoff->caution !== '')
-                    <x-design::note>{{ $this->going()->handoff->caution }}</x-design::note>
+                <x-design::scannable :rows="$this->going()->handoff->handing->squares" :missing="__('stacks.invitation.no_code')" />
+                <x-design::verbatim>{{ $this->going()->handoff->handing->address }}</x-design::verbatim>
+                @if ($this->going()->handoff->handing->caution !== '')
+                    <x-design::note>{{ $this->going()->handoff->handing->caution }}</x-design::note>
                 @endif
             </x-design::card>
 
             <x-design::heading>{{ __('stacks.handoff.on_their_device') }}</x-design::heading>
-            @forelse ($this->going()->handoff->steps as $step)
+            @forelse ($this->going()->handoff->handing->steps as $step)
                 <x-design::body>{{ $step }}</x-design::body>
             @empty
                 {{-- A code is never handed over without a step to take with
@@ -44,17 +44,17 @@
             @endforelse
 
             <x-design::heading>{{ __('stacks.handoff.which_app') }}</x-design::heading>
-            @forelse ($this->going()->handoff->clients as $client)
+            @forelse ($this->going()->handoff->handing->clients as $client)
                 <x-design::card>
                     <x-design::strong>{{ $client->device }}</x-design::strong>
                     <x-design::body>{{ $client->client }}</x-design::body>
                     @if (! $client->openSource)
                         <x-design::note>{{ __('stacks.clients.not_open_source') }}</x-design::note>
                     @endif
-                    @if ($client->link !== '')
+                    @if ($client->link !== null)
                         <x-design::note>{{ __('stacks.handoff.opens_at_this_server', ['client' => $client->client]) }}</x-design::note>
-                        <x-design::verbatim>{{ $client->link }}</x-design::verbatim>
-                        <x-design::scannable :rows="$client->squares" :missing="__('stacks.invitation.no_code')" />
+                        <x-design::verbatim>{{ $client->link->link }}</x-design::verbatim>
+                        <x-design::scannable :rows="$client->link->squares" :missing="__('stacks.invitation.no_code')" />
                     @endif
                 </x-design::card>
             @empty
@@ -98,7 +98,7 @@
     @else
         {{-- Nothing asked yet, or a refusal in the stack's own words: either
              way the next thing to do is to ask. --}}
-        @if ($this->going()->refused !== '')
+        @if ($this->going()->refused !== null)
             <x-operator::emphasis>{{ $this->going()->refused }}</x-operator::emphasis>
         @endif
         <x-operator::offered-action :label="__('stacks.handoff.show')" tap="show()" :offer="$this->offered(ConnectingADevice::HandOver)" />

@@ -123,7 +123,7 @@
          and the family being read where one is. Each is weighed on its own
          screen before anything is sent. --}}
     @forelse ($this->runsOffered() as $run)
-        @if ($run->familySaid !== '')
+        @if ($run->familySaid !== null)
             <x-design::link :label="__($run->said, ['family' => __($run->familySaid)])" :goes="$this->goes()->runningChecks($run->covers)" />
         @else
             <x-design::link :label="__($run->said)" :goes="$this->goes()->runningChecks($run->covers)" />
@@ -187,7 +187,7 @@
                 />
             @endif
 
-            @if ($finding->accepting !== '')
+            @if ($finding->accepting !== null)
                 <x-design::link
                     :label="__('health.choice.accept')"
                     :answers-to="__('health.choice.accept_this', ['title' => $finding->title])"

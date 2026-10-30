@@ -23,8 +23,7 @@ use Modules\Kernel\Api\WhetherItIsOffered;
 final readonly class WhatAStackDeclared
 {
     private function __construct(
-        private ?Capabilities $declared,
-        private bool $tooOldToSay,
+        private Capabilities|WhyNothingWasDeclared $said,
         private Session $askedWith,
         private Instant $at,
     ) {}
@@ -32,19 +31,19 @@ final readonly class WhatAStackDeclared
     /** The stack said what it serves. */
     public static function declared(Capabilities $declared, Session $askedWith, Instant $at): self
     {
-        return new self($declared, tooOldToSay: false, askedWith: $askedWith, at: $at);
+        return new self($declared, $askedWith, $at);
     }
 
     /** The stack has no way to say what it serves, so it is older than the declaration. */
     public static function tooOldToSay(Session $askedWith, Instant $at): self
     {
-        return new self(null, tooOldToSay: true, askedWith: $askedWith, at: $at);
+        return new self(WhyNothingWasDeclared::TooOldToSay, $askedWith, $at);
     }
 
     /** The stack could not be asked, or what it said could not be read. */
     public static function unasked(Session $askedWith, Instant $at): self
     {
-        return new self(null, tooOldToSay: false, askedWith: $askedWith, at: $at);
+        return new self(WhyNothingWasDeclared::Unasked, $askedWith, $at);
     }
 
     /**
@@ -56,11 +55,11 @@ final readonly class WhatAStackDeclared
      */
     public function at(Ability $path): WhetherItIsOffered
     {
-        if ($this->declared instanceof Capabilities) {
-            return $this->declared->whetherItOffers($path);
+        if ($this->said instanceof Capabilities) {
+            return $this->said->whetherItOffers($path);
         }
 
-        return $this->tooOldToSay && ! WhatAnOldStackIsStillAsked::at($path)
+        return $this->said === WhyNothingWasDeclared::TooOldToSay && ! WhatAnOldStackIsStillAsked::at($path)
             ? WhetherItIsOffered::NeedsANewerLemonfiber
             : WhetherItIsOffered::NotKnown;
     }
@@ -81,9 +80,9 @@ final readonly class WhatAStackDeclared
      */
     public function isOlderThanABreakAt(Instant $now): bool
     {
-        $lasts = $this->declared instanceof Capabilities || $this->tooOldToSay
-            ? HowOftenAScreenLooks::WhileOpen
-            : HowOftenAScreenLooks::AfterABreak;
+        $lasts = $this->said === WhyNothingWasDeclared::Unasked
+            ? HowOftenAScreenLooks::AfterABreak
+            : HowOftenAScreenLooks::WhileOpen;
 
         return $now->epochSeconds() - $this->at->epochSeconds() >= $lasts->seconds();
     }

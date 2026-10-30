@@ -199,6 +199,7 @@ it('reads a switch it cannot read as an answer it could not read, never a shorte
     'no switched at all' => [['switched' => null]],
     'a service with no name' => [['switched' => ['stopped' => [' '], 'started' => [], 'kept' => []]]],
     'a stop command with a blank word' => [['switched' => ['stopped' => ['qbittorrent'], 'started' => [], 'kept' => [], 'stop_command' => ['docker', '']]]],
+    'a stop command with a word of only spaces' => [['switched' => ['stopped' => ['qbittorrent'], 'started' => [], 'kept' => [], 'stop_command' => ['docker', '  ']]]],
     'a stop command with no words' => [['switched' => ['stopped' => ['qbittorrent'], 'started' => [], 'kept' => [], 'stop_command' => []]]],
 ]);
 

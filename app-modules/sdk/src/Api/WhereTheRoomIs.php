@@ -34,10 +34,11 @@ use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
 use Modules\Kernel\Api\WhereTheRoomWent;
 use Modules\Sdk\Api\Fields\SpaceField;
+use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
 use function sprintf;
-use function trim;
 
 /**
  * Reads the `space` envelope into what the kernel knows about how full a machine is.
@@ -109,9 +110,8 @@ final readonly class WhereTheRoomIs
     private static function volumes(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::object($data, SpaceField::Volumes->value, SpaceField::Volumes) as $row) {
+        foreach (InTheOrderSent::rows(self::object($data, SpaceField::Volumes->value, SpaceField::Volumes)) as $position => $row) {
             if (! is_array($row)) {
                 throw SpaceIsUnreadable::row(SpaceField::Volumes->value, $position);
             }
@@ -126,7 +126,6 @@ final readonly class WhereTheRoomIs
                 self::level($row, self::path($where, WireField::Level)),
                 self::reading($row, $where),
             );
-            $position++;
         }
 
         return $found;
@@ -192,15 +191,13 @@ final readonly class WhereTheRoomIs
     private static function account(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::object($data, SpaceField::Consumption->value, SpaceField::Consumption) as $row) {
+        foreach (InTheOrderSent::rows(self::object($data, SpaceField::Consumption->value, SpaceField::Consumption)) as $position => $row) {
             if (! is_array($row)) {
                 throw SpaceIsUnreadable::row(SpaceField::Consumption->value, $position);
             }
 
             $found[] = self::line($row, self::entry(SpaceField::Consumption, $position));
-            $position++;
         }
 
         return $found;
@@ -238,15 +235,13 @@ final readonly class WhereTheRoomIs
     private static function downloads(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::object($data, SpaceField::Candidates->value, SpaceField::Candidates) as $row) {
+        foreach (InTheOrderSent::rows(self::object($data, SpaceField::Candidates->value, SpaceField::Candidates)) as $position => $row) {
             if (! is_array($row)) {
                 throw SpaceIsUnreadable::row(SpaceField::Candidates->value, $position);
             }
 
             $found[] = self::download($row, self::entry(SpaceField::Candidates, $position));
-            $position++;
         }
 
         return $found;
@@ -395,7 +390,7 @@ final readonly class WhereTheRoomIs
 
         $said = $data[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw SpaceIsUnreadable::missing($where);
         }
 

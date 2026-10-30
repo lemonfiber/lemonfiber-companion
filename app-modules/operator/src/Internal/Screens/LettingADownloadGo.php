@@ -115,9 +115,7 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
     /** The download this screen is about, by the name the route carries. */
     public function downloadNamed(): string
     {
-        $named = $this->param('service');
-
-        return is_string($named) ? $named : '';
+        return $this->around->aboutOn($this);
     }
 
     /** What stopping seeding would cost, asked once per frame. */
@@ -185,7 +183,7 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
             return;
         }
 
-        if ($this->answered?->isWorking !== true) {
+        if ($this->answered?->stands->isWorking() !== true) {
             $this->asking = null;
         }
 
@@ -221,7 +219,7 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
     /** Whether the stack is working out the offer, or stopping the seeding, right now. */
     public function isWorking(): bool
     {
-        return $this->agreed ? $this->done()->isWorking : $this->answer()->isWorking;
+        return $this->agreed ? $this->done()->stands->isWorking() : $this->answer()->stands->isWorking();
     }
 
     /** Resume the session and ask what stopping seeding the download would cost. */

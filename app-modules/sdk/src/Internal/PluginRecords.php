@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Modules\Sdk\Internal;
 
 use function array_key_exists;
+
+use Closure;
+
 use function is_array;
 use function is_bool;
 use function is_string;
@@ -28,8 +31,6 @@ use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\PluginsAreUnreadable;
 use Modules\Sdk\Api\WireField;
 
-use function trim;
-
 /**
  * One plugin as the `plugins` envelope records it: what it is, what vouches for it, and its recipes.
  *
@@ -48,18 +49,19 @@ use function trim;
 final readonly class PluginRecords
 {
     /**
-     * One plugin.
+     * One plugin, refused in the words of where it sits.
      *
-     * @param array<mixed> $row
+     * @param array<mixed>                                    $row
+     * @param Closure(NamesAWireField): PluginsAreUnreadable $unreadable
      */
-    public static function of(array $row, NamesAWireField $list, int $position): APlugin
+    public static function of(array $row, Closure $unreadable): APlugin
     {
         $plugin = APlugin::named(
-            self::text($row, $list, WireField::Plugin, $position),
-            self::text($row, $list, WireField::Version, $position),
+            Required::text($row, WireField::Plugin, $unreadable(WireField::Plugin)),
+            Required::text($row, WireField::Version, $unreadable(WireField::Version)),
             self::optional($row, WireField::Name),
             self::vouched($row),
-            TheRecipes::these(...self::recipes($row, $position)),
+            TheRecipes::these(...self::recipes($row, $unreadable)),
             ...self::services($row),
         );
 
@@ -67,19 +69,20 @@ final readonly class PluginRecords
     }
 
     /**
-     * One recipe as the record or a reading carries it, with when it runs and every value it asks the operator for.
+     * One recipe as the record or a reading carries it, with when it runs and every value it asks the operator for, refused in the words of where it sits.
      *
-     * @param array<mixed> $recipe
+     * @param array<mixed>                                    $recipe
+     * @param Closure(NamesAWireField): PluginsAreUnreadable $unreadable
      */
-    public static function recipe(array $recipe, int $at): ARecipe
+    public static function recipe(array $recipe, Closure $unreadable): ARecipe
     {
         return ARecipe::of(
-            self::text($recipe, PluginsField::Recipes, WireField::Id, $at),
-            self::text($recipe, PluginsField::Recipes, WireField::Title, $at),
+            Required::text($recipe, WireField::Id, $unreadable(WireField::Id)),
+            Required::text($recipe, WireField::Title, $unreadable(WireField::Title)),
             self::optional($recipe, WireField::Why),
             TheRecipeSteps::these(...self::steps($recipe)),
             TheValuesItCarries::these(...self::pairs($recipe)),
-            self::runs($recipe, $at),
+            self::runs($recipe, $unreadable),
             TheInputsARecipeAsks::these(...self::inputs($recipe)),
         );
     }
@@ -94,15 +97,13 @@ final readonly class PluginRecords
     private static function services(array $row): array
     {
         $found = [];
-        $at = 0;
 
-        foreach (self::rows($row, WireField::Services) as $placed) {
+        foreach (InTheOrderSent::rows(self::rows($row, WireField::Services)) as $at => $placed) {
             if (! is_array($placed)) {
                 throw PluginsAreUnreadable::entry(WireField::Services, WireField::Service, $at);
             }
 
             $found[] = ServiceId::called(self::text($placed, WireField::Services, WireField::Service, $at));
-            $at++;
         }
 
         return $found;
@@ -150,29 +151,28 @@ final readonly class PluginRecords
     /**
      * Every recipe, in the manifest's order; none where the record keeps none.
      *
-     * @param  array<mixed>  $row
+     * @param  array<mixed>                                    $row
+     * @param  Closure(NamesAWireField): PluginsAreUnreadable $unreadable
      * @return list<ARecipe>
      */
-    private static function recipes(array $row, int $position): array
+    private static function recipes(array $row, Closure $unreadable): array
     {
         if (! array_key_exists(PluginsField::Recipes->value, $row)) {
             return [];
         }
 
         if (! is_array($row[PluginsField::Recipes->value])) {
-            throw PluginsAreUnreadable::entry(PluginsField::Recipes, PluginsField::Recipes, $position);
+            throw $unreadable(PluginsField::Recipes);
         }
 
         $found = [];
-        $at = 0;
 
-        foreach ($row[PluginsField::Recipes->value] as $recipe) {
+        foreach (InTheOrderSent::rows($row[PluginsField::Recipes->value]) as $at => $recipe) {
             if (! is_array($recipe)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Recipes, WireField::Id, $at);
             }
 
-            $found[] = self::recipe($recipe, $at);
-            $at++;
+            $found[] = self::recipe($recipe, static fn(NamesAWireField $field): PluginsAreUnreadable => PluginsAreUnreadable::entry(PluginsField::Recipes, $field, $at));
         }
 
         return $found;
@@ -181,9 +181,10 @@ final readonly class PluginRecords
     /**
      * When a recipe runs; one that does not say runs inside an install, as the contract has it.
      *
-     * @param array<mixed> $recipe
+     * @param array<mixed>                                    $recipe
+     * @param Closure(NamesAWireField): PluginsAreUnreadable $unreadable
      */
-    private static function runs(array $recipe, int $at): WhenARecipeRuns
+    private static function runs(array $recipe, Closure $unreadable): WhenARecipeRuns
     {
         if (! array_key_exists(PluginsField::On->value, $recipe)) {
             return WhenARecipeRuns::Install;
@@ -191,7 +192,7 @@ final readonly class PluginRecords
 
         $said = $recipe[PluginsField::On->value];
 
-        return (is_string($said) ? WhenARecipeRuns::tryFrom($said) : null) ?? throw PluginsAreUnreadable::entry(PluginsField::Recipes, PluginsField::On, $at);
+        return (is_string($said) ? WhenARecipeRuns::tryFrom($said) : null) ?? throw $unreadable(PluginsField::On);
     }
 
     /**
@@ -207,9 +208,8 @@ final readonly class PluginRecords
         }
 
         $found = [];
-        $at = 0;
 
-        foreach (self::rows($recipe, PluginsField::Inputs) as $input) {
+        foreach (InTheOrderSent::rows(self::rows($recipe, PluginsField::Inputs)) as $at => $input) {
             if (! is_array($input)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Inputs, WireField::Name, $at);
             }
@@ -218,7 +218,6 @@ final readonly class PluginRecords
                 self::text($input, PluginsField::Inputs, WireField::Name, $at),
                 self::text($input, PluginsField::Inputs, PluginsField::Ask, $at),
             );
-            $at++;
         }
 
         return $found;
@@ -233,9 +232,8 @@ final readonly class PluginRecords
     private static function steps(array $recipe): array
     {
         $found = [];
-        $at = 0;
 
-        foreach (self::rows($recipe, WireField::Steps) as $step) {
+        foreach (InTheOrderSent::rows(self::rows($recipe, WireField::Steps)) as $at => $step) {
             if (! is_array($step)) {
                 throw PluginsAreUnreadable::entry(WireField::Steps, WireField::Id, $at);
             }
@@ -247,7 +245,6 @@ final readonly class PluginRecords
                 self::text($step, WireField::Steps, WireField::Path, $at),
                 self::adapter($step),
             );
-            $at++;
         }
 
         return $found;
@@ -276,9 +273,8 @@ final readonly class PluginRecords
     private static function pairs(array $recipe): array
     {
         $found = [];
-        $at = 0;
 
-        foreach (self::rows($recipe, PluginsField::Pairs) as $pair) {
+        foreach (InTheOrderSent::rows(self::rows($recipe, PluginsField::Pairs)) as $at => $pair) {
             if (! is_array($pair)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Pairs, WireField::Value, $at);
             }
@@ -291,7 +287,6 @@ final readonly class PluginRecords
                 self::optional($pair, PluginsField::Release),
                 self::optional($pair, WireField::From),
             );
-            $at++;
         }
 
         return $found;
@@ -319,11 +314,7 @@ final readonly class PluginRecords
      */
     private static function text(array $row, NamesAWireField $list, NamesAWireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw PluginsAreUnreadable::entry($list, $field, $position);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, PluginsAreUnreadable::entry($list, $field, $position));
     }
 
     /**

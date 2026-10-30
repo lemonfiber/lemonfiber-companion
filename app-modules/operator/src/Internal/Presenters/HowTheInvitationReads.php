@@ -11,9 +11,10 @@ use Modules\Kernel\Api\WhatWasGranted;
 use Modules\Operator\Internal\TheCodesDrawn;
 use Modules\Operator\Internal\ViewModels\AnInvitationAsShown;
 use Modules\Operator\Internal\ViewModels\AnInvitationToHandAsShown;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\TheAddressesToHandOver;
 use Modules\Operator\Internal\ViewModels\TheInvitationTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatWasGrantedAsShown;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * Where asking somebody in has got to, as the fields a screen draws.
@@ -27,43 +28,43 @@ final readonly class HowTheInvitationReads
     /** Nothing has been asked yet. */
     public function notAsked(): TheInvitationTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), '');
+        return $this->without(WhereTheWorkStands::notAsked(), '');
     }
 
     /** What was typed is not something to ask with, and nothing was sent. */
     public function notAskable(string $why): TheInvitationTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), '', notAskable: $why);
+        return $this->without(WhereTheWorkStands::answered(), '', notAskable: $why);
     }
 
     /** This device no longer holds a session for the stack. */
     public function signedOut(string $name): TheInvitationTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::theSessionEnded(), $name);
+        return $this->without(WhereTheWorkStands::signedOut(), $name);
     }
 
     /** The stack is still carrying it out. */
     public function running(string $name): TheInvitationTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), $name, isWorking: true);
+        return $this->without(WhereTheWorkStands::running(), $name);
     }
 
     /** The stack has no outcome for it any more, which is not the same as refusing it. */
     public function ended(string $name): TheInvitationTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), $name, hasEnded: true);
+        return $this->without(WhereTheWorkStands::ended(), $name);
     }
 
     /** The stack refused, and this is its reason. */
     public function refused(string $because, string $name): TheInvitationTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), $name, refusal: $because);
+        return $this->without(WhereTheWorkStands::answered(), $name, refusal: $because);
     }
 
     /** Asking, or asking after it, met this instead. */
     public function met(Obstacle $why, string $name): TheInvitationTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::somethingStopped($why), $name);
+        return $this->without(WhereTheWorkStands::met($why), $name);
     }
 
     /**
@@ -90,9 +91,7 @@ final readonly class HowTheInvitationReads
         }
 
         return new TheInvitationTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             refusal: '',
             askedFor: $toHand->name(),
             notAskable: '',
@@ -122,14 +121,15 @@ final readonly class HowTheInvitationReads
             url: $toHand->address()->url(),
             caution: $toHand->address()->caution(),
             hours: $toHand->hours(),
-            code: new HowACodeReads()->squares($drawn->for($toHand->address())),
-            declines: $toHand->address()->decline(),
-            declineCode: new HowACodeReads()->squares($drawn->for($toHand->address()->declining())),
-            joins: $toHand->address()->join(),
-            joinCode: new HowACodeReads()->squares($drawn->for($toHand->address()->joining())),
             unjoinable: $toHand->address()->whyNotJoinable(),
-            handsOver: true,
             lapses: true,
+            handed: new TheAddressesToHandOver(
+                code: new HowACodeReads()->squares($drawn->for($toHand->address())),
+                declines: $toHand->address()->decline(),
+                declineCode: new HowACodeReads()->squares($drawn->for($toHand->address()->declining())),
+                joins: $toHand->address()->join(),
+                joinCode: new HowACodeReads()->squares($drawn->for($toHand->address()->joining())),
+            ),
         );
     }
 
@@ -141,13 +141,7 @@ final readonly class HowTheInvitationReads
             url: $toHand->address()->url(),
             caution: $toHand->address()->caution(),
             hours: $toHand->hours(),
-            code: [],
-            declines: '',
-            declineCode: [],
-            joins: '',
-            joinCode: [],
             unjoinable: $toHand->address()->whyNotJoinable(),
-            handsOver: false,
             lapses: $lapses,
         );
     }
@@ -173,17 +167,13 @@ final readonly class HowTheInvitationReads
 
     /** A state with no invitation in it. */
     private function without(
-        HowTheReadingWent $went,
+        WhereTheWorkStands $stands,
         string $name,
-        bool $isWorking = false,
-        bool $hasEnded = false,
         string $refusal = '',
         string $notAskable = '',
     ): TheInvitationTurnedOutToBe {
         return new TheInvitationTurnedOutToBe(
-            went: $went,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
+            stands: $stands,
             refusal: $refusal,
             askedFor: $name,
             notAskable: $notAskable,

@@ -38,6 +38,7 @@ use Modules\Kernel\Api\WhichRate;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
+use Modules\Operator\Internal\ViewModels\AClientHoldingAsShown;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -215,10 +216,11 @@ it('opens on the line as it stands, each limit beside the figure it is set again
         ->and($sharing->rehearsed())->toBe([]);
 });
 
-it('says a change asking nothing, or a lift that is not whole minutes, on the screen rather than sending it', function (string $lift, string $said): void {
+it('says a change asking nothing, or a lift that is not whole minutes, on the screen rather than sending it', function (string $lift, string $said, string $down = ''): void {
     $sharing = aStackThatChangesItsLine();
     $screen = theLineChangeScreen($sharing);
     $screen->lift = $lift;
+    $screen->down = $down;
     $screen->rehearse();
 
     expect($screen->howItIsGoing()->notAskable)->toBe($said)
@@ -227,7 +229,17 @@ it('says a change asking nothing, or a lift that is not whole minutes, on the sc
 })->with([
     'nothing' => ['', 'stacks.line_change.nothing_asked'],
     'a lift in words' => ['an hour', 'stacks.line_change.lift.is_minutes'],
+    'only spaces typed' => ['  ', 'stacks.line_change.nothing_asked', '   '],
 ]);
+
+it('sends a lift typed with spaces around it as its minutes', function (): void {
+    $sharing = aStackThatChangesItsLine();
+    $screen = theLineChangeScreen($sharing);
+    $screen->lift = ' 45 ';
+    $screen->rehearse();
+
+    expect(array_map(everyPartSentOfTheLine(...), $sharing->rehearsed()))->toBe([' lift=45']);
+});
 
 it('rehearses every part as typed, follows the work, and draws it labelled as a rehearsal with each client', function (): void {
     $sharing = aStackThatChangesItsLine();
@@ -241,7 +253,7 @@ it('rehearses every part as typed, follows the work, and draws it labelled as a 
     $screen->liftFor('60');
     $screen->rehearse();
 
-    expect($screen->howItIsGoing()->isWorking)->toBeTrue()
+    expect($screen->howItIsGoing()->stands->isWorking())->toBeTrue()
         ->and($screen->awaitsAnOutcome())->toBeTrue()
         ->and(array_map(everyPartSentOfTheLine(...), $sharing->rehearsed()))->toBe(['down=50% up=25% active=07:00-23:00 line=60MiB/6MiB cap=500GiB exceeded=throttle lift=60']);
 
@@ -261,6 +273,8 @@ it('rehearses every part as typed, follows the work, and draws it labelled as a 
             __('stacks.line_change.rate.moving', ['figure' => $overrun->figure, 'unit' => aLineOfTheLineChange($overrun->said)]),
             __('stacks.line_change.silent', ['said' => 'connection refused']),
         )
+        ->and($drawn->said())->toContain(__('stacks.pausing.said.fetching'))
+        ->and(array_map(static fn(AClientHoldingAsShown $client): ?string => $client->pullingSaid, $screen->howItIsGoing()->change->clients ?? []))->toBe(['stacks.pausing.said.fetching', null])
         ->and($drawn->offers())->toContain(__('stacks.line_change.apply'))
         ->and($sharing->carriedOut())->toBe([]);
 });
@@ -274,18 +288,35 @@ it('makes the change the rehearsal was asked with, not what is in the fields whe
     $screen->rehearse();
     $screen->whileItRuns();
     $screen->howItIsGoing();
+    $screen->answer();
+    $readAfterTheRehearsal = $rationing->askings();
     $screen->down = '90%';
     $screen->apply();
 
     expect(array_map(everyPartSentOfTheLine(...), $sharing->carriedOut()))->toBe(['down=50% lift=none'])
-        ->and($screen->howItIsGoing()->isWorking)->toBeTrue();
+        ->and($screen->howItIsGoing()->stands->isWorking())->toBeTrue();
 
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->said())->toContain(__(WhatTheLineRunDid::Applied->saidOnTheScreen()))
         ->and($drawn->offers())->not->toContain(__('stacks.line_change.apply'))
-        ->and($rationing->askings())->toBe(2);
+        ->and([$readAfterTheRehearsal, $rationing->askings()])->toBe([1, 2]);
+});
+
+it('forgets a rehearsal once something else is rehearsed, so a yes cannot carry out the one before', function (): void {
+    $sharing = aStackThatChangesItsLine();
+    $screen = theLineChangeScreen($sharing);
+    $screen->down = '50%';
+    $screen->rehearse();
+    $screen->whileItRuns();
+    $screen->howItIsGoing();
+    $screen->lift = 'an hour';
+    $screen->rehearse();
+    $screen->apply();
+
+    expect($screen->howItIsGoing()->notAskable)->toBe('stacks.line_change.lift.is_minutes')
+        ->and($sharing->carriedOut())->toBe([]);
 });
 
 it('sends no yes where nothing was rehearsed, or where the last answer was not a rehearsal', function (): void {
@@ -349,6 +380,7 @@ it('marks the chips chosen, and leaves a part as it is on its own chip', functio
     expect(theChipsChosen($screen->exceededChoice()->offered))->toBe(['pause'])
         ->and($screen->exceededChoice()->said)->toBe('stacks.line_change.exceeded.pause')
         ->and(theChipsChosen($screen->liftChoice()))->toBe(['240'])
+        ->and(array_map(static fn(AChoiceOfASettingAsShown $chip): string => $chip->word, $screen->liftChoice()))->toBe(['15', '60', '240', ''])
         ->and($screen->lift)->toBe('240');
 
     $screen->exceededIs('explode');
@@ -365,7 +397,7 @@ it('a refused credential signs this device out and lets the session go', functio
     $screen->down = '50%';
     $screen->rehearse();
 
-    expect($screen->howItIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseLineIsChanged()->id()))->toBeFalse();
 });
 
@@ -374,8 +406,8 @@ it('a stack that is not answering leaves the session, and says what stood in the
     $screen->down = '50%';
     $screen->rehearse();
 
-    expect($screen->howItIsGoing()->went->cameBack())->toBeFalse()
-        ->and($screen->howItIsGoing()->went->isSignedIn)->toBeTrue()
+    expect($screen->howItIsGoing()->stands->went->cameBack())->toBeFalse()
+        ->and($screen->howItIsGoing()->stands->went->isSignedIn)->toBeTrue()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toBe([]);
 });
 
@@ -386,7 +418,7 @@ it('a session that has ended asks nothing of the stack', function (): void {
     $screen->rehearse();
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
-        ->and($screen->howItIsGoing()->went->isSignedIn)->toBeFalse()
+        ->and($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($sharing->rehearsed())->toBe([]);
 });
 

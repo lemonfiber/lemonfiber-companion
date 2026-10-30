@@ -92,14 +92,14 @@
     <x-design::body>{{ __('stacks.forget.untouched') }}</x-design::body>
     <x-design::body>{{ __('stacks.forget.ends_this_session') }}</x-design::body>
 
-    @if ($this->howForgettingIsGoing()->went->cameBack())
-        @if ($this->howForgettingIsGoing()->isWorking)
+    @if ($this->howForgettingIsGoing()->stands->went->cameBack())
+        @if ($this->howForgettingIsGoing()->stands->isWorking())
             <x-design::standing :said="__('stacks.forget.working')" tone="working" />
         @elseif ($this->howForgettingIsGoing()->theWayInWent)
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.forget.way_in_went') }}</x-design::strong>
             </x-design::notice>
-        @elseif ($this->howForgettingIsGoing()->hasEnded)
+        @elseif ($this->howForgettingIsGoing()->stands->hasEnded())
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.forget.no_outcome') }}</x-design::strong>
             </x-design::notice>
@@ -129,41 +129,41 @@
             @if ($this->shownToForget !== null)
                 <x-operator::offered-action :label="__('stacks.forget.forget_it')" tap="forgetEverything()" :offer="$this->offered(ForgettingWhatIsKept::Forget)" />
             @endif
-        @elseif ($this->howForgettingIsGoing()->isDone)
+        @elseif ($this->howForgettingIsGoing()->removed !== null)
             <x-design::notice>
                 <x-design::strong>{{ __('stacks.forget.done') }}</x-design::strong>
             </x-design::notice>
             <x-design::section :label="__('stacks.forget.gone')">
-                @forelse ($this->howForgettingIsGoing()->gone as $place)
+                @forelse ($this->howForgettingIsGoing()->removed->gone as $place)
                     <x-design::row :headline="$place" />
                 @empty
                     <x-design::row :headline="__('stacks.forget.nothing_gone')" />
                 @endforelse
             </x-design::section>
-            @forelse ($this->howForgettingIsGoing()->left as $one)
+            @forelse ($this->howForgettingIsGoing()->removed->left as $one)
                 <x-design::row :headline="__('stacks.forget.left', ['where' => $one->where])" :supporting="$one->why" />
             @empty
                 {{-- Nothing: every place went. --}}
             @endforelse
         @endif
 
-        @if (! $this->howForgettingIsGoing()->isWorking && $this->shownToForget === null && ! $this->forgettingAgreed)
+        @if (! $this->howForgettingIsGoing()->stands->isWorking() && $this->shownToForget === null && ! $this->forgettingAgreed)
             <x-operator::offered-action :label="__('stacks.forget.what_would_go')" tap="whatWouldGo()" tone="tonal" :offer="$this->offered(ForgettingWhatIsKept::Forget)" />
         @endif
     @else
         <x-design::notice tone="unknown">
             <x-design::strong>{{ __('stacks.forget.unread') }}</x-design::strong>
-            @if ($this->howForgettingIsGoing()->went->isSignedIn)
-                <x-design::body>{{ __($this->howForgettingIsGoing()->went->met, $this->howForgettingIsGoing()->went->filling()) }}</x-design::body>
-                <x-design::body>{{ __($this->howForgettingIsGoing()->went->remedy, $this->howForgettingIsGoing()->went->filling()) }}</x-design::body>
+            @if ($this->howForgettingIsGoing()->stands->went->isSignedIn)
+                <x-design::body>{{ __($this->howForgettingIsGoing()->stands->went->met, $this->howForgettingIsGoing()->stands->went->filling()) }}</x-design::body>
+                <x-design::body>{{ __($this->howForgettingIsGoing()->stands->went->remedy, $this->howForgettingIsGoing()->stands->went->filling()) }}</x-design::body>
             @else
                 <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
             @endif
         </x-design::notice>
-        @if ($this->howForgettingIsGoing()->went->isPutRightInTheAppsSettings())
+        @if ($this->howForgettingIsGoing()->stands->went->isPutRightInTheAppsSettings())
             <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
         @endif
-        @unless ($this->howForgettingIsGoing()->went->isSignedIn)
+        @unless ($this->howForgettingIsGoing()->stands->went->isSignedIn)
             <x-design::action :label="__('connection.sign_in')" :goes="$this->goes()->to(AStacksScreen::SignIn)" />
         @endunless
     @endif

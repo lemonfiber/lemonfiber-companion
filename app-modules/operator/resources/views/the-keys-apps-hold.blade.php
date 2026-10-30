@@ -106,7 +106,7 @@
                 <x-design::note>{{ __('stacks.mint.with_face_or_fingerprint') }}</x-design::note>
             @endif
 
-            @if ($this->minted?->said !== null && $this->minted->said !== '')
+            @if ($this->minted?->said !== null)
                 <x-design::notice>
                     <x-design::body>{{ __($this->minted->said) }}</x-design::body>
                 </x-design::notice>

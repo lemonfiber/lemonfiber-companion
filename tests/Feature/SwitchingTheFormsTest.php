@@ -170,7 +170,7 @@ it('says the session ended where it went while the switch was rehearsed', functi
     $keychain->forget(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id());
     $screen->whileItSwitches();
 
-    expect($screen->howTheSwitchIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($screen->howTheSwitchIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->awaitsAnOutcome())->toBeFalse();
 });
 
@@ -183,4 +183,38 @@ it('draws a refusal in the stack\'s own words, an outcome the stack no longer ha
     expect(WhatTheDeviceWouldDraw::by($refused)->said())->toContain(__('stacks.switch.refused'), 'this stack declares no form called archive')
         ->and(WhatTheDeviceWouldDraw::by($ended)->said())->toContain(__('stacks.switch.no_outcome'))
         ->and(WhatTheDeviceWouldDraw::by($met)->said())->toContain(__('stacks.switch.unread'), __(KindOfObstacle::StackDidNotAnswer->said()));
+});
+
+it('reads what the stack runs again once a switch is made, and not after a rehearsal', function (): void {
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull());
+    $screen = theScreenThatSwitches(aStackThatSwitchesItsForms(), $supervising);
+    $screen->toggleForm('library');
+    $screen->rehearseTheSwitch();
+    $screen->whileItSwitches();
+    $screen->howTheSwitchIsGoing();
+    WhatTheDeviceWouldDraw::by($screen);
+    $readAfterTheRehearsal = $supervising->askings();
+    $screen->makeTheSwitch();
+    $screen->whileItSwitches();
+    $screen->howTheSwitchIsGoing();
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect($supervising->askings())->toBeGreaterThan($readAfterTheRehearsal);
+});
+
+it('makes a rehearsed switch once however often the yes is tapped, and never one something else replaced', function (): void {
+    $switching = aStackThatSwitchesItsForms();
+    $screen = aRehearsedSwitchToTheLibrary($switching);
+    $screen->makeTheSwitch();
+    $screen->makeTheSwitch();
+
+    $replaced = aStackThatSwitchesItsForms();
+    $other = aRehearsedSwitchToTheLibrary($replaced);
+    $other->toggleForm('library');
+    $other->rehearseTheSwitch();
+    $other->makeTheSwitch();
+
+    expect($switching->carriedOut())->toHaveCount(1)
+        ->and($replaced->carriedOut())->toBe([])
+        ->and($other->howTheSwitchIsGoing()->notAskable)->toBe('stacks.switch.none_chosen');
 });

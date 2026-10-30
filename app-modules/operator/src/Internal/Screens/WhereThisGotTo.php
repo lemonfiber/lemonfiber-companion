@@ -6,9 +6,6 @@ namespace Modules\Operator\Internal\Screens;
 
 use Closure;
 use Illuminate\View\View;
-
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\ARefusalInItsWords;
@@ -35,6 +32,7 @@ use Modules\Operator\Internal\Presenters\HowATraceReads;
 use Modules\Operator\Internal\Presenters\HowTheRunReads;
 use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
+use Modules\Operator\Internal\ViewModels\ASearchAsOffered;
 use Modules\Operator\Internal\ViewModels\TheRunTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheTraceTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksAgain;
@@ -141,27 +139,25 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
      */
     public function search(): void
     {
-        $term = $this->term();
-
-        if ($term === '' || $this->answer()->searchSpends === '' || $this->howTheSearchIsGoing()->isWorking) {
+        if (! $this->answer()->search instanceof ASearchAsOffered || $this->howTheSearchIsGoing()->stands->isWorking()) {
             return;
         }
 
-        $following = $this->following($term);
+        $following = $this->following($this->term());
         $this->going = $this->searched(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->indexers->search($stack, $session, $following));
     }
 
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->howTheSearchIsGoing()->isWorking) {
+        if ($this->howTheSearchIsGoing()->stands->isWorking()) {
             $this->going = null;
         }
     }
 
     public function awaitsAnOutcome(): bool
     {
-        return $this->howTheSearchIsGoing()->isWorking;
+        return $this->howTheSearchIsGoing()->stands->isWorking();
     }
 
     public function howTheSearchIsGoing(): TheRunTurnedOutToBe
@@ -177,7 +173,7 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
     {
         $this->aFrameBegins();
 
-        return view('operator::where-this-got-to', ['looking' => $this->looking]);
+        return view('operator::where-this-got-to');
     }
 
     /** What came back, asked once per frame; a search that came back replaces it, so the search is asked after first. */
@@ -227,9 +223,7 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
             return $this->following;
         }
 
-        $named = $this->param('service');
-
-        return is_string($named) ? trim($named) : '';
+        return trim($this->around->aboutOn($this));
     }
 
     /** What is followed, narrowed to the season the screen holds where it holds one. */

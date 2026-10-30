@@ -21,8 +21,6 @@ use Modules\Sdk\Api\HouseholdIsUnreadable;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\WireField;
 
-use function trim;
-
 /**
  * One row of a member's request list, read into what a screen can show.
  *
@@ -89,7 +87,7 @@ final readonly class WhatWasAskedFor
     private static function notYetNamed(array $row, string $by, int $position, int $number, HowARequestStands $standing): Wanted
     {
         $media = self::under($row, WireField::Media);
-        $kind = is_string($media) ? KindOfRequest::tryFrom(trim($media)) : null;
+        $kind = is_string($media) ? KindOfRequest::tryFrom($media) : null;
 
         if (! $kind instanceof KindOfRequest) {
             $kind = KindOfRequest::Something;
@@ -163,7 +161,7 @@ final readonly class WhatWasAskedFor
         // the contract left.
         $reason = self::under($refused, WireField::Reason);
 
-        if (! is_string($reason) || trim($reason) === '') {
+        if (! Required::isText($reason)) {
             throw HouseholdIsUnreadable::refusal($by, $position);
         }
 
@@ -172,7 +170,7 @@ final readonly class WhatWasAskedFor
         // A refusal with no moment is ordinary — the stack records one where it
         // has one — so this is the one absence here with an answer rather than
         // a refusal, which is `Size::unknown()`'s argument on the row above.
-        if (! is_string($at) || trim($at) === '') {
+        if (! Required::isText($at)) {
             return TurnedDown::because($reason);
         }
 

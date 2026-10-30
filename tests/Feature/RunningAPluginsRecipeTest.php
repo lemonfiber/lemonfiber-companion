@@ -145,7 +145,8 @@ it('runs carrying back the offer its rehearsal named and exactly the values appr
     $screen = theRunRehearsed($extending);
     $screen->approve(0);
     $screen->agree();
-    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $said = $drawn->said();
 
     expect($extending->asked())->toBe(['list', 'rehearse running:tdarr:resync', 'after:j-1', sprintf('run:tdarr:resync:%s:%s', APluginAsItArrives::AGREEMENT, ARecipeRunAsItArrives::APPROVAL)])
         ->and($said)->toContain(
@@ -153,7 +154,8 @@ it('runs carrying back the offer its rehearsal named and exactly the values appr
             aLineAboutRunning('plugins.run.step', ['step' => 'nudge', 'to' => 'plex.tv']),
             aLineAboutRunning('plugins.run.came.answered'),
         )
-        ->and($said)->not->toContain(aLineAboutRunning('plugins.run.reading', ['title' => 'Ask Plex to look again']));
+        ->and($said)->not->toContain(aLineAboutRunning('plugins.run.reading', ['title' => 'Ask Plex to look again']))
+        ->and($drawn->offers())->not->toContain(aLineAboutRunning('plugins.run.run'));
 });
 
 it('runs approving nothing where the operator approved nothing', function (): void {

@@ -163,14 +163,16 @@ it('says no plugins are installed where the record holds none, and that the reco
 
     expect($none->said())->toContain(aPluginsLine('plugins.none'))
         ->and($unread->said())->not->toContain(aPluginsLine('plugins.none'))
-        ->and($unread->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
+        ->and($unread->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
+        ->and($unread->said())->not->toContain(aPluginsLine('plugins.unread_after_yes'));
 });
 
-it('asks for a source in one field, with its three shapes under it, and asks nothing for a blank one', function (): void {
+it('asks for a source in one field, with its three shapes under it, and asks nothing for a blank one or before one is typed', function (): void {
     $extending = aStackWithTdarr();
     $screen = thePluginsScreen($extending);
     $screen->installOne();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $screen->rehearse();
     $screen->source = '   ';
     $screen->rehearse();
 
@@ -491,7 +493,7 @@ it('says the session has ended where this phone holds none, and asks nothing', f
     $screen = new WhatExtendsThisStack($extending, AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), ACameraInMemory::reading('tdarr'));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
-    expect($screen->answer()->went->cameBack())->toBeFalse()
+    expect($screen->answer()->stands->went->cameBack())->toBeFalse()
         ->and($screen->awaitsAnOutcome())->toBeFalse()
         ->and($extending->asked())->toBe([]);
 });
@@ -506,6 +508,68 @@ it('approves nothing before a rehearsal, and asks what is installed again when a
 
     expect($screen->approved)->toBe([])
         ->and($extending->asked())->toBe(['list', 'list']);
+});
+
+it('offers the source field again where installing one begins with a rehearsal on the screen', function (): void {
+    $screen = tdarrRehearsed(aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theReading()),
+    ));
+    $screen->installOne();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->offers())->toContain(aPluginsLine('plugins.rehearse'))
+        ->and($drawn->offers())->not->toContain(aPluginsLine('plugins.install'));
+});
+
+it('rehearses afresh, every approval let go of, where a source is rehearsed again', function (): void {
+    $extending = aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theReading()),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theReading()),
+        HowExtendingItIsGoing::underway(Job::named('j-2')),
+    );
+    $screen = tdarrRehearsed($extending);
+    $screen->approve(0);
+    $screen->rehearse();
+    $screen->answer();
+    $screen->agree();
+
+    expect($extending->asked())->toBe(['rehearse:tdarr', 'after:j-1', 'rehearse:tdarr', sprintf('install:tdarr:%s:', APluginAsItArrives::AGREEMENT)]);
+});
+
+it('takes an approval back where it is given twice, and sends every one still given', function (): void {
+    $taken = tdarrRehearsed(aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theGuardedReading()),
+    ));
+    $taken->approve(0);
+    $taken->approve(0);
+    $extending = aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theGuardedReading()),
+        HowExtendingItIsGoing::underway(Job::named('j-2')),
+    );
+    $both = tdarrRehearsed($extending);
+    $both->approve(0);
+    $both->approve(1);
+    $both->agree();
+
+    expect($taken->approved)->toBe([])
+        ->and($extending->asked())->toContain(sprintf('install:tdarr:%s:%s,%s', APluginAsItArrives::AGREEMENT, APluginAsItArrives::APPROVAL, APluginAsItArrives::SHAPE_APPROVAL));
+});
+
+it('asks what is installed again, and lets go of the rehearsal, when asked again with no work followed', function (): void {
+    $extending = aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theReading()),
+    );
+    $screen = tdarrRehearsed($extending);
+    $screen->again();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($extending->asked())->toBe(['rehearse:tdarr', 'after:j-1', 'list'])
+        ->and($drawn->offers())->not->toContain(aPluginsLine('plugins.install'));
 });
 
 /** The screen with the listing read, so a row can be chosen. */
@@ -534,6 +598,20 @@ it('offers to update and to remove each plugin by its name, and says where one c
         ->and($cannot->offers())->toContain(aPluginsLine('plugins.remove_it', ['name' => 'Tdarr']))
         ->and($cannot->said())->toContain(aPluginsLine('plugins.no_source_to_update'))
         ->and($extending->asked())->toBe(['list']);
+});
+
+it('asks about the plugin in the row named, and nothing before anything is listed', function (): void {
+    $vouched = WhatVouchesForAPlugin::recorded('', '', '', reviewed: false, upstream: '', licence: '');
+    $listing = ThePlugins::listed(TheInstalledPlugins::these(APlugin::named('tdarr', '2.1.0', 'Tdarr', $vouched, TheRecipes::these()), APlugin::named('unmanic', '1.0.0', 'Unmanic', $vouched, TheRecipes::these())), ThePluginSources::these(), TheAnswersOutOfContract::these());
+    $extending = AStackThatExtendsItself::listing($listing, HowExtendingItIsGoing::underway(Job::named('j-1')));
+    $unlisted = thePluginsScreen($extending);
+    $unlisted->actOnTheRow('remove', 0);
+    $asked = $extending->asked();
+    $unlisted->answer();
+    $unlisted->actOnTheRow('remove', 1);
+
+    expect($asked)->toBe([])
+        ->and($extending->asked())->toBe(['list', 'rehearse removal:unmanic']);
 });
 
 it('rehearses an update and draws it as a rehearsal: from and to, what stops, what comes off, and the new version', function (): void {
@@ -606,6 +684,53 @@ it('rehearses a removal with what it would leave unfilled, and says one whose re
         ->and($said)->not->toContain(aPluginsLine('plugins.removed_it'))
         ->and($said)->toContain('What the service wrote stays for the new version')
         ->and($said)->not->toContain(aPluginsLine('plugins.rehearsal'));
+});
+
+it('sends the yes once, though the answer to it names an agreement again', function (): void {
+    $extending = aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theRemovalReading()),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theRemovalReading()),
+    );
+    $screen = thePluginsListed($extending);
+    $screen->actOnTheRow('remove', 0);
+    $screen->whileItRuns();
+    $screen->answer();
+    $screen->agree();
+    $screen->agree();
+
+    expect($extending->asked())->toBe(['list', 'rehearse removal:tdarr', 'after:j-1', sprintf('remove:tdarr:%s', APluginAsItArrives::AGREEMENT)]);
+});
+
+it('offers no yes to an answer that names no agreement', function (): void {
+    $extending = aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theListing()),
+    );
+    $screen = thePluginsListed($extending);
+    $screen->actOnTheRow('remove', 0);
+    $screen->whileItRuns();
+    $screen->answer();
+    $screen->agree();
+
+    expect($extending->asked())->toBe(['list', 'rehearse removal:tdarr', 'after:j-1']);
+});
+
+it('rehearses the next act on a row as a rehearsal, after a yes to the last one came back', function (): void {
+    $extending = aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theRemovalReading()),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theRemoval()),
+        HowExtendingItIsGoing::underway(Job::named('j-2')),
+    );
+    $screen = thePluginsListed($extending);
+    $screen->actOnTheRow('remove', 0);
+    $screen->whileItRuns();
+    $screen->answer();
+    $screen->agree();
+    $screen->actOnTheRow('update', 0);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aPluginsLine('plugins.working.rehearse'));
 });
 
 it('says removed only where the record was written, with what stayed on the machine and why', function (): void {

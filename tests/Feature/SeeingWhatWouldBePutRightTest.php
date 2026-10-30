@@ -144,10 +144,10 @@ it('asking costs a round trip, then a read of the handle', function (): void {
 it('work still going is a state of the screen, not a spinner', function (): void {
     $screen = theRepairsScreen(AStackThatWouldMend::stillWorkingItOut());
 
-    expect($screen->offer()->isWorking)->toBeTrue()
-        ->and($screen->offer()->hasEnded)->toBeFalse()
+    expect($screen->offer()->stands->isWorking())->toBeTrue()
+        ->and($screen->offer()->stands->hasEnded())->toBeFalse()
         ->and(count($screen->offer()->repairs))->toBe(0)
-        ->and($screen->offer()->went->met)->toBe('');
+        ->and($screen->offer()->stands->went->met)->toBe('');
 });
 
 it('asking again while the work runs reads the same job, and starts none', function (): void {
@@ -189,9 +189,9 @@ it('a job the stack forgot is its own state, and asking again starts a new one',
     $mending = AStackThatWouldMend::thatForgotTheJob();
     $screen = theRepairsScreen($mending);
 
-    expect($screen->offer()->hasEnded)->toBeTrue()
-        ->and($screen->offer()->isWorking)->toBeFalse()
-        ->and($screen->offer()->went->met)->toBe('');
+    expect($screen->offer()->stands->hasEnded())->toBeTrue()
+        ->and($screen->offer()->stands->isWorking())->toBeFalse()
+        ->and($screen->offer()->stands->went->met)->toBe('');
 
     $screen->again();
     $screen->offer();
@@ -206,19 +206,19 @@ it('a stack with no repair to offer is not a job that ended', function (): void 
     $ended = theRepairsScreen(AStackThatWouldMend::thatForgotTheJob());
 
     expect(count($nothing->offer()->repairs))->toBe(0)
-        ->and($nothing->offer()->hasEnded)->toBeFalse()
+        ->and($nothing->offer()->stands->hasEnded())->toBeFalse()
         ->and(count($ended->offer()->repairs))->toBe(0)
-        ->and($ended->offer()->hasEnded)->toBeTrue();
+        ->and($ended->offer()->stands->hasEnded())->toBeTrue();
 });
 
 it('a stack that could not be asked says so, and says what to do', function (): void {
     $screen = theRepairsScreen(AStackThatWouldMend::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
-    expect($screen->offer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($screen->offer()->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
+    expect($screen->offer()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($screen->offer()->stands->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
         ->and(count($screen->offer()->repairs))->toBe(0)
-        ->and($screen->offer()->isWorking)->toBeFalse()
-        ->and($screen->offer()->hasEnded)->toBeFalse();
+        ->and($screen->offer()->stands->isWorking())->toBeFalse()
+        ->and($screen->offer()->stands->hasEnded())->toBeFalse();
 });
 
 it('a stack that took the question on and then went away is an obstacle too', function (): void {
@@ -228,7 +228,7 @@ it('a stack that took the question on and then went away is an obstacle too', fu
     $mending = AStackThatWouldMend::thatWentAwayAfterwards(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = theRepairsScreen($mending);
 
-    expect($screen->offer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+    expect($screen->offer()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($mending->askings())->toBe(1)
         ->and($mending->readings())->toBe(1);
 });
@@ -467,13 +467,13 @@ it('a finished run says what became of each repair, and what one left', function
     $screen->agreeTo('storage.one-filesystem');
     $done = $screen->done();
 
-    expect($done->changed)->toBe(1)
-        ->and($done->outcomes[0]->became)->toBe(WhatBecameOfIt::Fixed->saidOnTheScreen())
-        ->and($done->outcomes[0]->left)->toBe('')
-        ->and($done->outcomes[0]->worthAnotherGo)->toBeFalse()
-        ->and($done->outcomes[1]->became)->toBe(WhatBecameOfIt::Stopped->saidOnTheScreen())
-        ->and($done->outcomes[1]->left)->toBe('Half of the library on the old disk')
-        ->and($done->outcomes[1]->worthAnotherGo)->toBeTrue();
+    expect($done->came?->changed)->toBe(1)
+        ->and($done->came?->outcomes[0]->became)->toBe(WhatBecameOfIt::Fixed->saidOnTheScreen())
+        ->and($done->came?->outcomes[0]->left)->toBe('')
+        ->and($done->came?->outcomes[0]->worthAnotherGo)->toBeFalse()
+        ->and($done->came?->outcomes[1]->became)->toBe(WhatBecameOfIt::Stopped->saidOnTheScreen())
+        ->and($done->came?->outcomes[1]->left)->toBe('Half of the library on the old disk')
+        ->and($done->came?->outcomes[1]->worthAnotherGo)->toBeTrue();
 });
 
 it('an outcome still carries what the repair said it would do', function (): void {
@@ -485,11 +485,10 @@ it('an outcome still carries what the repair said it would do', function (): voi
 
     $screen->offer();
     $screen->agreeTo('storage.one-filesystem');
-    $first = $screen->done()->outcomes[0];
+    $first = $screen->done()->came?->outcomes[0];
 
-    expect($first->repair->does)->toBe('Move the library onto the larger disk')
-        ->and($first->repair->effects)->toBe(['Downloads pause while it moves'])
-        ->and($first->repair->undoing)->toBe(Undoing::Possible->saidOnTheScreen());
+    expect([$first?->repair->does, $first?->repair->effects, $first?->repair->undoing])
+        ->toBe(['Move the library onto the larger disk', ['Downloads pause while it moves'], Undoing::Possible->saidOnTheScreen()]);
 });
 
 it('asking again after agreeing reads, and never agrees twice', function (): void {
@@ -534,9 +533,9 @@ it('nothing was agreed to, so there is nothing that was done', function (): void
     // template branches on `wasAgreedTo()` rather than on this.
     $screen = theRepairsScreen(AStackThatWouldMend::offering(aListingWorthReading()));
 
-    expect($screen->done()->hasEnded)->toBeTrue()
-        ->and($screen->done()->isWorking)->toBeFalse()
-        ->and($screen->done()->outcomes)->toBe([]);
+    expect($screen->done()->stands->hasEnded())->toBeTrue()
+        ->and($screen->done()->stands->isWorking())->toBeFalse()
+        ->and($screen->done()->came)->toBeNull();
 });
 
 it('a stack that goes away between agreeing and reading says what was met', function (): void {
@@ -551,9 +550,9 @@ it('a stack that goes away between agreeing and reading says what was met', func
     $screen->offer();
     $screen->agreeTo('storage.one-filesystem');
 
-    expect($screen->done()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($screen->done()->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
-        ->and($screen->done()->outcomes)->toBe([]);
+    expect($screen->done()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($screen->done()->stands->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
+        ->and($screen->done()->came)->toBeNull();
 });
 
 it('a run still being carried out is its own state', function (): void {
@@ -565,9 +564,9 @@ it('a run still being carried out is its own state', function (): void {
     $screen->offer();
     $screen->agreeTo('storage.one-filesystem');
 
-    expect($screen->done()->isWorking)->toBeTrue()
-        ->and($screen->done()->hasEnded)->toBeFalse()
-        ->and($screen->done()->went->met)->toBe('');
+    expect($screen->done()->stands->isWorking())->toBeTrue()
+        ->and($screen->done()->stands->hasEnded())->toBeFalse()
+        ->and($screen->done()->stands->went->met)->toBe('');
 });
 
 it('what was done is held, so reading it twice asks once', function (): void {
@@ -795,9 +794,9 @@ it('says a repair the stack left alone because the area was declared unmanaged c
     $done = $screen->done();
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect($done->changed)->toBe(0)
-        ->and($done->outcomes[0]->became)->toBe(WhatBecameOfIt::Unmanaged->saidOnTheScreen())
-        ->and($done->outcomes[0]->worthAnotherGo)->toBeFalse()
+    expect($done->came?->changed)->toBe(0)
+        ->and($done->came?->outcomes[0]->became)->toBe(WhatBecameOfIt::Unmanaged->saidOnTheScreen())
+        ->and($done->came?->outcomes[0]->worthAnotherGo)->toBeFalse()
         ->and($drawn)->toContain(__(WhatBecameOfIt::Unmanaged->saidOnTheScreen()))
         ->and($drawn)->not->toContain(__(WhatBecameOfIt::WouldOverwrite->saidOnTheScreen()))
         ->and($drawn)->not->toContain(__(WhatBecameOfIt::FixFailed->saidOnTheScreen()));

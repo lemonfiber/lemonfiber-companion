@@ -36,6 +36,7 @@ it('refuses a blank lemonfiber or stack version, naming which', function (string
 })->with([
     'lemonfiber' => [' ', '0.9.0', 'lemonfiber'],
     'stack' => ['0.16.0', '', 'stack'],
+    'a stack version of only spaces' => ['0.16.0', '  ', 'stack'],
 ]);
 
 it('hands the running release and its notes to one arm, and a stack naming none to the other', function (): void {

@@ -1,20 +1,20 @@
 @use('Modules\Kernel\Api\ExtendingIt')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
-@if ($this->answer()->went->cameBack())
+@if ($this->answer()->stands->went->cameBack())
 <x-operator::content>
     <x-operator::heading>{{ __('plugins.heading') }}</x-operator::heading>
 
-@if ($this->answer()->isWorking)
-    <x-design::body>{{ __($this->answer()->workingSaid) }}</x-design::body>
+@if ($this->answer()->stands->isWorking())
+    <x-design::body>{{ __($this->answer()->working) }}</x-design::body>
 @elseif ($this->answer()->refused !== null)
     {{-- The stack's answer, in its words: a source holding no plugin, a
          plugin this build refuses, a value left unapproved or an offer that
          moved, and each service the yes did not allow what it needs. Nothing
          is offered to do beneath it. --}}
-    <x-operator::emphasis>{{ __($this->answer()->refusedSaid) }}</x-operator::emphasis>
-    <x-operator::refused-in-its-words :refused="$this->answer()->refused" />
-    @forelse ($this->answer()->unapproved as $shape)
+    <x-operator::emphasis>{{ __($this->answer()->refused->said) }}</x-operator::emphasis>
+    <x-operator::refused-in-its-words :refused="$this->answer()->refused->words" />
+    @forelse ($this->answer()->refused->unapproved as $shape)
         <x-operator::entry>
             <x-operator::emphasis>{{ __('plugins.shape_unapproved', ['service' => $shape->service]) }}</x-operator::emphasis>
             <x-design::body>{{ __($shape->neededFor) }}</x-design::body>
@@ -23,12 +23,12 @@
         {{-- Every service taking a shape was allowed it, or none takes one. --}}
     @endforelse
     <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
-@elseif ($this->answer()->hasEnded)
+@elseif ($this->answer()->stands->hasEnded())
     {{-- Not a failure and not a refusal: the stack has no outcome for the
          work any more, which is not the same as it not having happened. --}}
     <x-operator::emphasis>{{ __('plugins.no_outcome') }}</x-operator::emphasis>
     <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
-@elseif ($this->answer()->typing)
+@elseif (! $this->answer()->stands->wasAsked())
     <native:outlined-text-input native:model="source" label="{{ __('plugins.where_from') }}" supporting="{{ __('plugins.source_is') }}" />
     @if ($this->nothingWasScanned())
         <x-design::notice tone="unknown">
@@ -82,7 +82,7 @@
     @if ($this->answer()->update->stopped !== '')
         <x-operator::emphasis>{{ __('plugins.stopped', ['why' => $this->answer()->update->stopped]) }}</x-operator::emphasis>
     @endif
-    @if ($this->answer()->update->restoredSaid !== '')
+    @if ($this->answer()->update->restoredSaid !== null)
         {{-- Where the new version did not hold: which version is on the
              machine now, and how far putting it back got. --}}
         <x-operator::emphasis>{{ __($this->answer()->update->restoredSaid, ['version' => $this->answer()->update->restoredVersion]) }}</x-operator::emphasis>
@@ -160,7 +160,7 @@
     @if ($this->answer()->run->isAReading)
         <x-operator::the-recipe :recipe="$this->answer()->run->recipe" :agreeable="$this->answer()->run->agreeable" />
     @else
-        @if ($this->answer()->run->why !== '')
+        @if ($this->answer()->run->why !== null && $this->answer()->run->why !== '')
             <x-design::body>{{ $this->answer()->run->why }}</x-design::body>
         @endif
         {{-- Every step in the recipe's order with what it came to, a step
@@ -236,14 +236,14 @@
     {{-- Reading what is installed, or following the work, met something.
          After a yes, whether it happened could not be read, and that is said
          first. --}}
-    @if ($this->answer()->afterTheYes)
+    @if ($this->agreed)
         <x-operator::content>
             <x-operator::emphasis>{{ __('plugins.unread_after_yes') }}</x-operator::emphasis>
         </x-operator::content>
     @endif
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
-        :went="$this->answer()->went"
+        :went="$this->answer()->stands->went"
         :goes="$this->goes()"
     />
 @endif

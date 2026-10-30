@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Sdk\Internal;
 
 use function array_key_exists;
-use function is_string;
 
 use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\Stance;
@@ -17,8 +16,6 @@ use Modules\Kernel\Api\WhatWasNamed;
 use Modules\Sdk\Api\MoveIsUnreadable;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\WireField;
-
-use function trim;
 
 /**
  * The shapes the `adoption`, `import`, `beside` and `replacement` envelopes carry alike, read once.
@@ -69,7 +66,7 @@ final readonly class WhatAMoveCarries
 
         $said = $data[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw MoveIsUnreadable::missing($kind, $field);
         }
 
@@ -84,15 +81,13 @@ final readonly class WhatAMoveCarries
     public static function named(array $data, NamesAWireField $list, string $kind): WhatWasNamed
     {
         $names = [];
-        $position = 0;
 
-        foreach (Required::rows($data, $list, MoveIsUnreadable::missing($kind, $list)) as $name) {
-            if (! is_string($name) || trim($name) === '') {
+        foreach (InTheOrderSent::rows(Required::rows($data, $list, MoveIsUnreadable::missing($kind, $list))) as $position => $name) {
+            if (! Required::isText($name)) {
                 throw MoveIsUnreadable::entry($kind, $list, $position, $list);
             }
 
             $names[] = $name;
-            $position++;
         }
 
         return WhatWasNamed::of($list->value, ...$names);

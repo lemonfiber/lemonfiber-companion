@@ -72,6 +72,8 @@ it('refuses a run account missing what it is about, or carrying something other 
     'a run that does not say whether it held' => [['ran' => ['recipe' => 'resync', 'steps' => []]], '`held`'],
     'a step that is not one' => [['ran' => ['recipe' => 'resync', 'held' => true, 'steps' => ['nudge']]], '`step`'],
     'a reason that is not text' => [['ran' => ['recipe' => 'resync', 'held' => false, 'why' => 3, 'steps' => []]], '`why`'],
+    'a recipe with no title' => [['recipe' => [...ARecipeRunAsItArrives::theRecipeOnTheWire(), 'title' => ' ']], '`recipe` in the plugins envelope has no readable `title`.'],
+    'a recipe run at no word this app knows' => [['recipe' => [...ARecipeRunAsItArrives::theRecipeOnTheWire(), 'on' => 'whenever']], '`recipe` in the plugins envelope has no readable `on`.'],
 ]);
 
 it('refuses a step missing what it is, where it calls or what it came to, or naming an outcome this app has no word for', function (array $changed, string $refused): void {

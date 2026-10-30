@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Household\Internal;
 
 use Closure;
-use Modules\Household\Internal\Presenters\InWords;
+use Modules\Household\Internal\Presenters\InWordsOrNone;
 use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\Artwork;
 use Modules\Kernel\Api\ArtworkKey;
@@ -30,8 +30,8 @@ final readonly class ThePicturesItDraws
 {
     public function __construct(private HoldingArtwork $holding, private FetchingArtwork $fetching) {}
 
-    /** The source of a held title's poster, as the member it is drawn for may see it. */
-    public function ofAHolding(Stack $stack, Session $session, Whose $whose, HoldingId $title): string
+    /** The source of a held title's poster, as the member it is drawn for may see it, or null where the phone holds none. */
+    public function ofAHolding(Stack $stack, Session $session, Whose $whose, HoldingId $title): ?string
     {
         return $this->drawn(
             ArtworkKey::of($stack->id(), WhichPicture::HeldPoster, $title->named()),
@@ -40,8 +40,8 @@ final readonly class ThePicturesItDraws
         );
     }
 
-    /** The source of a held title's backdrop, as the member it is drawn for may see it. */
-    public function backdropOfAHolding(Stack $stack, Session $session, Whose $whose, HoldingId $title): string
+    /** The source of a held title's backdrop, as the member it is drawn for may see it, or null where the phone holds none. */
+    public function backdropOfAHolding(Stack $stack, Session $session, Whose $whose, HoldingId $title): ?string
     {
         return $this->drawn(
             ArtworkKey::of($stack->id(), WhichPicture::HeldBackdrop, $title->named()),
@@ -50,8 +50,8 @@ final readonly class ThePicturesItDraws
         );
     }
 
-    /** The source of the poster of a title a member's search offered. */
-    public function ofAFoundTitle(Stack $stack, Session $session, AFoundTitle $title): string
+    /** The source of the poster of a title a member's search offered, or null where the phone holds none. */
+    public function ofAFoundTitle(Stack $stack, Session $session, AFoundTitle $title): ?string
     {
         return $this->drawn(
             ArtworkKey::of($stack->id(), WhichPicture::AskablePoster, $title->id()),
@@ -61,15 +61,15 @@ final readonly class ThePicturesItDraws
     }
 
     /** @param Closure(): HowArtworkCame $fetched */
-    private function drawn(ArtworkKey $key, Stack $stack, Closure $fetched): string
+    private function drawn(ArtworkKey $key, Stack $stack, Closure $fetched): ?string
     {
         if ($this->holding->holds($key)) {
             return $key->said();
         }
 
         return $fetched()->either(
-            arrived: fn(Artwork $artwork): InWords => new InWords($this->holding->hold($key, $stack->id(), $artwork) ? $key->said() : ''),
-            refused: static fn(): InWords => new InWords(''),
+            arrived: fn(Artwork $artwork): InWordsOrNone => new InWordsOrNone($this->holding->hold($key, $stack->id(), $artwork) ? $key->said() : null),
+            refused: static fn(): InWordsOrNone => new InWordsOrNone(null),
         )->said;
     }
 }

@@ -44,6 +44,7 @@ it('says nothing is left past the end, and that it does not know where the lengt
     $unknown = APartWay::ofUnknownLength(Holding::of(HoldingId::called('e1'), 'One', Medium::Episode, WhenItCameOut::unstated()), HowFarIn::at(61), WhereItPlays::doesNotStream());
 
     expect(whatIsLeft(aFilmPartWay(1_300, 1_200)->left()))->toBe('0')
+        ->and(whatIsLeft(aFilmPartWay(7_200, 1_200)->left()))->toBe('0')
         ->and(whatIsLeft($unknown->left()))->toBe('unknown')
         ->and($unknown->reached()->seconds())->toBe(61)
         ->and($unknown->holding()->titled())->toBe('One');

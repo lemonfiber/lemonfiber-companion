@@ -7,7 +7,6 @@ namespace Modules\Sdk\Internal;
 use function array_key_exists;
 use function is_array;
 use function is_bool;
-use function is_string;
 
 use Modules\Kernel\Api\ACapabilityLeftContested;
 use Modules\Kernel\Api\APluginChange;
@@ -31,8 +30,6 @@ use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\PluginsAreUnreadable;
 use Modules\Sdk\Api\WireField;
-
-use function trim;
 
 /**
  * The install a `plugins` answer is about: what it would do, or did, and how it ended.
@@ -63,7 +60,7 @@ final readonly class PluginInstallReports
             throw PluginsAreUnreadable::missing(WireField::Recorded);
         }
 
-        $would = PluginRecords::of($install[WireField::Would->value], WireField::Would, 0);
+        $would = PluginRecords::of($install[WireField::Would->value], static fn(NamesAWireField $field): PluginsAreUnreadable => PluginsAreUnreadable::within(WireField::Would, $field));
         $changing = WhatAnInstallChanges::these(
             ThePluginChanges::these(...self::changes($install)),
             TheContestsLeft::these(...self::contests($install)),
@@ -91,9 +88,8 @@ final readonly class PluginInstallReports
     private static function changes(array $install): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($install, WireField::Changes) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($install, WireField::Changes)) as $position => $row) {
             if (! is_array($row)) {
                 throw PluginsAreUnreadable::entry(WireField::Changes, WireField::Path, $position);
             }
@@ -104,7 +100,6 @@ final readonly class PluginInstallReports
                 self::text($row, WireField::Changes, WireField::Path, $position),
                 WhatAChangePuts::tryFrom($puts) ?? throw PluginsAreUnreadable::said(PluginsField::Puts, $puts),
             );
-            $position++;
         }
 
         return $found;
@@ -119,9 +114,8 @@ final readonly class PluginInstallReports
     private static function contests(array $install): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($install, PluginsField::Contests) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($install, PluginsField::Contests)) as $position => $row) {
             if (! is_array($row)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Contests, WireField::Capability, $position);
             }
@@ -131,7 +125,6 @@ final readonly class PluginInstallReports
                 self::text($row, PluginsField::Contests, WireField::By, $position),
                 PluginLines::under(WireField::Claimants->value, ...self::words($row, PluginsField::Contests, WireField::Claimants, $position)),
             );
-            $position++;
         }
 
         return $found;
@@ -146,9 +139,8 @@ final readonly class PluginInstallReports
     private static function overrides(array $install): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($install, PluginsField::Overrides) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($install, PluginsField::Overrides)) as $position => $row) {
             if (! is_array($row)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Overrides, WireField::Setting, $position);
             }
@@ -157,7 +149,6 @@ final readonly class PluginInstallReports
                 self::text($row, PluginsField::Overrides, WireField::Setting, $position),
                 self::text($row, PluginsField::Overrides, WireField::Why, $position),
             );
-            $position++;
         }
 
         return $found;
@@ -176,9 +167,8 @@ final readonly class PluginInstallReports
         }
 
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($install, PluginsField::Taking) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($install, PluginsField::Taking)) as $position => $row) {
             if (! is_array($row)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Taking, WireField::Service, $position);
             }
@@ -192,7 +182,6 @@ final readonly class PluginInstallReports
                 PluginLines::under(WireField::Devices->value, ...self::words($row, PluginsField::Taking, WireField::Devices, $position)),
                 self::text($row, PluginsField::Taking, WireField::Approval, $position),
             );
-            $position++;
         }
 
         return $found;
@@ -230,15 +219,13 @@ final readonly class PluginInstallReports
     private static function titles(array $verified, NamesAWireField $list): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($verified, $list) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($verified, $list)) as $position => $row) {
             if (! is_array($row) || ! array_key_exists(WireField::Now->value, $row) || ! is_array($row[WireField::Now->value])) {
                 throw PluginsAreUnreadable::entry($list, WireField::Now, $position);
             }
 
             $found[] = self::text($row[WireField::Now->value], $list, WireField::Title, $position);
-            $position++;
         }
 
         return $found;
@@ -273,7 +260,7 @@ final readonly class PluginInstallReports
         $found = [];
 
         foreach ($row[$field->value] as $word) {
-            if (! is_string($word) || trim($word) === '') {
+            if (! Required::isText($word)) {
                 throw PluginsAreUnreadable::entry($list, $field, $position);
             }
 
@@ -305,10 +292,6 @@ final readonly class PluginInstallReports
      */
     private static function text(array $row, NamesAWireField $list, NamesAWireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw PluginsAreUnreadable::entry($list, $field, $position);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, PluginsAreUnreadable::entry($list, $field, $position));
     }
 }

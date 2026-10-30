@@ -62,7 +62,7 @@ const TOO_ALIKE = 75.0;
  * than six: `scripts/` and `config/` are both in the analyser's paths — *build
  * tooling is code too*, as that file says — and were in none of these rules. A
  * comment reading `TODO: this used to be broken, I found it previously` sat in
- * `scripts/mutation.php` through a full Arch run, carrying four of `K1`'s nine
+ * a script under `scripts/` through a full Arch run, carrying four of `K1`'s nine
  * markers, and every one of these rules reported a green tick (`R4`).
  *
  * @return array<string, string> path => contents

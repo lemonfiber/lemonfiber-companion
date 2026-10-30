@@ -69,12 +69,12 @@ final class Hero extends Component
         $said = WhatAPosterIsFilledWith::by($catalogue, $poster);
         $this->titled = $said->titled($poster);
         $named = $catalogue->get(self::READS, ['reads' => $said->line($poster->reads, $this->titled)]);
-        $above = $catalogue->get(self::ABOVE, ['line' => $said->line($poster->above, '')]);
+        $above = $catalogue->get(self::ABOVE, ['line' => $said->line($poster->above, $poster->above)]);
         $plays = $catalogue->get(self::PLAYS, ['title' => $this->titled]);
         $more = $catalogue->get(self::MORE, ['title' => $this->titled]);
 
         $this->named = is_string($named) ? $named : $this->titled;
-        $this->above = is_string($above) ? $above : '';
+        $this->above = is_string($above) ? $above : self::ABOVE;
         $this->lines = $poster->lettered->linesOnTheHero();
         $this->playNamed = is_string($plays) ? $plays : $this->titled;
         $this->moreNamed = is_string($more) ? $more : $this->titled;

@@ -17,8 +17,8 @@ use Modules\Operator\Internal\ViewModels\AGrantAsShown;
  */
 final readonly class HowAGrantReads
 {
-    /** The grant at that place among those the stack listed. */
-    public function one(ACredentialGrant $grant, int $which, Instant $now): AGrantAsShown
+    /** The grant at that place among those the stack listed, or on its own where it has no place. */
+    public function one(ACredentialGrant $grant, ?int $which, Instant $now): AGrantAsShown
     {
         return new AGrantAsShown(
             which: $which,
@@ -28,7 +28,7 @@ final readonly class HowAGrantReads
             fills: $grant->fills(),
             approved: $grant->approved()->read(
                 read: static fn(Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
-                unreadable: AgoAsShown::unsaid(...),
+                unreadable: AgoAsShown::saysNothing(...),
             ),
         );
     }

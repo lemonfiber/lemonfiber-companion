@@ -1,0 +1,26 @@
+{
+    "$schema": "vendor/nightworksio/mutation-gate/resources/mutation-gate.schema.json",
+    "preset": "laravel",
+    "runner": "pest",
+    "security": {
+        "floor": 100
+    },
+    "pest": {
+        "patch": true
+    },
+    "tests": {
+        "suites": ["Arch", "Templates", "Contract", "Modules", "Native", "Feature"]
+    },
+    "shards": {
+        "max": 10
+    },
+    "ignores": {
+        "entries": [
+            {
+                "path": "app-modules/kernel/src/Api/WireVersion.php",
+                "mutator": "Pest\\Mutate\\Mutators\\Math\\MaxToMin",
+                "reason": "At one wire version the maximum and the minimum of the set are the same case, so no test can tell `newest()` from its opposite; WireVersionTest asserts the enum holds exactly one case, so the day a second arrives that test fails and names this entry as the one to delete."
+            }
+        ]
+    }
+}

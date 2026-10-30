@@ -7,7 +7,7 @@ use Bootstrap\Composition\WhatThisBuildInstallsAs;
 use Modules\Kernel\Api\WhoThisAppIs;
 
 // Runs the composition root rather than reading it, so its mutants are judged
-// here: see `scripts/mutation.php`.
+// here, by its `holds:` group.
 pest()->group('holds:bootstrap/Composition');
 
 // One identity, declared here, that a build cannot choose.

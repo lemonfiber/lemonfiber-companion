@@ -46,9 +46,9 @@ it('draws the code square for square, dark where the code is dark', function ():
     $address = annasInvitationCarriedOut()->toHand()->address();
     $read = new HowTheInvitationReads()->answered(annasInvitationCarriedOut(), TheCodesDrawn::of(ACodeOfWhatItWasGiven::working(), $address, $address->declining()));
 
-    expect($read->invitation?->toHand->code)->toBe([[true, false, true], [false, true, false], [true, false, true]])
-        ->and($read->invitation?->toHand->declines)->toBe('')
-        ->and($read->invitation?->toHand->declineCode)->toBe([])
+    expect($read->invitation?->toHand->handed?->code)->toBe([[true, false, true], [false, true, false], [true, false, true]])
+        ->and($read->invitation?->toHand->handed?->declines)->toBe('')
+        ->and($read->invitation?->toHand->handed?->declineCode)->toBe([])
         ->and($read->notAskable)->toBe('')
         ->and($read->askedFor)->toBe('anna');
 });
@@ -66,8 +66,8 @@ it('hands over the address that turns it down, with a code of its own', function
 
     $read = new HowTheInvitationReads()->answered($invitation, TheCodesDrawn::of($encoding, $address, $address->declining()));
 
-    expect($read->invitation?->toHand->declines)->toBe('http://loft.local:5056/decline/abc')
-        ->and($read->invitation?->toHand->declineCode)->not->toBe([])
+    expect($read->invitation?->toHand->handed?->declines)->toBe('http://loft.local:5056/decline/abc')
+        ->and($read->invitation?->toHand->handed?->declineCode)->not->toBe([])
         ->and($encoding->carried())->toBe(['http://loft.local:8096', 'http://loft.local:5056/decline/abc']);
 });
 

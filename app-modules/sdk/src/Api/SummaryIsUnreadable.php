@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
+use function array_column;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\Severity;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -45,10 +45,7 @@ final class SummaryIsUnreadable extends InvalidArgumentException
         return new self(sprintf(
             'The health summary says the stack is `%s`, and this app reads %s. Guessing which was meant is how a stack nobody could vouch for gets called healthy.',
             $said,
-            implode(', ', array_map(
-                static fn(HowItStands $standing): string => sprintf('`%s`', $standing->value),
-                HowItStands::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(HowItStands::cases(), 'value')),
         ));
     }
 
@@ -58,10 +55,7 @@ final class SummaryIsUnreadable extends InvalidArgumentException
             'Affected item %d in the health summary is `%s`, and this app reads %s.',
             $position,
             $said,
-            implode(', ', array_map(
-                static fn(Severity $severity): string => sprintf('`%s`', $severity->value),
-                Severity::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(Severity::cases(), 'value')),
         ));
     }
 
@@ -85,10 +79,7 @@ final class SummaryIsUnreadable extends InvalidArgumentException
             'Stopped row %d on the dashboard is `%s`, and this app reads %s.',
             $position,
             $said,
-            implode(', ', array_map(
-                static fn(HowItStopped $how): string => sprintf('`%s`', $how->value),
-                HowItStopped::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(HowItStopped::cases(), 'value')),
         ));
     }
 }

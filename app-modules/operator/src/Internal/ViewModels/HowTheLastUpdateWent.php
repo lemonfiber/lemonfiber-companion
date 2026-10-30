@@ -15,23 +15,11 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class HowTheLastUpdateWent
 {
     /**
-     * @param HowTheReadingWent               $went               whether asking after it came back, and what stood in the way where it did not
-     * @param bool                            $wasTaken           whether an update was taken here, so there is anything to follow
-     * @param bool                            $isWorking          whether the stack is still carrying it out
-     * @param bool                            $hasEnded           whether the stack has no outcome for it any more
-     * @param list<WhatOneServiceTookItSays>  $applied            what became of each service it touched, those not where the operator wanted them first
-     * @param int                             $didNotArrive       how many of those are not where the operator wanted them
-     * @param bool                            $anythingUnanswered whether the stack cannot say what some are doing
-     * @param list<AMoveInPlaceAsShown>       $moved              what became of each move in place it tried
+     * @param WhereTheWorkStands               $stands               where the work stands, and whether the stack could be asked at all
+     * @param WhatTheUpdateTakenCameTo|null $took   what the update taken here came to, where one was taken and the stack reported it
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $wasTaken,
-        public bool $isWorking,
-        public bool $hasEnded,
-        public array $applied,
-        public int $didNotArrive,
-        public bool $anythingUnanswered,
-        public array $moved,
+        public WhereTheWorkStands $stands,
+        public ?WhatTheUpdateTakenCameTo $took = null,
     ) {}
 }

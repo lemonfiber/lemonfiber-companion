@@ -13,7 +13,7 @@ final readonly class APluginRemovalAsShown
      * @param string                     $plugin     the plugin it takes off, by its id
      * @param bool                       $isAReading whether nothing was taken, so this is what it would do
      * @param bool                       $agreeable  whether it is a reading with a name a yes can quote, so Remove is offered
-     * @param string                     $headline   the catalogue key for how it ended, or empty on a reading
+     * @param ?string                     $headline   the catalogue key for how it ended, or empty on a reading
      * @param list<string>               $interrupts every service that stops when it goes
      * @param list<AChangeAndWhyAsShown> $leaves     every capability left unfilled, with what fills it now
      * @param HowPuttingARunBackWent     $wentBack   what putting its changes back came to, or would
@@ -22,7 +22,7 @@ final readonly class APluginRemovalAsShown
         public string $plugin,
         public bool $isAReading,
         public bool $agreeable,
-        public string $headline,
+        public ?string $headline,
         public array $interrupts,
         public array $leaves,
         public HowPuttingARunBackWent $wentBack,

@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Lemonfiber\Native\Player\Player;
-use Lemonfiber\Native\Player\TitleAtTheDoor;
 use Modules\Device\Api\PlatformPlayer;
 use Modules\Kernel\Api\AGrant;
 use Modules\Kernel\Api\ATitleToPlay;
@@ -95,7 +94,7 @@ it('hands a member who chose nothing the title as it comes: its own sound, and n
     aPlayerOverABridgeThatSays('Lemonfiber.Player.Open', ['outcome' => 'showing'])->open(aTitleTheCoreStated(TheirLanguages::asTheTitleComes()));
 
     expect(array_column(FakeBridge::enable()->callsTo('Lemonfiber.Player.Open'), 'params')[0])
-        ->toMatchArray(['audio' => TitleAtTheDoor::NO_LANGUAGE, 'subtitle' => TitleAtTheDoor::NO_LANGUAGE]);
+        ->toMatchArray(['audio' => '', 'subtitle' => '']);
 });
 
 it('tells a device with no player from one that would not play what the core stated', function (string $because, WhyPlayingDidNotStart $why): void {

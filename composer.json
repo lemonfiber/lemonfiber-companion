@@ -58,6 +58,7 @@
         "laravel/pint": "^1.32",
         "modules/dx": "dev-main",
         "monolog/monolog": "^3.12",
+        "nightworksio/mutation-gate": "dev-main",
         "nikic/php-parser": "^5.8",
         "nunomaduro/collision": "^8.9",
         "pestphp/pest": "^5.1",
@@ -66,7 +67,8 @@
         "phpstan/phpstan": "^2.2",
         "phpstan/phpstan-deprecation-rules": "^2.0",
         "phpstan/phpstan-strict-rules": "^2.0",
-        "phpunit/php-code-coverage": "^14.3",
+        "psr/http-factory": "^1.1",
+        "psr/http-message": "^2.0",
         "rector/rector": "^2.6",
         "roave/security-advisories": "dev-latest",
         "saloonphp/saloon": "^4.0",
@@ -78,6 +80,11 @@
         "tomasvotruba/type-coverage": "^2.3"
     },
     "repositories": [
+        {
+            "name": "mutation-gate",
+            "type": "vcs",
+            "url": "https://github.com/nightworksio/php-mutation-gate"
+        },
         {
             "type": "path",
             "url": "bridge",
@@ -124,7 +131,7 @@
         },
         "optimize-autoloader": true,
         "platform": {
-            "php": "8.5.0"
+            "php": "8.5.12"
         },
         "process-timeout": 0,
         "sort-packages": true
@@ -135,25 +142,25 @@
         },
         "lemonfiber": {
             "floors": {
-                "coverage": 100,
-                "mutation": 100
+                "coverage": 100
             }
+        },
+        "mutation-gate": {
+            "floor": 100
         }
     },
     "scripts": {
         "post-install-cmd": [
             "git config core.hooksPath .githooks",
             "@php scripts/patch_nativephp.php",
-            "@php scripts/patch_pest_mutate.php",
-            "@php scripts/patch_pest_mutate_shared_coverage.php",
-            "@php scripts/patch_phpunit_source_mapper.php"
+            "@php scripts/patch_phpunit_source_mapper.php",
+            "@php vendor/bin/mutation-gate pest:patch"
         ],
         "post-update-cmd": [
             "git config core.hooksPath .githooks",
             "@php scripts/patch_nativephp.php",
-            "@php scripts/patch_pest_mutate.php",
-            "@php scripts/patch_pest_mutate_shared_coverage.php",
-            "@php scripts/patch_phpunit_source_mapper.php"
+            "@php scripts/patch_phpunit_source_mapper.php",
+            "@php vendor/bin/mutation-gate pest:patch"
         ],
         "analyse": "phpstan analyse",
         "ci": [
@@ -181,8 +188,8 @@
         "test:coverage": "php -d pcov.directory=. -d pcov.exclude='~/(vendor|bootstrap/cache)/~' vendor/bin/pest --parallel --exclude-testsuite=Guards,Floors --coverage --min=100",
         "test:floors": "pest --testsuite=Floors",
         "test:guards": "pest --testsuite=Guards",
-        "test:mutation": "@php scripts/mutation.php",
-        "test:report": "LEMONFIBER_KEEP_COVERAGE=coverage/mutation.php php -d pcov.directory=. -d pcov.exclude='~/(vendor|bootstrap/cache)/~' vendor/bin/pest --parallel --exclude-testsuite=Guards,Floors --coverage --coverage-clover=coverage/clover.xml --log-junit=coverage/junit.xml --min=100",
+        "test:mutation": "mutation-gate",
+        "test:report": "php -d pcov.directory=. -d pcov.exclude='~/(vendor|bootstrap/cache)/~' vendor/bin/pest --parallel --exclude-testsuite=Guards,Floors --coverage --coverage-clover=coverage/clover.xml --log-junit=coverage/junit.xml --min=100",
         "validate:modules": "@php scripts/manifests.php validate --strict --no-check-publish --no-check-version"
     },
     "scripts-descriptions": {
@@ -192,8 +199,8 @@
         "test": "Every suite but Guards and Floors, in parallel. Guards runs the analyser and the whole suite again as subprocesses, which takes minutes, so it has a command of its own. Floors reads the clover report test:report writes, and refuses to run without one.",
         "test:floors": "Check every tree phpunit.xml measures against the coverage floor its nearest manifest declared, over the report test:report writes (G9).",
         "test:guards": "Plant a violation of every rule in a throwaway copy of the tree and require each rule to report it (R2). The checkout is only read, so this can run beside anything else, and a copy left by a killed run is removed by the next one.",
-        "test:mutation": "Mutation testing at the floor declared for each tree phpunit.xml measures, in the manifest nearest it. Trees sharing a floor share a run, because a floor of 100 admits no offsetting between them; a tree whose floor differs gets its own.",
-        "test:report": "The same run as test:coverage, writing the clover and JUnit reports SonarCloud and the Floors suite read (Q-R64, G9), and a coverage map `scripts/mutation.php` reads in place of running the suite again where `MUTATION_SHARED_COVERAGE` names it, which Pest's own map is copied to (`LEMONFIBER_KEEP_COVERAGE`) because `--coverage` overrides any `--coverage-php`. The pcov flags are load-bearing: left alone, pcov instruments the longest common prefix of the phpunit source includes, which is `app` \u2014 and that reaches `app-modules` only because the match is on the string rather than the path. `bridge/src` falls outside it, so every line of the plugin's PHP read as never executed while its tests passed. Pointing the directory at the repository root fixes that, and excluding vendor makes the run faster than it was before. It runs in parallel, as `test` does, with the same two suites left out for the same reasons; the clover report it writes is the same, statement for statement, as one written by a single process.",
+        "test:mutation": "Mutation testing through nightworksio/mutation-gate, each tree held to the floor `extra.mutation-gate` declares in the manifest nearest it. CI runs it sharded, through the gate's reusable workflow.",
+        "test:report": "The same run as test:coverage, writing the clover and JUnit reports SonarCloud and the Floors suite read (Q-R64, G9). The pcov flags are load-bearing: left alone, pcov instruments the longest common prefix of the phpunit source includes, which is `app` \u2014 and that reaches `app-modules` only because the match is on the string rather than the path. `bridge/src` falls outside it, so every line of the plugin's PHP read as never executed while its tests passed. Pointing the directory at the repository root fixes that, and excluding vendor makes the run faster than it was before. It runs in parallel, as `test` does, with the same two suites left out for the same reasons; the clover report it writes is the same, statement for statement, as one written by a single process.",
         "validate:modules": "Validate every manifest this repository owns \u2014 every package the root declares as a path repository, which is every module and the bridge. Not --check-version: a path package the root pins by version has to declare one, and composer's advice to leave it out is about publishing to Packagist, which none of these do."
     }
 }

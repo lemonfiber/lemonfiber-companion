@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\Category;
@@ -83,7 +81,7 @@ final class WhatRunningChecksDisturbs extends NativeComponent implements AwaitsA
     {
         $covers = $this->covers();
 
-        if (! $covers instanceof WhatARunCovers || $this->howItIsGoing()->isWorking || ! $this->answer()->went->cameBack()) {
+        if (! $covers instanceof WhatARunCovers || $this->howItIsGoing()->stands->isWorking() || ! $this->answer()->went->cameBack()) {
             return;
         }
 
@@ -93,7 +91,6 @@ final class WhatRunningChecksDisturbs extends NativeComponent implements AwaitsA
     /** What the run would disturb, as the stack last reported it, asked once per frame. */
     public function answer(): TheChecksTurnedOutToBe
     {
-        $this->howItIsGoing();
         $stack = $this->stack();
         $covers = $this->covers();
 
@@ -121,13 +118,13 @@ final class WhatRunningChecksDisturbs extends NativeComponent implements AwaitsA
     /** What the route's word covers: every check, a family's, or nothing this app knows. */
     private function covers(): ?WhatARunCovers
     {
-        $word = $this->param('service');
+        $word = $this->around->aboutOn($this);
 
         if ($word === WhatARunCovers::EVERY) {
             return WhatARunCovers::everyCheck();
         }
 
-        $family = is_string($word) ? Category::tryFrom($word) : null;
+        $family = Category::tryFrom($word);
 
         return $family instanceof Category ? WhatARunCovers::theFamily($family) : null;
     }

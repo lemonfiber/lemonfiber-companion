@@ -40,6 +40,8 @@ it('each standing is built on its own, and only seeding carries a ratio', functi
 
 it('carries what removing it costs, where the stack says, and nothing otherwise', function (): void {
     expect(ADownloadOnDisk::neverImported('a', 1)->consequence())->toBe('')
+        ->and(ADownloadOnDisk::seeding('b', 2, ARatio::none())->consequence())->toBe('')
+        ->and(ADownloadOnDisk::leftAlone('c', 3)->consequence())->toBe('')
         ->and(ADownloadOnDisk::neverImported('a', 1, 'Nothing is lost')->consequence())->toBe('Nothing is lost')
         ->and(ADownloadOnDisk::seeding('b', 2, ARatio::none(), 'Your ratio stops growing')->consequence())->toBe('Your ratio stops growing')
         ->and(ADownloadOnDisk::leftAlone('c', 3, 'You asked for this')->consequence())->toBe('You asked for this');

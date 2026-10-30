@@ -20,21 +20,19 @@ final readonly class AClientsHolding
     private function __construct(
         private string $client,
         private WhatADownloadClientSaid $pulling,
-        private ?ADirectionHeld $down,
-        private ?ADirectionHeld $up,
-        private string $said,
+        private BothDirectionsHeld|string $answer,
     ) {}
 
     /** A client that answered for both directions. */
     public static function answered(string $client, WhatADownloadClientSaid $pulling, ADirectionHeld $down, ADirectionHeld $up): self
     {
-        return new self(self::named($client), $pulling, $down, $up, '');
+        return new self(self::named($client), $pulling, BothDirectionsHeld::of($down, $up));
     }
 
     /** A client that did not answer, and what it said. */
     public static function silent(string $client, WhatADownloadClientSaid $pulling, string $said): self
     {
-        return new self(self::named($client), $pulling, null, null, trim($said));
+        return new self(self::named($client), $pulling, trim($said));
     }
 
     /** The client, by the name the stack knows it under. */
@@ -62,9 +60,9 @@ final readonly class AClientsHolding
      */
     public function either(Closure $answered, Closure $silent): object
     {
-        return $this->down instanceof ADirectionHeld && $this->up instanceof ADirectionHeld
-            ? $answered($this->down, $this->up)
-            : $silent($this->said);
+        $answer = $this->answer;
+
+        return $answer instanceof BothDirectionsHeld ? $answered($answer->down(), $answer->up()) : $silent($answer);
     }
 
     private static function named(string $client): string

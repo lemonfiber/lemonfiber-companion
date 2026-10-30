@@ -41,6 +41,7 @@ use Tests\Support\Fakes\AStackThatTraces;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TracesToFollow;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhatTheFieldsHold;
 
 // Where one item got to.
 //
@@ -71,7 +72,7 @@ function aFilmThatArrived(): WhereItGotTo
 }
 
 /** The screen, following what the route names. Named for this file (`G10`). */
-function theTraceScreen(AStackThatTraces $tracing, ?AKeychainInMemory $keychain = null, bool $signedIn = true, string $named = 'Severance', ?AStackThatSearches $searching = null): WhereThisGotTo
+function theTraceScreen(AStackThatTraces $tracing, ?AKeychainInMemory $keychain = null, bool $signedIn = true, string $named = 'Severance', ?AStackThatSearches $searching = null, ?AStackThatExplainsItsWords $explaining = null): WhereThisGotTo
 {
     $stack = theStackWhoseItemIsFollowed();
     $keychain ??= AKeychainInMemory::working();
@@ -80,7 +81,7 @@ function theTraceScreen(AStackThatTraces $tracing, ?AKeychainInMemory $keychain 
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhereThisGotTo($tracing, $searching ?? AStackThatSearches::answering(WhatBecameOfTheWork::ended()), AStackThatExplainsItsWords::with(TheGlossary::of()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhereThisGotTo($tracing, $searching ?? AStackThatSearches::answering(WhatBecameOfTheWork::ended()), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
 
     return $screen;
@@ -157,12 +158,14 @@ it('a trace the stack is sure of is not drawn as uncertain', function (): void {
         ->and($unsure->isUncertain)->toBeTrue();
 });
 
-it('follows what was typed with the spaces around it left off, and hands what is typed to the box', function (): void {
+it('follows what was typed with the spaces around it left off, and draws the box with what is typed, empty at first', function (): void {
     $tracing = AStackThatTraces::with(TracesToFollow::aSeriesStuckDownloading());
     $screen = theTraceScreen($tracing);
+
+    expect(WhatTheFieldsHold::on($screen))->toBe(['']);
+
     $screen->looking = '  Dune  ';
-    expect($screen->render()->getData())->toHaveKey('looking')
-        ->and($screen->render()->getData()['looking'])->toBe('  Dune  ');
+    expect(WhatTheFieldsHold::on($screen))->toBe(['  Dune  ']);
     $screen->follow();
     $screen->answer();
 
@@ -209,6 +212,28 @@ it('asks once a frame, and again when asked', function (): void {
     expect($tracing->askings())->toBe(2)
         ->and($tracing->wasGivenASession())->toBeTrue()
         ->and($tracing->askedAbout()?->id()->stored())->toBe(theStackWhoseItemIsFollowed()->id()->stored());
+});
+
+it('reads the glossary on the frame after the trace, and asks for that frame at once', function (): void {
+    $explaining = AStackThatExplainsItsWords::with(TheGlossary::of());
+    $screen = theTraceScreen(AStackThatTraces::with(aFilmThatArrived()), explaining: $explaining);
+
+    WhatTheDeviceWouldDraw::by($screen);
+    $waited = $screen->waitsForTheNextFrame();
+    $asked = $explaining->askings();
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect([$waited, $asked])->toBe([true, 0])
+        ->and($screen->waitsForTheNextFrame())->toBeFalse()
+        ->and($explaining->askings())->toBe(1);
+});
+
+it('a credential refused while the indexers are asked lets the session go', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $screen = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), keychain: $keychain, named: 'Dune', searching: AStackThatSearches::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))));
+    $screen->search();
+
+    expect($keychain->isHolding(theStackWhoseItemIsFollowed()->id()))->toBeFalse();
 });
 
 it('a session that has ended asks nothing, and a refused one is let go', function (): void {
@@ -356,7 +381,7 @@ it('says the stack has no answer for a search it no longer knows, and what stood
     $met->search();
 
     expect(WhatTheDeviceWouldDraw::by($ended)->said())->toContain(__('health.trace.search_no_outcome'))
-        ->and($met->howTheSearchIsGoing()->went->cameBack())->toBeFalse()
+        ->and($met->howTheSearchIsGoing()->stands->went->cameBack())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($met)->offers())->not->toContain(__('health.trace.search'));
 });
 
@@ -369,7 +394,17 @@ it('asks the indexers nothing once the session has ended', function (): void {
     $screen->search();
 
     expect($searching->searched())->toBe([])
-        ->and($screen->howTheSearchIsGoing()->went->isSignedIn)->toBeFalse();
+        ->and($screen->howTheSearchIsGoing()->stands->went->isSignedIn)->toBeFalse();
+});
+
+it('follows season nought, where a series keeps what falls outside its seasons', function (): void {
+    $tracing = AStackThatTraces::with(aFilmThatArrived());
+    $screen = theTraceScreen($tracing);
+    $screen->followSeason(0);
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect($screen->season)->toBe(0)
+        ->and($tracing->followed())->toBe('Severance, season 0');
 });
 
 it('follows no season below none', function (): void {

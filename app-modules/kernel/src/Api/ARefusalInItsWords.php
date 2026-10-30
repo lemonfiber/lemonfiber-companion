@@ -24,7 +24,7 @@ final readonly class ARefusalInItsWords
         private string $summary,
         private string $meaning,
         private WhatTheRefusalNamed $named,
-        private string $remedy = '',
+        private string $remedy,
     ) {}
 
     /** What the stack said, with its first remedy where it gave one, refused where the summary is blank. */

@@ -199,7 +199,7 @@ it('says what stood in the way of a run, and asks the stack again only when told
     $screen = theRunningScreen($asking, AStackThatRunsChecks::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
     $screen->run();
 
-    expect($screen->howItIsGoing()->went->cameBack())->toBeFalse()
+    expect($screen->howItIsGoing()->stands->went->cameBack())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('health.disturbs.run_it'))
         ->and($asking->askings())->toBe(1);
 

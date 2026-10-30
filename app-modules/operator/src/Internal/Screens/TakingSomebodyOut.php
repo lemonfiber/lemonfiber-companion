@@ -104,15 +104,13 @@ final class TakingSomebodyOut extends NativeComponent implements AwaitsAnOutcome
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
-        return $this->answer()->isWorking;
+        return $this->answer()->stands->isWorking();
     }
 
     /** The member this screen is about, by the name the route carries. */
     public function named(): string
     {
-        $named = $this->param('service');
-
-        return is_string($named) ? $named : '';
+        return $this->around->aboutOn($this);
     }
 
     /**
@@ -178,7 +176,7 @@ final class TakingSomebodyOut extends NativeComponent implements AwaitsAnOutcome
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->answer()->isWorking) {
+        if ($this->answer()->stands->isWorking()) {
             $this->going = null;
         }
     }

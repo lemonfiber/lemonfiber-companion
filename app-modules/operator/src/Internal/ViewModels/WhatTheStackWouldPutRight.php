@@ -27,29 +27,9 @@ namespace Modules\Operator\Internal\ViewModels;
  */
 final readonly class WhatTheStackWouldPutRight
 {
-    /**
-     * @param bool                   $isWorking  whether the stack is still working out what it would do
-     * @param bool                   $hasEnded   whether the stack has no outcome for that job any more
-     * @param string                 $named      the listing's name, or empty where there is no listing
-     * @param list<WhatOneRepairSays> $repairs   what it would put right, in the order offered
-     *
-     * **Every field but the first has a default, and each fold in
-     * {@see \Modules\Operator\Internal\Presenters\HowAnOfferOfRepairsReads}
-     * supplies only what its own state means.** A constructor demanding all
-     * seven made `signedOut()` say `isWorking: false, hasEnded: false,
-     * named: '', repairs: [], met: '', remedy: ''` — six values that are no
-     * part of what *signed out* is, that nothing reads in that state, and that
-     * no test could ever hold to being right. Mutation testing measured it:
-     * eighteen mutants across five folds, and the only ones that died were the
-     * fields that discriminate. The cure is {@see \Modules\Kernel\Api\Size}'s —
-     * make the meaningless value unwritable, so there is no literal left to
-     * flip.
-     */
+    /** @param list<WhatOneRepairSays> $repairs what it would put right, in the order offered, where it offered anything */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking = false,
-        public bool $hasEnded = false,
-        public string $named = '',
+        public WhereTheWorkStands $stands,
         public array $repairs = [],
     ) {}
 }

@@ -14,19 +14,13 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatPausingWouldShow
 {
     /**
-     * @param HowTheReadingWent            $went      whether the rehearsal came back, and what stood in the way where it did not
+     * @param WhereTheWorkStands            $stands      where the work stands, and whether the stack could be asked at all
      * @param bool                         $namesWhat whether the screen was opened on pausing or on resuming at all
-     * @param bool                         $isWorking whether the stack is still reading the clients
-     * @param bool                         $hasEnded  whether the stack has no outcome for the rehearsal any more
-     * @param list<ADownloadClientAsShown> $clients   every client and what it is doing now, in the stack's order
-     * @param string                       $caution   what a resume runs into, in the stack's words, or empty
+     * @param ?WhatTheClientsSaid          $said      what every client is doing now, where the stack rehearsed it
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $namesWhat,
-        public bool $isWorking,
-        public bool $hasEnded,
-        public array $clients,
-        public string $caution,
+        public WhereTheWorkStands $stands,
+        public bool $namesWhat = true,
+        public ?WhatTheClientsSaid $said = null,
     ) {}
 }

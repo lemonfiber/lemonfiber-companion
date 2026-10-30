@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Remedy;
 use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Standing;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -148,15 +149,13 @@ final readonly class Problems
         }
 
         $remedies = [];
-        $position = 0;
 
-        foreach ($rows as $row) {
+        foreach (InTheOrderSent::rows($rows) as $position => $row) {
             if (! is_array($row)) {
                 throw ProblemIsUnreadable::remedy($position);
             }
 
             $remedies[] = Remedy::of(self::text($row, WireField::Action));
-            $position++;
         }
 
         return Remedies::of(...$remedies);

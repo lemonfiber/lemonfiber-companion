@@ -28,6 +28,8 @@ use Modules\Wayfinding\Api\HowTheWakeWent;
 use Tests\Support\AWakeOnThePhone;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 
+pest()->group('holds:bootstrap/Composition');
+
 // The platform wakes the app while it is away, with nothing to say, and the
 // app hears each stack the operator is signed in to over its own connection:
 // what the stack raised meanwhile is told, its summary is kept, and the wake
@@ -147,12 +149,13 @@ it('keeps the session of a stack that did not answer', function (): void {
     expect($phone->keychain->isHolding(theBoathouse()->id()))->toBeTrue();
 });
 
-it('gives up once it has made as many reads as a wake may, and lets go', function (): void {
+it('gives up once it has made as many reads as a wake may, each waiting as long as a wake allows, and lets go', function (): void {
     $phone = AWakeOnThePhone::holding(AStackThatSpeaksUp::holdingOpen(), Instant::atEpochSeconds(WOKEN_AT), theBoathouse())
         ->signedInTo(theBoathouse(), Whose::theOperator());
 
     expect($phone->hearing()->hear())->toBe(HowTheWakeWent::GaveUpOnSome)
         ->and($phone->hearing->asked())->toBe(HearingWhileAway::AT_MOST_READS)
+        ->and($phone->hearing->eachReadWaits())->toBe(HearingWhileAway::EACH_READ_WAITS_MS)
         ->and($phone->hearing->lettingsGo())->toBe(1);
 });
 

@@ -6,7 +6,6 @@ namespace Modules\Sdk\Api;
 
 use function array_key_exists;
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\WiringEnvelope;
@@ -28,9 +27,9 @@ use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyItWasChosen;
 use Modules\Sdk\Api\Fields\WiringField;
 use Modules\Sdk\Internal\Attributions;
+use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `wiring` envelope, as what the stack wires to what.
@@ -83,9 +82,8 @@ final readonly class Links
     private static function wired(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, WiringField::Wired) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, WiringField::Wired)) as $position => $row) {
             if (! is_array($row)) {
                 throw LinksAreUnreadable::entry(WiringField::Wired, WiringField::Reaches, $position);
             }
@@ -94,7 +92,6 @@ final readonly class Links
                 ServiceId::called(self::text($row, WiringField::Wired, WireField::By, $position)),
                 self::reaches(self::table($row, WiringField::Reaches, $position), $position),
             );
-            $position++;
         }
 
         return $found;
@@ -165,11 +162,11 @@ final readonly class Links
         $found = [];
 
         foreach (self::table($reaches, WiringField::Origins, $position) as $service => $origin) {
-            if (! is_array($origin) || trim((string) $service) === '') {
+            if (! is_array($origin) || ! Required::isText($service)) {
                 throw LinksAreUnreadable::entry(WiringField::Wired, WiringField::Origins, $position);
             }
 
-            $found[] = AClaimant::of(ServiceId::called((string) $service), self::origin($origin, $position));
+            $found[] = AClaimant::of(ServiceId::called($service), self::origin($origin, $position));
         }
 
         return TheClaimants::these(...$found);
@@ -198,9 +195,8 @@ final readonly class Links
     private static function unfilled(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, WiringField::Unfilled) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, WiringField::Unfilled)) as $position => $row) {
             if (! is_array($row)) {
                 throw LinksAreUnreadable::entry(WiringField::Unfilled, WireField::By, $position);
             }
@@ -209,7 +205,6 @@ final readonly class Links
                 ServiceId::called(self::text($row, WiringField::Unfilled, WireField::By, $position)),
                 Capability::called(self::text($row, WiringField::Unfilled, WireField::Capability, $position)),
             );
-            $position++;
         }
 
         return $found;
@@ -225,7 +220,7 @@ final readonly class Links
         $found = [];
 
         foreach (self::rows($row, $field) as $named) {
-            if (! is_string($named) || trim($named) === '') {
+            if (! Required::isText($named)) {
                 throw LinksAreUnreadable::entry(WiringField::Wired, $field, $position);
             }
 
@@ -272,10 +267,6 @@ final readonly class Links
      */
     private static function text(array $row, NamesAWireField $list, NamesAWireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw LinksAreUnreadable::entry($list, $field, $position);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, LinksAreUnreadable::entry($list, $field, $position));
     }
 }

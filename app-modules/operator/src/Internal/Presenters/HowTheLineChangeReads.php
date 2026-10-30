@@ -15,13 +15,14 @@ use Modules\Kernel\Api\TheLineAsChanged;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatTheLineRunDid;
 use Modules\Kernel\Api\WhereALiftStands;
+use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\AClientHoldingAsShown;
 use Modules\Operator\Internal\ViewModels\ADirectionHeldAsShown;
 use Modules\Operator\Internal\ViewModels\ALiftAsShown;
 use Modules\Operator\Internal\ViewModels\ARateAsShown;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheLineChangeAsShown;
 use Modules\Operator\Internal\ViewModels\TheLineChangeTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 use function sprintf;
 
@@ -45,50 +46,46 @@ final readonly class HowTheLineChangeReads
     /** Nothing has been asked yet. */
     public function notAsked(): TheLineChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack());
+        return new TheLineChangeTurnedOutToBe(WhereTheWorkStands::notAsked());
     }
 
     /** What was typed was not sent, and why. */
     public function notAskable(string $why): TheLineChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), notAskable: $why);
+        return new TheLineChangeTurnedOutToBe(WhereTheWorkStands::answered(), notAskable: $why);
     }
 
     /** This phone holds no session for the stack. */
     public function signedOut(): TheLineChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::theSessionEnded());
+        return new TheLineChangeTurnedOutToBe(WhereTheWorkStands::signedOut());
     }
 
     /** The stack is still at it. */
     public function running(): TheLineChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), isWorking: true);
+        return new TheLineChangeTurnedOutToBe(WhereTheWorkStands::running());
     }
 
     /** The stack has no outcome for it any more. */
     public function ended(): TheLineChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return new TheLineChangeTurnedOutToBe(WhereTheWorkStands::ended());
     }
 
     /** The stack refused it, in its own words. */
     public function refused(ARefusalInItsWords $why): TheLineChangeTurnedOutToBe
     {
         return new TheLineChangeTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
-            notAskable: '',
+            stands: WhereTheWorkStands::answered(),
             refused: new HowARefusalReads()->inItsWords($why),
-            change: null,
         );
     }
 
     /** What stood in the way of asking. */
     public function met(Obstacle $why): TheLineChangeTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::somethingStopped($why));
+        return new TheLineChangeTurnedOutToBe(WhereTheWorkStands::met($why));
     }
 
     /** What the run reported, read against the clock once. */
@@ -101,11 +98,7 @@ final readonly class HowTheLineChangeReads
         }
 
         return new TheLineChangeTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
-            notAskable: '',
-            refused: null,
+            stands: WhereTheWorkStands::answered(),
             change: new TheLineChangeAsShown(
                 didSaid: $report->did()->saidOnTheScreen(),
                 mayBeApplied: $report->did() === WhatTheLineRunDid::Rehearsed,
@@ -116,13 +109,15 @@ final readonly class HowTheLineChangeReads
         );
     }
 
-    private function lift(WhereALiftStands $lift): ALiftAsShown
+    private function lift(WhereALiftStands $lift): ?ALiftAsShown
     {
-        return $lift->either(
-            none: static fn(): ALiftAsShown => new ALiftAsShown(said: '', count: 0, says: ''),
+        $shown = $lift->either(
+            none: static fn(): AsText => AsText::nothing(),
             inForce: static fn(int $seconds): ALiftAsShown => self::lifted(self::IN_FORCE, $seconds, $lift->says()),
             expired: static fn(int $seconds): ALiftAsShown => self::lifted(self::EXPIRED, $seconds, $lift->says()),
         );
+
+        return $shown instanceof ALiftAsShown ? $shown : null;
     }
 
     private static function lifted(string $saidIn, int $seconds, string $says): ALiftAsShown
@@ -138,20 +133,18 @@ final readonly class HowTheLineChangeReads
 
     private function client(AClientsHolding $client): AClientHoldingAsShown
     {
-        $pulling = $client->pulling() === WhatADownloadClientSaid::Unsaid ? '' : sprintf('stacks.pausing.said.%s', $client->pulling()->value);
+        $pulling = $client->pulling() === WhatADownloadClientSaid::Unsaid ? null : sprintf('stacks.pausing.said.%s', $client->pulling()->value);
 
         return $client->either(
             answered: fn(ADirectionHeld $down, ADirectionHeld $up): AClientHoldingAsShown => new AClientHoldingAsShown(
                 name: $client->client(),
                 pullingSaid: $pulling,
-                answered: true,
                 directions: [$this->direction(self::DOWN, $down), $this->direction(self::UP, $up)],
-                said: '',
+                said: null,
             ),
             silent: static fn(string $said): AClientHoldingAsShown => new AClientHoldingAsShown(
                 name: $client->client(),
                 pullingSaid: $pulling,
-                answered: false,
                 directions: [],
                 said: $said,
             ),
@@ -183,17 +176,5 @@ final readonly class HowTheLineChangeReads
         }
 
         return $rates;
-    }
-
-    private function without(HowTheReadingWent $went, bool $isWorking = false, bool $hasEnded = false, string $notAskable = ''): TheLineChangeTurnedOutToBe
-    {
-        return new TheLineChangeTurnedOutToBe(
-            went: $went,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
-            notAskable: $notAskable,
-            refused: null,
-            change: null,
-        );
     }
 }

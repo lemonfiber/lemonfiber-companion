@@ -530,7 +530,7 @@ it('drops what was handed over and a password about to be taken off when startin
     expect($drawn->offers())->not->toContain(__('stacks.invitation.take_it_off', ['name' => 'anna']))
         ->and($handedOverAgain->offers())->toContain(__('stacks.invitation.pass_on'))
         ->and($handedOverAgain->said())->not->toContain(__('stacks.invitation.passed_on'))
-        ->and($screen->passedOn)->toBe('')
+        ->and($screen->passedOn)->toBeNull()
         ->and($inviting->asked())->toBe(['would', 'would']);
 });
 
@@ -710,14 +710,14 @@ it('an act the stack could not be reached for is an obstacle beside the rest, th
     $screen->offer();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->howItIsGoing()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+    expect($screen->howItIsGoing()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->said())->toContain(__('stacks.invitation.who_is_in'))
         ->and($drawn->offers())->toContain(__('health.ask_again'));
 
     $screen->again();
 
-    expect($screen->howItIsGoing()->went->cameBack())->toBeTrue();
+    expect($screen->howItIsGoing()->stands->went->cameBack())->toBeTrue();
 });
 
 it('a household that could not be read is an obstacle, not nobody in', function (): void {
@@ -748,7 +748,7 @@ it('a credential the stack refused signs this device out and lets the session go
     $refused->name = 'anna';
     $refused->offer();
 
-    expect($refused->howItIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($refused->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($acting->isHolding(theStackSomebodyIsAskedIn()->id()))->toBeFalse();
 });
 
@@ -760,7 +760,7 @@ it('a session that has ended asks the stack nothing', function (): void {
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($inviting->readings())->toBe(0)
-        ->and($screen->howItIsGoing()->went->isSignedIn)->toBeFalse()
+        ->and($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->howItIsGoing()->askedFor)->toBe('anna')
         ->and($inviting->asked())->toBe([]);
 });
@@ -781,4 +781,15 @@ it('the way here and the way back are routes', function (): void {
 
 it('renders its own view', function (): void {
     expect(theInvitationScreen(AStackThatInvites::answering())->render()->name())->toBe('operator::asking-somebody-in');
+});
+
+it('opens with the name another screen sent it for typed, and with nothing typed where it was sent none or only spaces', function (): void {
+    $named = static function (?string $service): string {
+        $screen = theInvitationScreen(AStackThatInvites::answering());
+        $service === null ? $screen->mount() : $screen->mount($service);
+
+        return $screen->name;
+    };
+
+    expect([$named('Sonarr'), $named(null), $named('  ')])->toBe(['Sonarr', '', '']);
 });

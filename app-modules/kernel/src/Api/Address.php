@@ -175,7 +175,7 @@ final readonly class Address implements JsonSerializable
             throw AddressIsUnreachable::notOneHostWrittenPlainly();
         }
 
-        if ($found['port'] !== '' && (int) ltrim($found['port'], ':') > self::HIGHEST_PORT) {
+        if ((int) ltrim($found['port'], ':') > self::HIGHEST_PORT) {
             throw AddressIsUnreachable::notOneHostWrittenPlainly();
         }
 

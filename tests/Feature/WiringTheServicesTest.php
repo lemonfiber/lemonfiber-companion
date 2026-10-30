@@ -328,7 +328,7 @@ it('says the stack has no outcome for a run it no longer knows, which is not a r
     $screen = theScreenAfterWiring($wiring);
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.wiring.no_outcome'))
-        ->and($screen->howItIsGoing()->hasEnded)->toBeTrue()
+        ->and($screen->howItIsGoing()->stands->hasEnded())->toBeTrue()
         ->and($screen->following)->toBeNull()
         ->and($wiring->asked())->toBe(['wire', 'after:j-1']);
 });
@@ -366,7 +366,7 @@ it('a run the stack could not be reached for is an obstacle that can be asked ag
     $screen = theScreenAfterWiring($wiring);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->howItIsGoing()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+    expect($screen->howItIsGoing()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($drawn->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->offers())->toContain(__('health.ask_again'));
 
@@ -409,11 +409,11 @@ it('asking again lets go of an obstacle met starting a run, and does not start o
     $screen = theWiringScreen($wiring);
     $screen->wire();
 
-    expect($screen->howItIsGoing()->went->cameBack())->toBeFalse();
+    expect($screen->howItIsGoing()->stands->went->cameBack())->toBeFalse();
 
     $screen->again();
 
-    expect($screen->howItIsGoing()->went->cameBack())->toBeTrue()
+    expect($screen->howItIsGoing()->stands->went->cameBack())->toBeTrue()
         ->and($screen->howItIsGoing()->wiring)->toBeNull()
         ->and($wiring->asked())->toBe(['wire']);
 });
@@ -423,7 +423,7 @@ it('a credential the stack refused signs this device out and lets the session go
     $screen = theWiringScreen(AStackThatWires::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), keychain: $keychain);
     $screen->wire();
 
-    expect($screen->howItIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseServicesAreWired()->id()))->toBeFalse();
 });
 
@@ -432,7 +432,7 @@ it('a session that has ended asks the stack nothing', function (): void {
     $screen = theWiringScreen($wiring, signedIn: false);
     $screen->wire();
 
-    expect($screen->howItIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($wiring->asked())->toBe([]);
 });
 
@@ -588,12 +588,14 @@ it('reads the services on the first frame and what answers what on the next, a r
     $linking = AStackThatSaysWhatAnswersWhat::with(aStackWiringOneOfEach());
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings());
     $screen = theWiringScreen(AStackThatWires::answering(), supervising: $supervising, linking: $linking);
+    $waitedBeforeAnyFrame = $screen->waitsForTheNextFrame();
 
     $first = WhatTheDeviceWouldDraw::by($screen)->said();
     $askedOnTheFirst = [$supervising->askings(), $linking->askings()];
     $second = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect($askedOnTheFirst)->toBe([1, 0])
+    expect($waitedBeforeAnyFrame)->toBeFalse()
+        ->and($askedOnTheFirst)->toBe([1, 0])
         ->and($first)->toContain(__('stacks.wiring.fills.label'), __('stacks.wiring.services'))
         ->and($first)->not->toContain(__('stacks.wiring.fills.outright', ['service' => 'qbittorrent']))
         ->and($screen->waitsForTheNextFrame())->toBeFalse()

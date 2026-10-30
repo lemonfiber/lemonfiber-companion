@@ -21,6 +21,7 @@ use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatPuttingARunBackWouldShow;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * Putting a run back, as the template draws it: the record's rows first, and
@@ -46,7 +47,7 @@ final readonly class HowARunBackReads
                 at: static fn(Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
                 unreadable: AgoAsShown::undated(...),
             ),
-            nowhere: AgoAsShown::live(...),
+            nowhere: AgoAsShown::saysNothing(...),
         );
 
         return new WhatPuttingARunBackWouldShow(
@@ -82,31 +83,31 @@ final readonly class HowARunBackReads
     /** The stack is still putting it back. */
     public function running(): HowPuttingARunBackWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), isWorking: true);
+        return $this->following(WhereTheWorkStands::running());
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
     public function ended(): HowPuttingARunBackWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return $this->following(WhereTheWorkStands::ended());
     }
 
     /** Putting it back, or asking after it, met this instead. */
     public function met(Obstacle $why): HowPuttingARunBackWent
     {
-        return $this->following(HowTheReadingWent::somethingStopped($why));
+        return $this->following(WhereTheWorkStands::met($why));
     }
 
     /** The stack answered and would not put the run back, and this is what it said and named. */
     public function refused(ARefusalInItsWords $why): HowPuttingARunBackWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), refused: new HowARefusalReads()->inItsWords($why));
+        return $this->following(WhereTheWorkStands::answered(), refused: new HowARefusalReads()->inItsWords($why));
     }
 
     /** This device no longer holds a session for the stack it was put back on. */
     public function signedOut(): HowPuttingARunBackWent
     {
-        return $this->following(HowTheReadingWent::theSessionEnded());
+        return $this->following(WhereTheWorkStands::signedOut());
     }
 
     /** The stack's report of what putting it back came to. */
@@ -127,9 +128,7 @@ final readonly class HowARunBackReads
         };
 
         return new HowPuttingARunBackWent(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             hasReport: true,
             rehearsed: $rehearsed,
             leftNothing: $report->leftNothing(),
@@ -188,15 +187,11 @@ final readonly class HowARunBackReads
 
     /** A state with no report to draw. */
     private function following(
-        HowTheReadingWent $went,
-        bool $isWorking = false,
-        bool $hasEnded = false,
+        WhereTheWorkStands $stands,
         ?ARefusalAsShown $refused = null,
     ): HowPuttingARunBackWent {
         return new HowPuttingARunBackWent(
-            went: $went,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
+            stands: $stands,
             hasReport: false,
             rehearsed: false,
             leftNothing: false,

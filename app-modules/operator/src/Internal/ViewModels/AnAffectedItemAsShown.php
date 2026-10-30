@@ -35,8 +35,8 @@ final readonly class AnAffectedItemAsShown
         public string $meaning,
         public array $remedies,
         public array $downstream,
-        public string $check = '',
-        public string $exited = '',
+        public string $check,
+        public string $exited,
     ) {}
 
     /** Whether the card says the stack suggested nothing to try, which is where somebody to ask is owed. */

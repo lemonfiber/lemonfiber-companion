@@ -13,14 +13,14 @@
 
     <x-operator::offered-action :label="__('health.go_ahead')" tap="agree()" :offer="$this->offered(WhatToDoWithACopy::Take)" />
     <x-design::action :label="__('health.never_mind')" tap="neverMind()" tone="tonal" />
-@elseif ($this->lastCopy()->wasAsked)
-    @if (! $this->lastCopy()->went->cameBack())
+@elseif ($this->lastCopy()->stands->wasAsked())
+    @if (! $this->lastCopy()->stands->went->cameBack())
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->lastCopy()->went"
+            :went="$this->lastCopy()->stands->went"
             :goes="$this->goes()"
         />
-    @elseif ($this->lastCopy()->isWorking)
+    @elseif ($this->lastCopy()->stands->isWorking())
         <x-design::standing
             :said="__('stacks.copy.taking', ['scope' => __($this->lastCopy()->scope->said, $this->lastCopy()->scope->with)])"
             tone="working"
@@ -30,7 +30,7 @@
              while it runs, so this says that rather than drawing progress
              nobody measured. --}}
         <x-design::body>{{ __('stacks.copy.no_progress_while_running') }}</x-design::body>
-    @elseif ($this->lastCopy()->hasEnded)
+    @elseif ($this->lastCopy()->stands->hasEnded())
         {{-- Not a failure: the copy may well exist, and the list of copies
              is where to look. --}}
         <x-design::notice tone="unknown">

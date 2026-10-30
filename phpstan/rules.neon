@@ -126,6 +126,13 @@ services:
         tags:
             - phpstan.rules.rule
 
+    # S1 — a value marked ComparedInConstantTime is compared with hash_equals,
+    # never with === or !==.
+    -
+        class: Lemonfiber\Companion\PHPStan\Rules\CompareInConstantTimeRule
+        tags:
+            - phpstan.rules.rule
+
     # S3 — certificate verification is never turned off. The app pins a stack
     # by a fingerprint from the pairing material, and a verify-off switch leaves
     # the pin in place while making sure nothing ever reaches it.

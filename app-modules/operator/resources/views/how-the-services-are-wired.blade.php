@@ -1,5 +1,6 @@
 @use('Modules\Kernel\Api\WhatToDoAboutWiring')
 @use('Modules\Stacks\Api\AStacksScreen')
+@use('Modules\Operator\Internal\WhereAdoptingStands')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -26,10 +27,10 @@
                 <x-design::body>{{ __('stacks.wiring.fills.not_chosen') }}</x-design::body>
                 <x-operator::refused-in-its-words :refused="$this->choice->refused" />
             @else
-                @if ($this->choice->said !== '')
-                    <x-design::body>{{ __($this->choice->said, $this->choice->saidWith) }}</x-design::body>
+                @if ($this->choice->said !== null)
+                    <x-design::body>{{ __($this->choice->said->key, $this->choice->said->filling) }}</x-design::body>
                 @endif
-                @if ($this->choice->meaning !== '')
+                @if ($this->choice->meaning !== null && $this->choice->meaning !== '')
                     {{-- The stack's own account: which parts of a reading moved,
                          or what stood in the way of keeping it. --}}
                     <x-design::note>{{ $this->choice->meaning }}</x-design::note>
@@ -92,7 +93,7 @@
                 <x-design::card>
                     <x-design::strong>{{ $link->asks === '' ? $link->by : __($link->asks, $link->asksWith) }}</x-design::strong>
                     <x-design::body>{{ __($link->settledSaid, $link->settledWith) }}</x-design::body>
-                    @if ($link->why !== '')
+                    @if ($link->why !== null)
                         <x-design::note>{{ __('stacks.wiring.fills.why', ['why' => $link->why]) }}</x-design::note>
                     @endif
                     <x-operator::claimed-by :claimants="$link->claimants" />
@@ -114,19 +115,19 @@
         @endforelse
     </x-design::section>
 
-    @if ($this->howItIsGoing()->went->cameBack())
-        @if ($this->howItIsGoing()->isWorking)
+    @if ($this->howItIsGoing()->stands->went->cameBack())
+        @if ($this->howItIsGoing()->stands->isWorking())
             <x-design::standing
                 :said="__('stacks.wiring.working')"
                 tone="working"
             />
-        @elseif ($this->howItIsGoing()->hasEnded)
+        @elseif ($this->howItIsGoing()->stands->hasEnded())
             {{-- Not a failure and not a refusal: the stack has no outcome for it
                  any more. --}}
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.wiring.no_outcome') }}</x-design::strong>
             </x-design::notice>
-        @elseif ($this->howItIsGoing()->refusal !== '')
+        @elseif ($this->howItIsGoing()->refusal !== null)
             {{-- The stack's answer, drawn as the reason it is rather than as
                  something to try again. --}}
             <x-design::notice>
@@ -170,12 +171,12 @@
                 <x-design::body>{{ __('stacks.wiring.no_connections') }}</x-design::body>
             @endforelse
 
-            @if ($this->adoptionRehearsed)
+            @if ($this->adopting === WhereAdoptingStands::Rehearsed)
                 <x-operator::offered-action :label="__('stacks.wiring.adopt')" tap="adopt()" :offer="$this->offered(WhatToDoAboutWiring::Adopt)" />
             @endif
         @endif
 
-        @if (! $this->howItIsGoing()->isWorking)
+        @if (! $this->howItIsGoing()->stands->isWorking())
             {{-- A run changes nothing already right and keeps what was changed
                  by hand, so it is offered as it is: the screen's one way
                  forward. --}}
@@ -192,7 +193,7 @@
         {{-- Starting a run, or asking after one, met something in the way. --}}
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->howItIsGoing()->went"
+            :went="$this->howItIsGoing()->stands->went"
             :goes="$this->goes()"
         />
     @endif

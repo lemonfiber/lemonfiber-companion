@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal\ViewModels;
 
-use function is_array;
+use function array_map;
+use function explode;
 use function max;
 use function mb_strlen;
 
 use Modules\Design\Api\TypeSize;
-
-use function preg_split;
 
 /**
  * How large a title is lettered on its poster.
@@ -107,13 +106,6 @@ enum HowAPosterIsLettered: string
     /** The length of the longest run of characters between spaces. */
     private static function longestWordIn(string $titled): int
     {
-        $longest = 0;
-        $words = preg_split('/\s+/u', $titled);
-
-        foreach (is_array($words) ? $words : [] as $word) {
-            $longest = max($longest, mb_strlen($word));
-        }
-
-        return $longest;
+        return max(array_map(mb_strlen(...), explode(' ', $titled)));
     }
 }

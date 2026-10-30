@@ -21,9 +21,7 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class HowPuttingARunBackWent
 {
     /**
-     * @param HowTheReadingWent           $went        whether asking after it came back, and what stood in the way where it did not
-     * @param bool                        $isWorking   whether the stack is still putting it back
-     * @param bool                        $hasEnded    whether the stack has no outcome for it any more
+     * @param WhereTheWorkStands           $stands        where the work stands, and whether the stack could be asked at all
      * @param bool                        $hasReport   whether the stack reported what it came to
      * @param bool                        $rehearsed   whether the report only says what would go back
      * @param bool                        $leftNothing whether everything went back, which is only where nothing was left
@@ -36,9 +34,7 @@ final readonly class HowPuttingARunBackWent
      * @param ?ARefusalAsShown             $refused     why the stack would not put the run back, in its words, and nothing unless it refused
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking,
-        public bool $hasEnded,
+        public WhereTheWorkStands $stands,
         public bool $hasReport,
         public bool $rehearsed,
         public bool $leftNothing,

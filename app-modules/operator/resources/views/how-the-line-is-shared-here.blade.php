@@ -65,16 +65,16 @@
         <native:outlined-text-input native:model="lift" label="{{ __('stacks.line_change.lift.minutes') }}" supporting="{{ __('stacks.line_change.lift.minutes_are') }}" />
     </x-design::card>
 
-    @if ($this->howItIsGoing()->notAskable !== '')
+    @if ($this->howItIsGoing()->notAskable !== null)
         <x-design::notice>
             <x-design::strong>{{ __($this->howItIsGoing()->notAskable) }}</x-design::strong>
         </x-design::notice>
     @endif
 
-    @if ($this->howItIsGoing()->went->cameBack())
-        @if ($this->howItIsGoing()->isWorking)
+    @if ($this->howItIsGoing()->stands->went->cameBack())
+        @if ($this->howItIsGoing()->stands->isWorking())
             <x-design::standing :said="__('stacks.line_change.working')" tone="working" />
-        @elseif ($this->howItIsGoing()->hasEnded)
+        @elseif ($this->howItIsGoing()->stands->hasEnded())
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.line_change.no_outcome') }}</x-design::strong>
             </x-design::notice>
@@ -98,8 +98,8 @@
 
             <x-design::section :label="__('stacks.line_change.clients')">
                 @forelse ($this->howItIsGoing()->change->clients as $client)
-                    <x-design::row :headline="$client->name" :supporting="$client->pullingSaid === '' ? '' : __($client->pullingSaid)" />
-                    @if ($client->answered)
+                    <x-design::row :headline="$client->name" :supporting="$client->pullingSaid === null ? '' : __($client->pullingSaid)" />
+                    @if ($client->said === null)
                         @forelse ($client->directions as $held)
                             <x-design::row
                                 :headline="__($held->said, ['verdict' => __($held->verdictSaid)])"
@@ -121,7 +121,7 @@
                 @endforelse
             </x-design::section>
 
-            @if ($this->howItIsGoing()->change->lift->said !== '')
+            @if ($this->howItIsGoing()->change->lift !== null)
                 <x-design::row
                     :headline="trans_choice($this->howItIsGoing()->change->lift->said, $this->howItIsGoing()->change->lift->count)"
                     :supporting="$this->howItIsGoing()->change->lift->says"
@@ -133,7 +133,7 @@
             @endif
         @endif
 
-        @unless ($this->howItIsGoing()->isWorking)
+        @unless ($this->howItIsGoing()->stands->isWorking())
             <x-operator::offered-action :label="__('stacks.line_change.rehearse')" tap="rehearse()" tone="tonal" :offer="$this->offered(ChangingTheLine::Change)" />
         @endunless
 
@@ -141,7 +141,7 @@
     @else
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->howItIsGoing()->went"
+            :went="$this->howItIsGoing()->stands->went"
             :goes="$this->goes()"
         />
     @endif

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
+use function array_find;
+
 use InvalidArgumentException;
 
 use function is_string;
@@ -102,7 +104,7 @@ final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeIt
     {
         $said = $this->data(AScreenWithoutAStack::SETTINGS_SPEAK_TO);
 
-        $this->speaksTo = WhoTheSettingsSpeakTo::tryFrom(is_string($said) ? $said : '') ?? WhoTheSettingsSpeakTo::Anyone;
+        $this->speaksTo = (is_string($said) ? WhoTheSettingsSpeakTo::tryFrom($said) : null) ?? WhoTheSettingsSpeakTo::Anyone;
     }
 
     /** Whether the phone keeps nothing between launches, having nowhere safe to. */
@@ -140,23 +142,11 @@ final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeIt
     /** The operator tapped a choice of how long readings are kept. */
     public function keepReadingsFor(string $word): void
     {
-        if ($word === NotACountOfDays::Other->value) {
-            $this->typingDays = true;
-
-            return;
-        }
-
-        if ($word === NotACountOfDays::UntilRemoved->value) {
-            $this->keptFor(HowLongReadingsAreKept::untilRemoved());
-
-            return;
-        }
-
-        foreach (KeptFor::cases() as $offered) {
-            if ($offered->name === $word) {
-                $this->keptFor(HowLongReadingsAreKept::for($offered));
-            }
-        }
+        $this->readingsKept = match (NotACountOfDays::tryFrom($word)) {
+            NotACountOfDays::Other => $this->typeTheDays(),
+            NotACountOfDays::UntilRemoved => $this->keptFor(HowLongReadingsAreKept::untilRemoved()),
+            null => $this->keptForTheNamed($word),
+        };
     }
 
     /**
@@ -212,14 +202,12 @@ final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeIt
      */
     public function stacksInOrder(): array
     {
-        if ($this->stacksShown !== null) {
-            return $this->stacksShown;
-        }
+        if ($this->stacksShown === null) {
+            $this->stacksShown = [];
 
-        $this->stacksShown = [];
-
-        foreach ($this->stacks->configured() as $stack) {
-            $this->stacksShown[] = ['key' => $stack->id()->stored(), 'name' => $stack->name()->shown()];
+            foreach ($this->stacks->configured() as $stack) {
+                $this->stacksShown[] = ['key' => $stack->id()->stored(), 'name' => $stack->name()->shown()];
+            }
         }
 
         return $this->stacksShown;
@@ -243,7 +231,22 @@ final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeIt
         $this->stacksShown = null;
     }
 
-    /** Keep the operator's choice, which lets go of every reading older than it now. */
+    /** Open the field for a count of days; what is kept stays as it was until one is saved. */
+    private function typeTheDays(): HowLongReadingsAreKept
+    {
+        $this->typingDays = true;
+
+        return $this->readingsInForce();
+    }
+
+    /** Keep the choice offered by this name, where one is; what is kept stays as it was otherwise. */
+    private function keptForTheNamed(string $word): HowLongReadingsAreKept
+    {
+        $named = array_find(KeptFor::cases(), static fn(KeptFor $offered): bool => $offered->name === $word);
+
+        return $named instanceof KeptFor ? $this->keptFor(HowLongReadingsAreKept::for($named)) : $this->readingsInForce();
+    }
+
     /**
      * The stack a key names, or none where it is not one.
      *
@@ -258,6 +261,7 @@ final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeIt
         }
     }
 
+    /** Keep the operator's choice, which lets go of every reading older than it now. */
     private function keptFor(HowLongReadingsAreKept $kept): HowLongReadingsAreKept
     {
         $this->readingsKept = $this->readings->keepFor($kept);

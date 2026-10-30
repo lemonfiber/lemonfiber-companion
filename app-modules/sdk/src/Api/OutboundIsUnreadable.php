@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
+use function array_column;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Sdk\Api\Fields\OutboundField;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -80,10 +80,7 @@ final class OutboundIsUnreadable extends InvalidArgumentException
             'Entry %d of `ours` in the outbound envelope is `%s`, and this app reads %s. Drawing it under the nearest name would be a claim about where somebody\'s data goes.',
             $position,
             $said,
-            implode(', ', array_map(
-                static fn(WhatLemonfiberAsksFor $asks): string => sprintf('`%s`', $asks->value),
-                WhatLemonfiberAsksFor::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(WhatLemonfiberAsksFor::cases(), 'value')),
         ));
     }
 }

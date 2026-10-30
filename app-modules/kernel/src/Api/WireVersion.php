@@ -58,12 +58,6 @@ enum WireVersion: int
      */
     public static function newest(): self
     {
-        // Exempt from the mutator that puts `min` where `max` is, because at
-        // one case the two are the same program. The exemption removes itself:
-        // `WireVersionTest` asserts that this enum holds exactly one case, so
-        // the day a second arrives that test fails and names this line as the
-        // one to delete.
-        // @pest-mutate-ignore: MaxToMin
         return self::from(max(array_column(self::cases(), 'value')));
     }
 }

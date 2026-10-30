@@ -11,8 +11,8 @@ use function trim;
 /** What a trace is asked to follow: an item, by the name somebody knows it by. */
 final readonly class WhatToFollow
 {
-    /** @param int<0, max> $season */
-    private function __construct(private string $term, private int $season, private bool $narrowed) {}
+    /** @param int<0, max>|null $season the one season it is narrowed to, or null across every one */
+    private function __construct(private string $term, private ?int $season) {}
 
     /** The term to follow; a blank one is refused, since it follows nothing. */
     public static function called(string $term): self
@@ -23,7 +23,7 @@ final readonly class WhatToFollow
             throw TheTraceSaysNothing::about('term');
         }
 
-        return new self($trimmed, 0, narrowed: false);
+        return new self($trimmed, null);
     }
 
     /** One season of the item; a blank term, or a season below none, is refused. */
@@ -33,7 +33,7 @@ final readonly class WhatToFollow
             throw TheTraceSaysNothing::about('season');
         }
 
-        return new self(self::called($term)->term, $season, narrowed: true);
+        return new self(self::called($term)->term, $season);
     }
 
     /**
@@ -49,7 +49,7 @@ final readonly class WhatToFollow
      */
     public function either(Closure $narrowed, Closure $whole): object
     {
-        return $this->narrowed ? $narrowed($this->season) : $whole();
+        return $this->season === null ? $whole() : $narrowed($this->season);
     }
 
     public function term(): string

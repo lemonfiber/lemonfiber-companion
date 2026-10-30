@@ -47,7 +47,7 @@ final class Poster extends Component
 
         $this->titled = $said->titled($poster);
         $this->named = $said->line($poster->reads, $this->titled);
-        $this->above = $said->line($poster->above, '');
+        $this->above = $said->line($poster->above, $poster->above);
         $this->lines = $poster->lettered->linesAtMost();
     }
 

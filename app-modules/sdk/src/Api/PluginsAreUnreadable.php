@@ -37,6 +37,16 @@ final class PluginsAreUnreadable extends InvalidArgumentException
         ));
     }
 
+    /** The one record of its name was not readable, named by the record and the field. */
+    public static function within(NamesAWireField $record, NamesAWireField $field): self
+    {
+        return new self(sprintf(
+            '`%s` in the plugins envelope has no readable `%s`. It is refused rather than read in part: a plugin read short is something the operator agrees to without being told.',
+            $record->value,
+            $field->value,
+        ));
+    }
+
     /** A word arrived that this app has no reading for, named by where it was. */
     public static function said(NamesAWireField $field, string $said): self
     {

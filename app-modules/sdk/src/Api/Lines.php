@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Scrollback;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Stream;
 use Modules\Sdk\Api\Fields\LogField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -55,16 +56,14 @@ final readonly class Lines
         $asked = HowManyLines::of($window->bound());
 
         $said = [];
-        $position = 0;
 
-        foreach ($window->lines() as $envelope) {
+        foreach ($window->lines() as $position => $envelope) {
             // Every line, not the window. A wire version this build does not
             // app does not support, and a window is many envelopes rather than
             // one — the client asserts each line's *kind* as it builds the
             // window and says nothing about its version, so this is the only
             // place the gate can stand for a log read.
             $said[] = self::line(Wire::checked($envelope)->data, $position);
-            $position++;
         }
 
         return Scrollback::of($service, $asked, ...$said);
@@ -177,7 +176,7 @@ final readonly class Lines
     {
         $said = $row[WireField::At->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw LineIsUnreadable::moment(is_string($said) ? $said : '', $position);
         }
 

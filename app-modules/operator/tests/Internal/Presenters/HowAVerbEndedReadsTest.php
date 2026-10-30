@@ -37,17 +37,14 @@ use Modules\Operator\Internal\ViewModels\AnEditAsShown;
 use Modules\Operator\Internal\ViewModels\APortHeldAsShown;
 use Modules\Operator\Internal\ViewModels\AServiceLeftOutAsShown;
 use Modules\Operator\Internal\ViewModels\AServiceNotBackAsShown;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\HowTheVerbWent;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /** Everything a state with no report to draw holds, beside how the reading went and which of the three it is. */
-function aVerbWithNoReport(HowTheReadingWent $went, bool $wasAsked = true, bool $isWorking = false, bool $hasEnded = false): HowTheVerbWent
+function aVerbWithNoReport(WhereTheWorkStands $stands): HowTheVerbWent
 {
     return new HowTheVerbWent(
-        went: $went,
-        wasAsked: $wasAsked,
-        isWorking: $isWorking,
-        hasEnded: $hasEnded,
+        stands: $stands,
         wasRehearsed: false,
         cameToSaid: null,
         because: '',
@@ -84,19 +81,16 @@ function aRestartThatLeftOneBehind(WhetherItWasRehearsed $was): WhatTheVerbCameT
 it('holds nothing of a report in every state that has none', function (): void {
     $reads = new HowAVerbEndedReads();
 
-    expect($reads->notAsked())->toEqual(aVerbWithNoReport(HowTheReadingWent::itCameBack(), wasAsked: false))
-        ->and($reads->signedOut())->toEqual(aVerbWithNoReport(HowTheReadingWent::theSessionEnded()))
-        ->and($reads->met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->toEqual(aVerbWithNoReport(HowTheReadingWent::somethingStopped(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
-        ->and($reads->running())->toEqual(aVerbWithNoReport(HowTheReadingWent::itCameBack(), isWorking: true))
-        ->and($reads->ended())->toEqual(aVerbWithNoReport(HowTheReadingWent::itCameBack(), hasEnded: true));
+    expect($reads->notAsked())->toEqual(aVerbWithNoReport(WhereTheWorkStands::notAsked()))
+        ->and($reads->signedOut())->toEqual(aVerbWithNoReport(WhereTheWorkStands::signedOut()))
+        ->and($reads->met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->toEqual(aVerbWithNoReport(WhereTheWorkStands::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
+        ->and($reads->running())->toEqual(aVerbWithNoReport(WhereTheWorkStands::running()))
+        ->and($reads->ended())->toEqual(aVerbWithNoReport(WhereTheWorkStands::ended()));
 });
 
 it('draws a restart that left one behind whole, naming it with where it stood', function (): void {
     expect(new HowAVerbEndedReads()->done(aRestartThatLeftOneBehind(WhetherItWasRehearsed::CarriedOut), WhatToDoWithIt::Restart))->toEqual(new HowTheVerbWent(
-        went: HowTheReadingWent::itCameBack(),
-        wasAsked: true,
-        isWorking: false,
-        hasEnded: false,
+        stands: WhereTheWorkStands::answered(),
         wasRehearsed: false,
         cameToSaid: 'health.came_to.not_everything_back',
         because: '',

@@ -123,7 +123,9 @@ function aShelfAnsweringTheTitle(WhatTheTitleIs $title): AShelfThatWasRead
 it('asks for the title the route names', function (): void {
     $watching = aShelfAnsweringTheTitle(WhatTheTitleIs::told(alienInFull(streamingAtTheDoor('a1'))));
 
-    theTitleScreen($watching)->title();
+    $screen = theTitleScreen($watching);
+    $screen->title();
+    $screen->title();
 
     expect($watching->titlesAskedFor())->toBe(['a1']);
 });
@@ -158,6 +160,20 @@ it('says a title the server states as running no minutes runs under a minute, ne
     expect($said)->toContain(__('household.title.runs_under_a_minute'))
         ->and($said)->not->toContain(__('household.title.runs_minutes', ['minutes' => 0]));
 });
+
+it('says a minute in minutes and an hour in hours, at each edge', function (int $minutes, string $line): void {
+    $title = WhatTheTitleIs::told(ATitle::of(
+        Holding::of(HoldingId::called('a3'), 'A short', Medium::Film, WhenItCameOut::in(2018)),
+        ItsDetails::of('', HowLongItRuns::minutes($minutes), Genres::of(), '', WhenItWasReleased::unstated()),
+        streamingAtTheDoor('a3'),
+        Seasons::none(),
+    ));
+
+    expect(WhatTheDeviceWouldDraw::by(theTitleScreen(aShelfAnsweringTheTitle($title)))->said())->toContain($line);
+})->with([
+    'one minute' => [1, fn(): string => WhatMarkupDraws::words('household.title.runs_minutes', ['minutes' => 1])],
+    'one hour' => [60, fn(): string => WhatMarkupDraws::words('household.title.runs_hours', ['hours' => 1, 'minutes' => 0])],
+]);
 
 it('says why it cannot play in the core\'s own words where no location is stated', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theTitleScreen(aShelfAnsweringTheTitle(WhatTheTitleIs::told(alienInFull(WhereItPlays::cannot(Sentence::of('This machine\'s household address is not known.')))))));
@@ -236,14 +252,18 @@ it('is the screen the router opens at a title\'s path', function (): void {
     expect($resolved['class'] ?? null)->toBe(WhatThisTitleIs::class);
 });
 
-it('says a title is not on their shelf where the route names none, and asks nothing', function (): void {
+it('says a title is not on their shelf where the route names none, and asks nothing', function (array $named): void {
     $watching = aShelfAnsweringTheTitle(WhatTheTitleIs::told(alienInFull(streamingAtTheDoor('a1'))));
     $screen = theTitleScreen($watching);
-    $screen->setParams(['stack' => theStackATitleIsOn()->id()->stored()]);
+    $screen->setParams(['stack' => theStackATitleIsOn()->id()->stored(), ...$named]);
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.title.absent'))
         ->and($watching->titlesAskedFor())->toBe([]);
-});
+})->with([
+    'no title' => [[]],
+    'an empty one' => [['service' => '']],
+    'a blank one' => [['service' => '  ']],
+]);
 
 it('offers to sign in again where the core refused the session', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theTitleScreen(AShelfThatWasRead::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))));
@@ -259,7 +279,7 @@ it('draws the title\'s poster from what the phone holds, and letters it where th
 
     expect(theTitleScreen($watching, pictures: new ThePicturesItDraws($held, $posters))->title()->title?->poster->pictured)->toStartWith(ArtworkKey::SCHEME)
         ->and($held->howMany())->toBe(1)
-        ->and(theTitleScreen($watching)->title()->title?->poster->pictured)->toBe('');
+        ->and(theTitleScreen($watching)->title()->title?->poster->pictured)->toBeNull();
 });
 
 it('draws the title\'s poster again once back on view, after the lock let go of it, and leaves an unread page as it was', function (): void {

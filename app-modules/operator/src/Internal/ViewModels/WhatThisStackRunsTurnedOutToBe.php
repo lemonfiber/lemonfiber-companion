@@ -37,6 +37,7 @@ final readonly class WhatThisStackRunsTurnedOutToBe
      * @param list<WhatOneServiceSays> $services   everything it runs, in the stack's order
      * @param string                   $overall    the key for what it all amounts to, or empty where there is none
      * @param bool                     $isSettling whether anything here becomes something else by itself
+     * @param Disturbances|null $disturbs what each verb takes away, as the listing in front of the operator reports it, or null where none came back or the listing is the one the phone kept
      * @param list<string>                 $active  the forms running, as the stack counts them
      * @param list<AServiceLeftOutAsShown> $leftOut the services those forms left out, each with why
      * @param HowTheReadingWent            $askedNow what this frame's asking met, which stands beside a kept listing where the stack did not answer

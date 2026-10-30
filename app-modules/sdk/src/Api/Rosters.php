@@ -23,11 +23,11 @@ use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\WhatTheEngineCallsIt;
 use Modules\Sdk\Api\Fields\StatusField;
 use Modules\Sdk\Internal\Costs;
+use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\WhatWasLeftOut;
 use Modules\Sdk\Internal\Wire;
 use Throwable;
-
-use function trim;
 
 /**
  * The `status` envelope, as the listing an operator picks a verb from.
@@ -170,15 +170,13 @@ final readonly class Rosters
     {
         $leaning = self::leaning($data);
         $daemons = [];
-        $position = 0;
 
-        foreach (self::listed($data, WireField::Services) as $row) {
+        foreach (InTheOrderSent::rows(self::listed($data, WireField::Services)) as $position => $row) {
             if (! is_array($row)) {
                 throw RosterIsUnreadable::item($position);
             }
 
             $daemons[] = self::daemon($row, $position, $leaning);
-            $position++;
         }
 
         return $daemons;
@@ -274,7 +272,7 @@ final readonly class Rosters
 
         $said = $row[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw RosterIsUnreadable::said($field, $position);
         }
 
@@ -320,11 +318,9 @@ final readonly class Rosters
     private static function leaning(array $data): array
     {
         $leaning = [];
-        $position = 0;
 
-        foreach (self::listed($data, WireField::Services) as $row) {
+        foreach (InTheOrderSent::rows(self::listed($data, WireField::Services)) as $position => $row) {
             $leaning = self::alsoLeaning($leaning, $row, $position);
-            $position++;
         }
 
         return $leaning;
@@ -362,7 +358,7 @@ final readonly class Rosters
         $needs = [];
 
         foreach (self::listed($row, StatusField::DependsOn) as $said) {
-            if (! is_string($said) || trim($said) === '') {
+            if (! Required::isText($said)) {
                 throw RosterIsUnreadable::leaning($position);
             }
 

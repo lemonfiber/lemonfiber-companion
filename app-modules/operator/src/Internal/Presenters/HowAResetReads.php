@@ -10,7 +10,7 @@ use Modules\Kernel\Api\TheReset;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
 use Modules\Operator\Internal\ViewModels\AResetAsWorded;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * Putting the configuration back, as the template draws it, before the yes or after it.
@@ -41,40 +41,38 @@ final readonly class HowAResetReads
     /** The stack is still at it. */
     public function running(): AResetAsShown
     {
-        return $this->following(HowTheReadingWent::itCameBack(), isWorking: true);
+        return $this->following(WhereTheWorkStands::running());
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
     public function ended(): AResetAsShown
     {
-        return $this->following(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return $this->following(WhereTheWorkStands::ended());
     }
 
     /** Asking, or asking after it, met this instead. */
     public function met(Obstacle $why): AResetAsShown
     {
-        return $this->following(HowTheReadingWent::somethingStopped($why));
+        return $this->following(WhereTheWorkStands::met($why));
     }
 
     /** This device no longer holds a session for the stack. */
     public function signedOut(): AResetAsShown
     {
-        return $this->following(HowTheReadingWent::theSessionEnded());
+        return $this->following(WhereTheWorkStands::signedOut());
     }
 
     /** The stack refused, and this is why, in its words. */
     public function refused(ARefusalInItsWords $why): AResetAsShown
     {
-        return $this->following(HowTheReadingWent::itCameBack(), refused: new HowARefusalReads()->inItsWords($why));
+        return $this->following(WhereTheWorkStands::answered(), refused: new HowARefusalReads()->inItsWords($why));
     }
 
     /** The stack's report: what putting the configuration back would revert, or reverted. */
     public function reported(TheReset $reset): AResetAsShown
     {
         return new AResetAsShown(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             refused: null,
             isReported: true,
             changesNothing: $reset->changesNothing(),
@@ -133,15 +131,11 @@ final readonly class HowAResetReads
 
     /** A state with no report to draw. */
     private function following(
-        HowTheReadingWent $went,
-        bool $isWorking = false,
-        bool $hasEnded = false,
+        WhereTheWorkStands $stands,
         ?ARefusalAsShown $refused = null,
     ): AResetAsShown {
         return new AResetAsShown(
-            went: $went,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
+            stands: $stands,
             refused: $refused,
             isReported: false,
             changesNothing: false,

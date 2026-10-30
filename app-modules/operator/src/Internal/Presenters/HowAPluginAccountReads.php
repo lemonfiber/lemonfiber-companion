@@ -44,6 +44,7 @@ use Modules\Operator\Internal\ViewModels\ARecipeRunAsShown;
 use Modules\Operator\Internal\ViewModels\ARecipeStepAsShown;
 use Modules\Operator\Internal\ViewModels\AShapeTakenAsShown;
 use Modules\Operator\Internal\ViewModels\AStepThatRanAsShown;
+use Modules\Operator\Internal\ViewModels\ASwitchAsShown;
 use Modules\Operator\Internal\ViewModels\AValueCarriedAsShown;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
 
@@ -123,9 +124,8 @@ final readonly class HowAPluginAccountReads
         $taking = [];
 
         foreach ($install->taking() as $taken) {
-            $place = array_search($taken->approval(), $approvals, strict: true);
 
-            $taking[] = $this->shape($taken, is_int($place) ? $place : null, in_array($taken->approval(), $approved, strict: true));
+            $taking[] = $this->shape($taken, $this->switchFor($taken->approval(), $approvals, $approved));
         }
 
         $checks = $install->checks();
@@ -170,13 +170,13 @@ final readonly class HowAPluginAccountReads
             install: $this->install($update->install(), $approved, $agreeable),
             wentBack: new HowARunBackReads()->done($update->wentBack()),
             headline: match (true) {
-                $update->isAReading() => '',
+                $update->isAReading() => null,
                 $update->held() => 'plugins.updated_it',
                 default => 'plugins.not_updated',
             },
             stopped: $update->stopped(),
             restoredSaid: match (true) {
-                ! $restored->wasNeeded() => '',
+                ! $restored->wasNeeded() => null,
                 $restored->isPlaced() && $restored->isRunning() => 'plugins.restored.running',
                 $restored->isPlaced() => 'plugins.restored.not_running',
                 default => 'plugins.restored.not_placed',
@@ -199,7 +199,7 @@ final readonly class HowAPluginAccountReads
             isAReading: $removal->isAReading(),
             agreeable: $agreeable,
             headline: match (true) {
-                $removal->isAReading() => '',
+                $removal->isAReading() => null,
                 $removal->wasRemoved() => 'plugins.removed_it',
                 default => 'plugins.partly_removed',
             },
@@ -242,7 +242,7 @@ final readonly class HowAPluginAccountReads
                 agreeable: $agreeable,
                 headline: 'plugins.run.reading',
                 recipe: $recipe,
-                why: '',
+                why: null,
                 ran: [],
             ),
             ran: static function (WhatARecipeRunDid $did) use ($run, $recipe): ARecipeRunAsShown {
@@ -275,7 +275,7 @@ final readonly class HowAPluginAccountReads
         $shown = [];
 
         foreach ($left as $taken) {
-            $shown[] = $this->shape($taken, approval: null, approved: false);
+            $shown[] = $this->shape($taken, null);
         }
 
         return $shown;
@@ -293,26 +293,24 @@ final readonly class HowAPluginAccountReads
         $shown = [];
 
         foreach ($granting as $asked) {
-            $place = array_search($asked->approval(), $approvals, strict: true);
             $grant = $asked->grant();
 
             $shown[] = new AGrantAskedAsShown(
                 credential: $grant->credential(),
                 whose: $grant->whose()->named(),
                 fills: $grant->fills(),
-                approval: is_int($place) ? $place : null,
-                approved: in_array($asked->approval(), $approved, strict: true),
+                switch: $this->switchFor($asked->approval(), $approvals, $approved),
             );
         }
 
         return $shown;
     }
 
-    /** How an install ended, as a catalogue key, or empty for a reading. */
-    private function headline(APluginInstall $install): string
+    /** How an install ended, as a catalogue key, or null for a reading. */
+    private function headline(APluginInstall $install): ?string
     {
         return match (true) {
-            $install->isAReading() => '',
+            $install->isAReading() => null,
             $install->held() => 'plugins.installed_it',
             default => $install->wasItPutBack(
                 putBack: static fn(): AsText => AsText::of('plugins.put_back'),
@@ -338,8 +336,6 @@ final readonly class HowAPluginAccountReads
         $pairs = [];
 
         foreach ($recipe->pairs() as $pair) {
-            $place = $pair->asksForApproval() ? array_search($pair->approval(), $approvals, strict: true) : false;
-
             $pairs[] = new AValueCarriedAsShown(
                 value: $pair->value(),
                 origin: $pair->origin(),
@@ -347,8 +343,7 @@ final readonly class HowAPluginAccountReads
                 release: $pair->release(),
                 from: $pair->from(),
                 asksForApproval: $pair->asksForApproval(),
-                approval: is_int($place) ? $place : null,
-                approved: $pair->asksForApproval() && in_array($pair->approval(), $approved, strict: true),
+                switch: $pair->asksForApproval() ? $this->switchFor($pair->approval(), $approvals, $approved) : null,
             );
         }
 
@@ -362,16 +357,28 @@ final readonly class HowAPluginAccountReads
     }
 
     /** One service taking a privileged shape, with its switch's place where the screen offers one. */
-    private function shape(AShapeTaken $taken, ?int $approval, bool $approved): AShapeTakenAsShown
+    private function shape(AShapeTaken $taken, ?ASwitchAsShown $switch): AShapeTakenAsShown
     {
         return new AShapeTakenAsShown(
             service: $taken->service(),
             neededFor: $taken->shape()->neededFor(),
             grants: $this->lines($taken->grants()),
             devices: $this->lines($taken->devices()),
-            approval: $approval,
-            approved: $approved,
+            switch: $switch,
         );
+    }
+
+    /**
+     * The switch for one approval, where the account offers it, on where the operator has given it.
+     *
+     * @param list<string> $approvals every approval the account offers
+     * @param list<string> $approved  every approval the operator has given
+     */
+    private function switchFor(string $approval, array $approvals, array $approved): ?ASwitchAsShown
+    {
+        $place = array_search($approval, $approvals, strict: true);
+
+        return is_int($place) ? new ASwitchAsShown($place, in_array($approval, $approved, strict: true)) : null;
     }
 
     /**

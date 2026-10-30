@@ -33,15 +33,15 @@
     <x-design::title>{{ __('health.about_to', ['what' => $this->asking()->named()]) }}</x-design::title>
     <x-design::body>{{ __($this->asking()->doing()->saidOnTheScreen()) }}</x-design::body>
 
-    @if ($this->willRun !== '')
+    @if ($this->willRun?->command !== null)
         {{-- The exact command the yes will run, from the stack's own
              rehearsal of it, read before agreeing rather than after. Nothing
              is drawn until the stack has said, and a rehearsal that could not
              be read is said as that, apart from a verb with no command: the
              question stands either way. --}}
         <x-design::note>{{ __('stacks.command.will_run') }}</x-design::note>
-        <x-design::verbatim>{{ $this->willRun }}</x-design::verbatim>
-    @elseif ($this->willRunUnread)
+        <x-design::verbatim>{{ $this->willRun->command }}</x-design::verbatim>
+    @elseif ($this->willRun !== null)
         <x-design::note>{{ __('stacks.command.unread') }}</x-design::note>
     @endif
 
@@ -132,23 +132,23 @@
         </native:row>
     @endif
 
-    @if ($this->whatItCameTo()->wasAsked)
+    @if ($this->whatItCameTo()->stands->wasAsked())
         {{-- What the last verb sent from here came to, from the stack's own
              report of it. The listing below says where things stand; this
              says what the verb did, which the listing cannot. --}}
         <x-design::card>
             <x-operator::heading>{{ __('health.came_to.heading') }}</x-operator::heading>
 
-            @if (! $this->whatItCameTo()->went->cameBack())
+            @if (! $this->whatItCameTo()->stands->went->cameBack())
                 {{-- Asking again is the column's own, at its foot. --}}
                 <x-operator::what-stood-in-the-way
                     :settings-would-not-open="$this->theSettingsWouldNotOpen"
-                    :went="$this->whatItCameTo()->went"
+                    :went="$this->whatItCameTo()->stands->went"
                     ask-again=""
                     :goes="$this->goes()"
                 />
-                <x-operator::try-again :went="$this->whatItCameTo()->went" tap="tryAgain()" />
-            @elseif ($this->whatItCameTo()->isWorking)
+                <x-operator::try-again :went="$this->whatItCameTo()->stands->went" tap="tryAgain()" />
+            @elseif ($this->whatItCameTo()->stands->isWorking())
                 @if ($this->waitsOn !== '')
                     {{-- The stack's own line for what the start is waiting for,
                          in place of this screen's sentence and with no progress
@@ -157,7 +157,7 @@
                 @else
                     <x-design::body>{{ __('health.came_to.running') }}</x-design::body>
                 @endif
-            @elseif ($this->whatItCameTo()->hasEnded)
+            @elseif ($this->whatItCameTo()->stands->hasEnded())
                 {{-- Not a failure: it may well have worked, and the listing is
                      where to look. --}}
                 <x-design::body>{{ __('health.came_to.no_outcome') }}</x-design::body>
@@ -244,20 +244,20 @@
                     :goes="$this->goes()"
                 />
             @else
-                @if ($this->rehearsal()->runningUnread)
+                @if ($this->rehearsal()->read->runningUnread)
                     {{-- Said once, above a list that still says what would
                          start, because the stack could not tell which of these
                          are up already. --}}
                     <x-design::note>{{ __('health.rehearsal.running_unread') }}</x-design::note>
                 @endif
 
-                @forelse ($this->rehearsal()->wouldStart as $service)
+                @forelse ($this->rehearsal()->read->wouldStart as $service)
                     <x-design::body>{{ __($service->said, ['name' => $service->name]) }}</x-design::body>
                 @empty
                     <x-design::body>{{ __('health.rehearsal.would_start_nothing') }}</x-design::body>
                 @endforelse
 
-                @forelse ($this->rehearsal()->leftOut as $left)
+                @forelse ($this->rehearsal()->read->leftOut as $left)
                     <x-design::note>{{ __('health.rehearsal.left_out', ['name' => $left->name, 'needs' => __($left->needsSaid)]) }}</x-design::note>
                 @empty
                     <x-design::note>{{ __('health.rehearsal.nothing_left_out') }}</x-design::note>
@@ -266,14 +266,14 @@
                 {{-- The stack's estimate, said as one, and the services it could
                      not estimate, so a short sum reads as short. --}}
                 <x-operator::figure
-                    :figure="(string) $this->rehearsal()->estimatedMib"
+                    :figure="(string) $this->rehearsal()->read->estimatedMib"
                     :unit="__('health.rehearsal.estimate_unit')"
                     :eyebrow="__('health.rehearsal.estimate')"
                     :caption="__('health.rehearsal.estimate_said')"
                 />
 
-                @if ($this->rehearsal()->unestimated !== [])
-                    <x-design::note>{{ __('health.rehearsal.unestimated', ['services' => implode(', ', $this->rehearsal()->unestimated)]) }}</x-design::note>
+                @if ($this->rehearsal()->read->unestimated !== [])
+                    <x-design::note>{{ __('health.rehearsal.unestimated', ['services' => implode(', ', $this->rehearsal()->read->unestimated)]) }}</x-design::note>
                 @endif
             @endif
         </x-design::card>

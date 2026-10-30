@@ -22,26 +22,26 @@
     <x-operator::quiet-action :label="__('health.never_mind')" tap="neverMind()" />
 @endif
 
-@if ($this->asking === null && $this->lastGuard()->wasAsked)
-    @if ($this->lastGuard()->went->cameBack())
-        @if ($this->lastGuard()->isGuarding)
-            <x-operator::emphasis>{{ __('stacks.guard.guarding', ['forms' => $this->lastGuard()->named]) }}</x-operator::emphasis>
+@if ($this->asking === null && $this->lastGuard()->stands->wasAsked())
+    @if ($this->lastGuard()->stands->went->cameBack())
+        @if ($this->lastGuard()->guarding !== null)
+            <x-operator::emphasis>{{ __('stacks.guard.guarding', ['forms' => $this->lastGuard()->guarding]) }}</x-operator::emphasis>
         @endif
 
-        @if ($this->lastGuard()->endedSaid !== '')
+        @if ($this->lastGuard()->ended !== null)
             {{-- How it ended, each of the four in words of its own. --}}
-            <x-operator::emphasis>{{ __($this->lastGuard()->endedSaid) }}</x-operator::emphasis>
+            <x-operator::emphasis>{{ __($this->lastGuard()->ended->said) }}</x-operator::emphasis>
 
-            @if ($this->lastGuard()->said !== '')
+            @if ($this->lastGuard()->ended->why !== null && $this->lastGuard()->ended->why !== '')
                 {{-- The stack's own words for why. --}}
-                <x-design::body>{{ $this->lastGuard()->said }}</x-design::body>
+                <x-design::body>{{ $this->lastGuard()->ended->why }}</x-design::body>
             @endif
 
-            @if ($this->lastGuard()->stoppedSaid !== '')
+            @if ($this->lastGuard()->ended->stopped !== null)
                 {{-- Whether stopping the forms worked, which a guard that could
                      not stop them never reads as having done. --}}
-                <x-design::body>{{ __($this->lastGuard()->stoppedSaid) }}</x-design::body>
-                @forelse ($this->lastGuard()->forms as $form)
+                <x-design::body>{{ __($this->lastGuard()->ended->stopped->said) }}</x-design::body>
+                @forelse ($this->lastGuard()->ended->stopped->forms as $form)
                     <x-operator::note>{{ $form }}</x-operator::note>
                 @empty
                     <x-operator::note>{{ __('stacks.guard.named_no_forms') }}</x-operator::note>
@@ -53,7 +53,7 @@
     @else
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->lastGuard()->went"
+            :went="$this->lastGuard()->stands->went"
             :goes="$this->goes()"
         />
     @endif
@@ -61,7 +61,7 @@
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @endif
 
-@if ($this->asking === null && ! $this->lastGuard()->wasAsked)
+@if ($this->asking === null && ! $this->lastGuard()->stands->wasAsked())
     {{-- Before any guard: what one does, in this app's words, and the forms
          the stack declares, each named or left out on a tap. --}}
     <x-design::body>{{ __('stacks.guard.would_do') }}</x-design::body>

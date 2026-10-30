@@ -15,12 +15,18 @@ use Modules\Kernel\Api\Obstacle;
  */
 final readonly class WhatStoppedAMember
 {
-    private function __construct(public string $met, public string $remedy, private Obstacle $why) {}
+    private function __construct(public string $met, public ?string $remedy, private Obstacle $why) {}
 
     /** What the obstacle tells a member. */
     public static function by(Obstacle $why): self
     {
         return new self(WhatAMemberIsTold::met($why), WhatAMemberIsTold::remedy($why), $why);
+    }
+
+    /** This, said without what to do about it, where the screen says that beside it already. */
+    public function withoutTheRemedy(): self
+    {
+        return new self($this->met, null, $this->why);
     }
 
     /** Whether the member's session has ended, which is a way back in rather than a refusal. */

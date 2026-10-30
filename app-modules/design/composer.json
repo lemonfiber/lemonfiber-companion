@@ -17,11 +17,13 @@
     "extra": {
         "lemonfiber": {
             "floors": {
-                "coverage": 100,
-                "mutation": 0,
-                "mutation-is-zero-because": "Five enums and a resolver; `Typeface` has cases and no methods. `ThemeToken::in()` and `safeAsText()`, `Radius::points()` and `TypeSize::points()` are read arm by arm: `ThemeTokenTest` and `ThemeTest` here, `BrandPaletteParityTest` and `BrandMeasuresParityTest` against the brand's own token file, and `TheAccentIsTheBrandsTest` and `TheThemeIsRegisteredAtBootTest` through the booted application. A mutant in a table arm is a value spelled differently, and those refuse one by name. `ATap` writes a value as the package parses it, and `ATapTest` reads every hostile value back through that parse."
+                "coverage": 100
             },
             "kind": "design"
+        },
+        "mutation-gate": {
+            "floor": 0,
+            "floorReason": "Five enums and a resolver; `Typeface` has cases and no methods. `ThemeToken::in()` and `safeAsText()`, `Radius::points()` and `TypeSize::points()` are read arm by arm: `ThemeTokenTest` and `ThemeTest` here, `BrandPaletteParityTest` and `BrandMeasuresParityTest` against the brand's own token file, and `TheAccentIsTheBrandsTest` and `TheThemeIsRegisteredAtBootTest` through the booted application. A mutant in a table arm is a value spelled differently, and those refuse one by name. `ATap` writes a value as the package parses it, and `ATapTest` reads every hostile value back through that parse."
         }
     }
 }

@@ -48,6 +48,7 @@ use Modules\Operator\Internal\ViewModels\TheChoiceTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheLinksTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheWiringTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
+use Modules\Operator\Internal\WhereAdoptingStands;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
@@ -124,12 +125,12 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     public ?TheChoiceTurnedOutToBe $choice = null;
 
     /**
-     * The reason being typed for the choice.
+     * The reason typed for the choice drawn, once anything was typed for it.
      *
      * `public` because `native:model` syncs into it, and the sync writes only
      * public properties.
      */
-    public string $because = '';
+    public ?string $because = null;
 
     public function __construct(
         private readonly WiringTheServices $wiring,
@@ -221,7 +222,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
             return;
         }
 
-        $agreed = AFillAgreed::after($shown, $this->because);
+        $agreed = AFillAgreed::after($shown, $this->because ?? '');
         $this->choice = $this->choosing(
             fn(Stack $stack, Session $session): WhatBecameOfTheFill => $this->fillers->choose($stack, $session, $agreed),
         );
@@ -232,15 +233,14 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     {
         $this->shown = null;
         $this->choice = null;
-        $this->because = '';
+        $this->because = null;
     }
 
     /** Start a wiring run. */
     public function wire(): void
     {
         $this->following = null;
-        $this->rehearsingAnAdoption = false;
-        $this->adoptionRehearsed = false;
+        $this->adopting = null;
         $this->going = $this->put(
             fn(Stack $stack, Session $session): WhatBecameOfTheWiring => $this->wiring->wire($stack, $session),
         );
@@ -262,7 +262,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
         $this->linked = null;
         $going = $this->going;
 
-        if ($this->following !== null || ! $going instanceof TheWiringTurnedOutToBe || ! $going->went->cameBack()) {
+        if ($this->following !== null || ! $going instanceof TheWiringTurnedOutToBe || ! $going->stands->went->cameBack()) {
             $this->going = null;
         }
     }
@@ -276,7 +276,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->howItIsGoing()->isWorking) {
+        if ($this->howItIsGoing()->stands->isWorking()) {
             $this->going = null;
         }
     }
@@ -285,17 +285,14 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
-        return $this->howItIsGoing()->isWorking;
+        return $this->howItIsGoing()->stands->isWorking();
     }
 
     public function render(): View
     {
         $this->aFrameBegins();
 
-        // Handed the typed reason, because `native:model` expands to a bare
-        // variable, and a frame where it was never defined draws the field
-        // empty.
-        return view('operator::how-the-services-are-wired', ['because' => $this->because]);
+        return view('operator::how-the-services-are-wired');
     }
 
     /**
@@ -341,7 +338,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
             },
             answered: function (TheWiring $wiring): TheWiringTurnedOutToBe {
                 $this->following = null;
-                $this->adoptionRehearsed = $this->rehearsingAnAdoption && $wiring->wasRehearsed();
+                $this->adopting = $this->adopting === WhereAdoptingStands::Rehearsing && $wiring->wasRehearsed() ? WhereAdoptingStands::Rehearsed : null;
 
                 return new HowTheWiringReads()->answered($wiring);
             },
@@ -402,7 +399,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
             fill: function (AFill $fill): TheChoiceTurnedOutToBe {
                 if ($fill->wasMade()) {
                     $this->linked = null;
-                    $this->because = '';
+                    $this->because = null;
 
                     return new HowTheChoiceReads()->made($fill);
                 }
@@ -411,22 +408,22 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
 
                 return new HowTheChoiceReads()->read($fill);
             },
-            turnedDown: fn(AFillTurnedDown $down): TheChoiceTurnedOutToBe => $this->turnedDown($down, $shown, $stack, $session),
+            turnedDown: fn(AFillTurnedDown $down): TheChoiceTurnedOutToBe => $shown instanceof AFill ? $this->turnedDown($down, $shown, $stack, $session) : new HowTheChoiceReads()->turnedDown($down),
             refused: static fn(ARefusalInItsWords $why): TheChoiceTurnedOutToBe => new HowTheChoiceReads()->refused($why),
             met: $this->lettingGoIfRefused($stack, new HowTheChoiceReads()->met(...)),
         );
     }
 
     /**
-     * A choice the stack turned down, and what is still in front of the operator after it.
+     * A yes the stack turned down, and what is still in front of the operator after it.
      *
      * Only two refusals leave something to agree to: a reading that moved is
      * worked out again, and a reason that cannot be kept leaves the reading
      * as it was. Every other one leaves nothing.
      */
-    private function turnedDown(AFillTurnedDown $down, ?AFill $shown, Stack $stack, Session $session): TheChoiceTurnedOutToBe
+    private function turnedDown(AFillTurnedDown $down, AFill $shown, Stack $stack, Session $session): TheChoiceTurnedOutToBe
     {
-        if (! $shown instanceof AFill || ! in_array($down->why(), [WhyTheFillWasTurnedDown::Moved, WhyTheFillWasTurnedDown::ReasonCannotBeKept], strict: true)) {
+        if (! in_array($down->why(), [WhyTheFillWasTurnedDown::Moved, WhyTheFillWasTurnedDown::ReasonCannotBeKept], strict: true)) {
             return new HowTheChoiceReads()->turnedDown($down);
         }
 

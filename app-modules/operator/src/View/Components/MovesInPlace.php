@@ -15,9 +15,9 @@ final class MovesInPlace extends Component
 {
     /**
      * @param list<AMoveInPlaceAsShown> $moves
-     * @param string                    $after what is said under the last move, or empty for nothing
+     * @param string|null               $after what is said under the last move, or null for nothing
      */
-    public function __construct(public readonly array $moves, public readonly string $after = '') {}
+    public function __construct(public readonly array $moves, public readonly ?string $after = null) {}
 
     public function render(): View
     {

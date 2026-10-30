@@ -33,6 +33,7 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Presenters\HowAStackEditReads;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
+use Modules\Operator\Internal\TheLineTheYesRuns;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\Fakes\AStackThatSupervises;
@@ -90,7 +91,7 @@ it('follows a verb it sent until the stack reports, on the cadence it declares',
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
 
     // Just sent, it is running, and nothing has been asked after yet.
-    expect($screen->whatItCameTo()->isWorking)->toBeTrue()
+    expect($screen->whatItCameTo()->stands->isWorking())->toBeTrue()
         ->and($supervising->followed())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())
         ->toContain(__('health.came_to.running'));
@@ -104,6 +105,25 @@ it('follows a verb it sent until the stack reports, on the cadence it declares',
 
     expect($supervising->followed())->toHaveCount(2)
         ->and($supervising->followed()[0]->shown())->toBe(AStackThatSupervises::THE_JOB);
+});
+
+it('reads the machine again once a verb it was following has ended, and not while it ran', function (): void {
+    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::stillRunning());
+    $screen = TheThingScreenOfTheShed::theScreen($supervising);
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+    $screen->render();
+    $screen->answer();
+    $screen->whileItSettles();
+    $screen->render();
+    $screen->answer();
+    $whileItRan = $supervising->askings();
+    $supervising->fromNowOnComingTo(HowAgreedWorkIsGoing::ended());
+    $screen->whatItCameTo();
+    $screen->whileItSettles();
+    $screen->render();
+    $screen->answer();
+
+    expect($supervising->askings())->toBe($whileItRan + 1);
 });
 
 it('asks after the verb once a frame, however often the template reads it', function (): void {
@@ -296,8 +316,8 @@ it('says the stack has no outcome for a verb any more, rather than that it faile
     $screen = TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::ended()));
     $drawn = TheThingScreenOfTheShed::whatStartingSonarrDrew($screen);
 
-    expect($screen->whatItCameTo()->hasEnded)->toBeTrue()
-        ->and($screen->whatItCameTo()->isWorking)->toBeFalse()
+    expect($screen->whatItCameTo()->stands->hasEnded())->toBeTrue()
+        ->and($screen->whatItCameTo()->stands->isWorking())->toBeFalse()
         ->and($drawn)->toContain(__('health.came_to.no_outcome'));
 });
 
@@ -305,7 +325,7 @@ it('says nothing about a verb where none was sent, and asks after none', functio
     $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::stillRunning());
     $screen = TheThingScreenOfTheShed::theScreen($supervising);
 
-    expect($screen->whatItCameTo()->wasAsked)->toBeFalse()
+    expect($screen->whatItCameTo()->stands->wasAsked())->toBeFalse()
         ->and($supervising->followed())->toBe([]);
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(whatTheCatalogueSays('health.came_to.heading'));
 });
@@ -321,7 +341,7 @@ it('does not ask after a handle it holds without the verb it was sent for', func
     $screen->mountComponent();
 
     expect($screen->took)->toBe(AStackThatSupervises::THE_JOB)
-        ->and($screen->whatItCameTo()->wasAsked)->toBeFalse()
+        ->and($screen->whatItCameTo()->stands->wasAsked())->toBeFalse()
         ->and($supervising->followed())->toBe([]);
 });
 
@@ -334,8 +354,8 @@ it('says what stood in the way of a verb that could not be delivered', function 
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
 
-    expect($screen->whatItCameTo()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($screen->whatItCameTo()->isWorking)->toBeFalse()
+    expect($screen->whatItCameTo()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($screen->whatItCameTo()->stands->isWorking())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($supervising->followed())->toBe([]);
 });
@@ -380,7 +400,7 @@ it('says what stood in the way of asking after it, and lets go of a session refu
     $screen->whileItSettles();
     $screen->render();
 
-    expect($screen->whatItCameTo()->went->isSignedIn)->toBeFalse()
+    expect($screen->whatItCameTo()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(TheThingScreenOfTheShed::theMachine()->id()))->toBeFalse();
 });
 
@@ -392,7 +412,7 @@ it('keeps the session where asking after a verb could not reach the machine', fu
     $screen->whileItSettles();
     $screen->render();
 
-    expect($screen->whatItCameTo()->went->met)->toEqual(KindOfObstacle::DeviceHasNoNetwork->said())
+    expect($screen->whatItCameTo()->stands->went->met)->toEqual(KindOfObstacle::DeviceHasNoNetwork->said())
         ->and($keychain->isHolding(TheThingScreenOfTheShed::theMachine()->id()))->toBeTrue();
 });
 
@@ -406,8 +426,8 @@ it('says the session ended where it ended between sending a verb and asking afte
     $screen->whileItSettles();
     $screen->render();
 
-    expect($screen->whatItCameTo()->went->isSignedIn)->toBeFalse()
-        ->and($screen->whatItCameTo()->wasAsked)->toBeTrue()
+    expect($screen->whatItCameTo()->stands->went->isSignedIn)->toBeFalse()
+        ->and($screen->whatItCameTo()->stands->wasAsked())->toBeTrue()
         ->and($supervising->followed())->toBe([]);
 });
 
@@ -420,8 +440,8 @@ it('says the session ended where a verb was agreed to on a device no longer sign
     $keychain->forget(TheThingScreenOfTheShed::theMachine()->id());
     $screen->agree();
 
-    expect($screen->whatItCameTo()->went->isSignedIn)->toBeFalse()
-        ->and($screen->whatItCameTo()->wasAsked)->toBeTrue()
+    expect($screen->whatItCameTo()->stands->went->isSignedIn)->toBeFalse()
+        ->and($screen->whatItCameTo()->stands->wasAsked())->toBeTrue()
         ->and($supervising->whatItWasToldToDo())->toBe([]);
 });
 
@@ -468,7 +488,7 @@ it('does not ask after an earlier verb once a later one could not be sent', func
     $askedAfterSoFar = count($supervising->followed());
     $screen->again();
 
-    expect($screen->whatItCameTo()->wasAsked)->toBeFalse()
+    expect($screen->whatItCameTo()->stands->wasAsked())->toBeFalse()
         ->and($supervising->whatItWasToldToDo())->toHaveCount(1)
         ->and($supervising->followed())->toHaveCount($askedAfterSoFar);
 });
@@ -717,6 +737,17 @@ it('shows the command once the stack has finished working out the rehearsal, and
         ->and($screen->asking())->not->toBeNull();
 });
 
+it('follows a rehearsal still being worked out on the screen\'s cadence, and shows the command once it is', function (): void {
+    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::stillRunning());
+    $screen = TheThingScreenOfTheShed::theScreen($supervising);
+    whatAskingToRestartSonarrDrew($screen);
+    $supervising->fromNowOnComingTo(HowAgreedWorkIsGoing::done(aRehearsedRestartOfSonarr()));
+    $screen->whileItSettles();
+
+    expect($screen->willRun?->command)->toBe('docker compose restart sonarr')
+        ->and($screen->rehearsalOfTheYes)->toBeNull();
+});
+
 it('asks the question without the command where the stack would not rehearse it, and says it could not be read', function (Underway|HowAgreedWorkIsGoing $refused): void {
     $supervising = $refused instanceof Underway
         ? AStackThatSupervises::withButRefusing(WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::Stopped, HowTheStackIsRunning::Partial), Obstacle::of(KindOfObstacle::StackDidNotAnswer))
@@ -733,6 +764,7 @@ it('asks the question without the command where the stack would not rehearse it,
     'refused' => [Underway::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
     'forgotten' => [HowAgreedWorkIsGoing::ended()],
     'met asking after it' => [HowAgreedWorkIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
+    'said to have moved, which a rehearsal cannot be' => [HowAgreedWorkIsGoing::moved(ARefusalInItsWords::said(WhatAMovedOfferSays::SUMMARY, WhatAMovedOfferSays::MEANING, WhatTheRefusalNamed::nothing()))],
 ]);
 
 it('never shows, before the yes, a command from a report that was not a rehearsal, and says the rehearsal could not be read', function (): void {
@@ -767,7 +799,7 @@ it('shows no command before the yes where the rehearsal says the verb would run 
 
     expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
         ->and($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.unread'))
-        ->and($screen->willRun)->toBe('')
+        ->and($screen->willRun)->toBeNull()
         ->and($screen->asking())->not->toBeNull();
 });
 
@@ -781,8 +813,8 @@ it('puts the rehearsal away with the question, whichever way it is answered', fu
     whatAskingToRestartSonarrDrew($declined);
     $declined->neverMind();
 
-    expect($agreed->willRun)->toBe('')
-        ->and($declined->willRun)->toBe('')
+    expect($agreed->willRun)->toBeNull()
+        ->and($declined->willRun)->toBeNull()
         ->and($supervising->whatItWasToldToDo())->toEqual([AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'))]);
 });
 
@@ -790,11 +822,11 @@ it('puts away that a rehearsal could not be read with the question it was about'
     $screen = TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::ended()));
 
     whatAskingToRestartSonarrDrew($screen);
-    $unreadWhileAsked = $screen->willRunUnread;
+    $unreadWhileAsked = $screen->willRun;
     $screen->neverMind();
 
-    expect($unreadWhileAsked)->toBeTrue()
-        ->and($screen->willRunUnread)->toBeFalse();
+    expect($unreadWhileAsked)->toEqual(TheLineTheYesRuns::unread())
+        ->and($screen->willRun)->toBeNull();
 });
 
 it('rehearses nothing for a start, which asks no question', function (): void {
@@ -892,4 +924,16 @@ it('offers nothing to put back a file the operator edited: the outcome offers wh
 
     expect($saidWhereEdited)->toContain(whatTheCatalogueSays('stacks.edits.kept', ['path' => 'compose.yaml']))
         ->and(WhatTheDeviceWouldDraw::onTheSecondFrame($edited)->offers())->not->toBe([])->toBe(WhatTheDeviceWouldDraw::onTheSecondFrame($untouched)->offers());
+});
+
+it('carries back with the yes no name an earlier rehearsal gave, once the question is asked again', function (): void {
+    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done(aRehearsedRestartOfSonarr()->offering(AnOffer::named(THE_RESTART_OFFERED_HERE))));
+    $screen = TheThingScreenOfTheShed::theScreen($supervising);
+
+    whatAskingToRestartSonarrDrew($screen);
+    $supervising->fromNowOnComingTo(HowAgreedWorkIsGoing::stillRunning());
+    whatAskingToRestartSonarrDrew($screen);
+    $screen->agree();
+
+    expect($supervising->whatItWasToldToDo())->toEqual([AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'))]);
 });

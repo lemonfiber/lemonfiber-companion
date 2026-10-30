@@ -191,11 +191,11 @@ function nothingOfTheRunShown(array $changed): array
 function everythingPuttingTheRunBackShows(HowPuttingARunBackWent $went): array
 {
     return [
-        'cameBack' => $went->went->cameBack(),
-        'isSignedIn' => $went->went->isSignedIn,
-        'met' => $went->went->met,
-        'isWorking' => $went->isWorking,
-        'hasEnded' => $went->hasEnded,
+        'cameBack' => $went->stands->went->cameBack(),
+        'isSignedIn' => $went->stands->went->isSignedIn,
+        'met' => $went->stands->went->met,
+        'isWorking' => $went->stands->isWorking(),
+        'hasEnded' => $went->stands->hasEnded(),
         'hasReport' => $went->hasReport,
         'rehearsed' => $went->rehearsed,
         'leftNothing' => $went->leftNothing,
@@ -586,7 +586,7 @@ it('lets go of a session refused while putting back or asking after', function (
         $screen->whileItRuns();
     }
 
-    expect($screen->done()->went->isSignedIn)->toBeFalse()
+    expect($screen->done()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackARunGoesBackOn()->id()))->toBeFalse();
 })->with(['putting back' => [false], 'asking after' => [true]]);
 

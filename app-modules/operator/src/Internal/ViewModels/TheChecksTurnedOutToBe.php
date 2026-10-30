@@ -10,25 +10,23 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class TheChecksTurnedOutToBe
 {
     /**
-     * @param HowTheReadingWent         $went       whether the stack answered, or what stood in the way
-     * @param string                    $titleSaid  the catalogue key for what the run covers
-     * @param string                    $familySaid the catalogue key for the family a family's run covers, or empty
-     * @param list<ADisturbanceAsShown> $disturbing every check the run would run that disturbs something, in the stack's order
-     * @param list<WhatOneFindingSays>  $found      every finding the run came back with, worst first; empty before it has
-     * @param bool                      $runnable   whether the route names a run this app can send
+     * @param HowTheReadingWent        $went  whether the stack answered, or what stood in the way
+     * @param ARunAsShown|null         $run   the run the route names, or null where the stack did not answer
+     * @param list<WhatOneFindingSays> $found every finding the run came back with, worst first; empty before it has
      */
     public function __construct(
         public HowTheReadingWent $went,
-        public string $titleSaid,
-        public string $familySaid,
-        public array $disturbing,
-        public array $found,
-        public bool $runnable,
+        public ?ARunAsShown $run = null,
+        public array $found = [],
     ) {}
 
-    /** The same reading, with what the run came back with. */
-    public function withWhatTheRunFound(TheChecksTurnedOutToBe $ran): self
+    /**
+     * The same reading, with what the run came back with.
+     *
+     * @param list<WhatOneFindingSays> $found
+     */
+    public function withWhatTheRunFound(array $found): self
     {
-        return new self($this->went, $this->titleSaid, $this->familySaid, $this->disturbing, $ran->found, $this->runnable);
+        return new self($this->went, $this->run, $found);
     }
 }

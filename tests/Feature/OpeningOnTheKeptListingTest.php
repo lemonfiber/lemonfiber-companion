@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Health\Api\WhatWasHeardSoFar;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AFootprint;
 use Modules\Kernel\Api\AgreedTo;
@@ -181,7 +182,7 @@ function theVerbsDrawn(array $verbs): array
     return array_map(static fn(WhatToDoWithIt $verb): string => asTheAtticSaysIt($verb->saidOnTheScreen()), $verbs);
 }
 
-it('draws the kept listing with its age on the first frame, and the fresh one replaces it', function (): void {
+it('draws the kept listing with its age on the first frame, starts listening to its stack as it mounts, and the fresh one replaces it', function (): void {
     $stack = theAtticAnswering();
     $screen = theAtticsServices($stack, whatTheAtticsListingKept());
 
@@ -192,13 +193,17 @@ it('draws the kept listing with its age on the first frame, and the fresh one re
         ->and($first->said())->toContain('Sonarr')
         ->and($stack->askings())->toBe(0);
 
+    $heardBeforeMounting = $screen->heard;
     $screen->mount();
+    $heardOnMounting = $screen->heard;
     $fresh = WhatTheDeviceWouldDraw::by($screen);
 
     expect($fresh->said())->toContain('Radarr')
         ->and($fresh->said())->not->toContain('Jellyfin')
         ->and($fresh->said())->not->toContain(readTwoHoursAgo())
-        ->and($stack->askings())->toBe(1);
+        ->and($stack->askings())->toBe(1)
+        ->and($heardBeforeMounting)->toBeNull()
+        ->and($heardOnMounting)->toBeInstanceOf(WhatWasHeardSoFar::class);
 });
 
 it('keeps the fresh listing for the next opening', function (): void {

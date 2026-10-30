@@ -211,13 +211,13 @@ function everythingTheUninstallScreenHolds(TakingItOffTurnedOutToBe $shown): arr
     $did = $shown->did;
 
     return [
-        'cameBack' => $shown->went->cameBack(),
-        'isSignedIn' => $shown->went->isSignedIn,
-        'met' => $shown->went->met,
+        'cameBack' => $shown->stands->went->cameBack(),
+        'isSignedIn' => $shown->stands->went->isSignedIn,
+        'met' => $shown->stands->went->met,
         'chosen' => $shown->chosen,
         'wasAgreed' => $shown->wasAgreed,
-        'isWorking' => $shown->isWorking,
-        'hasEnded' => $shown->hasEnded,
+        'isWorking' => $shown->stands->isWorking(),
+        'hasEnded' => $shown->stands->hasEnded(),
         'refusal' => $shown->refusal,
         'endsThisSession' => $shown->endsThisSession,
         'reading' => $reading instanceof TheReadingAsShown ? [
@@ -425,7 +425,7 @@ it('takes it off against the reading on the screen, follows the work, and draws 
     $screen->goAhead();
     $running = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->answer()->isWorking)->toBeTrue()
+    expect($screen->answer()->stands->isWorking())->toBeTrue()
         ->and($running->said())->toContain(__('uninstall.removing'))
         ->and($screen->surveyed)->toBeNull();
 
@@ -529,14 +529,14 @@ it('lets go of the volume acknowledged, and the reading, when another removal is
     $screen->acknowledgeTheVolume();
     $screen->choose('services');
 
-    expect($screen->volumeAcknowledged)->toBeFalse()
+    expect($screen->volumeAcknowledged)->toBeNull()
         ->and($screen->surveyed)->toBeNull();
 
     $screen->answer();
     $screen->acknowledgeTheVolume();
     $screen->chooseAgain();
 
-    expect($screen->volumeAcknowledged)->toBeFalse()
+    expect($screen->volumeAcknowledged)->toBeNull()
         ->and($screen->surveyed)->toBeNull()
         ->and($screen->tier)->toBe('')
         ->and($screen->answer()->chosen)->toBeFalse();
@@ -672,7 +672,7 @@ it('asks after the same work again where following it met something, and changes
     $screen->chooseAgain();
 
     expect($removing->asked())->toBe(['read:services', 'take:services:services-3-lines:go_ahead_now', 'after:j-1', 'after:j-1'])
-        ->and($met->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($met->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($screen->tier)->toBe('services')
         ->and($screen->agreedTo)->toBe('services')
         ->and($screen->following)->toBe('j-1');
@@ -720,14 +720,14 @@ it('a session that has ended asks the stack nothing, before the yes and at it', 
     $screen = theTakingItOffScreen($removing, signedIn: false);
     $screen->choose('services');
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
         ->and($removing->asked())->toBe([]);
 
     $screen->surveyed = AnUninstall::of(aReadingOfTakingItOff(), WhereTakingItOffGot::surveyed());
     $screen->goAhead();
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($removing->asked())->toBe([]);
 });
 
@@ -736,7 +736,7 @@ it('a credential the stack refused while reading signs this device out and lets 
     $screen = theTakingItOffScreen(AStackThatTakesItOff::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), keychain: $keychain);
     $screen->choose('stop');
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theMachineLemonfiberLeaves()->id()))->toBeFalse();
 });
 
@@ -834,7 +834,7 @@ it('follows a handle the frame holds with no removal agreed to, and ends no sess
     $screen = theTakingItOffScreen($removing);
     $screen->following = 'j-1';
 
-    expect($screen->answer()->isWorking)->toBeTrue()
+    expect($screen->answer()->stands->isWorking())->toBeTrue()
         ->and($removing->asked())->toBe(['after:j-1'])
         ->and($screen->agreedTo)->toBe('');
 });

@@ -45,10 +45,10 @@
         {{-- Asking the indexers, only where the stack says a search would
              settle this trace: what it spends and covers first, in the
              stack's words, and the search on a separate yes. --}}
-        @if ($this->howTheSearchIsGoing()->went->cameBack())
-            @if ($this->howTheSearchIsGoing()->isWorking)
+        @if ($this->howTheSearchIsGoing()->stands->went->cameBack())
+            @if ($this->howTheSearchIsGoing()->stands->isWorking())
                 <x-design::standing :said="__('health.trace.searching')" tone="working" />
-            @elseif ($this->howTheSearchIsGoing()->hasEnded)
+            @elseif ($this->howTheSearchIsGoing()->stands->hasEnded())
                 <x-design::notice tone="unknown">
                     <x-design::strong>{{ __('health.trace.search_no_outcome') }}</x-design::strong>
                 </x-design::notice>
@@ -61,11 +61,11 @@
                 <x-design::note>{{ __('health.trace.searched') }}</x-design::note>
             @endif
 
-            @if ($this->answer()->searchSpends !== '' && ! $this->howTheSearchIsGoing()->isWorking)
+            @if ($this->answer()->search !== null && ! $this->howTheSearchIsGoing()->stands->isWorking())
                 <x-design::notice>
                     <x-design::strong>{{ __('health.trace.search_would_settle') }}</x-design::strong>
-                    <x-design::body>{{ __('health.trace.search_spends', ['spends' => $this->answer()->searchSpends]) }}</x-design::body>
-                    <x-design::body>{{ __('health.trace.search_covers', ['covers' => $this->answer()->searchCovers]) }}</x-design::body>
+                    <x-design::body>{{ __('health.trace.search_spends', ['spends' => $this->answer()->search->spends]) }}</x-design::body>
+                    <x-design::body>{{ __('health.trace.search_covers', ['covers' => $this->answer()->search->covers]) }}</x-design::body>
                 </x-design::notice>
                 <x-design::note>{{ __('health.trace.search_not_a_rehearsal') }}</x-design::note>
                 <x-operator::offered-action :label="__('health.trace.search')" tap="search()" :offer="$this->offered(SearchingTheIndexers::Search)" />
@@ -73,7 +73,7 @@
         @else
             <x-operator::what-stood-in-the-way
                 :settings-would-not-open="$this->theSettingsWouldNotOpen"
-                :went="$this->howTheSearchIsGoing()->went"
+                :went="$this->howTheSearchIsGoing()->stands->went"
                 :goes="$this->goes()"
             />
         @endif

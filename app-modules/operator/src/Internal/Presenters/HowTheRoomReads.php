@@ -129,7 +129,7 @@ final readonly class HowTheRoomReads
     private function volume(AVolume $volume, Instant $now): AVolumeAsShown
     {
         $ago = $volume->reading()->either(
-            live: AgoAsShown::live(...),
+            live: AgoAsShown::saysNothing(...),
             asOf: static fn(Instant $taken): AgoAsShown => AgoAsShown::from(HowLongAgo::since($taken, $now), $taken, $now),
         );
 

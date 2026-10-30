@@ -38,13 +38,13 @@
         </x-design::notice>
 
         <x-design::action :label="__('household.ask_again')" tap="askAgain()" />
-    @elseif ($this->shelf()->isSignedIn)
+    @elseif ($this->shelf()->stopped !== null)
         <x-design::notice tone="unknown">
-            <x-household::what-stood-in-the-way :met="$this->shelf()->met" :remedy="$this->shelf()->remedy" :filling="$this->shelf()->filling()" :in-the-stacks-words="$this->shelf()->isInTheStacksWords()" />
+            <x-household::what-stood-in-the-way :stopped="$this->shelf()->stopped" />
         </x-design::notice>
 
         <x-design::action :label="__('household.ask_again')" tap="askAgain()" />
-        @if ($this->shelf()->isPutRightInTheAppsSettings())
+        @if ($this->shelf()->stopped?->isPutRightInTheAppsSettings())
             <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
             @if ($this->theSettingsWouldNotOpen)
                 <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
@@ -73,13 +73,13 @@
     <x-design::note>{{ __('household.preview.cannot_ask') }}</x-design::note>
 
     <x-design::action :label="__('household.ask_again')" tap="askAgain()" tone="tonal" />
-@elseif ($this->allowance()->isSignedIn)
+@elseif ($this->allowance()->stopped !== null)
     <x-design::notice tone="unknown">
-        <x-household::what-stood-in-the-way :met="$this->allowance()->met" :remedy="$this->allowance()->remedy" :filling="$this->allowance()->filling()" :in-the-stacks-words="$this->allowance()->isInTheStacksWords()" />
+        <x-household::what-stood-in-the-way :stopped="$this->allowance()->stopped" />
     </x-design::notice>
 
     <x-design::action :label="__('household.ask_again')" tap="askAgain()" />
-    @if ($this->allowance()->isPutRightInTheAppsSettings())
+    @if ($this->allowance()->stopped?->isPutRightInTheAppsSettings())
         <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
         @if ($this->theSettingsWouldNotOpen)
             <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>

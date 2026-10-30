@@ -14,17 +14,13 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class HowLettingItGoWent
 {
     /**
-     * @param HowTheReadingWent $went         whether asking after it came back, and what stood in the way where it did not
-     * @param bool              $isWorking    whether the stack is still asking the client
-     * @param bool              $hasEnded     whether the stack has no outcome for it any more
+     * @param WhereTheWorkStands $stands         where the work stands, and whether the stack could be asked at all
      * @param bool              $wasRehearsed whether it was a rehearsal, which let nothing go and freed nothing
      * @param string            $name         what the client let go, or would have, or empty
      * @param ?ASizeAsShown     $size         what it occupied, or nothing where there is no report
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking,
-        public bool $hasEnded,
+        public WhereTheWorkStands $stands,
         public bool $wasRehearsed,
         public string $name,
         public ?ASizeAsShown $size,

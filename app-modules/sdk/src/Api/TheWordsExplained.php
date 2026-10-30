@@ -7,7 +7,6 @@ namespace Modules\Sdk\Api;
 use function array_is_list;
 use function array_key_exists;
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\GlossaryEnvelope;
@@ -16,9 +15,8 @@ use Modules\Kernel\Api\AWord;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Kernel\Api\WhatElseItIsCalled;
 use Modules\Sdk\Api\Fields\GlossaryField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * Reads the `glossary` envelope into every word lemonfiber explains, and the
@@ -154,7 +152,7 @@ final readonly class TheWordsExplained
         $read = [];
 
         foreach ($names as $name) {
-            if (! is_string($name) || trim($name) === '') {
+            if (! Required::isText($name)) {
                 throw self::unreadable($position, $field);
             }
 
@@ -181,7 +179,7 @@ final readonly class TheWordsExplained
 
         $said = $row[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw self::unreadable($position, $field);
         }
 

@@ -19,9 +19,8 @@ use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Sdk\Api\Fields\PausingField;
 use Modules\Sdk\Internal\APath;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * What pausing or resuming every download client came to, read off the `pausing` envelope.
@@ -172,7 +171,7 @@ final readonly class WhatPausingCameTo
 
         $said = $data[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw PausingIsUnreadable::missing($where);
         }
 

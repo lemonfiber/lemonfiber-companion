@@ -17,6 +17,10 @@ use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Operator\Internal\WhereTheTabsAreDrawn;
 use Modules\Wayfinding\Api\TheTabs;
 
+use function pest;
+
+pest()->group('holds:app-modules/operator/src/Internal/WhereTheTabsAreDrawn.php');
+
 it('draws each tab\'s screen as its root, and a screen of its own as opened on top of it', function (): void {
     expect(WhereTheTabsAreDrawn::drawnBy(HowThisStackIs::class))->toBeTrue()
         ->and(WhereTheTabsAreDrawn::drawnBy(WhatThisStackRuns::class))->toBeTrue()

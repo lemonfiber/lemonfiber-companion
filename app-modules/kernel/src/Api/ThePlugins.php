@@ -39,31 +39,31 @@ final readonly class ThePlugins
     /** An answer about an install, beside what the record holds; `agreement` is empty where the stack named none. */
     public static function aboutAnInstall(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, APluginInstall $install): self
     {
-        return new self($installed, $sources, trim($agreement), $install, TheAnswersOutOfContract::these());
+        return self::answering($installed, $sources, $agreement, $install);
     }
 
     /** An answer about an update, beside what the record holds. */
     public static function aboutAnUpdate(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, AnUpdate $update): self
     {
-        return new self($installed, $sources, trim($agreement), $update, TheAnswersOutOfContract::these());
+        return self::answering($installed, $sources, $agreement, $update);
     }
 
     /** An answer about a removal, beside what the record holds. */
     public static function aboutAPluginRemoval(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, APluginRemoval $removal): self
     {
-        return new self($installed, $sources, trim($agreement), $removal, TheAnswersOutOfContract::these());
+        return self::answering($installed, $sources, $agreement, $removal);
     }
 
     /** An answer about proving a plugin again, beside what the record holds. */
     public static function aboutAReproof(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, APluginReproof $proof): self
     {
-        return new self($installed, $sources, trim($agreement), $proof, TheAnswersOutOfContract::these());
+        return self::answering($installed, $sources, $agreement, $proof);
     }
 
     /** An answer about running one of a plugin's demand recipes, beside what the record holds. */
     public static function aboutARecipeRun(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, ARecipeRun $run): self
     {
-        return new self($installed, $sources, trim($agreement), $run, TheAnswersOutOfContract::these());
+        return self::answering($installed, $sources, $agreement, $run);
     }
 
     /** The answers that plugin's adapters gave outside their contracts, which it fills nothing for until it is proved again. */
@@ -87,9 +87,7 @@ final readonly class ThePlugins
     /** The reading's name, which a yes quotes, or empty where this is not a reading. */
     public function agreement(): string
     {
-        $about = $this->about;
-
-        return $about !== null && $about->isAReading() ? $this->agreement : '';
+        return $this->agreement;
     }
 
     /** Every service the install or update asked about would have take a privileged shape, or none. */
@@ -172,5 +170,11 @@ final readonly class ThePlugins
             $this->about instanceof ARecipeRun => $run($this->about),
             default => $listed(),
         };
+    }
+
+    /** An answer about one run of the record, which quotes the stack's name for it only where it is a reading. */
+    private static function answering(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, APluginInstall|AnUpdate|APluginRemoval|APluginReproof|ARecipeRun $about): self
+    {
+        return new self($installed, $sources, $about->isAReading() ? trim($agreement) : '', $about, TheAnswersOutOfContract::these());
     }
 }

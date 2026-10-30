@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\Locked;
+use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\TheHouseholdsTabs;
 use Native\Mobile\Edge\NativeRouter;
@@ -19,7 +20,7 @@ use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 
 // Runs the composition root rather than reading it, so its mutants are judged
-// here: see `scripts/mutation.php`.
+// here, by its `holds:` group.
 pest()->group('holds:bootstrap/Composition');
 
 // A member's session never reaches the operator's screens. Every operator
@@ -139,6 +140,8 @@ it('builds every operator screen about a stack as asked, for the operator\'s ses
 ]);
 
 it('builds the screens every session opens as asked, for a member\'s session', function (): void {
+    expect(whatIsBuiltFor(aKeychainHoldingBothSessions(), SignIntoAStack::class, aHouseSignedInto(A_MEMBERS_HOUSE)))->toBe(SignIntoAStack::class);
+
     foreach (array_keys(OutOfTheOperatorsScreens::EVERY_SESSION_OPENS) as $class) {
         expect(whatIsBuiltFor(aKeychainHoldingBothSessions(), $class, aHouseSignedInto(A_MEMBERS_HOUSE)))->toBe($class, $class);
     }

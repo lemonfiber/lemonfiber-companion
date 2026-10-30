@@ -122,9 +122,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
     /** The copy this screen is about, by the name the route carries. */
     public function copyNamed(): string
     {
-        $named = $this->param('service');
-
-        return is_string($named) ? $named : '';
+        return $this->around->aboutOn($this);
     }
 
     /** What putting the copy back would do, asked once per frame. */
@@ -231,7 +229,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
     /** Whether the stack is putting the copy back right now. */
     public function isWorking(): bool
     {
-        return $this->agreed && $this->done()->isWorking;
+        return $this->agreed && $this->done()->stands->isWorking();
     }
 
     /** Resume the session and ask what putting the copy back would do. */

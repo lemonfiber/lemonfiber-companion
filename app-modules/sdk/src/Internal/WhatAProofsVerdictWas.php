@@ -6,7 +6,6 @@ namespace Modules\Sdk\Internal;
 
 use function array_key_exists;
 use function is_array;
-use function is_string;
 
 use Modules\Kernel\Api\AProof;
 use Modules\Kernel\Api\PluginLines;
@@ -17,8 +16,6 @@ use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\PluginsAreUnreadable;
 use Modules\Sdk\Api\WireField;
-
-use function trim;
 
 /**
  * Every proof a plugin install states, with what asking each came to, read off the `plugins` envelope.
@@ -43,9 +40,8 @@ final readonly class WhatAProofsVerdictWas
         }
 
         $found = [];
-        $position = 0;
 
-        foreach ($install[PluginsField::Proofs->value] as $row) {
+        foreach (InTheOrderSent::rows($install[PluginsField::Proofs->value]) as $position => $row) {
             if (! is_array($row)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Proofs, PluginsField::Proof, $position);
             }
@@ -57,7 +53,6 @@ final readonly class WhatAProofsVerdictWas
                 self::text($row, WireField::Why, $position),
                 self::cameTo($row, $position),
             );
-            $position++;
         }
 
         return TheProofs::these(...$found);
@@ -132,7 +127,7 @@ final readonly class WhatAProofsVerdictWas
         $found = [];
 
         foreach ($row[$field->value] as $word) {
-            if (! is_string($word) || trim($word) === '') {
+            if (! Required::isText($word)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Proofs, $field, $position);
             }
 
@@ -149,10 +144,6 @@ final readonly class WhatAProofsVerdictWas
      */
     private static function text(array $row, NamesAWireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw PluginsAreUnreadable::entry(PluginsField::Proofs, $field, $position);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, PluginsAreUnreadable::entry(PluginsField::Proofs, $field, $position));
     }
 }

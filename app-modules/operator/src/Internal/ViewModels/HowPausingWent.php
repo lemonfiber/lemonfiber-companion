@@ -13,19 +13,13 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class HowPausingWent
 {
     /**
-     * @param HowTheReadingWent            $went         whether asking after it came back, and what stood in the way where it did not
-     * @param bool                         $isWorking    whether the stack is still asking the clients
-     * @param bool                         $hasEnded     whether the stack has no outcome for it any more
-     * @param bool                         $wasRehearsed whether it was a rehearsal, which asked no client anything
-     * @param list<ADownloadClientAsShown> $clients      every client, what it said before and what it read back after
-     * @param string                       $caution      what a resume runs into, in the stack's words, or empty
+     * @param WhereTheWorkStands            $stands         where the work stands, and whether the stack could be asked at all
+     * @param ?WhatTheClientsSaid          $said         every client, what it said before and what it read back after, where the stack reported
+     * @param ?bool                        $wasRehearsed whether what it reported was a rehearsal, which asked no client anything
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking,
-        public bool $hasEnded,
-        public bool $wasRehearsed,
-        public array $clients,
-        public string $caution,
+        public WhereTheWorkStands $stands,
+        public ?WhatTheClientsSaid $said = null,
+        public ?bool $wasRehearsed = null,
     ) {}
 }

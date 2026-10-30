@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\HouseholdEnvelope;
@@ -15,8 +14,6 @@ use Modules\Kernel\Api\TheAllowanceAsChanged;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `household` envelope a `household-allow` run answers with, as whether it was rehearsed and what the stack said of it.
@@ -62,7 +59,7 @@ final readonly class WhatTheAllowanceCameTo
 
     private static function sentence(mixed $finding, int|string $position): Sentence
     {
-        if (! is_string($finding) || trim($finding) === '') {
+        if (! Required::isText($finding)) {
             throw HouseholdIsUnreadable::finding((int) $position);
         }
 

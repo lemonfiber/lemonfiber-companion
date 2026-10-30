@@ -6,7 +6,6 @@ namespace Modules\Sdk\Api;
 
 use function array_key_exists;
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\SeedEnvelope;
@@ -18,10 +17,9 @@ use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\WhatItWouldBreak;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Sdk\Api\Fields\SeedField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * Reads the `seed` envelope into what one wiring run came to.
@@ -80,9 +78,8 @@ final readonly class WhatTheWiringCameTo
     private static function wirings(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (Required::rows($data, SeedField::Wirings, SeedIsUnreadable::missing(SeedField::Wirings)) as $row) {
+        foreach (InTheOrderSent::rows(Required::rows($data, SeedField::Wirings, SeedIsUnreadable::missing(SeedField::Wirings))) as $position => $row) {
             if (! is_array($row)) {
                 throw SeedIsUnreadable::entry(SeedField::Wirings, $position, SeedField::Connection);
             }
@@ -92,7 +89,6 @@ final readonly class WhatTheWiringCameTo
                 self::breaks(self::table($row, WireField::Severity, $position), $position),
                 self::ended(self::table($row, WireField::State, $position), $position),
             );
-            $position++;
         }
 
         return $found;
@@ -188,7 +184,7 @@ final readonly class WhatTheWiringCameTo
 
         $said = $state[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw SeedIsUnreadable::entry(SeedField::Wirings, $position, $field);
         }
 

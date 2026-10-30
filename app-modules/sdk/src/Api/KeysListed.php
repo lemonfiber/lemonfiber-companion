@@ -9,7 +9,6 @@ use function array_map;
 use function explode;
 use function is_array;
 use function is_bool;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\KeysEnvelope;
@@ -22,6 +21,8 @@ use Modules\Kernel\Api\WhatAKeyAdmits;
 use Modules\Kernel\Api\WhatAKeyIsFor;
 use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Sdk\Api\Fields\KeysField;
+use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
 use function trim;
@@ -54,11 +55,9 @@ final readonly class KeysListed
         }
 
         $keys = [];
-        $position = 0;
 
-        foreach ($data[WireField::Keys->value] as $row) {
+        foreach (InTheOrderSent::rows($data[WireField::Keys->value]) as $position => $row) {
             $keys[] = self::one($row, $position);
-            $position++;
         }
 
         return TheKeysForApps::of(self::purposes($data), ...$keys);
@@ -89,7 +88,7 @@ final readonly class KeysListed
             self::purpose($row, $position),
             self::state($row, $position),
             AMomentAsWritten::byTheStack(self::text($row, KeysField::Minted, $position)),
-            AMomentAsWritten::byTheStack(self::optional($row, WireField::Used, $position)),
+            self::used($row, $position),
             self::flag($row, KeysField::MemberMinted, $position),
         );
     }
@@ -111,11 +110,7 @@ final readonly class KeysListed
     /** @param array<mixed> $data */
     private static function purposes(array $data): string
     {
-        if (! array_key_exists(KeysField::Purposes->value, $data) || ! is_string($data[KeysField::Purposes->value]) || trim($data[KeysField::Purposes->value]) === '') {
-            throw KeysAreUnreadable::missing(KeysField::Purposes);
-        }
-
-        return $data[KeysField::Purposes->value];
+        return Required::text($data, KeysField::Purposes, KeysAreUnreadable::missing(KeysField::Purposes));
     }
 
     /** @param array<mixed> $row */
@@ -147,26 +142,22 @@ final readonly class KeysListed
     }
 
     /**
-     * A field that may be absent or `null`, read as empty there.
+     * When the key was last used, unwritten where it never was.
      *
      * @param array<mixed> $row
      */
-    private static function optional(array $row, NamesAWireField $field, int $position): string
+    private static function used(array $row, int $position): AMomentAsWritten
     {
-        if (! array_key_exists($field->value, $row) || $row[$field->value] === null) {
-            return '';
+        if (! array_key_exists(WireField::Used->value, $row) || $row[WireField::Used->value] === null) {
+            return AMomentAsWritten::unwritten();
         }
 
-        return self::text($row, $field, $position);
+        return AMomentAsWritten::byTheStack(self::text($row, WireField::Used, $position));
     }
 
     /** @param array<mixed> $row */
     private static function text(array $row, NamesAWireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw KeysAreUnreadable::said($field, $position);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, KeysAreUnreadable::said($field, $position));
     }
 }

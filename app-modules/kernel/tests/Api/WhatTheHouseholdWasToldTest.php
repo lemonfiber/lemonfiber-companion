@@ -17,7 +17,8 @@ it('keeps the core\'s sentence and remedy as written, trimmed, and refuses a bla
 
     expect([$told->wasSaid(), $told->sentence(), $told->remedy()])->toBe([true, 'Your library is not answering right now.', ''])
         ->and(static fn(): WhatTheHouseholdWasTold => WhatTheHouseholdWasTold::said(' ', 'Try again'))->toThrow(RefusalSaysNothing::class, 'summary')
-        ->and(WhatTheHouseholdWasTold::nothing()->wasSaid())->toBeFalse();
+        ->and(WhatTheHouseholdWasTold::nothing()->wasSaid())->toBeFalse()
+        ->and([WhatTheHouseholdWasTold::nothing()->sentence(), WhatTheHouseholdWasTold::nothing()->remedy()])->toBe(['', '']);
 });
 
 it('is carried by an obstacle without changing what kind it is, and an obstacle given none carries nothing', function (): void {

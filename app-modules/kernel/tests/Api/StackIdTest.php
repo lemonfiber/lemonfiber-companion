@@ -11,9 +11,12 @@ use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 
+use function pest;
 use function sprintf;
 use function strtoupper;
 use function substr;
+
+pest()->group('holds:app-modules/kernel/src/Api/StackId.php');
 
 const A_MINTED_ID = 'a1b2c3d4e5f60718';
 

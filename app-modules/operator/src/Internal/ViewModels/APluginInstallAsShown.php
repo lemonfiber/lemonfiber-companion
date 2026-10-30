@@ -18,7 +18,7 @@ final readonly class APluginInstallAsShown
      * @param APluginAsShown              $plugin     the plugin, as the install settles it
      * @param bool                        $isAReading whether nothing was written, so this is what it would do
      * @param bool                        $agreeable  whether it is a reading with a name a yes can quote, so Install and the switches are offered
-     * @param string                      $headline   the catalogue key for how it ended, or empty on a reading
+     * @param ?string                      $headline   the catalogue key for how it ended, or empty on a reading
      * @param list<APluginChangeAsShown>  $changes    every change, in order
      * @param list<AProofAsShown>         $proofs     every proof, with what asking it came to
      * @param list<AChangeAndWhyAsShown>  $overrides  every bundled setting it changes, with why
@@ -35,7 +35,7 @@ final readonly class APluginInstallAsShown
         public APluginAsShown $plugin,
         public bool $isAReading,
         public bool $agreeable,
-        public string $headline,
+        public ?string $headline,
         public array $changes,
         public array $proofs,
         public array $overrides,

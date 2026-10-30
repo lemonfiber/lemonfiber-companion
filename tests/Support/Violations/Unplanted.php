@@ -41,8 +41,8 @@ final readonly class Unplanted
                 . 'attribute out changes that run rather than a fixture, and what the '
                 . 'settings produce is an exit code the JUnit report this harness reads '
                 . 'records as a test that passed. That second half is still checked by '
-                . 'hand: delete `.env.testing` and watch `composer test:mutation` exit 1 '
-                . 'where it exited 0.',
+                . 'hand: delete `.env.testing` and watch `composer test:mutation` fail '
+                . 'where it passed.',
             ),
             Fixture::direct(
                 'Q-R66 (discovery)',

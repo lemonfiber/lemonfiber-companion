@@ -152,6 +152,19 @@ it('marks nothing of a kind switched off, and starts from what is current when i
         ->and(newAmong($noticing, requestsNumbered(5, 4, 3, 2)))->toBe(['5']);
 });
 
+it('notes nothing it is shown of a kind switched off, so switching it on starts from what is current then', function (): void {
+    $news = newsOver(ASealInMemory::working(), NewsKeptInMemory::empty());
+    $marking = new MarkingAsNew($news);
+    $noticing = new Noticing($news);
+
+    $marking->markNoLonger(theStackWhoseNewsIsNoticed(), KindOfNews::Request);
+    newAmong($noticing, requestsNumbered(4, 3, 2));
+    $marking->mark(theStackWhoseNewsIsNoticed(), KindOfNews::Request);
+
+    expect(newAmong($noticing, requestsNumbered(6, 5, 4, 3, 2)))->toBe([])
+        ->and(newAmong($noticing, requestsNumbered(7, 6, 5, 4, 3, 2)))->toBe(['7']);
+});
+
 it('reads a marker that does not read as nothing seen, and starts again from what is current', function (): void {
     $seal = ASealInMemory::working();
     $kept = NewsKeptInMemory::empty();

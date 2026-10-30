@@ -15,8 +15,6 @@ use Modules\Operator\Internal\Presenters\HowThePhoneKeysRead;
 use Modules\Operator\Internal\ViewModels\ThePhoneKeysTurnedOutToBe;
 use Native\Mobile\Edge\NativeComponent;
 
-use function trim;
-
 /**
  * The phone keys beside the keys for apps: where each lives, when it was registered and last used, and revoking one.
  *
@@ -36,8 +34,8 @@ trait KeepsThePhoneKeys
     /** The phone keys as they came back, once a frame has asked or a revoke answered. */
     public ?ThePhoneKeysTurnedOutToBe $phoneKeysFound = null;
 
-    /** The name of the phone key the operator asked to revoke and has not confirmed yet, or empty. */
-    public string $revokingAPhoneKey = '';
+    /** The name of the phone key the operator asked to revoke and has not confirmed yet, or null where none is. */
+    public ?string $revokingAPhoneKey = null;
 
     /** Whether the phone keys wait for the next frame, because this one has read the stack already. */
     public function phoneKeysAreBeingRead(): bool
@@ -73,16 +71,16 @@ trait KeepsThePhoneKeys
     /** The operator kept the phone key. */
     public function keepThePhoneKey(): void
     {
-        $this->revokingAPhoneKey = '';
+        $this->revokingAPhoneKey = null;
     }
 
     /** The operator confirmed: revoke the phone key, and show the listing the stack answers with, or its refusal. */
     public function revokeThePhoneKey(): void
     {
         $name = $this->revokingAPhoneKey;
-        $this->revokingAPhoneKey = '';
+        $this->revokingAPhoneKey = null;
 
-        if (trim($name) === '') {
+        if ($name === null) {
             return;
         }
 
@@ -102,8 +100,8 @@ trait KeepsThePhoneKeys
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): ThePhoneKeysTurnedOutToBe => $asking($stack, $session)->either(
-                found: fn(ThePhoneKeys $keys): ThePhoneKeysTurnedOutToBe => $reads->these($keys, $this->clock->now(), $this->mintsFromThisPhone->thisPhonesName($stack->id())),
-                refused: fn(ARefusalInItsWords $why): ThePhoneKeysTurnedOutToBe => $reads->refused($why, $shown ?? $reads->these(ThePhoneKeys::of(), $this->clock->now(), '')),
+                found: fn(ThePhoneKeys $keys): ThePhoneKeysTurnedOutToBe => $reads->these($keys, $this->clock->now(), $this->mintsFromThisPhone->thisPhonesKey($stack->id())),
+                refused: fn(ARefusalInItsWords $why): ThePhoneKeysTurnedOutToBe => $reads->refused($why, $shown ?? $reads->these(ThePhoneKeys::of(), $this->clock->now(), null)),
                 met: $this->lettingGoIfRefused($stack, $reads->met(...)),
             ),
             notHeld: static fn(): ThePhoneKeysTurnedOutToBe => $reads->signedOut(),

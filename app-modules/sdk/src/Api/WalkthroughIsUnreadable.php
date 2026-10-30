@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
-
 use InvalidArgumentException;
 use Modules\Kernel\Api\TheWalkthroughSaysNothing;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -35,7 +33,7 @@ final class WalkthroughIsUnreadable extends InvalidArgumentException
             'The walkthrough envelope says `%s` is `%s`, and this app reads %s.',
             $field->value,
             $said,
-            implode(', ', array_map(static fn(string $word): string => sprintf('`%s`', $word), $accepted)),
+            TheWordsItReads::quoted(...$accepted),
         ));
     }
 

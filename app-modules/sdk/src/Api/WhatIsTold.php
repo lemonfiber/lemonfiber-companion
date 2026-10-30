@@ -8,7 +8,6 @@ use function array_key_exists;
 use function in_array;
 use function is_array;
 use function is_bool;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\AlertsEnvelope;
@@ -17,9 +16,9 @@ use Modules\Kernel\Api\SetApart;
 use Modules\Kernel\Api\WhatTheOperatorIsTold;
 use Modules\Kernel\Api\WhetherItIsHeard;
 use Modules\Sdk\Api\Fields\AlertsField;
+use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `alerts` envelope, as what the operator will be told about.
@@ -79,9 +78,8 @@ final readonly class WhatIsTold
 
         $found = [];
         $kinds = [];
-        $position = 0;
 
-        foreach ($data[AlertsField::Exceptions->value] as $row) {
+        foreach (InTheOrderSent::rows($data[AlertsField::Exceptions->value]) as $position => $row) {
             if (! is_array($row)) {
                 throw AlertsAreUnreadable::exception($position);
             }
@@ -94,7 +92,6 @@ final readonly class WhatIsTold
 
             $kinds[] = $kind;
             $found[] = AnEventSetApart::of($kind, WhetherItIsHeard::said(wanted: self::wanted($row, $position)));
-            $position++;
         }
 
         return $found;
@@ -113,7 +110,7 @@ final readonly class WhatIsTold
 
         $said = $data[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw AlertsAreUnreadable::missing($field);
         }
 
@@ -133,7 +130,7 @@ final readonly class WhatIsTold
 
         $said = $row[WireField::Kind->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw AlertsAreUnreadable::said(WireField::Kind, $position);
         }
 

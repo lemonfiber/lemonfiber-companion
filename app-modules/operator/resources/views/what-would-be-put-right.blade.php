@@ -7,26 +7,26 @@
         {{-- The session has ended, so nothing was asked. --}}
         <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
         <x-design::action :label="__('connection.sign_in')" :goes="$this->goes()->to(AStacksScreen::SignIn)" />
-    @elseif ($this->offer()->went->met !== '')
+    @elseif ($this->offer()->stands->went->met !== '')
         {{-- Both sentences come off the obstacle, so this screen cannot
              describe a condition differently from the one next to it. --}}
         <x-design::notice tone="unknown">
-            <x-design::strong>{{ __($this->offer()->went->met, $this->offer()->went->filling()) }}</x-design::strong>
-            <x-design::body>{{ __($this->offer()->went->remedy, $this->offer()->went->filling()) }}</x-design::body>
+            <x-design::strong>{{ __($this->offer()->stands->went->met, $this->offer()->stands->went->filling()) }}</x-design::strong>
+            <x-design::body>{{ __($this->offer()->stands->went->remedy, $this->offer()->stands->went->filling()) }}</x-design::body>
         </x-design::notice>
 
         {{-- The action stays on the screen and the failure is reported
              beside it. An obstacle branch with nothing on it leaves an operator
              whose stack woke up two seconds later with no way to find out. --}}
         <x-design::action :label="__('health.ask_again')" tap="lookAgain()" />
-        <x-operator::try-again :went="$this->offer()->went" tap="tryAgain()" />
-        @if ($this->offer()->went->isPutRightInTheAppsSettings())
+        <x-operator::try-again :went="$this->offer()->stands->went" tap="tryAgain()" />
+        @if ($this->offer()->stands->went->isPutRightInTheAppsSettings())
             <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
             @if ($this->theSettingsWouldNotOpen)
                 <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
             @endif
         @endif
-    @elseif ($this->offer()->isWorking)
+    @elseif ($this->offer()->stands->isWorking())
         {{-- The unconfirmed form is still a job, so this is a real state
              rather than a spinner. Said plainly, with the asking left to the
              operator, so the screen is not a poller. --}}
@@ -36,7 +36,7 @@
         />
         <x-design::body>{{ __('health.working_it_out_action') }}</x-design::body>
         <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
-    @elseif ($this->offer()->hasEnded)
+    @elseif ($this->offer()->stands->hasEnded())
         {{-- The stack has no outcome for that asking any more. Not a fault and
              not an answer: nothing was carried out, and the way forward is to
              ask again from the start. Saying so is what keeps it from reading
@@ -50,7 +50,7 @@
         {{-- What the machine actually did, which is a different question
              from what it said it would do — and rendered from a different value
              for that reason, so an offer can never appear as an outcome. --}}
-        @if ($this->done()->isWorking)
+        @if ($this->done()->stands->isWorking())
             {{-- Read again on the screen's cadence until the stack says it
                  has finished. --}}
             <x-design::standing
@@ -59,10 +59,10 @@
             />
             <x-design::body>{{ __('health.carrying_it_out_action') }}</x-design::body>
             <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
-        @elseif (! $this->done()->went->cameBack())
+        @elseif (! $this->done()->stands->went->cameBack())
             <x-design::notice tone="unknown">
-                <x-design::strong>{{ __($this->done()->went->met, $this->done()->went->filling()) }}</x-design::strong>
-                <x-design::body>{{ __($this->done()->went->remedy, $this->done()->went->filling()) }}</x-design::body>
+                <x-design::strong>{{ __($this->done()->stands->went->met, $this->done()->stands->went->filling()) }}</x-design::strong>
+                <x-design::body>{{ __($this->done()->stands->went->remedy, $this->done()->stands->went->filling()) }}</x-design::body>
             </x-design::notice>
 
             {{-- The sharper half of it: this obstacle stands
@@ -70,13 +70,13 @@
                  the action away leaves them with a machine they told to change
                  something and no way to ask what happened. --}}
             <x-design::action :label="__('health.ask_again')" tap="askAgain()" />
-            @if ($this->done()->went->isPutRightInTheAppsSettings())
+            @if ($this->done()->stands->went->isPutRightInTheAppsSettings())
                 <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />
                 @if ($this->theSettingsWouldNotOpen)
                     <x-design::note>{{ __('connection.settings_would_not_open') }}</x-design::note>
                 @endif
             @endif
-        @elseif ($this->done()->hasEnded)
+        @elseif ($this->done()->stands->hasEnded())
             {{-- The one state where *it failed* is certainly the wrong word.
                  The operator does not know what happened to their machine, and
                  it may well have worked — so they are sent to look at its
@@ -85,10 +85,10 @@
                 <x-design::strong>{{ __('health.nobody_knows_what_happened') }}</x-design::strong>
                 <x-design::body>{{ __('health.nobody_knows_what_happened_action') }}</x-design::body>
             </x-design::notice>
-        @else
-            <x-design::heading>{{ trans_choice('health.changed_count', $this->done()->changed) }}</x-design::heading>
+        @elseif ($this->done()->came !== null)
+            <x-design::heading>{{ trans_choice('health.changed_count', $this->done()->came->changed) }}</x-design::heading>
 
-            @forelse ($this->done()->outcomes as $outcome)
+            @forelse ($this->done()->came->outcomes as $outcome)
                 <x-design::card>
                     <x-design::strong>{{ $outcome->repair->does }}</x-design::strong>
                     <x-design::body>{{ __($outcome->became) }}</x-design::body>

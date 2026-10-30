@@ -47,7 +47,7 @@ final readonly class HowAListingReads
     /** The stack answered, and this is what it is running. */
     public function these(Daemons $daemons): WhatThisStackRunsTurnedOutToBe
     {
-        return $this->read($daemons, HowTheReadingWent::itCameBack(), AgoAsShown::live(), waits: false);
+        return $this->read($daemons, HowTheReadingWent::itCameBack(), AgoAsShown::saysNothing(), waits: false);
     }
 
     /**
@@ -117,7 +117,7 @@ final readonly class HowAListingReads
             active: [],
             leftOut: [],
             askedNow: $went,
-            readAgo: AgoAsShown::live(),
+            readAgo: AgoAsShown::saysNothing(),
             waitsForTheStack: false,
         );
     }
@@ -169,7 +169,7 @@ final readonly class HowAListingReads
             services: $rows,
             overall: $daemons->running()->saidOnTheScreen(),
             isSettling: $settling && ! $waits,
-            disturbs: $daemons->disturbs(),
+            disturbs: $waits ? null : $daemons->disturbs(),
             active: new HowWhatWasLeftOutReads()->forms($daemons->active()),
             leftOut: new HowWhatWasLeftOutReads()->of($daemons->leftOut()),
             askedNow: $askedNow,

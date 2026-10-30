@@ -60,7 +60,8 @@ it('asks on the page, naming the stack, and keeps it when told to', function ():
     expect($asking->said())->toContain(__('settings.remove_confirm', ['name' => 'The loft']))
         ->and($asking->offers())->toContain(__('settings.remove'))
         ->and($asking->offers())->toContain(__('settings.keep_it'))
-        ->and($page->confirmingTheRemoval)->toBeFalse()
+        ->and($page->removal)->toBeNull()
+        ->and($asking->said())->not->toContain(__('settings.remove_refused', ['name' => 'The loft']))
         ->and($phone->stacks->configured()->knows($home->id()))->toBeTrue()
         ->and(whereTheSettingsPageWent($page))->toBe('nowhere');
 });
@@ -111,7 +112,7 @@ it('says nothing was removed where the removal could not begin, and removes noth
     $drawn = WhatTheDeviceWouldDraw::by($page);
 
     expect($drawn->said())->toContain(__('settings.remove_refused', ['name' => 'The loft']))
-        ->and($page->confirmingTheRemoval)->toBeFalse()
+        ->and($drawn->said())->not->toContain(__('settings.remove_confirm', ['name' => 'The loft']))
         ->and(whereTheSettingsPageWent($page))->toBe('nowhere')
         ->and($phone->stacks->configured()->knows($home->id()))->toBeTrue()
         ->and($phone->keychain->keepsAnythingOf($home->id()))->toBeTrue();

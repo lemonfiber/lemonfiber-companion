@@ -27,6 +27,7 @@ use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
+use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
@@ -150,12 +151,34 @@ it('offers the whole household or one member, every policy, and a limit, and ask
     $members = WhatTheDeviceWouldDraw::by($screen);
 
     expect($members->offers())->toContain('alex', 'robin')
+        ->and($members->said())->not->toContain(__('stacks.allowance_change.members_unread'))
         ->and($inviting->readings())->toBe(1);
 
     $screen->again();
     WhatTheDeviceWouldDraw::by($screen);
 
     expect($inviting->readings())->toBe(1);
+});
+
+it('draws the members to choose from once somebody is chosen, and not once the whole household is', function (): void {
+    $screen = theAllowanceChangeScreen(aStackThatChangesWhatIsAllowed());
+    $screen->forSomebody('alex');
+    $somebody = WhatTheDeviceWouldDraw::by($screen);
+    $screen->forEverybody();
+    $everybody = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($somebody->offers())->toContain('alex', 'robin')
+        ->and($everybody->offers())->not->toContain('alex');
+});
+
+it('marks the policy chosen, and leaving it as it is on its own chip', function (): void {
+    $screen = theAllowanceChangeScreen(aStackThatChangesWhatIsAllowed());
+    $chosen = static fn(): array => array_map(static fn(AChoiceOfASettingAsShown $chip): string => $chip->chosen ? sprintf('chosen:%s', $chip->word) : $chip->word, $screen->policyChoice()->offered);
+    $before = $chosen();
+    $screen->policyIs(HowTheHouseholdAsks::Trusted->value);
+
+    expect($before)->toBe([HowTheHouseholdAsks::Trusted->value, HowTheHouseholdAsks::WithinALimit->value, HowTheHouseholdAsks::EverythingWaits->value, 'chosen:'])
+        ->and($chosen())->toBe([sprintf('chosen:%s', HowTheHouseholdAsks::Trusted->value), HowTheHouseholdAsks::WithinALimit->value, HowTheHouseholdAsks::EverythingWaits->value, '']);
 });
 
 it('offers only the whole household where the members could not be read, and says why', function (): void {
@@ -197,7 +220,7 @@ it('names only what was chosen, leaving the rest as it is', function (string $po
     expect(array_map(everythingAChangeAsks(...), $choosing->rehearsed()))->toBe([$asked]);
 })->with([
     'only a policy' => ['trusted', '', '', 'for=everybody policy=trusted limit=as it is'],
-    'only a limit' => ['', ' 3 ', '30', 'for=everybody policy=as it is limit=3/30'],
+    'only a limit' => ['', ' 3 ', ' 30 ', 'for=everybody policy=as it is limit=3/30'],
     'both' => ['within-a-limit', '5', '7', 'for=everybody policy=within-a-limit limit=5/7'],
     'a word the stack does not offer' => ['unlimited', '5', '7', 'for=everybody policy=as it is limit=5/7'],
 ]);
@@ -211,7 +234,7 @@ it('rehearses for the member chosen, follows the work, and draws the stack\'s wo
     $screen->days = '7';
     $screen->rehearse();
 
-    expect($screen->howItIsGoing()->isWorking)->toBeTrue()
+    expect($screen->howItIsGoing()->stands->isWorking())->toBeTrue()
         ->and($screen->awaitsAnOutcome())->toBeTrue()
         ->and(array_map(everythingAChangeAsks(...), $choosing->rehearsed()))->toBe(['for=alex policy=everything-waits limit=5/7']);
 
@@ -227,21 +250,55 @@ it('rehearses for the member chosen, follows the work, and draws the stack\'s wo
 
 it('makes the change the rehearsal was asked with, not what is chosen when the yes is tapped, and reads the household again', function (): void {
     $choosing = aStackThatChangesWhatIsAllowed();
-    $screen = aRehearsedLimitForAlex($choosing);
+    $owing = AMemberWhoIsOwed::owed(Sentences::of(Sentence::of('Everything the household asks for arrives unseen.')));
+    $screen = theAllowanceChangeScreen($choosing, owing: $owing);
+    $screen->forSomebody('alex');
+    $screen->policyIs(HowTheHouseholdAsks::EverythingWaits->value);
+    $screen->requests = '5';
+    $screen->days = '7';
     $screen->answer();
+    $screen->rehearse();
+    $screen->whileItRuns();
+    $screen->howItIsGoing();
+    $screen->answer();
+    $askedBeforeTheYes = $owing->askings();
     $screen->forEverybody();
     $screen->policyIs(HowTheHouseholdAsks::Trusted->value);
     $screen->apply();
 
     expect(array_map(everythingAChangeAsks(...), $choosing->carriedOut()))->toBe(['for=alex policy=everything-waits limit=5/7'])
-        ->and($screen->howItIsGoing()->isWorking)->toBeTrue();
+        ->and($screen->howItIsGoing()->stands->isWorking())->toBeTrue();
 
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->said())->toContain(__('stacks.allowance_change.did.carried_out'), WHAT_THE_CHANGE_SAYS)
         ->and($drawn->offers())->not->toContain(__('stacks.allowance_change.apply'))
-        ->and($screen->answered)->not->toBeNull();
+        ->and([$askedBeforeTheYes, $owing->askings()])->toBe([1, 2]);
+
+    $screen->apply();
+
+    expect($choosing->carriedOut())->toHaveCount(1);
+});
+
+it('sends a yes once, however often it is tapped while the change is made', function (): void {
+    $choosing = aStackThatChangesWhatIsAllowed();
+    $screen = aRehearsedLimitForAlex($choosing);
+    $screen->apply();
+    $screen->apply();
+
+    expect($choosing->carriedOut())->toHaveCount(1);
+});
+
+it('sends no yes to an earlier rehearsal while the next one is asked', function (): void {
+    $choosing = aStackThatChangesWhatIsAllowed();
+    $screen = aRehearsedLimitForAlex($choosing);
+    $screen->forEverybody();
+    $screen->rehearse();
+    $screen->apply();
+
+    expect($choosing->carriedOut())->toBe([])
+        ->and(array_map(everythingAChangeAsks(...), $choosing->rehearsed()))->toBe(['for=alex policy=everything-waits limit=5/7', 'for=everybody policy=everything-waits limit=5/7']);
 });
 
 it('sends no yes where nothing was rehearsed, or where the last answer was not a rehearsal', function (): void {
@@ -288,7 +345,7 @@ it('says what stood in the way of asking, and lets go of a session the stack ref
 
     $refused = aRehearsedLimitForAlex(AStackThatChoosesWhatIsAllowed::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))));
 
-    expect($refused->howItIsGoing()->went->isSignedIn)->toBeFalse();
+    expect($refused->howItIsGoing()->stands->went->isSignedIn)->toBeFalse();
 });
 
 it('asks nothing and offers signing in where no session is held', function (): void {
@@ -297,7 +354,7 @@ it('asks nothing and offers signing in where no session is held', function (): v
     $screen->policyIs(HowTheHouseholdAsks::Trusted->value);
     $screen->rehearse();
 
-    expect($screen->howItIsGoing()->went->isSignedIn)->toBeFalse()
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->whoMayBeChosen()->membersRead)->toBeFalse()
         ->and($choosing->rehearsed())->toBe([]);
 });

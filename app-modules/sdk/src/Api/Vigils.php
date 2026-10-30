@@ -6,7 +6,6 @@ namespace Modules\Sdk\Api;
 
 use function array_is_list;
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\WatchEnvelope;
@@ -15,8 +14,6 @@ use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\WhatTheGuardSaw;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `watch` envelope, as what a guard did once it saw the data location go.
@@ -76,7 +73,7 @@ final readonly class Vigils
         $forms = [];
 
         foreach ($listed as $position => $named) {
-            if (! is_string($named) || trim($named) === '') {
+            if (! Required::isText($named)) {
                 throw WatchIsUnreadable::form($position);
             }
 

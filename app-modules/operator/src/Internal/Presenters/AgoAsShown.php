@@ -16,14 +16,8 @@ final readonly class AgoAsShown
 {
     private function __construct(public string $said, public int $count) {}
 
-    /** A reading taken now, which says no age. */
-    public static function live(): self
-    {
-        return new self('', 0);
-    }
-
-    /** A moment nobody said, or said in a form no clock reads, which says nothing at all. */
-    public static function unsaid(): self
+    /** No age: a reading taken now, or a moment nobody said or said in a form no clock reads. */
+    public static function saysNothing(): self
     {
         return new self('', 0);
     }

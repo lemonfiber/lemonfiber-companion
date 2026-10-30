@@ -14,16 +14,16 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class TheChoiceTurnedOutToBe
 {
     /**
-     * @param ?TheChoiceAsShown     $reading  the choice waiting on a yes, and nothing where none is
-     * @param array<string, string> $saidWith what fills the notice
-     * @param ?ARefusalAsShown      $refused  a refusal of another kind, in the stack's words
+     * @param ?TheChoiceAsShown $reading the choice waiting on a yes, and nothing where none is
+     * @param ?ALineToSay       $said    the notice on what became of the choice, where there is one
+     * @param ?string           $meaning the stack's account of a refusal beside this app's words, where it gave one that adds to them
+     * @param ?ARefusalAsShown  $refused a refusal of another kind, in the stack's words
      */
     public function __construct(
         public HowTheReadingWent $went,
-        public ?TheChoiceAsShown $reading,
-        public string $said,
-        public array $saidWith,
-        public string $meaning,
-        public ?ARefusalAsShown $refused,
+        public ?TheChoiceAsShown $reading = null,
+        public ?ALineToSay $said = null,
+        public ?string $meaning = null,
+        public ?ARefusalAsShown $refused = null,
     ) {}
 }

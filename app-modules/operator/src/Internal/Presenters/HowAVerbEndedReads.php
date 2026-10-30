@@ -15,8 +15,8 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\APortHeldAsShown;
 use Modules\Operator\Internal\ViewModels\AServiceNotBackAsShown;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\HowTheVerbWent;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 use function sprintf;
 
@@ -40,31 +40,31 @@ final readonly class HowAVerbEndedReads
     /** Nothing was sent from this screen, so there is nothing to follow. */
     public function notAsked(): HowTheVerbWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), wasAsked: false);
+        return $this->following(WhereTheWorkStands::notAsked());
     }
 
     /** This device no longer holds a session for the stack the verb was sent to. */
     public function signedOut(): HowTheVerbWent
     {
-        return $this->following(HowTheReadingWent::theSessionEnded());
+        return $this->following(WhereTheWorkStands::signedOut());
     }
 
     /** Sending it, or asking after it, met this instead. */
     public function met(Obstacle $why): HowTheVerbWent
     {
-        return $this->following(HowTheReadingWent::somethingStopped($why));
+        return $this->following(WhereTheWorkStands::met($why));
     }
 
     /** The stack is still carrying it out. */
     public function running(): HowTheVerbWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), isWorking: true);
+        return $this->following(WhereTheWorkStands::running());
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
     public function ended(): HowTheVerbWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return $this->following(WhereTheWorkStands::ended());
     }
 
     /** The stack's report of the verb, judged against what the verb was for. */
@@ -82,10 +82,7 @@ final readonly class HowAVerbEndedReads
         )->said;
 
         return new HowTheVerbWent(
-            went: HowTheReadingWent::itCameBack(),
-            wasAsked: true,
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             wasRehearsed: $rehearsed,
             cameToSaid: $ran ? $this->cameTo($report, $verb, $rehearsed) : 'health.came_to.declined',
             because: $because,
@@ -153,16 +150,10 @@ final readonly class HowAVerbEndedReads
 
     /** A state with no report to draw. */
     private function following(
-        HowTheReadingWent $went,
-        bool $wasAsked = true,
-        bool $isWorking = false,
-        bool $hasEnded = false,
+        WhereTheWorkStands $stands,
     ): HowTheVerbWent {
         return new HowTheVerbWent(
-            went: $went,
-            wasAsked: $wasAsked,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
+            stands: $stands,
             wasRehearsed: false,
             cameToSaid: null,
             because: '',

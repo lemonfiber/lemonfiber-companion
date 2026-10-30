@@ -21,8 +21,7 @@ final readonly class ACheckThatDisturbs
     private function __construct(
         private string $disturbs,
         private string $only,
-        private int $seconds,
-        private bool $bounded,
+        private ?int $seconds,
     ) {}
 
     /** It disturbs this, bounded to this many seconds; a blank word or a bound below none is refused. */
@@ -32,13 +31,13 @@ final readonly class ACheckThatDisturbs
             throw ADisturbanceSaysNothing::below($seconds);
         }
 
-        return new self(self::said($disturbs, 'disturbs'), self::said($only, 'only'), $seconds, bounded: true);
+        return new self(self::said($disturbs, 'disturbs'), self::said($only, 'only'), $seconds);
     }
 
     /** It disturbs this, and the stack gives no bound; a blank word is refused. */
     public static function unbounded(string $disturbs, string $only): self
     {
-        return new self(self::said($disturbs, 'disturbs'), self::said($only, 'only'), 0, bounded: false);
+        return new self(self::said($disturbs, 'disturbs'), self::said($only, 'only'), null);
     }
 
     /** What running it disturbs, in the stack's words. */
@@ -66,7 +65,7 @@ final readonly class ACheckThatDisturbs
      */
     public function either(Closure $bounded, Closure $unbounded): object
     {
-        return $this->bounded ? $bounded($this->seconds) : $unbounded();
+        return $this->seconds === null ? $unbounded() : $bounded($this->seconds);
     }
 
     private static function said(string $word, string $field): string

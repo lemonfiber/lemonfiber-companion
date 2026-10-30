@@ -31,7 +31,7 @@ use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhereAScreenCanSendYou;
 
 // Asserts on the routes the operator's and the household's providers declare,
-// so their mutants are judged here: see `scripts/mutation.php`.
+// so their mutants are judged here, by its `holds:` group.
 pest()->group(
     'holds:app-modules/operator/src/Providers/OperatorServiceProvider.php',
     'holds:app-modules/household/src/Providers/HouseholdServiceProvider.php',

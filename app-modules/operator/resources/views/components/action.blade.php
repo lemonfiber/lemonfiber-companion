@@ -7,7 +7,7 @@
      so a class on a button is parsed, dropped, and looks like a design that
      did not take. The accent is asserted once, on the theme itself, in
      `TheTheme::paint()`. --}}
-@if ($goes !== '')
+@if ($goes !== null)
     <native:button native:key="{{ $named }}" class="w-full" label="{{ $label }}" a11y-label="{{ $named }}" :disabled="$disabled" @navigate="$goes" />
 @else
     <native:button native:key="{{ $named }}" class="w-full" label="{{ $label }}" a11y-label="{{ $named }}" :disabled="$disabled" @tap="{{ $tap }}" />

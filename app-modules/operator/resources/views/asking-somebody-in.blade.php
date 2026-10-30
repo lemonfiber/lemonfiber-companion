@@ -32,13 +32,13 @@
         </x-design::notice>
     @endif
 
-    @if ($this->howItIsGoing()->went->cameBack())
-        @if ($this->howItIsGoing()->isWorking)
+    @if ($this->howItIsGoing()->stands->went->cameBack())
+        @if ($this->howItIsGoing()->stands->isWorking())
             <x-design::standing
                 :said="__('stacks.invitation.working')"
                 tone="working"
             />
-        @elseif ($this->howItIsGoing()->hasEnded)
+        @elseif ($this->howItIsGoing()->stands->hasEnded())
             {{-- Not a failure and not a refusal: the stack has no outcome for it
                  any more. Who is in, below, is the stack's answer again. --}}
             <x-design::notice tone="unknown">
@@ -107,19 +107,19 @@
                 <x-design::note>{{ $this->howItIsGoing()->invitation->toHand->unjoinable }}</x-design::note>
             @endif
 
-            @if ($this->howItIsGoing()->invitation->toHand->handsOver)
+            @if ($this->howItIsGoing()->invitation->toHand->handed !== null)
                 {{-- The join link first where there is one, as the stack sent it
                      and as the first code another phone scans off this screen;
                      then the address exactly as the stack sent it, its caution
                      beside it, the same address as a code, and the device's own
                      sharing to pass it on. --}}
                 <x-design::heading>{{ __('stacks.invitation.to_hand_over') }}</x-design::heading>
-                @if ($this->howItIsGoing()->invitation->toHand->joins !== '')
+                @if ($this->howItIsGoing()->invitation->toHand->handed->joins !== '')
                     <x-design::card>
                         <x-design::strong>{{ __('stacks.invitation.to_join') }}</x-design::strong>
-                        <x-design::verbatim>{{ $this->howItIsGoing()->invitation->toHand->joins }}</x-design::verbatim>
-                        <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->joinCode" :missing="__('stacks.invitation.no_code')" />
-                        @if ($this->howItIsGoing()->invitation->toHand->joinCode !== [])
+                        <x-design::verbatim>{{ $this->howItIsGoing()->invitation->toHand->handed->joins }}</x-design::verbatim>
+                        <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->handed->joinCode" :missing="__('stacks.invitation.no_code')" />
+                        @if ($this->howItIsGoing()->invitation->toHand->handed->joinCode !== [])
                             <x-design::note>{{ __('stacks.invitation.join_code') }}</x-design::note>
                         @endif
                     </x-design::card>
@@ -129,23 +129,23 @@
                     @if ($this->howItIsGoing()->invitation->toHand->caution !== '')
                         <x-design::note>{{ $this->howItIsGoing()->invitation->toHand->caution }}</x-design::note>
                     @endif
-                    <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->code" :missing="__('stacks.invitation.no_code')" />
-                    @if ($this->howItIsGoing()->invitation->toHand->code !== [])
+                    <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->handed->code" :missing="__('stacks.invitation.no_code')" />
+                    @if ($this->howItIsGoing()->invitation->toHand->handed->code !== [])
                         <x-design::note>{{ __('stacks.invitation.code') }}</x-design::note>
                     @endif
                 </x-design::card>
-                @if ($this->howItIsGoing()->invitation->toHand->declines !== '')
+                @if ($this->howItIsGoing()->invitation->toHand->handed->declines !== '')
                     <x-design::card>
                         <x-design::strong>{{ __('stacks.invitation.to_turn_down') }}</x-design::strong>
-                        <x-design::verbatim>{{ $this->howItIsGoing()->invitation->toHand->declines }}</x-design::verbatim>
-                        <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->declineCode" :missing="__('stacks.invitation.no_code')" />
-                        @if ($this->howItIsGoing()->invitation->toHand->declineCode !== [])
+                        <x-design::verbatim>{{ $this->howItIsGoing()->invitation->toHand->handed->declines }}</x-design::verbatim>
+                        <x-design::scannable :rows="$this->howItIsGoing()->invitation->toHand->handed->declineCode" :missing="__('stacks.invitation.no_code')" />
+                        @if ($this->howItIsGoing()->invitation->toHand->handed->declineCode !== [])
                             <x-design::note>{{ __('stacks.invitation.decline_code') }}</x-design::note>
                         @endif
                     </x-design::card>
                 @endif
                 <x-design::action :label="__('stacks.invitation.pass_on')" tap="passOn()" />
-                @if ($this->passedOn !== '')
+                @if ($this->passedOn !== null)
                     <x-design::note>{{ __($this->passedOn) }}</x-design::note>
                 @endif
             @endif
@@ -181,7 +181,7 @@
              would have been, with the way back. --}}
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->howItIsGoing()->went"
+            :went="$this->howItIsGoing()->stands->went"
             :goes="$this->goes()"
         />
     @endif

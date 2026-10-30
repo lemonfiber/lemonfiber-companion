@@ -118,7 +118,7 @@ it('rehearses first, and draws what every client is doing and the one it could n
     $screen = thePausingScreen($pausing);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect(everyClientAsShown($screen->answer()->clients))->toBe([
+    expect(everyClientAsShown($screen->answer()->said->clients ?? []))->toBe([
         ['qbittorrent', 'stacks.pausing.said.fetching', '', true, ''],
         ['sabnzbd', 'stacks.pausing.said.stopped', '', true, ''],
         ['nzbget', 'stacks.pausing.said.unsaid', '', false, 'connection refused'],
@@ -179,7 +179,7 @@ it('reports each client before and after, and names the one it could not reach',
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect(everyClientAsShown($screen->done()->clients))->toBe([
+    expect(everyClientAsShown($screen->done()->said->clients ?? []))->toBe([
         ['qbittorrent', 'stacks.pausing.said.fetching', 'stacks.pausing.said.stopped', true, ''],
         ['sabnzbd', 'stacks.pausing.said.stopped', 'stacks.pausing.said.stopped', true, ''],
         ['nzbget', 'stacks.pausing.said.unsaid', '', false, ''],
@@ -220,6 +220,24 @@ it('sends no yes before a rehearsal has been read, and never on its cadence', fu
     expect($pausing->agreed())->toBe([]);
 });
 
+it('carries out only the rehearsal read since asking again, never the one it replaced', function (): void {
+    $replaced = aRehearsedPause();
+    $fresh = aRehearsedPause(caution: 'A client stopped since the last reading');
+    $pausing = AStackThatPausesDownloads::rehearsingAfresh($replaced, $fresh);
+    $screen = thePausingScreen($pausing);
+    $screen->answer();
+    $screen->again();
+    $screen->agree();
+
+    expect($pausing->agreed())->toBe([]);
+
+    $screen->answer();
+    $screen->agree();
+
+    expect($pausing->agreed())->toBe([$fresh])
+        ->and($pausing->rehearsed())->toHaveCount(2);
+});
+
 it('says the stack is still rehearsing, and reads the same rehearsal again on its cadence', function (): void {
     $pausing = AStackThatPausesDownloads::rehearsing(HowPausingIsGoing::stillRunning(), HowPausingIsGoing::stillRunning());
     $screen = thePausingScreen($pausing);
@@ -243,7 +261,8 @@ it('says a rehearsal the stack no longer has is gone, and rehearses afresh when 
     $screen->again();
     $screen->answer();
 
-    expect($pausing->rehearsed())->toHaveCount(2);
+    expect($pausing->rehearsed())->toHaveCount(2)
+        ->and($screen->wasAgreedTo())->toBeFalse();
 });
 
 it('offers nothing to agree to where the stack would not rehearse, and lets go of a refused session', function (): void {
@@ -251,26 +270,33 @@ it('offers nothing to agree to where the stack would not rehearse, and lets go o
     $pausing = AStackThatPausesDownloads::met(Obstacle::of(KindOfObstacle::CredentialWasRefused));
     $screen = thePausingScreen($pausing, $keychain);
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($keychain->isHolding(theStackWhoseDownloadsPause()->id()))->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('stacks.pausing.agree.pause'));
 });
 
-it('says what stood in the way of a yes the stack refused', function (): void {
+it('says what stood in the way of a yes the stack refused, and rehearses afresh when asked again', function (): void {
     $pausing = AStackThatPausesDownloads::rehearsingButRefusing(aRehearsedPause(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = thePausingScreen($pausing);
     $screen->answer();
     $screen->agree();
 
-    expect($screen->done()->went->cameBack())->toBeFalse()
+    expect($screen->done()->stands->went->cameBack())->toBeFalse()
+        ->and($screen->wasAgreedTo())->toBeTrue()
         ->and($pausing->agreed())->toHaveCount(1);
+
+    $screen->again();
+    $screen->answer();
+
+    expect($screen->wasAgreedTo())->toBeFalse()
+        ->and($pausing->rehearsed())->toHaveCount(2);
 });
 
 it('asks for a session rather than a rehearsal where this device holds none', function (): void {
     $pausing = aStackRehearsingAPause(HowPausingIsGoing::stillRunning());
     $screen = thePausingScreen($pausing, signedIn: false);
 
-    expect($screen->answer()->went->isSignedIn)->toBeFalse()
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($pausing->rehearsed())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.sign_in'));
 });
@@ -317,14 +343,14 @@ it('asks for a session where it is gone by the time the yes is sent, or asked af
 
     $screen->whileItRuns();
 
-    expect($screen->done()->went->isSignedIn)->toBeFalse()
-        ->and($screen->done()->clients)->toBe([]);
+    expect($screen->done()->stands->went->isSignedIn)->toBeFalse()
+        ->and($screen->done()->said)->toBeNull();
 })->with(['before the yes' => [false], 'after it' => [true]]);
 
 it('has nothing to report for a yes nobody gave', function (): void {
     $pausing = aStackRehearsingAPause(HowPausingIsGoing::stillRunning());
 
-    expect(thePausingScreen($pausing)->done()->hasEnded)->toBeTrue()
+    expect(thePausingScreen($pausing)->done()->stands->hasEnded())->toBeTrue()
         ->and($pausing->followed())->toBe([]);
 });
 

@@ -81,8 +81,8 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
      */
     public ?TheSurveyTurnedOutToBe $answered = null;
 
-    /** The word of the mode being asked about, which what comes back is drawn with. */
-    public string $about = '';
+    /** The word of the mode being asked about, which what comes back is drawn with, once one was. */
+    public ?string $about = null;
 
     /** The handle of the work being followed, while there is one. */
     public ?string $following = null;
@@ -169,7 +169,7 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     public function leaveIt(): void
     {
         $this->agreedOn = null;
-        $this->about = '';
+        $this->about = null;
         $this->following = null;
         $this->staged = null;
         $this->going = null;
@@ -185,14 +185,16 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
      */
     public function tryAgain(): void
     {
-        if ($this->going?->went->wasHeldByOtherWork() !== true) {
+        $about = $this->about;
+
+        if ($this->going?->stands->went->wasHeldByOtherWork() !== true || $about === null) {
             return;
         }
 
         $agreedOn = $this->agreedOn;
 
         if (! $agreedOn instanceof AMove) {
-            $this->wouldMoveIn($this->about);
+            $this->wouldMoveIn($about);
 
             return;
         }
@@ -210,7 +212,7 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->howTheMoveIsGoing()->isWorking) {
+        if ($this->howTheMoveIsGoing()->stands->isWorking()) {
             $this->going = null;
         }
     }
@@ -218,7 +220,7 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
-        return $this->howTheMoveIsGoing()->isWorking;
+        return $this->howTheMoveIsGoing()->stands->isWorking();
     }
 
     /** What came back, asked once per frame. */
@@ -236,11 +238,12 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     public function howTheMoveIsGoing(): TheMoveTurnedOutToBe
     {
         $following = $this->following;
+        $about = $this->about;
 
-        return $this->going ??= $following === null
+        return $this->going ??= $following === null || $about === null
             ? new HowAMoveReads()->notAsked()
             : $this->put(
-                $this->about,
+                $about,
                 fn(Stack $stack, Session $session): WhatBecameOfTheMove => $this->movingIn->whatBecameOf($stack, $session, Job::named($following)),
             );
     }
@@ -276,16 +279,14 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
         $this->about = $mode;
 
         return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): TheMoveTurnedOutToBe => $this->shown($asking($stack, $session), $stack),
+            held: fn(Session $session): TheMoveTurnedOutToBe => $this->shown($asking($stack, $session), $stack, $mode),
             notHeld: static fn(): TheMoveTurnedOutToBe => new HowAMoveReads()->signedOut($mode),
         );
     }
 
     /** What the stack said, as the screen draws it, holding what to follow or to agree to. */
-    private function shown(WhatBecameOfTheMove $became, Stack $stack): TheMoveTurnedOutToBe
+    private function shown(WhatBecameOfTheMove $became, Stack $stack, string $mode): TheMoveTurnedOutToBe
     {
-        $mode = $this->about;
-
         return $became->either(
             underway: function (Job $job) use ($mode): TheMoveTurnedOutToBe {
                 $this->following = $job->shown();

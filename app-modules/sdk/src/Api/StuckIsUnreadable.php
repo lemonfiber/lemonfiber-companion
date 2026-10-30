@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
+use function array_column;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\Stage;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -65,10 +65,7 @@ final class StuckIsUnreadable extends InvalidArgumentException
             'Item %d in the stuck envelope says it is at `%s`, and this app reads %s. Guessing which was meant is how a title nothing is watching for gets shown as one that is on its way.',
             $position,
             $said,
-            implode(', ', array_map(
-                static fn(Stage $stage): string => sprintf('`%s`', $stage->value),
-                Stage::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(Stage::cases(), 'value')),
         ));
     }
 }

@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
+use function array_column;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Sdk\Api\Fields\StatusField;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -95,10 +95,7 @@ final class RosterIsUnreadable extends InvalidArgumentException
         return new self(sprintf(
             'The status envelope says the stack is `%s`, and this app reads %s. A word this build has not heard of means the contract moved, and the nearest guess would be the reassuring one.',
             $said,
-            self::accepting(array_map(
-                static fn(HowTheStackIsRunning $running): string => $running->value,
-                HowTheStackIsRunning::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(HowTheStackIsRunning::cases(), 'value')),
         ));
     }
 
@@ -108,10 +105,7 @@ final class RosterIsUnreadable extends InvalidArgumentException
             'Service %d in the status envelope says it is `%s`, and this app reads %s. Guessing which was meant is how a service that is crash-looping gets drawn as one that is running.',
             $position,
             $said,
-            self::accepting(array_map(
-                static fn(HowAServiceRuns $runs): string => $runs->value,
-                HowAServiceRuns::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(HowAServiceRuns::cases(), 'value')),
         ));
     }
 
@@ -121,26 +115,7 @@ final class RosterIsUnreadable extends InvalidArgumentException
             'Service %d in the status envelope says it is `%s`, and this app reads %s. How much a service matters is what decides how loudly a stop is asked about, so an unrecognised word must not become the quietest one.',
             $position,
             $said,
-            self::accepting(array_map(
-                static fn(HowMuchItMatters $matters): string => $matters->value,
-                HowMuchItMatters::cases(),
-            )),
-        ));
-    }
-
-    /**
-     * The words this app reads, as a sentence.
-     *
-     * One place rather than three, so the three messages that end in a list
-     * cannot drift apart in how they punctuate one.
-     *
-     * @param list<string> $words
-     */
-    private static function accepting(array $words): string
-    {
-        return implode(', ', array_map(
-            static fn(string $word): string => sprintf('`%s`', $word),
-            $words,
+            TheWordsItReads::quoted(...array_column(HowMuchItMatters::cases(), 'value')),
         ));
     }
 }

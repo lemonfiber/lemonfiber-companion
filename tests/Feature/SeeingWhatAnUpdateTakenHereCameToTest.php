@@ -29,7 +29,7 @@ use Tests\Support\WhatTheDeviceWouldDraw;
 
 it('says what became of each service the update taken here touched', function (): void {
     $keeping = AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), TheUpkeepScreenOfTheLoft::aReportSaying(TheUpkeepScreenOfTheLoft::whatLastNightCameTo()));
-    $applied = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate()->applied;
+    $applied = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate()->took->applied ?? [];
 
     // What did not arrive comes first, which is `NotArrivedFirst`'s doing and
     // is asserted on its own beside the other ordering cases. Read here in the
@@ -48,7 +48,7 @@ it('says what became of each service the update taken here touched', function ()
 
 it('says which way back, and whether it brings the data with it', function (): void {
     $keeping = AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), TheUpkeepScreenOfTheLoft::aReportSaying(TheUpkeepScreenOfTheLoft::whatLastNightCameTo()));
-    $applied = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate()->applied;
+    $applied = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate()->took->applied ?? [];
 
     // A restore is the larger promise and the different conversation: it puts
     // the snapshot back, and the evening's data with it. It leads because the
@@ -77,14 +77,13 @@ it('counts what is not where the operator wanted it, apart from what is unknown'
     $keeping = AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), TheUpkeepScreenOfTheLoft::aReportSaying(TheUpkeepScreenOfTheLoft::whatLastNightCameTo()));
     $last = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate();
 
-    expect($last->didNotArrive)->toBe(1)
+    expect($last->took?->didNotArrive)->toBe(1)
         // `not-started` is something the stack knows. Unanswered is something
         // it does not, and a headline reading them as one would offer a remedy
         // for a situation it is guessing at.
-        ->and($last->anythingUnanswered)->toBeFalse()
-        ->and($last->wasTaken)->toBeTrue()
-        ->and($last->isWorking)->toBeFalse()
-        ->and($last->hasEnded)->toBeFalse();
+        ->and($last->took?->anythingUnanswered)->toBeFalse()
+        ->and($last->stands->isWorking())->toBeFalse()
+        ->and($last->stands->hasEnded())->toBeFalse();
 });
 
 it('says when the stack cannot tell what a service is doing', function (): void {
@@ -92,8 +91,8 @@ it('says when the stack cannot tell what a service is doing', function (): void 
         HowAServiceTookIt::of(ServiceId::called('radarr'), HowItEnded::NotReached, HowToUndoIt::Rollback),
     ))))->lastUpdate();
 
-    expect($last->anythingUnanswered)->toBeTrue()
-        ->and($last->didNotArrive)->toBe(1);
+    expect($last->took?->anythingUnanswered)->toBeTrue()
+        ->and($last->took?->didNotArrive)->toBe(1);
 });
 
 it('a screen that has taken no update says so, and asks after nothing', function (): void {
@@ -101,9 +100,8 @@ it('a screen that has taken no update says so, and asks after nothing', function
     $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen($keeping);
     $last = $screen->lastUpdate();
 
-    expect($last->wasTaken)->toBeFalse()
-        ->and($last->went->cameBack())->toBeTrue()
-        ->and($last->applied)->toBe([])
+    expect($last->took)->toBeNull()
+        ->and($last->stands->went->cameBack())->toBeTrue()
         ->and($keeping->followed())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('updates.nothing_applied'));
 });
@@ -114,8 +112,8 @@ it('an update just taken is running, and the screen says so', function (): void 
     $screen->wouldYouLike();
     $screen->agree();
 
-    expect($screen->lastUpdate()->isWorking)->toBeTrue()
-        ->and([$screen->lastUpdate()->applied, $screen->lastUpdate()->didNotArrive, $screen->lastUpdate()->anythingUnanswered])->toBe([[], 0, false])
+    expect($screen->lastUpdate()->stands->isWorking())->toBeTrue()
+        ->and($screen->lastUpdate()->took)->toBeNull()
         ->and($keeping->followed())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())
         ->toContain(__('updates.still_updating'));
@@ -189,8 +187,8 @@ it('an update the stack has no outcome for is said to be that, not a failure', f
     $keeping = AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), HowAgreedWorkIsGoing::ended());
     $screen = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping);
 
-    expect($screen->lastUpdate()->hasEnded)->toBeTrue()
-        ->and([$screen->lastUpdate()->applied, $screen->lastUpdate()->didNotArrive, $screen->lastUpdate()->anythingUnanswered])->toBe([[], 0, false])
+    expect($screen->lastUpdate()->stands->hasEnded())->toBeTrue()
+        ->and($screen->lastUpdate()->took)->toBeNull()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('updates.no_outcome'));
 });
 
@@ -198,8 +196,8 @@ it('a take the stack refused says what stood in the way, and follows nothing', f
     $keeping = AStackThatKeepsCurrent::withButRefusing(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping);
 
-    expect($screen->lastUpdate()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($screen->lastUpdate()->isWorking)->toBeFalse()
+    expect($screen->lastUpdate()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
+        ->and($screen->lastUpdate()->stands->isWorking())->toBeFalse()
         ->and($keeping->taken())->toHaveCount(1)
         ->and($keeping->followed())->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
@@ -230,7 +228,7 @@ it('does not offer an update again where anything but other work stood in its wa
 it('asking after an update says what stood in the way', function (): void {
     $keeping = AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), HowAgreedWorkIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
-    expect(TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
+    expect(TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
 });
 
 it('lets go of a session the stack refused while taking or following an update', function (): void {
@@ -283,10 +281,8 @@ it('carries the name the reading gave its offer back with the update taken', fun
 it('says the stack\'s own words and reads again where the update agreed to was refused because what it would apply moved', function (): void {
     $keeping = aStackWhoseUpdateMoved();
     $screen = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping);
-    $askedBefore = $keeping->askings();
-    // The frame that heard the refusal read the offer again; the screen's
-    // cadence draws what the stack said on the next.
     WhatTheDeviceWouldDraw::by($screen);
+    $askedOnHearingTheRefusal = $keeping->askings();
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
     $screen->wouldYouLike();
@@ -294,10 +290,8 @@ it('says the stack\'s own words and reads again where the update agreed to was r
     expect($drawn)->toContain(WhatAMovedOfferSays::SUMMARY)
         ->and($drawn)->toContain(WhatAMovedOfferSays::MEANING)
         ->and($drawn)->toContain(__('updates.nothing_applied'))
-        // Nothing is followed any more, what the stack would do now was read
-        // again, and it can be agreed to afresh.
         ->and($screen->took)->toBeNull()
-        ->and($keeping->askings())->toBeGreaterThan($askedBefore)
+        ->and($keeping->askings())->toBe($askedOnHearingTheRefusal + 1)
         ->and($screen->asking())->not->toBeNull()
         ->and($keeping->taken())->toHaveCount(1);
 });

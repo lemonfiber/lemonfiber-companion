@@ -72,11 +72,11 @@ it('keeps grants in the stack\'s order', function (): void {
 it('reads a revoke apart from one that ended, and a yes only against a reading of that grant', function (): void {
     $restarts = Services::these(ServiceId::called('tdarr'));
     $read = ACredentialRevoke::read(' revoke-1 ', thePlexTokenGrantedTo('tdarr'), $restarts);
-    $ended = ACredentialRevoke::ended('revoke-1', thePlexTokenGrantedTo('tdarr'), $restarts, ' It was stopped ');
+    $ended = ACredentialRevoke::ended(' revoke-1 ', thePlexTokenGrantedTo('tdarr'), $restarts, ' It was stopped ');
     $agreed = ACredentialRevokeAgreed::after($read, thePlexTokenGrantedTo('tdarr'));
 
     expect([$read->agreement(), $read->wasEnded(), $read->unrestarted(), $read->restarts()])->toBe(['revoke-1', false, '', $restarts])
-        ->and([$ended->wasEnded(), $ended->unrestarted()])->toBe([true, 'It was stopped'])
+        ->and([$ended->agreement(), $ended->wasEnded(), $ended->unrestarted()])->toBe(['revoke-1', true, 'It was stopped'])
         ->and($read->readsARevokeOf(thePlexTokenGrantedTo('tdarr')))->toBeTrue()
         ->and($read->readsARevokeOf(thePlexTokenGrantedTo('bazarr')))->toBeFalse()
         ->and($ended->readsARevokeOf(thePlexTokenGrantedTo('tdarr')))->toBeFalse()

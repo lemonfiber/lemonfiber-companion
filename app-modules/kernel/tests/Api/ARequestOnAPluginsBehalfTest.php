@@ -23,7 +23,7 @@ it('carries the plugin that declared it, where it goes and why', function (): vo
 it('refuses a request that will not say where it goes or why, naming which', function (): void {
     expect(static fn(): ARequestOnAPluginsBehalf => ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), ' ', 'To claim the media server'))
         ->toThrow(RequestSaysNothing::class, '`destination`')
-        ->and(static fn(): ARequestOnAPluginsBehalf => ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), 'plex.tv', ''))
+        ->and(static fn(): ARequestOnAPluginsBehalf => ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), 'plex.tv', ' '))
         ->toThrow(RequestSaysNothing::class, '`purpose`');
 });
 

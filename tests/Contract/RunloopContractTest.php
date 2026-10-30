@@ -9,7 +9,7 @@ use Modules\Operator\Internal\Screens\YourStacks;
 use Tests\Support\Fakes\ARunloopThatOnlyRemembers;
 
 // Runs the composition root rather than reading it, so its mutants are judged
-// here: see `scripts/mutation.php`.
+// here, by its `holds:` group.
 pest()->group('holds:bootstrap/Composition');
 
 // The Runloop contract, run against the harness and against the fake.

@@ -35,7 +35,7 @@ final readonly class HowTheHouseholdsAskingReads
     /** The stack answered, and this is what the house has asked for. */
     public function these(Requested $wanted): WhatTheHouseholdTurnedOutToWant
     {
-        return $this->read($wanted, HowTheReadingWent::itCameBack(), AgoAsShown::live(), waits: false);
+        return $this->read($wanted, HowTheReadingWent::itCameBack(), AgoAsShown::saysNothing(), waits: false);
     }
 
     /**
@@ -99,8 +99,8 @@ final readonly class HowTheHouseholdsAskingReads
             requests: [],
             waiting: 0,
             askedNow: $went,
-            readAgo: AgoAsShown::live(),
-            waitsForTheStack: false,
+            readAgo: AgoAsShown::saysNothing(),
+            waitsForTheStack: true,
         );
     }
 }

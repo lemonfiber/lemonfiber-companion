@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function max;
+
 /**
  * The version of the API a stack answered in, and the one this app reads, where the two differ.
  *
@@ -40,6 +42,6 @@ final readonly class TheVersionsSpoken
     /** Whether the stack is the newer of the two, which makes this app the one to update. */
     public function isTheStackNewer(): bool
     {
-        return $this->answered > $this->spoken;
+        return max($this->answered, $this->spoken) === $this->answered;
     }
 }

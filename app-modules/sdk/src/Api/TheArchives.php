@@ -6,15 +6,14 @@ namespace Modules\Sdk\Api;
 
 use function array_key_exists;
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\ArchivesEnvelope;
 use Modules\Kernel\Api\TheCopies;
 use Modules\Sdk\Api\Fields\ArchivesField;
+use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `archives` envelope, as the copies a machine holds.
@@ -62,15 +61,13 @@ final readonly class TheArchives
     private static function names(array $listed): array
     {
         $names = [];
-        $position = 0;
 
-        foreach ($listed as $name) {
-            if (! is_string($name) || trim($name) === '') {
+        foreach (InTheOrderSent::rows($listed) as $position => $name) {
+            if (! Required::isText($name)) {
                 throw ArchivesAreUnreadable::archive($position);
             }
 
             $names[] = $name;
-            $position++;
         }
 
         return $names;

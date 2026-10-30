@@ -501,7 +501,7 @@ it('reads what needs attention before what is fine', function (): void {
 
     $named = [];
 
-    foreach (TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate()->applied as $took) {
+    foreach (TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping)->lastUpdate()->took->applied ?? [] as $took) {
         $named[] = $took->service;
     }
 
@@ -653,7 +653,7 @@ it('draws what the running release changed only where the notes describe it', fu
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($screen->answer()->inUse)->toBeNull()
-        ->and($screen->answer()->notesWithheld->said)->toBe($said)
+        ->and($screen->answer()->notesWithheld?->said)->toBe($said)
         ->and($drawn)->toContain(__($said))
         ->and($drawn)->toContain(__($means))
         ->and($drawn)->not->toContain(__('updates.what_it_changed', ['version' => '4.1.0']))
@@ -668,7 +668,7 @@ it('draws what the running release changed where the notes describe it, and with
     $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending()));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect($screen->answer()->notesWithheld->said)->toBe('')
+    expect($screen->answer()->notesWithheld)->toBeNull()
         ->and($drawn)->toContain(__('updates.what_it_changed', ['version' => '4.1.0']))
         ->and($drawn)->not->toContain(__('stacks.versions.notes_stale'))
         ->and($drawn)->not->toContain(__('stacks.versions.notes_pending'));

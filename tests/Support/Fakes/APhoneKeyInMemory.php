@@ -35,6 +35,8 @@ final class APhoneKeyInMemory implements HoldingAPhoneKey
 
     private bool $stuck = false;
 
+    private int $looked = 0;
+
     private function __construct(
         private readonly WhereAPhoneKeyLives|WhyThisPhoneHoldsNoKey $place,
         private readonly bool $android,
@@ -74,8 +76,16 @@ final class APhoneKeyInMemory implements HoldingAPhoneKey
         return $this;
     }
 
+    /** How many times it was asked where a key could live. */
+    public function timesAskedWhere(): int
+    {
+        return $this->looked;
+    }
+
     public function whereItCouldLive(): WhereThisPhoneCanKeepAKey
     {
+        $this->looked++;
+
         return $this->place instanceof WhereAPhoneKeyLives
             ? WhereThisPhoneCanKeepAKey::in($this->place)
             : WhereThisPhoneCanKeepAKey::nowhere($this->place);

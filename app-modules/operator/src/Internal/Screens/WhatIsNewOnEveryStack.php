@@ -71,11 +71,11 @@ final class WhatIsNewOnEveryStack extends NativeComponent implements TakesTheThe
     use LooksAgainWhileOpen;
     use ReadsAStackOnceAFrame;
 
-    /** The kind shown, by its value, or every kind. */
-    public string $kind = HowWhatIsNewReads::EVERYTHING;
+    /** The kind shown, or null for every kind. */
+    public ?KindOfNews $kind = null;
 
-    /** The stack shown, by its stored identifier, or every stack. */
-    public string $stackShown = HowWhatIsNewReads::EVERYTHING;
+    /** The stack shown, or null for every stack. */
+    public ?StackId $stackShown = null;
 
     /**
      * What each stack listed when it was last read, held between frames.
@@ -151,18 +151,30 @@ final class WhatIsNewOnEveryStack extends NativeComponent implements TakesTheThe
         return $this->shown = $reads->shown($stacks, $listed, $this->kind, $this->stackShown, $this->clock->now());
     }
 
-    /** Show one kind, or every kind. */
+    /** Show one kind, or every kind for a word that names none. */
     public function showKind(string $kind): void
     {
-        $this->kind = KindOfNews::tryFrom($kind) instanceof KindOfNews ? $kind : HowWhatIsNewReads::EVERYTHING;
+        $this->kind = KindOfNews::tryFrom($kind);
     }
 
-    /** Show one stack, or every stack. */
+    /** Show every kind. */
+    public function showEveryKind(): void
+    {
+        $this->kind = null;
+    }
+
+    /** Show one stack, or every stack for one this phone does not hold. */
     public function showStack(string $stack): void
     {
-        $this->stackShown = $this->stacks->configured()->knows(StackId::rememberedAs($stack))
-            ? $stack
-            : HowWhatIsNewReads::EVERYTHING;
+        $id = StackId::rememberedAs($stack);
+
+        $this->stackShown = $this->stacks->configured()->knows($id) ? $id : null;
+    }
+
+    /** Show every stack. */
+    public function showEveryStack(): void
+    {
+        $this->stackShown = null;
     }
 
     /**

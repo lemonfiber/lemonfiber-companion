@@ -241,9 +241,9 @@ parameters:
 
         # --- S1: the execution bundle, scoped -------------------------------
         #
-        # `passthru` is the execution bundle's, and the mutation runner's whole
-        # job is to invoke Pest once per declared floor — a gate that runs a
-        # tool, in the same category as the harness below.
+        # `passthru` is the execution bundle's, and `scripts/manifests.php`'s
+        # whole job is to run Composer over each module's manifest — a build
+        # step that runs a tool, in the same category as the harness below.
         -
             function: 'passthru()'
             message: "S1 — nothing in this application runs a program. scripts/ is the exception: a build step invokes the tool it is a step for (S1)."

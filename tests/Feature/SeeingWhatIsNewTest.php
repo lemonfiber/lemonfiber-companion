@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Design\Api\ATap;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AProblemListed;
 use Modules\Kernel\Api\AReleaseListed;
@@ -21,10 +22,11 @@ use Modules\Kernel\Api\TheNewsOfAStack;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\News\Api\KindOfNews;
-use Modules\Operator\Internal\Presenters\HowWhatIsNewReads;
+use Modules\Operator\Internal\ViewModels\AFilterAsShown;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Tests\Support\APhoneLookingAtWhatIsNew;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // What's new, from the menu of any stack: everything newer than the newest of its
@@ -110,7 +112,7 @@ it('shows one kind when asked, and Mark all seen clears only what is shown', fun
     $screen->showKind(KindOfNews::Request->value);
     $narrowed = WhatTheDeviceWouldDraw::by($screen)->said();
     $screen->markAllSeen();
-    $screen->showKind('');
+    $screen->showEveryKind();
     $after = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($narrowed)->toContain('Dune');
@@ -169,9 +171,9 @@ it('opens on the stack a stack\'s menu handed it, and on every stack for one it 
     $nothing->setData([AScreenWithoutAStack::WHATS_NEW_SHOWS => 7]);
     $nothing->mount();
 
-    expect($handed->stackShown)->toBe($away->id()->stored())
-        ->and($forgotten->stackShown)->toBe(HowWhatIsNewReads::EVERYTHING)
-        ->and($nothing->stackShown)->toBe(HowWhatIsNewReads::EVERYTHING);
+    expect($handed->stackShown?->stored())->toBe($away->id()->stored())
+        ->and($forgotten->stackShown)->toBeNull()
+        ->and($nothing->stackShown)->toBeNull();
 });
 
 it('says a request it has no title for as a request', function (): void {
@@ -216,6 +218,19 @@ it('puts a stack it could not reach first, with when the phone last heard from i
     expect($said)->toContain(__('news.unreached', ['stack' => 'The loft']))
         ->and($said)->toContain(__('news.unreached_since', ['ago' => trans_choice('health.ago.minutes', 10)]))
         ->and($said)->not->toContain(__('news.nothing_new'));
+});
+
+it('puts every stack it could not reach first, each by its name', function (): void {
+    $loft = aStackWithNews('a', 'The loft');
+    $attic = aStackWithNews('b', 'The attic');
+    $phone = new APhoneLookingAtWhatIsNew($loft, $attic);
+    $phone->listing->cannotBeReached($loft->id(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+    $phone->listing->cannotBeReached($attic->id(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+    $screen = $phone->opens();
+    WhatTheDeviceWouldDraw::by($screen);
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('news.unreached', ['stack' => 'The loft']), __('news.unreached', ['stack' => 'The attic']));
 });
 
 it('opens an update on Updates, a request on Requests and a problem on Health opened out, and marks each seen', function (): void {
@@ -307,4 +322,94 @@ it('marks nothing of a kind the stack no longer marks as new', function (): void
     $phone->listing->lists($home->id(), whatItLists([], [12 => 'Dune', 11 => 'Bluey']));
 
     expect(WhatTheDeviceWouldDraw::by($phone->opens())->said())->not->toContain('Dune');
+});
+
+it('draws what is new on a stack after one it could not reach', function (): void {
+    $home = aStackWithNews('a', 'The loft');
+    $away = aStackWithNews('b', 'The cabin');
+    $phone = new APhoneLookingAtWhatIsNew($home, $away);
+    $phone->listing->cannotBeReached($home->id(), Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+    $phone->listing->lists($away->id(), whatItLists([], [5 => 'Up']));
+    $first = $phone->opens();
+    WhatTheDeviceWouldDraw::by($first);
+    WhatTheDeviceWouldDraw::by($first);
+    $phone->listing->lists($away->id(), whatItLists([], [6 => 'Heat', 5 => 'Up']));
+    $screen = $phone->opens();
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('news.unreached', ['stack' => 'The loft']), 'Heat');
+});
+
+it('marks the filter in force, and widens to every kind and every stack from their own chips', function (): void {
+    $home = aStackWithNews('a', 'The loft');
+    $away = aStackWithNews('b', 'The cabin');
+    $screen = new APhoneLookingAtWhatIsNew($home, $away)->opens();
+    $chips = static fn(array $filters): array => array_map(static fn(mixed $filter): array => $filter instanceof AFilterAsShown ? [$filter->said ?? $filter->name, $filter->chosen] : [], $filters);
+    $screen->showStack($away->id()->stored());
+    $screen->showKind(KindOfNews::Request->value);
+    WhatTheDeviceWouldDraw::by($screen);
+    $narrowed = $screen->news();
+    $screen->showEveryStack();
+    $screen->showEveryKind();
+    WhatTheDeviceWouldDraw::by($screen);
+    $widened = $screen->news();
+
+    expect($chips($narrowed->stacks))->toBe([['news.all_stacks', false], ['The loft', false], ['The cabin', true]])
+        ->and($chips($narrowed->kinds))->toBe([['news.all_kinds', false], [KindOfNews::Update->saidOnTheScreen(), false], [KindOfNews::Request->saidOnTheScreen(), true], [KindOfNews::Problem->saidOnTheScreen(), false]])
+        ->and($chips($widened->stacks))->toBe([['news.all_stacks', true], ['The loft', false], ['The cabin', false]])
+        ->and($chips($widened->kinds)[0])->toBe(['news.all_kinds', true])
+        ->and($widened->stacks[0]->tap)->toBe(ATap::calling('showEveryStack')->written())
+        ->and($widened->kinds[0]->tap)->toBe(ATap::calling('showEveryKind')->written())
+        ->and($screen->news())->toBe($widened);
+});
+
+it('asks every stack again for its news when the operator asks again, and says the screen opened', function (): void {
+    $home = aStackWithNews('a', 'The loft');
+    $phone = new APhoneLookingAtWhatIsNew($home);
+    $screen = $phone->opens();
+    $screen->mount();
+    WhatTheDeviceWouldDraw::by($screen);
+    $screen->askAgain();
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect($phone->listing->askings($home->id()))->toBe(2)
+        ->and($phone->offering->screensOpened())->toBe(1);
+});
+
+it('marks nothing seen and opens nothing on a stack not read yet', function (): void {
+    $home = aStackWithNews('a', 'The loft');
+    $away = aStackWithNews('b', 'The cabin');
+    $phone = new APhoneLookingAtWhatIsNew($home, $away);
+    $screen = $phone->opens();
+    WhatTheDeviceWouldDraw::by($screen);
+    $screen->markAllSeen();
+    $screen->open($away->id()->stored(), KindOfNews::Request->value, '5');
+
+    expect($screen->getNavigationIntent())->toBeNull()
+        ->and($phone->listing->askings($away->id()))->toBe(0);
+});
+
+it('waits a frame for a stack that had to be asked what it serves, and reads it on the next', function (): void {
+    $home = aStackWithNews('a', 'The loft');
+    $phone = new APhoneLookingAtWhatIsNew($home);
+    $phone->listing->waitsAFrame($home->id());
+    $screen = $phone->opens();
+    $first = WhatTheDeviceWouldDraw::by($screen)->said();
+    $waited = $screen->waitsForTheNextFrame();
+
+    expect($waited)->toBeTrue()
+        ->and($first)->not->toContain(__('news.nothing_new'))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('news.nothing_new'));
+});
+
+it('lets go of a session the stack refused while reading its news', function (): void {
+    $home = aStackWithNews('a', 'The loft');
+    $phone = new APhoneLookingAtWhatIsNew($home);
+    $phone->listing->cannotBeReached($home->id(), Obstacle::of(KindOfObstacle::CredentialWasRefused));
+    WhatTheDeviceWouldDraw::by($phone->opens());
+
+    expect($phone->keychain->resume($home->id())->either(
+        held: static fn(): TheWordCarriedOut => new TheWordCarriedOut('held'),
+        notHeld: static fn(): TheWordCarriedOut => new TheWordCarriedOut('let go'),
+    )->said)->toBe('let go');
 });

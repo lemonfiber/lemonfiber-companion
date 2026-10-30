@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Health\Api\WhatWasHeardSoFar;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
@@ -108,7 +109,9 @@ it('draws the kept reading with its age on the first frame, the update drawn and
         ->and($first->offersThatWait())->toBe([takingTheTwo()])
         ->and($stack->askings())->toBe(0);
 
+    $heardBeforeMounting = $screen->heard;
     $screen->mount();
+    $heardOnMounting = $screen->heard;
     $fresh = WhatTheDeviceWouldDraw::by($screen);
 
     expect($fresh->said())->toContain(__('updates.pins.current'))
@@ -116,7 +119,9 @@ it('draws the kept reading with its age on the first frame, the update drawn and
         ->and($fresh->said())->not->toContain(__('connection.usable_once_the_stack_answers', ['ago' => trans_choice('health.ago.hours', 2)]))
         ->and($fresh->offers())->not->toContain(takingTheTwo())
         ->and($fresh->offersThatWait())->toBe([])
-        ->and($stack->askings())->toBe(1);
+        ->and($stack->askings())->toBe(1)
+        ->and($heardBeforeMounting)->toBeNull()
+        ->and($heardOnMounting)->toBeInstanceOf(WhatWasHeardSoFar::class);
 });
 
 it('offers the update once the stack answers, and takes it when agreed to', function (): void {

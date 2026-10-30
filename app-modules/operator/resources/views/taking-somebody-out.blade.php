@@ -2,7 +2,7 @@
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
-@if ($this->answer()->went->cameBack())
+@if ($this->answer()->stands->went->cameBack())
 <x-operator::content>
 @if ($this->answer()->namesNobody)
     {{-- Opened on nobody, so there is nothing to ask about and nothing to
@@ -12,13 +12,13 @@
 @else
     <x-operator::heading>{{ __('stacks.removal.taking_out', ['name' => $this->answer()->name]) }}</x-operator::heading>
 
-    @if ($this->answer()->isWorking)
+    @if ($this->answer()->stands->isWorking())
         @if ($this->answer()->wasAgreed)
             <x-design::body>{{ __('stacks.removal.removing', ['name' => $this->answer()->name]) }}</x-design::body>
         @else
             <x-design::body>{{ __('stacks.removal.reading', ['name' => $this->answer()->name]) }}</x-design::body>
         @endif
-    @elseif ($this->answer()->hasEnded)
+    @elseif ($this->answer()->stands->hasEnded())
         {{-- Not a failure and not a refusal: the stack has no outcome for it
              any more. After a yes that is not the same as it not having run,
              and it is said as what could not be read. --}}
@@ -93,7 +93,7 @@
     @endif
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
-        :went="$this->answer()->went"
+        :went="$this->answer()->stands->went"
         :goes="$this->goes()"
     />
 @endif

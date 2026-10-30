@@ -58,8 +58,8 @@ it('every measured tree is held to a floor its nearest manifest declares', funct
         . "Add it to the manifest nearest the tree — a module's own, the plugin's, or "
         . "the root's — beside the kind that already generates a module's boundary "
         . "rules:\n\n"
-        . "    \"extra\": { \"lemonfiber\": { \"floors\": "
-        . "{ \"coverage\": 100, \"mutation\": 100 } } }\n\n"
+        . "    \"extra\": { \"lemonfiber\": { \"floors\": { \"coverage\": 100 } }, "
+        . "\"mutation-gate\": { \"floor\": 100 } }\n\n"
         . 'There is deliberately no default. A default is a number nobody chose for this '
         . 'tree, and a tree that inherits one is exempt from the decision rather than '
         . 'held to it — which is the failure this rule exists to remove (G7).',
@@ -118,7 +118,8 @@ it('a floor of zero says what holds the tree instead', function (): void {
     expect($unargued)->toBe([], sprintf(
         "These floors say a number and nothing else:\n  %s\n\n"
         . "Put the argument beside the number, in the manifest that declares it:\n\n"
-        . "    \"floors\": { \"mutation\": 0, \"mutation-is-zero-because\": \"…\" }\n\n"
+        . "    \"floors\": { \"coverage\": 0, \"coverage-is-zero-because\": \"…\" }\n"
+        . "    \"mutation-gate\": { \"floor\": 0, \"floorReason\": \"…\" }\n\n"
         . 'Say what holds that tree\'s decisions instead — the contract its adapters are '
         . 'run through, the rule that reads its registry, the test that reads its table arm '
         . 'by arm. An argument that travels with the number is one the next reader can '

@@ -14,7 +14,7 @@
     @if ($this->news()->stacks !== [])
         <x-design::chips>
             @forelse ($this->news()->stacks as $filter)
-                <x-design::chip :label="$filter->said === '' ? $filter->name : __($filter->said)" :tap="$filter->tap" :chosen="$filter->chosen" />
+                <x-design::chip :label="$filter->said === null ? $filter->name : __($filter->said)" :tap="$filter->tap" :chosen="$filter->chosen" />
             @empty
                 {{-- Nothing: this is drawn only where there are stacks to offer. --}}
             @endforelse
@@ -41,9 +41,9 @@
             @forelse ($section->rows as $row)
                 {{-- Heard as what it says and where, since one title can be new on two stacks. --}}
                 <x-design::row
-                    :headline="$row->says->says === '' ? $row->says->words : __($row->says->says, $row->says->with)"
+                    :headline="$row->says->line === null ? $row->says->words : __($row->says->line->key, $row->says->line->filling)"
                     :supporting="__('news.item_beside', ['kind' => __($row->kind), 'stack' => $row->stack])"
-                    :answers-to="($row->says->says === '' ? $row->says->words : __($row->says->says, $row->says->with)) . ', ' . __('news.item_beside', ['kind' => __($row->kind), 'stack' => $row->stack])"
+                    :answers-to="($row->says->line === null ? $row->says->words : __($row->says->line->key, $row->says->line->filling)) . ', ' . __('news.item_beside', ['kind' => __($row->kind), 'stack' => $row->stack])"
                     :tap="$row->tap"
                 />
             @empty

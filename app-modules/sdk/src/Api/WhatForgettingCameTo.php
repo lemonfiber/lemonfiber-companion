@@ -6,7 +6,6 @@ namespace Modules\Sdk\Api;
 
 use function array_map;
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\StoredEnvelope;
@@ -17,8 +16,6 @@ use Modules\Kernel\Api\WhereForgettingGot;
 use Modules\Kernel\Api\WhereTheForgettingStands;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `stored` envelope a `forget` run answers with, as what it lists and how far removing it went.
@@ -68,7 +65,7 @@ final readonly class WhatForgettingCameTo
         $gone = [];
 
         foreach (Required::rows($removal, WireField::Gone, StoredIsUnreadable::missing(WireField::Gone)) as $position => $place) {
-            if (! is_string($place) || trim($place) === '') {
+            if (! Required::isText($place)) {
                 throw StoredIsUnreadable::row(WireField::Gone, (int) $position);
             }
 

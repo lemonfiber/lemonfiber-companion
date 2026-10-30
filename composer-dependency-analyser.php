@@ -129,7 +129,7 @@ function modulesInstalledForDevelopmentOnly(): array
     return $found;
 }
 
-return (new Configuration())
+return new Configuration()
     // A dev tool invoked from a composer script is never named in PHP, so the
     // default — reporting only unused production dependencies — cannot tell one
     // apart from a package nothing uses at all. With this on, every dev
@@ -247,6 +247,7 @@ return (new Configuration())
             'rector/rector',
             'ergebnis/composer-normalize',
             'shipmonk/composer-dependency-analyser',
+            'nightworksio/mutation-gate',
             // S2 — roave/security-advisories is conflict-only. It ships no code
             // to name: what it does is fail resolution when a dependency
             // matches a published advisory, so the refusal arrives at

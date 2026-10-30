@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Modules\Sdk\Internal;
 
 use function array_key_exists;
+
+use Closure;
+
 use function is_array;
 use function is_bool;
 use function is_string;
@@ -42,11 +45,9 @@ final readonly class CredentialGrantsRead
         }
 
         $found = [];
-        $position = 0;
 
-        foreach ($data[WireField::Grants->value] as $row) {
-            $found[] = self::grant($row, WireField::Grants, $position);
-            $position++;
+        foreach (InTheOrderSent::rows($data[WireField::Grants->value]) as $position => $row) {
+            $found[] = self::grant($row, static fn(NamesAWireField $field): CredentialsIsUnreadable => CredentialsIsUnreadable::grant(WireField::Grants, $field, $position));
         }
 
         return $found;
@@ -67,10 +68,10 @@ final readonly class CredentialGrantsRead
 
         $agreement = self::agreement($revoked);
         if (! array_key_exists(CredentialsField::Grant->value, $revoked)) {
-            throw CredentialsIsUnreadable::grant(CredentialsField::Grant, WireField::Plugin, 0);
+            throw CredentialsIsUnreadable::missing(CredentialsField::Grant);
         }
 
-        $grant = self::grant($revoked[CredentialsField::Grant->value], CredentialsField::Grant, 0);
+        $grant = self::grant($revoked[CredentialsField::Grant->value], static fn(NamesAWireField $field): CredentialsIsUnreadable => CredentialsIsUnreadable::within(CredentialsField::Grant, $field));
         $restarts = Services::these(...self::restarts($revoked));
 
         return self::ended($revoked)
@@ -145,11 +146,13 @@ final readonly class CredentialGrantsRead
         return $found;
     }
 
-    /** One grant, on the list or the one a revoke ends, refusing what it cannot read. */
-    private static function grant(mixed $row, NamesAWireField $list, int $position): ACredentialGrant
+    /**
+     * One grant, on the list or the one a revoke ends, refused in the words of where it sits.
+     *
+     * @param Closure(NamesAWireField): CredentialsIsUnreadable $unreadable
+     */
+    private static function grant(mixed $row, Closure $unreadable): ACredentialGrant
     {
-        $unreadable = static fn(NamesAWireField $field): CredentialsIsUnreadable => CredentialsIsUnreadable::grant($list, $field, $position);
-
         if (! is_array($row)) {
             throw $unreadable(WireField::Plugin);
         }

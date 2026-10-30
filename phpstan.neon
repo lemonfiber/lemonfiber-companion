@@ -234,6 +234,13 @@ parameters:
                 # the application namespace, and guessing reads an `app/`
                 # directory this repository does not have.
                 - Illuminate\View\Component
+                # Saloon's mock response, extended once, in a test fixture. A
+                # mock's body is a string read to its end in one take, so every
+                # stream it stands in for has ended before anything looks at it;
+                # `createPsrResponse()` is the one way to answer with a stream
+                # that stays open, which is what holding a stream across takes
+                # has to be tested against.
+                - Saloon\Http\Faking\MockResponse
                 # The platform's secure store, extended once, in a test fake.
                 # There is no Keychain behind a PHP process on a laptop, so
                 # without a hand-written stand-in `PlatformKeychain` is a file

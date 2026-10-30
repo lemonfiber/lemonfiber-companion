@@ -11,7 +11,8 @@ use Closure;
 /** The calendar day a title came out, where the core knows it. */
 final readonly class WhenItWasReleased
 {
-    private function __construct(private ?int $year, private int $month, private int $day) {}
+    /** @param list{int, int, int}|null $day the year, the month and the day, where the core knows them */
+    private function __construct(private ?array $day) {}
 
     /** A day the calendar has. */
     public static function on(int $year, int $month, int $day): self
@@ -20,12 +21,12 @@ final readonly class WhenItWasReleased
             throw ReleaseIsNoDay::onTheCalendar();
         }
 
-        return new self($year, $month, $day);
+        return new self([$year, $month, $day]);
     }
 
     public static function unstated(): self
     {
-        return new self(null, 0, 0);
+        return new self(null);
     }
 
     /**
@@ -39,6 +40,6 @@ final readonly class WhenItWasReleased
      */
     public function either(Closure $on, Closure $unstated): object
     {
-        return $this->year === null ? $unstated() : $on($this->year, $this->month, $this->day);
+        return $this->day === null ? $unstated() : $on(...$this->day);
     }
 }

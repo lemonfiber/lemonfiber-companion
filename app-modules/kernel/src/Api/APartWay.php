@@ -54,9 +54,9 @@ final readonly class APartWay
             return HowLongItRuns::unstated();
         }
 
-        $seconds = max(0, $this->lengthInSeconds - $this->reached->seconds());
+        $seconds = $this->lengthInSeconds - $this->reached->seconds();
 
-        return HowLongItRuns::minutes(intdiv($seconds + SecondsIn::AMinute->value - 1, SecondsIn::AMinute->value));
+        return HowLongItRuns::minutes(max(0, intdiv($seconds + SecondsIn::AMinute->value - 1, SecondsIn::AMinute->value)));
     }
 
     public function plays(): WhereItPlays

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
+use function array_column;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\HowFarItGoesBack;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -62,10 +62,7 @@ final class HistoryIsUnreadable extends InvalidArgumentException
             'Change %d in the history envelope says it goes back `%s`, and this app reads %s. Guessing which was meant is how a change that cannot be undone gets shown as one that can.',
             $position,
             $said,
-            implode(', ', array_map(
-                static fn(HowFarItGoesBack $reversal): string => sprintf('`%s`', $reversal->value),
-                HowFarItGoesBack::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(HowFarItGoesBack::cases(), 'value')),
         ));
     }
 

@@ -168,8 +168,6 @@ use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
 use Modules\Sdk\Api\Wirers;
 use Modules\Sdk\Internal\WhatEachStackOffers;
-use Modules\Wayfinding\Api\HearingWhileAway;
-use Modules\Wayfinding\Api\WhatItListensWith;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -263,10 +261,6 @@ final class TheWayToEveryStack extends ServiceProvider
         // own, and a screen letting go of its connection lets go of nobody
         // else's.
         $this->app->bind(Hearing::class, Listeners::class);
-
-        $this->app->when(HearingWhileAway::class)
-            ->needs(WhatItListensWith::class)
-            ->give($this->whatAWakeListensWith(...));
 
         // Holding the same stream for the steps a running walk says, which the
         // stack narrates there as they happen. Bound rather than a singleton,
@@ -505,13 +499,5 @@ final class TheWayToEveryStack extends ServiceProvider
             $this->app->make(WhatEachStackOffers::class),
             $this->app->make(Clock::class),
         );
-    }
-
-    /** What a wake while the app is away listens with: each read waits longer, as no screen is waiting to be drawn. */
-    private function whatAWakeListensWith(): WhatItListensWith
-    {
-        return $this->app->make(WhatItListensWith::class, [
-            'hearing' => $this->app->make(Listeners::class, ['noLongerThanMs' => HearingWhileAway::EACH_READ_WAITS_MS]),
-        ]);
     }
 }

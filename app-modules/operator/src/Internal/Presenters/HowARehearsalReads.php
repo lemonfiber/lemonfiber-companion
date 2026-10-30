@@ -10,6 +10,7 @@ use Modules\Kernel\Api\WhatIsAlreadyRunning;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Operator\Internal\ViewModels\AServiceToStartAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\TheRehearsalAsRead;
 use Modules\Operator\Internal\ViewModels\WhatStartingItWouldShow;
 
 /** What starting a form would come to, as the template draws it before the verbs. */
@@ -24,26 +25,25 @@ final readonly class HowARehearsalReads
     {
         $names = new HowWhatWasLeftOutReads();
 
-        return new WhatStartingItWouldShow(
-            HowTheReadingWent::itCameBack(),
+        return new WhatStartingItWouldShow(HowTheReadingWent::itCameBack(), new TheRehearsalAsRead(
             $this->toStart($rehearsal->wouldStart(), $rehearsal->alreadyRunning()),
             $names->of($rehearsal->leftOut()),
             $rehearsal->footprint()->mebibytes(),
             $names->services($rehearsal->footprint()->unestimated()),
             runningUnread: ! $rehearsal->alreadyRunning()->wasRead(),
-        );
+        ));
     }
 
     /** Asking for it met this instead. */
     public function met(Obstacle $why): WhatStartingItWouldShow
     {
-        return new WhatStartingItWouldShow(HowTheReadingWent::somethingStopped($why), [], [], null, [], runningUnread: false);
+        return new WhatStartingItWouldShow(HowTheReadingWent::somethingStopped($why));
     }
 
     /** This device no longer holds a session for the stack. */
     public function signedOut(): WhatStartingItWouldShow
     {
-        return new WhatStartingItWouldShow(HowTheReadingWent::theSessionEnded(), [], [], null, [], runningUnread: false);
+        return new WhatStartingItWouldShow(HowTheReadingWent::theSessionEnded());
     }
 
     /**

@@ -35,6 +35,8 @@ use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\WhereTheOperatorWasInMemory;
 use Tests\Support\WhatThePhoneKeeps;
 
+pest()->group('holds:bootstrap/Composition', 'holds:app-modules/operator/src/Providers/OperatorServiceProvider.php');
+
 // The app opens where the operator left off, and a chosen stack on its last tab.
 
 /** When the opening happens. */
@@ -85,7 +87,7 @@ function theListTheAppOpensOn(StacksInMemory $stacks, WhereTheOperatorWasInMemor
 /** Where a screen sent the operator, or nowhere. */
 function whereTheOpeningWent(NativeComponent $screen): string
 {
-    return $screen->getNavigationIntent()->uri ?? '';
+    return $screen->getNavigationIntent()->uri ?? 'nowhere';
 }
 
 it('opens on the stack the operator was last on, on the tab they last used there', function (): void {
@@ -129,7 +131,7 @@ it('stays on the list where no stack is held, and where the opening cleared what
     $list = theListTheAppOpensOn($stacks, WhereTheOperatorWasInMemory::nowhere(), clears: $clears);
     $list->mount();
 
-    expect(whereTheOpeningWent($list))->toBe('');
+    expect(whereTheOpeningWent($list))->toBe('nowhere');
 })->with([
     'no stack held' => [false, false],
     'the opening cleared what was kept' => [true, true],
@@ -211,4 +213,8 @@ it('opens a stack tapped on the list on the tab last used there', function (): v
 
     expect($list->tappingGoesTo($attic))->toBe(AStacksScreen::Repairs->forTheStack($attic->id()))
         ->and($list->tappingGoesTo($loft))->toBe(AStacksScreen::Health->forTheStack($loft->id()));
+});
+
+it('holds one opening a run, so a list the container builds again does not land a second time', function (): void {
+    expect(app(WhereAStackOpens::class))->toBe(app(WhereAStackOpens::class));
 });

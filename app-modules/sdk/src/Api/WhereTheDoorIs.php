@@ -7,7 +7,6 @@ namespace Modules\Sdk\Api;
 use function array_key_exists;
 use function array_map;
 use function is_array;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\FrontDoorEnvelope;
@@ -21,9 +20,9 @@ use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
 use Modules\Kernel\Api\WhereTheHouseholdBegins;
 use Modules\Sdk\Api\Fields\FrontDoorField;
+use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * Reads the `front-door` envelope into where the household comes in.
@@ -163,9 +162,8 @@ final readonly class WhereTheDoorIs
         }
 
         $found = [];
-        $position = 0;
 
-        foreach ($data[WireField::Beside->value] as $row) {
+        foreach (InTheOrderSent::rows($data[WireField::Beside->value]) as $position => $row) {
             if (! is_array($row)) {
                 throw FrontDoorIsUnreadable::beside(WireField::Service, $position);
             }
@@ -176,7 +174,6 @@ final readonly class WhereTheDoorIs
                 self::besideText($row, WireField::Because, $position),
                 self::address($row),
             );
-            $position++;
         }
 
         return $found;
@@ -222,11 +219,7 @@ final readonly class WhereTheDoorIs
      */
     private static function besideText(array $row, NamesAWireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $row) || ! is_string($row[$field->value]) || trim($row[$field->value]) === '') {
-            throw FrontDoorIsUnreadable::beside($field, $position);
-        }
-
-        return $row[$field->value];
+        return Required::text($row, $field, FrontDoorIsUnreadable::beside($field, $position));
     }
 
     /**
@@ -236,11 +229,7 @@ final readonly class WhereTheDoorIs
      */
     private static function under(array $table, NamesAWireField $parent, NamesAWireField $field): string
     {
-        if (! array_key_exists($field->value, $table) || ! is_string($table[$field->value]) || trim($table[$field->value]) === '') {
-            throw FrontDoorIsUnreadable::under($parent, $field);
-        }
-
-        return $table[$field->value];
+        return Required::text($table, $field, FrontDoorIsUnreadable::under($parent, $field));
     }
 
     /**
@@ -250,10 +239,6 @@ final readonly class WhereTheDoorIs
      */
     private static function text(array $data, NamesAWireField $field): string
     {
-        if (! array_key_exists($field->value, $data) || ! is_string($data[$field->value]) || trim($data[$field->value]) === '') {
-            throw FrontDoorIsUnreadable::missing($field);
-        }
-
-        return $data[$field->value];
+        return Required::text($data, $field, FrontDoorIsUnreadable::missing($field));
     }
 }

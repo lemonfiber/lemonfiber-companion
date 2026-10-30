@@ -32,7 +32,7 @@ use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatThePhoneKeeps;
 
 // Runs the composition root rather than reading it, so its mutants are judged
-// here: see `scripts/mutation.php`.
+// here, by its `holds:` group.
 pest()->group('holds:bootstrap/Composition');
 
 // A3 — a screen is built through the container, so it can be given a port.

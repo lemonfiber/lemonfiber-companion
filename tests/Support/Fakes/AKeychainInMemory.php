@@ -41,6 +41,8 @@ final class AKeychainInMemory implements SecureStorage
      */
     private array $whose = [];
 
+    private int $askedIfAvailable = 0;
+
     private function __construct(private readonly ?WhySessionCannotBeKept $refusing) {}
 
     /** A working store on a device that has one. */
@@ -61,8 +63,16 @@ final class AKeychainInMemory implements SecureStorage
         return new self(WhySessionCannotBeKept::StoreWouldNotOpen);
     }
 
+    /** How many times it was asked whether it can keep anything. */
+    public function timesAskedIfAvailable(): int
+    {
+        return $this->askedIfAvailable;
+    }
+
     public function isAvailable(): bool
     {
+        $this->askedIfAvailable++;
+
         return ! $this->refusing instanceof WhySessionCannotBeKept;
     }
 

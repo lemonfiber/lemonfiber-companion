@@ -38,3 +38,8 @@ it('agrees to a removal only against a reading of removing that plugin', functio
     expect($agreed->plugin())->toBe('tdarr')
         ->and($agreed->agreement())->toBe(APluginAsItArrives::AGREEMENT);
 });
+
+it('refuses a yes to removing against a reading that names no agreement to quote', function (): void {
+    expect(static fn(): APluginRemovalAgreed => APluginRemovalAgreed::after(APluginAsItArrives::theRemovalReading(''), APluginAsItArrives::held()))
+        ->toThrow(APluginActWasNotRehearsed::class);
+});

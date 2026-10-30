@@ -1,3 +1,4 @@
+@use('Modules\Operator\Internal\WhereAskingForNotificationsStands')
 <x-operator::screen-opens :title="__('settings.title')" :back="$this->hasAWayBack()" />
 
 <x-operator::content>
@@ -36,11 +37,11 @@
             <x-design::note>{{ __('settings.notifications_may_be_missing') }}</x-design::note>
         @endif
 
-        @if ($this->explainingNotifications)
+        @if ($this->askingForNotifications !== null)
             <x-design::card>
                 <x-design::body>{{ __($this->whyNotifications()) }}</x-design::body>
 
-                @if ($this->notificationsDeclined)
+                @if ($this->askingForNotifications === WhereAskingForNotificationsStands::Declined)
                     <x-design::body>{{ __('settings.notifications_declined') }}</x-design::body>
                     <x-design::note>{{ __($this->withoutNotifications()) }}</x-design::note>
                     <x-design::action :label="__('settings.notifications_open_settings')" tap="openTheAppsSettings()" />
@@ -60,12 +61,12 @@
     {{-- How long readings are kept. A count of days is said as that count;
          Other… opens a field for any count the offered ones do not name. --}}
     <x-design::section :label="__($this->speaksTo->kept())">
-        <x-design::row :headline="__($this->speaksTo->keepFor())" :trailing="trans_choice($this->keepReadings()->said, $this->keepReadings()->count)" />
+        <x-design::row :headline="__($this->speaksTo->keepFor())" :trailing="$this->keepReadings()->count === null ? __($this->keepReadings()->said) : trans_choice($this->keepReadings()->said, $this->keepReadings()->count)" />
     </x-design::section>
 
     <x-design::chips>
         @forelse ($this->keepReadings()->offered as $choice)
-            <x-design::chip :label="trans_choice($choice->said, $choice->count)" :tap="$this->tapping('keepReadingsFor', $choice->word)" :chosen="$choice->chosen" />
+            <x-design::chip :label="$choice->count === null ? __($choice->said) : trans_choice($choice->said, $choice->count)" :tap="$this->tapping('keepReadingsFor', $choice->word)" :chosen="$choice->chosen" />
         @empty
             {{-- Nothing: there are always six choices. --}}
         @endforelse

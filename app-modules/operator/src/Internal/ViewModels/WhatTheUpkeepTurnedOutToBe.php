@@ -33,13 +33,12 @@ final readonly class WhatTheUpkeepTurnedOutToBe
      * @param string                         $running    the version in use, or a dash where the stack named none
      * @param bool                           $runningWasWithdrawn whether the version in use has been taken back
      * @param ?WhatOneReleaseSays            $inUse      what the release in use changed, where the stack named it and its notes are current
-     * @param WhatWithheldNotesSay           $notesWithheld why those notes are not shown, where they are not
+     * @param WhatWithheldNotesSay|null      $notesWithheld why those notes are not shown, or null where they are
      * @param list<AnEditAsShown>            $editsKept  the stack files the operator edited, which the update leaves as they set them
      * @param list<WhatOneReleaseSays>       $history    every release the stack's record holds, newest first
      * @param ?TakingAnUpdate                $offer      the update to take, where the stack offered one
      * @param HowTheReadingWent              $askedNow   what this frame's asking met, which stands beside a kept reading where the stack did not answer
-     * @param AgoAsShown                     $readAgo    how long ago the reading drawn was read, said only where it was kept
-     * @param bool                           $waitsForTheStack whether the reading drawn is one the phone kept, so nothing on it can be acted on yet
+     * @param ?AgoAsShown                    $keptAgo    how long ago the reading drawn was read, where it is one the phone kept, so nothing on it can be acted on yet
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -47,12 +46,11 @@ final readonly class WhatTheUpkeepTurnedOutToBe
         public string $running,
         public bool $runningWasWithdrawn,
         public ?WhatOneReleaseSays $inUse,
-        public WhatWithheldNotesSay $notesWithheld,
+        public ?WhatWithheldNotesSay $notesWithheld,
         public array $editsKept,
         public array $history,
         public ?TakingAnUpdate $offer,
         public HowTheReadingWent $askedNow,
-        public AgoAsShown $readAgo,
-        public bool $waitsForTheStack,
+        public ?AgoAsShown $keptAgo = null,
     ) {}
 }

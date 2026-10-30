@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
-
 use InvalidArgumentException;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -32,7 +30,7 @@ final class SettingsAreUnreadable extends InvalidArgumentException
             'The settings envelope says `%s` is `%s`, and this app reads %s.',
             $where,
             $said,
-            implode(', ', array_map(static fn(string $word): string => sprintf('`%s`', $word), $accepted)),
+            TheWordsItReads::quoted(...$accepted),
         ));
     }
 }

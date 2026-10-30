@@ -33,10 +33,9 @@ use Modules\Kernel\Api\WhatTheTraceFound;
 use Modules\Kernel\Api\WhereItGotTo;
 use Modules\Kernel\Api\WhereTheServicesDisagree;
 use Modules\Sdk\Api\Fields\TraceField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\TheSearchThatSettles;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * Reads the `trace` envelope into where one item got to.
@@ -266,7 +265,7 @@ final readonly class Traces
 
         $said = $row[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw TraceIsUnreadable::missing($field);
         }
 

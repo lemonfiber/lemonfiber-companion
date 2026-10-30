@@ -62,15 +62,22 @@ final readonly class TheirLanguagesAsKept
             return null;
         }
 
-        $hear = HearIn::tryFrom(self::textAt($written, self::HEAR));
-        $read = ReadIn::tryFrom(self::textAt($written, self::READ));
+        $hears = self::textAt($written, self::HEAR);
+        $reads = self::textAt($written, self::READ);
+
+        if ($hears === null || $reads === null) {
+            return null;
+        }
+
+        $hear = HearIn::tryFrom($hears);
+        $read = ReadIn::tryFrom($reads);
 
         return $hear instanceof HearIn && $read instanceof ReadIn ? TheirLanguages::of($hear, $read) : null;
     }
 
     /** @param array<array-key, mixed> $written */
-    private static function textAt(array $written, string $field): string
+    private static function textAt(array $written, string $field): ?string
     {
-        return array_key_exists($field, $written) && is_string($written[$field]) ? $written[$field] : '';
+        return array_key_exists($field, $written) && is_string($written[$field]) ? $written[$field] : null;
     }
 }

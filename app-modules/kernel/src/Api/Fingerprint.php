@@ -43,7 +43,7 @@ final readonly class Fingerprint
     /** A SHA-256 digest, which is what a certificate fingerprint is. */
     public const int CHARACTERS = 64;
 
-    private function __construct(private string $digest) {}
+    private function __construct(#[ComparedInConstantTime] private string $digest) {}
 
     public static function of(string $digest): self
     {

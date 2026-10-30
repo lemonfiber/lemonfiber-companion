@@ -47,12 +47,12 @@ final class Action extends Component
 
     public function __construct(
         public readonly string $label,
-        public readonly string $tap = '',
-        public readonly string $goes = '',
+        public readonly ?string $tap = null,
+        public readonly ?string $goes = null,
         public readonly bool $disabled = false,
-        string $answersTo = '',
+        ?string $answersTo = null,
     ) {
-        $this->named = $answersTo === '' ? $label : $answersTo;
+        $this->named = $answersTo ?? $label;
     }
 
     public function render(): View

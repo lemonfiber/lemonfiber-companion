@@ -60,9 +60,6 @@ final class LookingForATitle extends NativeComponent
     /** What the member has typed, bound to the field. */
     public string $typed = '';
 
-    /** The words the rows on screen were found for, so a later page is of the same search. */
-    public string $searchedFor = '';
-
     /** What the search has shown so far. */
     public ?WhatTheSearchShows $shown = null;
 
@@ -95,22 +92,20 @@ final class LookingForATitle extends NativeComponent
             return;
         }
 
-        $this->searchedFor = $words->said();
-        $this->shown = $this->asked(fn(Stack $stack, Session $session): HowASearchWent => $this->finding->firstPage($stack, $session, $words));
+        $this->shown = $this->asked($words, fn(Stack $stack, Session $session): HowASearchWent => $this->finding->firstPage($stack, $session, $words));
     }
 
     /** Read the page after the last one shown, where there is one. */
     public function more(): void
     {
-        $shown = $this->shown;
+        $found = $this->shown?->found;
 
-        if (! $shown instanceof WhatTheSearchShows || ! $shown->hasMore()) {
+        if ($found?->next === null) {
             return;
         }
 
-        $words = WhatToLookFor::typed($this->searchedFor);
-        $next = WhereTheNextPageBegins::at($shown->next);
-        $this->shown = $shown->andThen($this->asked(fn(Stack $stack, Session $session): HowASearchWent => $this->finding->pageAfter($stack, $session, $words, $next)));
+        $next = WhereTheNextPageBegins::at($found->next);
+        $this->shown = $this->asked($found->words, fn(Stack $stack, Session $session): HowASearchWent => $this->finding->pageAfter($stack, $session, $found->words, $next))->after($found);
     }
 
     /** Where signing in again is. */
@@ -139,7 +134,7 @@ final class LookingForATitle extends NativeComponent
     /** What the search shows, each title drawn with its poster. */
     private function pictured(WhatTheSearchShows $shown, Stack $stack, Session $session): WhatTheSearchShows
     {
-        return $shown->pictured(fn(AFoundTitle $title): string => $this->pictures->ofAFoundTitle($stack, $session, $title));
+        return $shown->pictured(fn(AFoundTitle $title): ?string => $this->pictures->ofAFoundTitle($stack, $session, $title));
     }
 
     /**
@@ -147,13 +142,13 @@ final class LookingForATitle extends NativeComponent
      *
      * @param Closure(Stack, Session): HowASearchWent $asking
      */
-    private function asked(Closure $asking): WhatTheSearchShows
+    private function asked(WhatToLookFor $words, Closure $asking): WhatTheSearchShows
     {
         $stack = $this->stack();
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheSearchShows => $asking($stack, $session)->either(
-                found: fn(WhatASearchFound $page): WhatTheSearchShows => $this->pictured(new HowAFoundTitleReads()->found($page), $stack, $session),
+                found: fn(WhatASearchFound $page): WhatTheSearchShows => $this->pictured(new HowAFoundTitleReads()->found($words, $page), $stack, $session),
                 refused: function (Obstacle $why) use ($stack): WhatTheSearchShows {
                     $this->letGoOfTheSession($why, $stack);
 

@@ -10,7 +10,6 @@ use function implode;
 use function is_array;
 use function is_bool;
 use function is_int;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\StopSeedingEnvelope;
@@ -21,9 +20,8 @@ use Modules\Kernel\Api\WhatLettingItGoCosts;
 use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Sdk\Api\Fields\StopSeedingField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * The `stop-seeding` envelope, as what stopping seeding one download would cost, or what it came to.
@@ -213,7 +211,7 @@ final readonly class WhatLettingItGoComesTo
 
         $said = $data[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw StopSeedingIsUnreadable::missing($where);
         }
 

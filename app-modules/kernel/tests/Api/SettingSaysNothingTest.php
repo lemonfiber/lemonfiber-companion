@@ -26,7 +26,7 @@ it('refuses a setting or a secret with a word it owes left blank, naming the wor
     expect($made)->toThrow(SettingSaysNothing::class, sprintf('`%s`', $word));
 })->with([
     'a setting with no name' => [static fn(): object => ASetting::read(' ', WhoseASettingIs::theCores(), TheServicesReadingIt::these(), ASettingValue::nothing()), 'name'],
-    'a secret with no name' => [static fn(): object => ASecret::read('', WhoseASettingIs::theCores(), TheServicesReadingIt::these(), held: false, from: WhereASecretCameFrom::Unsaid), 'name'],
+    'a secret with no name' => [static fn(): object => ASecret::read(' ', WhoseASettingIs::theCores(), TheServicesReadingIt::these(), held: false, from: WhereASecretCameFrom::Unsaid), 'name'],
     'a reader with no variable' => [static fn(): object => AServiceReadingIt::of(ServiceId::called('caddy'), ' ', ASettingValue::nothing()), 'variable'],
     'a namespace with no name' => [static fn(): object => WhoseASettingIs::theNamespaces(' '), 'namespace'],
     'a change to no setting' => [static fn(): object => ASettingChange::toHold(' ', 'Germany'), 'setting'],

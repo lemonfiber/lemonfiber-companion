@@ -8,16 +8,12 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class TheRunTurnedOutToBe
 {
     /**
-     * @param HowTheReadingWent    $went      whether the stack answered, or what stood in the way
-     * @param bool                 $isWorking whether the stack is still running it
-     * @param bool                 $hasEnded  whether the stack has no outcome for it any more
+     * @param WhereTheWorkStands    $stands      where the work stands, and whether the stack could be asked at all
      * @param ARefusalAsShown|null $refused   the stack's refusal, where it refused
      * @param bool                 $answered  whether the run finished and reported
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking,
-        public bool $hasEnded,
+        public WhereTheWorkStands $stands,
         public ?ARefusalAsShown $refused,
         public bool $answered,
     ) {}

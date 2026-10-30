@@ -18,6 +18,8 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ArtworkHeldInMemory;
 
+pest()->group('holds:bootstrap/Composition');
+
 // The SecureStorage contract, run against the adapter and against the fake.
 //
 // G2's shape, and the reason it matters most here: every other test in this
@@ -322,6 +324,11 @@ it('the adapter tells a device with no store from one that refused', function ()
         ->keep(aStackThatIsPaired(), Session::of(THE_TOKEN), Whose::theOperator())))->toBe('store_would_not_open');
 
     expect(new PlatformKeychain(APlatformStore::absent())->isAvailable())->toBeFalse();
+});
+
+it('the store letting go of artwork is available exactly where the store it keeps sessions in is', function (): void {
+    expect(new ArtworkGoesWithTheSession(new PlatformKeychain(APlatformStore::working()), ArtworkHeldInMemory::working())->isAvailable())->toBeTrue()
+        ->and(new ArtworkGoesWithTheSession(new PlatformKeychain(APlatformStore::absent()), ArtworkHeldInMemory::working())->isAvailable())->toBeFalse();
 });
 
 it('the adapter forgets even where the store said no', function (): void {

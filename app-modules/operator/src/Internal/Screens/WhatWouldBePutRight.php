@@ -159,7 +159,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
     /** Whether this device still holds a session for it. */
     public function isSignedIn(): bool
     {
-        if (! $this->offer()->went->isSignedIn) {
+        if (! $this->offer()->stands->went->isSignedIn) {
             return false;
         }
 
@@ -168,7 +168,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
         // loaded a moment ago under a session the stack has stopped
         // recognising is exactly what the requirement forbids. Both folds are
         // asked, so whichever one met it is the one that answers.
-        return ! $this->agreed || $this->done()->went->isSignedIn;
+        return ! $this->agreed || $this->done()->stands->went->isSignedIn;
     }
 
     /**
@@ -264,7 +264,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
             return;
         }
 
-        if ($this->answered?->isWorking !== true) {
+        if ($this->answered?->stands->isWorking() !== true) {
             $this->handle = null;
         }
 
@@ -309,7 +309,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
      */
     public function isWorking(): bool
     {
-        return $this->agreed ? $this->done()->isWorking : $this->offer()->isWorking;
+        return $this->agreed ? $this->done()->stands->isWorking() : $this->offer()->stands->isWorking();
     }
 
     /**
@@ -348,7 +348,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
      */
     public function tryAgain(): void
     {
-        if ($this->answered?->went->wasHeldByOtherWork() !== true) {
+        if ($this->answered?->stands->went->wasHeldByOtherWork() !== true) {
             return;
         }
 

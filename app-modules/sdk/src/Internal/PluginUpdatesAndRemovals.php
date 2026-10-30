@@ -21,8 +21,6 @@ use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\PluginsAreUnreadable;
 use Modules\Sdk\Api\WireField;
 
-use function trim;
-
 /**
  * An update or a removal a `plugins` answer is about: what it would do, or did.
  *
@@ -111,15 +109,13 @@ final readonly class PluginUpdatesAndRemovals
     private static function leaves(array $removal): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::table($removal, PluginsField::Leaves) as $row) {
+        foreach (InTheOrderSent::rows(self::table($removal, PluginsField::Leaves)) as $position => $row) {
             if (! is_array($row)) {
                 throw PluginsAreUnreadable::entry(PluginsField::Leaves, WireField::Capability, $position);
             }
 
             $found[] = ACapabilityLeftUnfilled::of(self::text($row, WireField::Capability), self::text($row, PluginsField::FilledBy));
-            $position++;
         }
 
         return $found;
@@ -135,7 +131,7 @@ final readonly class PluginUpdatesAndRemovals
         $found = [];
 
         foreach (self::table($data, $field) as $word) {
-            if (! is_string($word) || trim($word) === '') {
+            if (! Required::isText($word)) {
                 throw PluginsAreUnreadable::missing($field);
             }
 
@@ -167,11 +163,7 @@ final readonly class PluginUpdatesAndRemovals
      */
     private static function text(array $data, NamesAWireField $field): string
     {
-        if (! array_key_exists($field->value, $data) || ! is_string($data[$field->value]) || trim($data[$field->value]) === '') {
-            throw PluginsAreUnreadable::missing($field);
-        }
-
-        return $data[$field->value];
+        return Required::text($data, $field, PluginsAreUnreadable::missing($field));
     }
 
     /**

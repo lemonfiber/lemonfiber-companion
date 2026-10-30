@@ -20,6 +20,7 @@ use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\TheNewsOfAStack;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Kernel\Api\WhatTheStackListed;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\WhatANewsListHolds;
 use Modules\Sdk\Internal\Wire;
 
@@ -82,11 +83,7 @@ final readonly class WhatIsListedAsNew
         foreach (WhatANewsListHolds::listOf($data, WireField::Updates) as $position => $release) {
             $item = WhatANewsListHolds::entry($release, WireField::Updates, WireField::Version, $position);
             $version = WhatANewsListHolds::text($item, WireField::Updates, WireField::Version, $position);
-            $delivers = self::optional($item, WireField::Delivers);
-            $read[] = AReleaseListed::versioned(
-                $version,
-                $delivers === '' ? WhatAReleaseDelivers::saidNothing() : WhatAReleaseDelivers::said($delivers),
-            );
+            $read[] = AReleaseListed::versioned($version, self::delivers($item));
         }
 
         return $read;
@@ -139,6 +136,18 @@ final readonly class WhatIsListedAsNew
         }
 
         return $read;
+    }
+
+    /**
+     * What a release delivers, in the stack's words, or that it said nothing.
+     *
+     * @param array<array-key, mixed> $item
+     */
+    private static function delivers(array $item): WhatAReleaseDelivers
+    {
+        $said = self::optional($item, WireField::Delivers);
+
+        return Required::isText($said) ? WhatAReleaseDelivers::said($said) : WhatAReleaseDelivers::saidNothing();
     }
 
     /**

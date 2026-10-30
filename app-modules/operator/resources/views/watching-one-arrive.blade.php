@@ -2,9 +2,9 @@
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
-@if ($this->answer()->went->cameBack())
+@if ($this->answer()->stands->went->cameBack())
 <x-operator::content>
-    @if ($this->answer()->isWorking)
+    @if ($this->answer()->stands->isWorking())
         {{-- Running: the stage it is at, in the stack's own word, taken from
              the stream on the wakes that ask after the handle. Never a bar:
              a stage says what the walk is doing, and a stage that could not
@@ -48,7 +48,7 @@
         @else
             <x-design::body>{{ __('health.walkthrough.leaving_not_noted') }}</x-design::body>
         @endif
-    @elseif ($this->answer()->hasEnded)
+    @elseif ($this->answer()->stands->hasEnded())
         {{-- Not a failure: the stack has no outcome to give, and the walk
              may well have worked. --}}
         <x-design::notice tone="unknown">
@@ -165,7 +165,7 @@
         @endforelse
     @endif
 
-    @unless ($this->answer()->isWorking)
+    @unless ($this->answer()->stands->isWorking())
         <x-design::card>
             <native:outlined-text-input
                 native:model="looking"
@@ -184,7 +184,7 @@
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
-        :went="$this->answer()->went"
+        :went="$this->answer()->stands->went"
         :goes="$this->goes()"
     />
 @endif

@@ -21,6 +21,10 @@ final readonly class EveryStoreThePhoneKeeps implements ForgetsEverythingKept
 
     public function __construct(ForgetsEverythingKept ...$stores)
     {
+        if ($stores === []) {
+            throw NothingToAsk::in(self::class);
+        }
+
         $this->stores = $stores;
     }
 

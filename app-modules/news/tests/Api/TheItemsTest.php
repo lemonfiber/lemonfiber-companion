@@ -79,5 +79,6 @@ it('says which of two items is newer by the order of their kind', function (): v
         ->and(threeReleases()->isNewer(AnItem::anUpdate('0.15.0'), AnItem::anUpdate('0.9.0')))->toBeTrue()
         ->and(threeReleases()->isNewer(AnItem::anUpdate('0.9.0'), AnItem::anUpdate('0.15.0')))->toBeFalse()
         ->and($requests->isNewer(AnItem::aRequest(9), AnItem::aRequest(7)))->toBeTrue()
-        ->and($requests->isNewer(AnItem::aRequest(7), AnItem::aRequest(7)))->toBeFalse();
+        ->and($requests->isNewer(AnItem::aRequest(7), AnItem::aRequest(7)))->toBeFalse()
+        ->and($requests->isNewer(AnItem::aRequest(12), AnItem::aRequest(7)))->toBeTrue();
 });

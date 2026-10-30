@@ -7,7 +7,6 @@ namespace Modules\Sdk\Api;
 use function array_key_exists;
 use function is_array;
 use function is_bool;
-use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\ClientsEnvelope;
@@ -20,9 +19,9 @@ use Modules\Kernel\Api\TheTroubles;
 use Modules\Kernel\Api\WhatToWatchOn;
 use Modules\Kernel\Api\WhyPlaybackMayStruggle;
 use Modules\Sdk\Api\Fields\ClientsField;
+use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function trim;
 
 /**
  * Reads the `clients` envelope into which app to watch on, device by device.
@@ -76,9 +75,8 @@ final readonly class WhatToWatchWith
     private static function devices(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, WireField::Devices) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, WireField::Devices)) as $position => $row) {
             if (! is_array($row)) {
                 throw ClientsIsUnreadable::row(WireField::Devices, $position);
             }
@@ -91,7 +89,6 @@ final readonly class WhatToWatchWith
                 self::optional($row, WireField::Devices, WireField::Caution, $position),
                 self::optional($row, WireField::Devices, WireField::Instead, $position),
             );
-            $position++;
         }
 
         return $found;
@@ -140,11 +137,7 @@ final readonly class WhatToWatchWith
      */
     private static function strained(array $straining, NamesAWireField $field): string
     {
-        if (! array_key_exists($field->value, $straining) || ! is_string($straining[$field->value]) || trim($straining[$field->value]) === '') {
-            throw ClientsIsUnreadable::strained($field);
-        }
-
-        return $straining[$field->value];
+        return Required::text($straining, $field, ClientsIsUnreadable::strained($field));
     }
 
     /**
@@ -156,9 +149,8 @@ final readonly class WhatToWatchWith
     private static function troubles(array $data): array
     {
         $found = [];
-        $position = 0;
 
-        foreach (self::rows($data, ClientsField::Trouble) as $row) {
+        foreach (InTheOrderSent::rows(self::rows($data, ClientsField::Trouble)) as $position => $row) {
             if (! is_array($row)) {
                 throw ClientsIsUnreadable::row(ClientsField::Trouble, $position);
             }
@@ -167,7 +159,6 @@ final readonly class WhatToWatchWith
                 self::text($row, ClientsField::Trouble, ClientsField::Symptom, $position),
                 ...self::causes($row, $position),
             );
-            $position++;
         }
 
         return $found;
@@ -224,11 +215,7 @@ final readonly class WhatToWatchWith
      */
     private static function sentence(array $data, NamesAWireField $field): string
     {
-        if (! array_key_exists($field->value, $data) || ! is_string($data[$field->value]) || trim($data[$field->value]) === '') {
-            throw ClientsIsUnreadable::missing($field);
-        }
-
-        return $data[$field->value];
+        return Required::text($data, $field, ClientsIsUnreadable::missing($field));
     }
 
     /**
@@ -272,7 +259,7 @@ final readonly class WhatToWatchWith
 
         $said = $row[$field->value];
 
-        if (! is_string($said) || trim($said) === '') {
+        if (! Required::isText($said)) {
             throw ClientsIsUnreadable::said($list, $field, $position);
         }
 

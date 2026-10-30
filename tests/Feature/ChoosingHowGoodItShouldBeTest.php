@@ -535,7 +535,7 @@ it('says what stood in the way of a choice rather than that it was not made', fu
     $screen->choose();
 
     expect($screen->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($screen->answer()->becameSaid)->toBe('')
+        ->and([$screen->answer()->becameSaid, $screen->answer()->changes])->toBe(['', ''])
         ->and($screen->mayConfirm())->toBeFalse();
 });
 

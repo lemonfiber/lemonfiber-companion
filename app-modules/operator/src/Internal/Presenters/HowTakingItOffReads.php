@@ -14,7 +14,6 @@ use Modules\Kernel\Api\WhatTakingItOffComesTo;
 use Modules\Kernel\Api\WhatWasLeftBehind;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\ASizeAsShown;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\OneLineItReachesAsShown;
 use Modules\Operator\Internal\ViewModels\SomethingComingAsShown;
 use Modules\Operator\Internal\ViewModels\SomethingNotOursAsShown;
@@ -22,6 +21,7 @@ use Modules\Operator\Internal\ViewModels\SomethingOutsideAsShown;
 use Modules\Operator\Internal\ViewModels\TakingItOffTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheReadingAsShown;
 use Modules\Operator\Internal\ViewModels\WhatTakingItOffDidAsShown;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * Where taking lemonfiber off has got to, as the fields a screen draws.
@@ -36,37 +36,37 @@ final readonly class HowTakingItOffReads
     /** The four removals are in front of the operator to choose from, and none is being read. */
     public function notChosen(): TakingItOffTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), chosen: false);
+        return $this->without(WhereTheWorkStands::answered(), chosen: false);
     }
 
     /** This device no longer holds a session for the stack. */
     public function signedOut(): TakingItOffTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::theSessionEnded());
+        return $this->without(WhereTheWorkStands::signedOut());
     }
 
     /** Reading the removal met this, and nothing was agreed to. */
     public function met(Obstacle $why): TakingItOffTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::somethingStopped($why));
+        return $this->without(WhereTheWorkStands::met($why));
     }
 
     /** The stack is taking it off. */
     public function running(bool $endsThisSession): TakingItOffTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), wasAgreed: true, isWorking: true, endsThisSession: $endsThisSession);
+        return $this->without(WhereTheWorkStands::running(), wasAgreed: true, endsThisSession: $endsThisSession);
     }
 
     /** The stack has no outcome for the yes any more, which is not the same as it not having happened. */
     public function ended(bool $endsThisSession): TakingItOffTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), wasAgreed: true, hasEnded: true, endsThisSession: $endsThisSession);
+        return $this->without(WhereTheWorkStands::ended(), wasAgreed: true, endsThisSession: $endsThisSession);
     }
 
     /** The stack refused the yes, and this is its reason. */
     public function refused(string $because): TakingItOffTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), wasAgreed: true, refusal: $because);
+        return $this->without(WhereTheWorkStands::answered(), wasAgreed: true, refusal: $because);
     }
 
     /**
@@ -79,8 +79,8 @@ final readonly class HowTakingItOffReads
     public function unreadAfterTheYes(Obstacle $why, bool $endsThisSession): TakingItOffTurnedOutToBe
     {
         return $endsThisSession
-            ? $this->without(HowTheReadingWent::itCameBack(), wasAgreed: true, endsThisSession: true)
-            : $this->without(HowTheReadingWent::somethingStopped($why), wasAgreed: true);
+            ? $this->without(WhereTheWorkStands::answered(), wasAgreed: true, endsThisSession: true)
+            : $this->without(WhereTheWorkStands::met($why), wasAgreed: true);
     }
 
     /** What the stack answered: the reading, and what the removal did where it was agreed to. */
@@ -99,11 +99,9 @@ final readonly class HowTakingItOffReads
         $did = $did instanceof WhatTakingItOffDidAsShown ? $did : null;
 
         return new TakingItOffTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
+            stands: WhereTheWorkStands::answered(),
             chosen: true,
             wasAgreed: $agreed,
-            isWorking: false,
-            hasEnded: false,
             refusal: '',
             endsThisSession: $did?->isFinished === true && $manifest->tier()->takesWhatAdmitsThisApp(),
             reading: $this->reading($manifest),
@@ -243,20 +241,16 @@ final readonly class HowTakingItOffReads
 
     /** A state with neither a reading nor a removal in it. */
     private function without(
-        HowTheReadingWent $went,
+        WhereTheWorkStands $stands,
         bool $chosen = true,
         bool $wasAgreed = false,
-        bool $isWorking = false,
-        bool $hasEnded = false,
         string $refusal = '',
         bool $endsThisSession = false,
     ): TakingItOffTurnedOutToBe {
         return new TakingItOffTurnedOutToBe(
-            went: $went,
+            stands: $stands,
             chosen: $chosen,
             wasAgreed: $wasAgreed,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
             refusal: $refusal,
             endsThisSession: $endsThisSession,
             reading: null,

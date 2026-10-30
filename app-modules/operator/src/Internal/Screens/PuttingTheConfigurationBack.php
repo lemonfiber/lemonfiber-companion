@@ -106,7 +106,7 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
-        return $this->answer()->isWorking;
+        return $this->answer()->stands->isWorking();
     }
 
     /** The reading a frame draws: what the yes came to once it was given, and the preview until then. */
@@ -176,7 +176,7 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
     public function again(): void
     {
         $reading = $this->agreed ? $this->carriedOut : $this->answered;
-        $working = $reading?->isWorking === true;
+        $working = $reading?->stands->isWorking() === true;
         $this->carriedOut = null;
 
         if ($this->agreed && $working) {
@@ -201,7 +201,7 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->answer()->isWorking) {
+        if ($this->answer()->stands->isWorking()) {
             $this->again();
         }
     }
@@ -209,7 +209,7 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
     /** Whether the stack is at it right now. */
     public function isWorking(): bool
     {
-        return $this->answer()->isWorking;
+        return $this->answer()->stands->isWorking();
     }
 
     /** Resume the session and ask for the preview. */

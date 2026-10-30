@@ -44,8 +44,8 @@ final readonly class TitleAtTheDoor
         private string $grant,
         private float $startAt,
         private string $title,
-        private string $audio = '',
-        private string $subtitle = '',
+        private string $audio,
+        private string $subtitle,
     ) {}
 
     /**

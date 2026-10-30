@@ -23,8 +23,7 @@ final readonly class TheTraceTurnedOutToBe
      * @param list<AMomentAsShown> $history       what was tried, oldest first
      * @param list<string>         $disagreements where two services' views of it contradict
      * @param HowMuchIsHereAsShown $here         how much of a series is here, or nothing to count for a whole item
-     * @param string               $searchSpends  what a search that would settle it spends, in the stack's words, or empty where no search would
-     * @param string               $searchCovers  what that search covers, in the stack's words, or empty
+     * @param ASearchAsOffered|null $search       the search that would settle it, or null where no search would
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -38,7 +37,6 @@ final readonly class TheTraceTurnedOutToBe
         public array $history,
         public array $disagreements,
         public HowMuchIsHereAsShown $here,
-        public string $searchSpends = '',
-        public string $searchCovers = '',
+        public ?ASearchAsOffered $search = null,
     ) {}
 }

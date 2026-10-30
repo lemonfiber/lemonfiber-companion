@@ -45,14 +45,14 @@ trait FollowsARunOfChecks
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->howItIsGoing()->isWorking) {
+        if ($this->howItIsGoing()->stands->isWorking()) {
             $this->going = null;
         }
     }
 
     public function awaitsAnOutcome(): bool
     {
-        return $this->howItIsGoing()->isWorking;
+        return $this->howItIsGoing()->stands->isWorking();
     }
 
     /** Where the run has got to: not asked, still running, or what it came to. */
@@ -69,7 +69,7 @@ trait FollowsARunOfChecks
     public function ranAgo(): AgoAsShown
     {
         if ($this->ranAt === 0) {
-            return AgoAsShown::unsaid();
+            return AgoAsShown::saysNothing();
         }
 
         $ran = Instant::atEpochSeconds($this->ranAt);

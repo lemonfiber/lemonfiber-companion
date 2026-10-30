@@ -155,7 +155,7 @@ final readonly class ARecipeRunAsItArrives
     }
 
     /** The stack's answer about running the recipe, as this app holds it. */
-    public static function theAnswer(bool $ran, bool $held = true): ThePlugins
+    public static function theAnswer(bool $ran, bool $held = true, ?string $agreement = null): ThePlugins
     {
         $run = $ran
             ? ARecipeRun::ran(APluginId::called('tdarr'), self::theRecipe(), WhatARecipeRunDid::reported(
@@ -168,7 +168,7 @@ final readonly class ARecipeRunAsItArrives
         return ThePlugins::aboutARecipeRun(
             TheInstalledPlugins::these(self::thePlugin()),
             ThePluginSources::these(),
-            $ran ? '' : APluginAsItArrives::AGREEMENT,
+            $agreement ?? ($ran ? '' : APluginAsItArrives::AGREEMENT),
             $run,
         );
     }

@@ -584,6 +584,7 @@ it('answers a machine that is not the one paired as exactly that', function (str
 function adapterCallsThatAskNothing(): array
 {
     return [
+        'Listeners::eachReadWaitingAtMost' => 'makes a subscription that waits longer on each read, which asks the stack nothing',
         'Listeners::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
         'Narrators::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
         'Players::letGo' => 'lets go of the stream it holds, which asks the stack nothing',

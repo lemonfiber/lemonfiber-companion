@@ -178,6 +178,16 @@ it('hears every other stack the operator is signed in to, the list open or shut'
         ->and($hearing->lettingsGo())->toBe(0);
 });
 
+it('waits out a break before opening a stack\'s stream again once it ended', function (): void {
+    $hearing = AStackThatSpeaksUp::thenEnding();
+    $screen = aScreenThatHearsThrough($hearing, StandingsInMemory::working());
+
+    $screen->hearEachStack();
+    $screen->hearEachStack();
+
+    expect($hearing->asked())->toBe(1);
+});
+
 it('keeps listening when the list is shut, and lets go when the screen stops', function (): void {
     $hearing = AStackThatSpeaksUp::holdingOpen();
     $screen = aScreenThatHearsThrough($hearing, StandingsInMemory::working());

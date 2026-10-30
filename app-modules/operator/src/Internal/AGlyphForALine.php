@@ -22,8 +22,8 @@ final readonly class AGlyphForALine
         public bool $isAnError,
     ) {}
 
-    /** The glyph that severity earns, if any. */
-    public static function for(HowSeriousALineIs $level): self
+    /** The glyph that severity earns, or null where it earns none. */
+    public static function for(HowSeriousALineIs $level): ?self
     {
         if ($level->isAnError()) {
             return new self(Tone::Trouble->value, $level->saidOnTheScreen(), isAnError: true);
@@ -33,12 +33,6 @@ final readonly class AGlyphForALine
             return new self(Tone::Attention->value, $level->saidOnTheScreen(), isAnError: false);
         }
 
-        return self::none();
-    }
-
-    /** No glyph: the line is ordinary, or nobody classified it. */
-    public static function none(): self
-    {
-        return new self('', '', isAnError: false);
+        return null;
     }
 }

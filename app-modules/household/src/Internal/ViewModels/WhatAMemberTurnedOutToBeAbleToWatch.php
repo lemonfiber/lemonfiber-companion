@@ -32,12 +32,10 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
     /** @param list<WhatAShelfRowSays> $rows */
     private function __construct(
         public bool $isSignedIn,
-        public string $met,
-        public string $remedy,
         public bool $isOutOfReach,
         public ?WhatOnePosterSays $hero,
         public array $rows,
-        private ?Obstacle $why = null,
+        public ?WhatStoppedAMember $stopped = null,
     ) {}
 
     /**
@@ -53,8 +51,6 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
     {
         return new self(
             isSignedIn: true,
-            met: '',
-            remedy: '',
             isOutOfReach: false,
             hero: $hero,
             rows: $rows,
@@ -71,8 +67,6 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
     {
         return new self(
             isSignedIn: true,
-            met: '',
-            remedy: '',
             isOutOfReach: true,
             hero: null,
             rows: [],
@@ -84,8 +78,6 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
     {
         return new self(
             isSignedIn: false,
-            met: '',
-            remedy: '',
             isOutOfReach: false,
             hero: null,
             rows: [],
@@ -99,35 +91,11 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
             ? self::theSessionEnded()
             : new self(
                 isSignedIn: true,
-                met: WhatAMemberIsTold::met($why),
-                remedy: WhatAMemberIsTold::remedy($why),
                 isOutOfReach: false,
                 hero: null,
                 rows: [],
-                why: $why,
+                stopped: WhatStoppedAMember::by($why),
             );
-    }
-
-    /** Whether what stood in the way is put right on this app's page in the phone's settings. */
-    public function isPutRightInTheAppsSettings(): bool
-    {
-        return $this->why instanceof Obstacle && $this->why->isPutRightInTheAppsSettings();
-    }
-
-    /**
-     * What the obstacle's sentences are filled with: the facts it was met with, or nothing.
-     *
-     * @return array<string, int>
-     */
-    public function filling(): array
-    {
-        return $this->why instanceof Obstacle ? WhatAnObstacleNames::in($this->why) : [];
-    }
-
-    /** Whether {@see $met} and {@see $remedy} are the core's own text, drawn as written, rather than catalogue keys. */
-    public function isInTheStacksWords(): bool
-    {
-        return $this->why instanceof Obstacle && WhatAMemberIsTold::isInTheStacksWords($this->why);
     }
 
     /**
@@ -135,13 +103,13 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
      *
      * Each poster is asked for once, however many rows it is in.
      *
-     * @param Closure(string): string $poster   the source of the poster of the title a poster plays
-     * @param Closure(string): string $backdrop the source of the backdrop of the title the hero plays
+     * @param Closure(string): ?string $poster   the source of the poster of the title a poster plays
+     * @param Closure(string): ?string $backdrop the source of the backdrop of the title the hero plays
      */
     public function pictured(Closure $poster, Closure $backdrop): self
     {
         $sources = [];
-        $once = static function (string $plays) use (&$sources, $poster): string {
+        $once = static function (string $plays) use (&$sources, $poster): ?string {
             if (! array_key_exists($plays, $sources)) {
                 $sources[$plays] = $poster($plays);
             }
@@ -155,9 +123,11 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
             $rows[] = $row->pictured(self::PICTURED_IN_EACH_ROW, $once);
         }
 
-        $hero = $this->hero instanceof WhatOnePosterSays && $this->hero->plays !== '' ? $this->hero->pictured($backdrop($this->hero->plays)) : $this->hero;
+        $hero = $this->hero;
+        $plays = $hero?->plays;
+        $hero = $hero instanceof WhatOnePosterSays && $plays !== null ? $hero->pictured($backdrop($plays)) : $hero;
 
-        return new self($this->isSignedIn, $this->met, $this->remedy, $this->isOutOfReach, $hero, $rows, $this->why);
+        return new self($this->isSignedIn, $this->isOutOfReach, $hero, $rows, $this->stopped);
     }
 
     /** Whether there is a title to draw across the screen: an empty shelf has none. */
@@ -177,6 +147,6 @@ final readonly class WhatAMemberTurnedOutToBeAbleToWatch
      */
     public function cameBack(): bool
     {
-        return $this->isSignedIn && $this->met === '' && ! $this->isOutOfReach;
+        return $this->isSignedIn && ! $this->stopped instanceof WhatStoppedAMember && ! $this->isOutOfReach;
     }
 }

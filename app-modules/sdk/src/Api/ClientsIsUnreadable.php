@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
+use function array_column;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
 use Modules\Sdk\Api\Fields\ClientsField;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -71,7 +71,7 @@ final class ClientsIsUnreadable extends InvalidArgumentException
             'Entry %d of `devices` in the clients envelope is rated `%s`, and this app reads %s. Drawing it as the nearest one would be a guess about how well somebody\'s device is served.',
             $position,
             $said,
-            implode(', ', array_map(static fn(HowWellADeviceIsServed $case): string => sprintf('`%s`', $case->value), HowWellADeviceIsServed::cases())),
+            TheWordsItReads::quoted(...array_column(HowWellADeviceIsServed::cases(), 'value')),
         ));
     }
 }

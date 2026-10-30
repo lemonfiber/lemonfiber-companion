@@ -2,7 +2,7 @@
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
-@if ($this->answer()->went->cameBack())
+@if ($this->answer()->stands->went->cameBack())
 <x-operator::content>
 @if (! $this->answer()->namesADownload)
     {{-- Opened on no download at all, so there is nothing to ask about and
@@ -12,15 +12,15 @@
 @elseif ($this->wasAgreedTo())
     {{-- What the stack did, drawn from its report and never from the offer
          above it, so an offer cannot read as something that happened. --}}
-    @if (! $this->done()->went->cameBack())
+    @if (! $this->done()->stands->went->cameBack())
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->done()->went"
+            :went="$this->done()->stands->went"
             :goes="$this->goes()"
         />
-    @elseif ($this->done()->isWorking)
+    @elseif ($this->done()->stands->isWorking())
         <x-operator::emphasis>{{ __('stacks.let_go.letting_go', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
-    @elseif ($this->done()->hasEnded)
+    @elseif ($this->done()->stands->hasEnded())
         {{-- Not a failure: the client may well have let it go, and how full
              the machine is says whether it is still there. --}}
         <x-operator::emphasis>{{ __('stacks.let_go.no_outcome', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
@@ -40,12 +40,12 @@
     @endif
 
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
-@elseif ($this->answer()->isWorking)
+@elseif ($this->answer()->stands->isWorking())
     {{-- The stack answers the question as work, so the offer may not be
          in yet. Said as that, and read again on the screen's cadence. --}}
     <x-operator::emphasis>{{ __('stacks.let_go.working_it_out', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
-@elseif ($this->answer()->hasEnded)
+@elseif ($this->answer()->stands->hasEnded())
     <x-operator::emphasis>{{ __('stacks.let_go.offer_ended', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @else
@@ -79,7 +79,7 @@
          nothing to agree to and nothing is offered. --}}
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
-        :went="$this->answer()->went"
+        :went="$this->answer()->stands->went"
         :goes="$this->goes()"
     />
 @endif

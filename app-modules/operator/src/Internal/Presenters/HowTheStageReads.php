@@ -31,8 +31,8 @@ final readonly class HowTheStageReads
         $broke = $heard->hasBroken();
 
         return $heard->heard(
-            none: static fn(): TheStageAsShown => new TheStageAsShown('', '', '', AgoAsShown::live(), $broke),
-            current: fn(ALineItSaid $line): TheStageAsShown => $this->at($line, AgoAsShown::live(), $broke),
+            none: static fn(): TheStageAsShown => new TheStageAsShown('', '', '', AgoAsShown::saysNothing(), $broke),
+            current: fn(ALineItSaid $line): TheStageAsShown => $this->at($line, AgoAsShown::saysNothing(), $broke),
             asOf: fn(ALineItSaid $line, Instant $at): TheStageAsShown
                 => $this->at($line, AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now), $broke),
         );

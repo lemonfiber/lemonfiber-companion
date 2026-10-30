@@ -1,9 +1,9 @@
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
-@if ($this->answer()->went->cameBack())
+@if ($this->answer()->stands->went->cameBack())
 <x-operator::content>
-@if (! $this->answer()->wasAsked)
+@if (! $this->answer()->stands->wasAsked())
     {{-- What goes in is chosen here, before it is described again: the log
          window, the filenames, and each setting to reveal. Each choice is a
          card that says what it is now, over the chips that change it. --}}
@@ -67,13 +67,13 @@
     @endif
 
     <x-operator::offered-action :label="__('stacks.help.describe')" tap="describe()" :offer="$this->offered($this->chosen())" />
-@elseif ($this->answer()->isWorking)
+@elseif ($this->answer()->stands->isWorking())
     <x-design::standing
         :said="__('stacks.help.gathering')"
         tone="working"
     />
     <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
-@elseif ($this->answer()->hasEnded)
+@elseif ($this->answer()->stands->hasEnded())
     {{-- Not a failure: the stack no longer says what became of it. --}}
     <x-design::notice tone="unknown">
         <x-design::strong>{{ __('stacks.help.no_outcome') }}</x-design::strong>
@@ -157,7 +157,7 @@
 @else
     <x-operator::what-stopped-the-reading
         :settings-would-not-open="$this->theSettingsWouldNotOpen"
-        :went="$this->answer()->went"
+        :went="$this->answer()->stands->went"
         :goes="$this->goes()"
     />
 @endif

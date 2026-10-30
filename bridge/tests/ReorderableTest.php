@@ -54,6 +54,13 @@ it('draws no rows where the template names none', function (mixed $items): void 
     expect(propsOf($list)['keys'] ?? null)->toBe([]);
 })->with(['no items at all' => [null], 'items that are not a list' => ['three']]);
 
+it('takes what a screen reader says of the list from the template', function (): void {
+    $list = Reorderable::make();
+    $list->applyAttributes(['a11y-label' => 'Your stacks, in order', 'a11y-hint' => 'Drag a row to move it']);
+
+    expect(propsOf($list))->toMatchArray(['a11y_label' => 'Your stacks, in order', 'a11y_hint' => 'Drag a row to move it']);
+});
+
 it('reads back the keys it sent, in order, and nothing from nothing', function (): void {
     expect(Reorderable::keysIn(Reorderable::sent(['a', 'b', 'c'])))->toBe(['a', 'b', 'c'])
         ->and(Reorderable::keysIn(''))->toBe([]);
@@ -68,5 +75,6 @@ it('names one type in the manifest, the element and its Blade tag', function ():
     expect($declared)->toHaveCount(1)
         ->and($declared[0]['element'] ?? null)->toBe(Reorderable::class)
         ->and($declared[0]['blade'] ?? null)->toBe(ReorderableTag::class)
-        ->and($tag->invoke(new ReorderableTag()))->toBe(Reorderable::TYPE);
+        ->and($tag->invoke(new ReorderableTag()))->toBe(Reorderable::TYPE)
+        ->and(new ReorderableTag()->render())->toBe('');
 });

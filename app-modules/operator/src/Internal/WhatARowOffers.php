@@ -18,14 +18,14 @@ use Modules\Kernel\Api\WhenARecipeRuns;
  */
 final readonly class WhatARowOffers
 {
-    public function __construct(private ?ThePlugins $listing) {}
+    public function __construct(private ThePlugins $listing) {}
 
     /** The plugin in that row, or none for a row the listing does not have. */
     public function plugin(int $which): ?APlugin
     {
         $at = 0;
 
-        foreach ($this->listing?->installed() ?? [] as $plugin) {
+        foreach ($this->listing->installed() as $plugin) {
             if ($at === $which) {
                 return $plugin;
             }
@@ -57,7 +57,7 @@ final readonly class WhatARowOffers
     {
         return match ($act) {
             ExtendingIt::Update => $plugin->canBeUpdated(),
-            ExtendingIt::Prove => $this->listing?->answersOutOfContractOf($plugin)->holdsAny() ?? false,
+            ExtendingIt::Prove => $this->listing->answersOutOfContractOf($plugin)->holdsAny(),
             ExtendingIt::Run => $recipe instanceof ARecipe,
             ExtendingIt::Install, ExtendingIt::Remove => true,
         };

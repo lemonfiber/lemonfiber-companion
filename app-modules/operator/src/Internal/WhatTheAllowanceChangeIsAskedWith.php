@@ -36,7 +36,7 @@ final readonly class WhatTheAllowanceChangeIsAskedWith
             return new self('stacks.allowance_change.limit.whole_numbers');
         }
 
-        $for = trim($who) === '' ? WhoAnAllowanceIsFor::everybody() : WhoAnAllowanceIsFor::somebody(SomebodyInTheHousehold::called($who));
+        $for = $who === '' ? WhoAnAllowanceIsFor::everybody() : WhoAnAllowanceIsFor::somebody(SomebodyInTheHousehold::called($who));
         $chosen = HowTheHouseholdAsks::tryFrom($policy);
         $limit = $requests === '' ? null : ARequestLimit::of((int) $requests, (int) $days);
 

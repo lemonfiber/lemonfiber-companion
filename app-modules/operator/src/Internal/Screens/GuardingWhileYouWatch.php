@@ -202,7 +202,7 @@ final class GuardingWhileYouWatch extends NativeComponent
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItGuards(): void
     {
-        if ($this->lastGuard()->isGuarding) {
+        if ($this->lastGuard()->stands->isWorking()) {
             $this->lastGuard = null;
         }
     }
@@ -217,7 +217,7 @@ final class GuardingWhileYouWatch extends NativeComponent
     /** Name forms for another guard, once the last one has ended. */
     public function startOver(): void
     {
-        if ($this->lastGuard()->isGuarding) {
+        if ($this->lastGuard()->stands->isWorking()) {
             return;
         }
 
@@ -312,7 +312,7 @@ final class GuardingWhileYouWatch extends NativeComponent
         $took = $this->took;
         $last = $this->lastGuard;
 
-        if ($took === null || ($last instanceof HowTheGuardWent && ! $last->isGuarding)) {
+        if ($took === null || ($last instanceof HowTheGuardWent && ! $last->stands->isWorking())) {
             return;
         }
 

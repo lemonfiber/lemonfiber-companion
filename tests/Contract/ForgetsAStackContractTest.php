@@ -4,39 +4,17 @@ declare(strict_types=1);
 
 use Bootstrap\Composition\ArtworkGoesWithTheSession;
 use Bootstrap\Composition\EveryKeeperOfAStack;
+use Bootstrap\Composition\NothingToAsk;
 use Modules\Device\Api\PlatformPhoneKeys;
 use Modules\Health\Api\KeepingTheLastReading;
-use Modules\Kernel\Api\Address;
-use Modules\Kernel\Api\AGrant;
-use Modules\Kernel\Api\AnEventHeard;
-use Modules\Kernel\Api\APhoneKeysName;
-use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\ForgetsAStack;
-use Modules\Kernel\Api\HearIn;
-use Modules\Kernel\Api\HowItStands;
+use Modules\Kernel\Api\HoldingAPhoneKey;
 use Modules\Kernel\Api\Instant;
-use Modules\Kernel\Api\Job;
-use Modules\Kernel\Api\KindOfWork;
-use Modules\Kernel\Api\Nonce;
-use Modules\Kernel\Api\Noted;
-use Modules\Kernel\Api\ReadIn;
-use Modules\Kernel\Api\Session;
-use Modules\Kernel\Api\Stack;
-use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\StackName;
-use Modules\Kernel\Api\TheGrantIsFor;
-use Modules\Kernel\Api\TheHealthSummary;
-use Modules\Kernel\Api\TheirLanguages;
-use Modules\Kernel\Api\TheReadingWaitsAFrame;
-use Modules\Kernel\Api\ThisDevice;
-use Modules\Kernel\Api\WhatStoppedMoving;
-use Modules\Kernel\Api\WhatToDoWithIt;
-use Modules\Kernel\Api\WhichTab;
-use Modules\Kernel\Api\Whose;
-use Modules\News\Api\AnItem;
-use Modules\News\Api\KindOfNews;
+use Modules\Kernel\Api\KeepingTheGrant;
+use Modules\Kernel\Api\KeepingThePhoneKeysName;
+use Modules\Kernel\Api\SecureStorage;
+use Modules\Kernel\Api\Stacks;
 use Modules\News\Api\Noticing;
-use Modules\News\Api\TheItems;
 use Modules\News\Internal\NewsOfAStack;
 use Modules\News\Internal\WhatEachStackLastNamed;
 use Modules\Requests\Api\KeepingWhatWasAsked;
@@ -55,7 +33,6 @@ use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 use Modules\Watching\Api\KeepingTheirLanguages;
 use Saloon\Http\Faking\MockClient;
-use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\APhoneKeyInMemory;
 use Tests\Support\Fakes\APhoneKeyOnAHandset;
@@ -72,11 +49,12 @@ use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\Fakes\WhereHearingLeftOffInMemory;
 use Tests\Support\Fakes\WhereTheOperatorWasInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
-use Tests\Support\WhatIsKeptOfRequests;
-use Tests\Support\WhatIsKeptOfServices;
-use Tests\Support\WhatIsKeptOfUpdates;
+use Tests\Support\WhatEveryKeeperKeeps;
 use Tests\Support\WhatTheContractAccepts;
+use Tests\Support\WhatTheModulesDeclare;
 use Tests\Support\WhatThePhoneKeeps;
+
+pest()->group('holds:bootstrap/Composition');
 
 // The ForgetsAStack contract, run against every keeper of a stack and against
 // all of them together: what it keeps for one stack goes, what it keeps for
@@ -85,27 +63,6 @@ use Tests\Support\WhatThePhoneKeeps;
 afterEach(function (): void {
     MockClient::destroyGlobal();
 });
-
-/**
- * What a stack declares when it serves nothing this app asks for.
- *
- * @return array<string, mixed>
- */
-function aStackThatDeclaresNothing(): array
-{
-    return ['api_version' => 1, 'kind' => 'capabilities', 'data' => ['scope' => 'operator', 'capabilities' => []]];
-}
-
-/** A stack a keeper holds something for. Named for this file. */
-function aStackSomethingIsKeptFor(string $seed): Stack
-{
-    return Stack::of(
-        StackId::of(Nonce::of(str_repeat($seed, Nonce::SHORTEST))),
-        StackName::of(sprintf('Kept %s', $seed)),
-        Address::of('https://192.168.1.46'),
-        Fingerprint::of(str_repeat($seed, Fingerprint::CHARACTERS)),
-    );
-}
 
 /**
  * Every keeper, each holding something for two stacks.
@@ -141,14 +98,14 @@ function everyKeeperHoldingTwoStacks(): array
         'the fake grants' => GrantsKeptInMemory::working(),
         'the platform phone key names' => new PlatformPhoneKeysNames(APlatformStore::working()),
         'the fake phone key names' => PhoneKeysNamesKeptInMemory::working(),
-        'the phone\'s keys' => APhoneKeyOnAHandset::onAnAndroidPhone()->theAdapterOverIt(),
+        'the phone\'s keys' => thePhonesKeysOnAHandset(),
         'the fake phone\'s keys' => APhoneKeyInMemory::onAnAndroidPhone(),
         'what each stack offers' => new Assessors(new PinnedClients(), FrozenClock::at(Instant::atEpochSeconds(0)), new WhatEachStackOffers()),
     ];
 
     foreach ([...$keepers, $pairings, $words] as $keeper) {
         foreach (['a', 'b'] as $seed) {
-            keepSomethingFor($keeper, aStackSomethingIsKeptFor($seed));
+            WhatEveryKeeperKeeps::somethingFor($keeper, WhatEveryKeeperKeeps::aStack($seed));
         }
     }
 
@@ -161,114 +118,92 @@ function whatNoticesNewsOver(ASealInMemory $seal): Noticing
     return new Noticing(new NewsOfAStack($seal, NewsKeptInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0)), new WhatEachStackLastNamed()));
 }
 
-/** Have a keeper of readings hold the newest reading of its kind for this stack. */
-function keepAReadingFor(KeepingTheLastReading|KeepingTheLastUpkeep|KeepingWhatItRuns|KeepingWhatWasAsked $keeper, Stack $stack): Noted
+/** The phone's own keys, over a handset that keeps them. */
+function thePhonesKeysOnAHandset(): PlatformPhoneKeys
 {
-    return match (true) {
-        $keeper instanceof KeepingTheLastReading => $keeper->keep($stack->id(), TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing()), Instant::atEpochSeconds(1)),
-        $keeper instanceof KeepingTheLastUpkeep => $keeper->keep($stack->id(), WhatIsKeptOfUpdates::aReadingOfAStackThatIsCurrent(), Instant::atEpochSeconds(1)),
-        $keeper instanceof KeepingWhatItRuns => $keeper->keep($stack->id(), WhatIsKeptOfServices::aListingOfNothing()),
-        $keeper instanceof KeepingWhatWasAsked => $keeper->keep($stack->id(), WhatIsKeptOfRequests::aReadingOfNothing()),
-    };
-}
-
-/** Have a keeper hold something for this stack, through its own port. */
-function keepSomethingFor(ForgetsAStack $keeper, Stack $stack): void
-{
-    if ($keeper instanceof PlatformStacks || $keeper instanceof StacksInMemory) {
-        $keeper->remember($stack);
-
-        return;
-    }
-
-    if ($keeper instanceof PlatformKeychain || $keeper instanceof AKeychainInMemory || $keeper instanceof ArtworkGoesWithTheSession) {
-        $keeper->keep($stack->id(), Session::of('a-session'), Whose::theOperator());
-
-        return;
-    }
-
-    if ($keeper instanceof KeepingTheLastReading || $keeper instanceof KeepingTheLastUpkeep || $keeper instanceof KeepingWhatItRuns || $keeper instanceof KeepingWhatWasAsked) {
-        keepAReadingFor($keeper, $stack);
-
-        return;
-    }
-
-    if ($keeper instanceof KeepingTheirLanguages) {
-        $keeper->choose($stack->id(), Whose::member('robin'), TheirLanguages::of(HearIn::Dutch, ReadIn::English));
-
-        return;
-    }
-
-    if ($keeper instanceof Noticing) {
-        $keeper->whatIsNewIn($stack->id(), TheItems::of(KindOfNews::Request, AnItem::aRequest(1)));
-
-        return;
-    }
-
-    if (keepAMarkerFor($keeper, $stack)) {
-        return;
-    }
-
-    if ($keeper instanceof Assessors) {
-        haveWhatAStackOffersHeldFor($keeper, $stack);
-
-        return;
-    }
-
-    throw new LogicException(sprintf('No way to have %s keep something.', $keeper::class));
-}
-
-/** Have a keeper of what the phone notes about a stack hold one note for it, answering whether it was one. */
-function keepAMarkerFor(ForgetsAStack $keeper, Stack $stack): bool
-{
-    $kept = $stack->id();
-
-    $noted = match (true) {
-        $keeper instanceof PlatformStandings, $keeper instanceof StandingsInMemory => $keeper->remember($kept, HowItStands::Healthy, Instant::atEpochSeconds(1)),
-        $keeper instanceof PlatformWhereTheOperatorWas, $keeper instanceof WhereTheOperatorWasInMemory => $keeper->wasOn($kept, WhichTab::Services),
-        $keeper instanceof PlatformWhereHearingLeftOff, $keeper instanceof WhereHearingLeftOffInMemory => $keeper->heardTo($kept, AnEventHeard::named('run-1')),
-        $keeper instanceof PlatformWorkLeftRunning, $keeper instanceof WorkLeftRunningInMemory => $keeper->remember($kept, KindOfWork::Walkthrough, Job::named('a-walk')),
-        $keeper instanceof PlatformGrants, $keeper instanceof GrantsKeptInMemory => $keeper->keepTheGrant($kept, TheGrantIsFor::of(Whose::member('ada'), ThisDevice::named('this-device')), AGrant::of(str_repeat('0', 32), Instant::atEpochSeconds(1))),
-        $keeper instanceof PlatformPhoneKeysNames, $keeper instanceof PhoneKeysNamesKeptInMemory => $keeper->keepTheName($kept, APhoneKeysName::of('Galaxy A51 · 7f3a')),
-        $keeper instanceof PlatformPhoneKeys, $keeper instanceof APhoneKeyInMemory => $keeper->madeFor($kept),
-        default => null,
-    };
-
-    return $noted !== null;
-}
-
-/** Have what this stack offers held, by asking it on a frame of its own. */
-function haveWhatAStackOffersHeldFor(Assessors $assessors, Stack $stack): void
-{
-    MockClient::destroyGlobal();
-    MockClient::global(['*' => MockResponse::make((string) json_encode(aStackThatDeclaresNothing()))]);
-
-    try {
-        $assessors->whetherItOffers($stack, Session::of('a-session'), WhatToDoWithIt::Restart);
-    } catch (TheReadingWaitsAFrame) {
-        // Asking a stack nothing is held for is a frame of its own: what it
-        // said is held, and the frame that asked is told to wait.
-    }
+    return APhoneKeyOnAHandset::onAnAndroidPhone()->theAdapterOverIt();
 }
 
 it('keeps something for each stack it was given', function (): void {
     foreach (everyKeeperHoldingTwoStacks() as $which => $keeper) {
-        expect($keeper->keepsAnythingOf(aStackSomethingIsKeptFor('a')->id()))->toBeTrue($which)
-            ->and($keeper->keepsAnythingOf(aStackSomethingIsKeptFor('b')->id()))->toBeTrue($which);
+        expect($keeper->keepsAnythingOf(WhatEveryKeeperKeeps::aStack('a')->id()))->toBeTrue($which)
+            ->and($keeper->keepsAnythingOf(WhatEveryKeeperKeeps::aStack('b')->id()))->toBeTrue($which);
     }
 });
 
 it('lets go of everything it keeps for one stack, and of nothing it keeps for another', function (): void {
     foreach (everyKeeperHoldingTwoStacks() as $which => $keeper) {
-        expect($keeper->forgetTheStack(aStackSomethingIsKeptFor('a')->id())->howMany())->toBeGreaterThan(0, $which)
-            ->and($keeper->keepsAnythingOf(aStackSomethingIsKeptFor('a')->id()))->toBeFalse($which)
-            ->and($keeper->keepsAnythingOf(aStackSomethingIsKeptFor('b')->id()))->toBeTrue($which)
-            ->and($keeper->forgetTheStack(aStackSomethingIsKeptFor('a')->id())->howMany())->toBe(0, $which);
+        expect($keeper->forgetTheStack(WhatEveryKeeperKeeps::aStack('a')->id())->howMany())->toBeGreaterThan(0, $which)
+            ->and($keeper->keepsAnythingOf(WhatEveryKeeperKeeps::aStack('a')->id()))->toBeFalse($which)
+            ->and($keeper->keepsAnythingOf(WhatEveryKeeperKeeps::aStack('b')->id()))->toBeTrue($which)
+            ->and($keeper->forgetTheStack(WhatEveryKeeperKeeps::aStack('a')->id())->howMany())->toBe(0, $which);
     }
 });
 
+it('keeps something of a stack, every keeper together, where only one of them does', function (): void {
+    $pairings = StacksInMemory::working();
+    WhatEveryKeeperKeeps::somethingFor($pairings, WhatEveryKeeperKeeps::aStack('a'));
+
+    expect(new EveryKeeperOfAStack($pairings, StandingsInMemory::working())->keepsAnythingOf(WhatEveryKeeperKeeps::aStack('a')->id()))->toBeTrue()
+        ->and(new EveryKeeperOfAStack(StacksInMemory::working(), StandingsInMemory::working())->keepsAnythingOf(WhatEveryKeeperKeeps::aStack('a')->id()))->toBeFalse();
+});
+
+it('refuses to be built, every keeper together, with no keeper to ask', function (): void {
+    expect(static fn(): EveryKeeperOfAStack => new EveryKeeperOfAStack())->toThrow(NothingToAsk::class);
+});
+
+it('asks every keeper of a stack the modules declare, when the app forgets a stack', function (): void {
+    WhatEveryKeeperKeeps::inTheAppOverStoresOfItsOwn();
+    $composed = WhatEveryKeeperKeeps::askedAsOne(app(ForgetsAStack::class));
+
+    foreach (WhatTheModulesDeclare::theirOwn(ForgetsAStack::class) as $declared) {
+        expect(array_any($composed, static fn(ForgetsAStack $keeper): bool => $keeper instanceof $declared))->toBeTrue($declared);
+    }
+});
+
+it('lets go of a stack in every keeper the app is composed with, the pairing first, and of nothing of another stack', function (): void {
+    WhatEveryKeeperKeeps::inTheAppOverStoresOfItsOwn();
+    $forgetting = app(ForgetsAStack::class);
+    $composed = WhatEveryKeeperKeeps::askedAsOne($forgetting);
+
+    foreach ($composed as $keeper) {
+        WhatEveryKeeperKeeps::somethingFor($keeper, WhatEveryKeeperKeeps::aStack('a'));
+        WhatEveryKeeperKeeps::somethingFor($keeper, WhatEveryKeeperKeeps::aStack('b'));
+        expect($keeper->keepsAnythingOf(WhatEveryKeeperKeeps::aStack('a')->id()))->toBeTrue($keeper::class);
+    }
+
+    $forgetting->forgetTheStack(WhatEveryKeeperKeeps::aStack('a')->id());
+
+    expect($composed[0])->toBeInstanceOf(Stacks::class);
+
+    foreach ($composed as $keeper) {
+        expect($keeper->keepsAnythingOf(WhatEveryKeeperKeeps::aStack('a')->id()))->toBeFalse($keeper::class)
+            ->and($keeper->keepsAnythingOf(WhatEveryKeeperKeeps::aStack('b')->id()))->toBeTrue($keeper::class);
+    }
+});
+
+it('leaves no session, grant, phone key or phone key\'s name of a forgotten stack in what the app is composed with', function (string $secret): void {
+    WhatEveryKeeperKeeps::inTheAppOverStoresOfItsOwn();
+    $forgetting = app(ForgetsAStack::class);
+    $holding = array_find(WhatEveryKeeperKeeps::askedAsOne($forgetting), static fn(ForgetsAStack $keeper): bool => $keeper instanceof $secret);
+
+    expect($holding)->toBeInstanceOf(ForgetsAStack::class);
+    assert($holding instanceof ForgetsAStack);
+    WhatEveryKeeperKeeps::somethingFor($holding, WhatEveryKeeperKeeps::aStack('a'));
+    expect($holding->keepsAnythingOf(WhatEveryKeeperKeeps::aStack('a')->id()))->toBeTrue();
+
+    $forgetting->forgetTheStack(WhatEveryKeeperKeeps::aStack('a')->id());
+
+    expect($holding->keepsAnythingOf(WhatEveryKeeperKeeps::aStack('a')->id()))->toBeFalse();
+})->with([
+    'the session' => SecureStorage::class,
+    'the grant' => KeepingTheGrant::class,
+    'the phone key' => HoldingAPhoneKey::class,
+    'the phone key\'s name' => KeepingThePhoneKeysName::class,
+]);
+
 it('says it may still keep something where its store cannot be read', function (): void {
-    $stack = aStackSomethingIsKeptFor('a')->id();
+    $stack = WhatEveryKeeperKeeps::aStack('a')->id();
 
     foreach ([
         'the platform pairings' => new PlatformStacks(APlatformStore::refusing()),
@@ -292,5 +227,5 @@ it('says it may still keep something where its store cannot be read', function (
 });
 
 it('stands in for a stack with a declaration the contract would accept', function (): void {
-    expect(WhatTheContractAccepts::complaintsAbout('CapabilitiesEnvelope', aStackThatDeclaresNothing()))->toBe([]);
+    expect(WhatTheContractAccepts::complaintsAbout('CapabilitiesEnvelope', WhatEveryKeeperKeeps::aDeclarationOfNothing()))->toBe([]);
 });

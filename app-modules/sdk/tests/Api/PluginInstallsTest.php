@@ -486,3 +486,56 @@ it('reads each password of another service an install would hand the plugin, wit
         ->and(iterator_to_array($granting->approvals(), preserve_keys: false))->toBe([APluginAsItArrives::APPROVAL, APluginAsItArrives::GRANT_APPROVAL])
         ->and(iterator_to_array($silent->approvals(), preserve_keys: false))->toBe([APluginAsItArrives::APPROVAL]);
 });
+
+it('refuses a row it cannot read by its position, first or later, in every list', function (): void {
+    $reachable = ['plugin' => 'tdarr', 'standing' => ['standing' => 'reachable']];
+    $outOfContract = ['plugin' => 'tdarr', 'capability' => 'transcoding', 'operation' => 'queue', 'why' => 'It answered with a table.'];
+    $lists = [
+        'installed' => [APluginAsItArrives::onTheWire(), 'tdarr'],
+        'sources' => [$reachable, $reachable, ['plugin' => 'tdarr']],
+        'nonconforming' => [$outOfContract, 'tdarr'],
+    ];
+    $refused = [
+        'installed' => 'Row 1 of `installed` in the plugins envelope',
+        'sources' => 'Row 2 of `sources` in the plugins envelope',
+        'nonconforming' => 'Row 1 of `nonconforming` in the plugins envelope',
+    ];
+
+    foreach ($lists as $list => $rows) {
+        $answer = anInstallAnswerWith(static fn(array $data): array => [...$data, $list => $rows]);
+
+        expect(static fn(): ThePlugins => PluginInstalls::in($answer))->toThrow(PluginsAreUnreadable::class, $refused[$list], $list);
+    }
+});
+
+it('refuses a sharing row it cannot read by its position, first or later', function (): void {
+    $sharing = ['adapter' => 'tdarr-adapter', 'upstream' => 'tdarr', 'at' => '/upstream'];
+    $first = anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => ['tdarr-adapter', $sharing]]));
+    $later = anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => [$sharing, [...$sharing, 'at' => ' ']]]));
+
+    expect(static fn(): ThePlugins => PluginInstalls::in($first))->toThrow(PluginsAreUnreadable::class, 'Row 0 of `sharing` in the plugins envelope has no readable `adapter`.')
+        ->and(static fn(): ThePlugins => PluginInstalls::in($later))->toThrow(PluginsAreUnreadable::class, 'Row 1 of `sharing` in the plugins envelope has no readable `at`.');
+});
+
+it('refuses the plugin an install would settle in the words of the one record it is, and a recipe it holds by its row', function (): void {
+    $noVersion = anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'version' => ' ']));
+    $recipe = ['id' => 'resync', 'title' => 'Ask Plex to look again', 'steps' => [], 'pairs' => []];
+    $recipeWithNoTitle = anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'recipes' => [$recipe, [...$recipe, 'title' => ' ']]]));
+    $recipesThatAreNotAList = anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'recipes' => 'resync']));
+
+    expect(static fn(): ThePlugins => PluginInstalls::in($noVersion))->toThrow(PluginsAreUnreadable::class, '`would` in the plugins envelope has no readable `version`.')
+        ->and(static fn(): ThePlugins => PluginInstalls::in($recipeWithNoTitle))->toThrow(PluginsAreUnreadable::class, 'Row 1 of `recipes` in the plugins envelope has no readable `title`.')
+        ->and(static fn(): ThePlugins => PluginInstalls::in($recipesThatAreNotAList))->toThrow(PluginsAreUnreadable::class, '`would` in the plugins envelope has no readable `recipes`.');
+});
+
+it('reads a reading that names no agreement, sent as null or left out, as naming none', function (): void {
+    $sentAsNull = PluginInstalls::in(anInstallAnswerWith(static fn(array $data): array => [...$data, 'agreement' => null]));
+    $leftOut = PluginInstalls::in(anInstallAnswerWith(static function (array $data): array {
+        unset($data['agreement']);
+
+        return $data;
+    }));
+
+    expect($sentAsNull->agreement())->toBe('')
+        ->and($leftOut->agreement())->toBe('');
+});

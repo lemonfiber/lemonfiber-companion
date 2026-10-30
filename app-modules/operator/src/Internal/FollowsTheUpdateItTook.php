@@ -63,7 +63,7 @@ trait FollowsTheUpdateItTook
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->lastUpdate()->isWorking) {
+        if ($this->lastUpdate()->stands->isWorking()) {
             $this->lastUpdated = null;
         }
     }
@@ -71,7 +71,7 @@ trait FollowsTheUpdateItTook
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
-        return $this->lastUpdate()->isWorking;
+        return $this->lastUpdate()->stands->isWorking();
     }
 
     abstract public function stack(): Stack;
@@ -88,7 +88,7 @@ trait FollowsTheUpdateItTook
     {
         $taken = $this->taken;
 
-        if (! $taken instanceof TakingAnUpdate || ! $this->lastUpdate()->went->wasHeldByOtherWork()) {
+        if (! $taken instanceof TakingAnUpdate || ! $this->lastUpdate()->stands->went->wasHeldByOtherWork()) {
             return;
         }
 

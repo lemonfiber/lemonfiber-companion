@@ -2,13 +2,13 @@
      the longer one a tap away rather than leading. Where the glossary does not
      carry the word it is read as it came, with the way to ask the stack for
      that one word. --}}
-@if ($gloss->isExplained())
+@if ($gloss->short !== null)
     <x-operator::note>{{ __('stacks.words.in_place', ['word' => $gloss->word, 'short' => $gloss->short]) }}</x-operator::note>
-    @if ($gloss->goes !== '')
+    @if ($gloss->goes !== null)
         <x-operator::quiet-action :label="__('stacks.words.more', ['word' => $gloss->word])" :goes="$gloss->goes" />
     @endif
 @endif
-@if ($gloss->asks !== '')
+@if ($gloss->asks !== null)
     <x-operator::quiet-action :label="__('stacks.words.ask_in_place', ['word' => $gloss->word])" :goes="$gloss->asks" />
 @endif
 @if ($gloss->waits)

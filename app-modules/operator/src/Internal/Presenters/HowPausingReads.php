@@ -12,9 +12,10 @@ use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Operator\Internal\ViewModels\ADownloadClientAsShown;
 use Modules\Operator\Internal\ViewModels\HowPausingWent;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatPausingSays;
 use Modules\Operator\Internal\ViewModels\WhatPausingWouldShow;
+use Modules\Operator\Internal\ViewModels\WhatTheClientsSaid;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 use function sprintf;
 
@@ -69,79 +70,72 @@ final readonly class HowPausingReads
     public function offering(WhatPausingComesTo $offer): WhatPausingWouldShow
     {
         return new WhatPausingWouldShow(
-            went: HowTheReadingWent::itCameBack(),
-            namesWhat: true,
-            isWorking: false,
-            hasEnded: false,
-            clients: $this->clients($offer),
-            caution: $offer->caution(),
+            stands: WhereTheWorkStands::answered(),
+            said: new WhatTheClientsSaid($this->clients($offer), $offer->caution()),
         );
     }
 
     /** The stack is still reading the clients. */
     public function stillWorkingItOut(): WhatPausingWouldShow
     {
-        return $this->nothingOffered(HowTheReadingWent::itCameBack(), isWorking: true);
+        return new WhatPausingWouldShow(WhereTheWorkStands::running());
     }
 
     /** The stack has no outcome for the rehearsal any more. */
     public function offerEnded(): WhatPausingWouldShow
     {
-        return $this->nothingOffered(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return new WhatPausingWouldShow(WhereTheWorkStands::ended());
     }
 
     /** The rehearsal met something on the way. */
     public function notOffered(Obstacle $why): WhatPausingWouldShow
     {
-        return $this->nothingOffered(HowTheReadingWent::somethingStopped($why));
+        return new WhatPausingWouldShow(WhereTheWorkStands::met($why));
     }
 
     /** No session is held for the stack, so nothing was asked. */
     public function notAsked(): WhatPausingWouldShow
     {
-        return $this->nothingOffered(HowTheReadingWent::theSessionEnded());
+        return new WhatPausingWouldShow(WhereTheWorkStands::signedOut());
     }
 
     /** Opened on neither pausing nor resuming, so there is nothing to rehearse. */
     public function namesNothing(): WhatPausingWouldShow
     {
-        return $this->nothingOffered(HowTheReadingWent::itCameBack(), namesWhat: false);
+        return new WhatPausingWouldShow(WhereTheWorkStands::answered(), namesWhat: false);
     }
 
     /** The stack is still asking the clients. */
     public function running(): HowPausingWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), isWorking: true);
+        return new HowPausingWent(WhereTheWorkStands::running());
     }
 
     /** The stack has no outcome for the yes any more. */
     public function ended(): HowPausingWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return new HowPausingWent(WhereTheWorkStands::ended());
     }
 
     /** Asking after the yes met something on the way. */
     public function met(Obstacle $why): HowPausingWent
     {
-        return $this->following(HowTheReadingWent::somethingStopped($why));
+        return new HowPausingWent(WhereTheWorkStands::met($why));
     }
 
     /** No session is held for the stack. */
     public function signedOut(): HowPausingWent
     {
-        return $this->following(HowTheReadingWent::theSessionEnded());
+        return new HowPausingWent(WhereTheWorkStands::signedOut());
     }
 
     /** What every client read back after it was asked. */
     public function done(WhatPausingComesTo $report): HowPausingWent
     {
         return new HowPausingWent(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
+            said: new WhatTheClientsSaid($this->clients($report), $report->caution()),
             wasRehearsed: $report->wasRehearsed() === WhetherItWasRehearsed::Rehearsed,
-            clients: $this->clients($report),
-            caution: $report->caution(),
         );
     }
 
@@ -171,33 +165,5 @@ final readonly class HowPausingReads
     private function said(WhatADownloadClientSaid $said): string
     {
         return sprintf(self::WHAT_A_CLIENT_SAID, $said->value);
-    }
-
-    private function nothingOffered(
-        HowTheReadingWent $went,
-        bool $namesWhat = true,
-        bool $isWorking = false,
-        bool $hasEnded = false,
-    ): WhatPausingWouldShow {
-        return new WhatPausingWouldShow(
-            went: $went,
-            namesWhat: $namesWhat,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
-            clients: [],
-            caution: '',
-        );
-    }
-
-    private function following(HowTheReadingWent $went, bool $isWorking = false, bool $hasEnded = false): HowPausingWent
-    {
-        return new HowPausingWent(
-            went: $went,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
-            wasRehearsed: false,
-            clients: [],
-            caution: '',
-        );
     }
 }

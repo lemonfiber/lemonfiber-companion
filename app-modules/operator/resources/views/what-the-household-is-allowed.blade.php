@@ -57,16 +57,16 @@
         <native:outlined-text-input native:model="days" label="{{ __('stacks.allowance_change.limit.days') }}" supporting="{{ __('stacks.allowance_change.limit.days_are') }}" />
     </x-design::card>
 
-    @if ($this->howItIsGoing()->notAskable !== '')
+    @if ($this->howItIsGoing()->notAskable !== null)
         <x-design::notice>
             <x-design::strong>{{ __($this->howItIsGoing()->notAskable) }}</x-design::strong>
         </x-design::notice>
     @endif
 
-    @if ($this->howItIsGoing()->went->cameBack())
-        @if ($this->howItIsGoing()->isWorking)
+    @if ($this->howItIsGoing()->stands->went->cameBack())
+        @if ($this->howItIsGoing()->stands->isWorking())
             <x-design::standing :said="__('stacks.allowance_change.working')" tone="working" />
-        @elseif ($this->howItIsGoing()->hasEnded)
+        @elseif ($this->howItIsGoing()->stands->hasEnded())
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.allowance_change.no_outcome') }}</x-design::strong>
             </x-design::notice>
@@ -94,7 +94,7 @@
             @endif
         @endif
 
-        @unless ($this->howItIsGoing()->isWorking)
+        @unless ($this->howItIsGoing()->stands->isWorking())
             <x-operator::offered-action :label="__('stacks.allowance_change.rehearse')" tap="rehearse()" tone="tonal" :offer="$this->offered(ChoosingWhatIsAllowed::Allow)" />
         @endunless
 
@@ -102,7 +102,7 @@
     @else
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->howItIsGoing()->went"
+            :went="$this->howItIsGoing()->stands->went"
             :goes="$this->goes()"
         />
     @endif

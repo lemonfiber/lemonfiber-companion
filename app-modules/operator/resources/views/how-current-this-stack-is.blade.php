@@ -60,13 +60,13 @@
 
     {{-- Drawn and not usable while the reading drawn is one the phone kept:
          an update is agreed to only against a fresh one. --}}
-    <x-design::action :label="__('health.go_ahead')" tap="agree()" :disabled="$this->answer()->waitsForTheStack" />
-    @if ($this->answer()->waitsForTheStack)
-        <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+    <x-design::action :label="__('health.go_ahead')" tap="agree()" :disabled="$this->answer()->keptAgo !== null" />
+    @if ($this->answer()->keptAgo !== null)
+        <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->keptAgo->said, $this->answer()->keptAgo->count)]) }}</x-design::note>
     @endif
     <x-design::action :label="__('health.never_mind')" tap="neverMind()" tone="tonal" />
 @else
-    @if ($this->answer()->waitsForTheStack)
+    @if ($this->answer()->keptAgo !== null)
         {{-- What the phone kept, said for what it is: how long ago it was
              read, and above it what stopped the reading asked for now. --}}
         @if (! $this->answer()->askedNow->cameBack())
@@ -77,7 +77,7 @@
                 :goes="$this->goes()"
             />
         @endif
-        <x-design::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+        <x-design::note>{{ __('health.summary.as_of', ['ago' => trans_choice($this->answer()->keptAgo->said, $this->answer()->keptAgo->count)]) }}</x-design::note>
     @endif
 
     {{-- The answer, first: whether any service would move onto the version
@@ -124,9 +124,9 @@
             {{-- Drawn whether or not it can be used, so a kept reading never
                  hides what a fresh one would offer; beside it, until then,
                  why it waits and how old the reading is. --}}
-            <x-operator::offered-action :label="trans_choice('updates.take_them', $this->answer()->offer->changing()->count())" tap="wouldYouLike()" :offer="$this->offered($this->answer()->offer)" :disabled="$this->answer()->waitsForTheStack" />
-            @if ($this->answer()->waitsForTheStack)
-                <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
+            <x-operator::offered-action :label="trans_choice('updates.take_them', $this->answer()->offer->changing()->count())" tap="wouldYouLike()" :offer="$this->offered($this->answer()->offer)" :disabled="$this->answer()->keptAgo !== null" />
+            @if ($this->answer()->keptAgo !== null)
+                <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->keptAgo->said, $this->answer()->keptAgo->count)]) }}</x-design::note>
             @endif
         </x-design::card>
     @endif
@@ -157,7 +157,7 @@
                 @endif
             </x-design::note>
         </x-design::card>
-    @elseif ($this->answer()->notesWithheld->said !== '')
+    @elseif ($this->answer()->notesWithheld !== null)
         {{-- The record does not describe the running build: notes not written
              yet, or notes out of step with it. Said as that, the way the
              versions screen says it, rather than drawn as what it changed. --}}
@@ -208,41 +208,41 @@
          taken. --}}
     <x-design::heading>{{ __('updates.last_update') }}</x-design::heading>
 
-    @if (! $this->lastUpdate()->went->cameBack())
+    @if (! $this->lastUpdate()->stands->went->cameBack())
         {{-- Asking again is the column's own, below. Where the reading asked
              for now did not come back either, what stands in the way is said
              once, above, with its remedy, rather than twice. --}}
         @if ($this->answer()->askedNow->cameBack())
             <x-operator::what-stood-in-the-way
                 :settings-would-not-open="$this->theSettingsWouldNotOpen"
-                :went="$this->lastUpdate()->went"
+                :went="$this->lastUpdate()->stands->went"
                 ask-again=""
                 :goes="$this->goes()"
             />
         @endif
-        <x-operator::try-again :went="$this->lastUpdate()->went" tap="tryAgain()" />
-    @elseif ($this->lastUpdate()->isWorking)
+        <x-operator::try-again :went="$this->lastUpdate()->stands->went" tap="tryAgain()" />
+    @elseif ($this->lastUpdate()->stands->isWorking())
         <x-design::standing
             :said="__('updates.still_updating')"
             tone="working"
         />
-    @elseif ($this->lastUpdate()->hasEnded)
+    @elseif ($this->lastUpdate()->stands->hasEnded())
         {{-- Not a failure: it may well have worked, and the reading above
              is where to look. --}}
         <x-design::notice tone="unknown">
             <x-design::strong>{{ __('updates.no_outcome') }}</x-design::strong>
             <x-design::body>{{ __('updates.no_outcome_action') }}</x-design::body>
         </x-design::notice>
-    @elseif (! $this->lastUpdate()->wasTaken)
+    @elseif ($this->lastUpdate()->took === null)
         <x-design::body>{{ __('updates.nothing_applied') }}</x-design::body>
     @else
-        @if ($this->lastUpdate()->didNotArrive > 0)
+        @if ($this->lastUpdate()->took->didNotArrive > 0)
             <x-design::notice tone="trouble">
-                <x-design::strong>{{ trans_choice('updates.did_not_arrive', $this->lastUpdate()->didNotArrive) }}</x-design::strong>
+                <x-design::strong>{{ trans_choice('updates.did_not_arrive', $this->lastUpdate()->took->didNotArrive) }}</x-design::strong>
             </x-design::notice>
         @endif
 
-        @if ($this->lastUpdate()->anythingUnanswered)
+        @if ($this->lastUpdate()->took->anythingUnanswered)
             {{-- Apart from the line above, and not a louder version of it. A
                  service that would not come back up is something to fix; one
                  that started and never answered is something the stack does
@@ -250,9 +250,9 @@
             <x-design::body>{{ __('updates.unanswered') }}</x-design::body>
         @endif
 
-        <x-operator::moves-in-place :moves="$this->lastUpdate()->moved" />
+        <x-operator::moves-in-place :moves="$this->lastUpdate()->took->moved" />
 
-        @forelse ($this->lastUpdate()->applied as $took)
+        @forelse ($this->lastUpdate()->took->applied as $took)
             <x-design::card>
                 <x-design::strong>{{ $took->service }}</x-design::strong>
 

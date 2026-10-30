@@ -25,11 +25,8 @@ trait ChoosesNotifications
     /** Whether notifications are on, once read. */
     public ?Notifying $notifying = null;
 
-    /** Whether the reason for notifications is open, before the phone is asked. */
-    public bool $explainingNotifications = false;
-
-    /** Whether the phone has been told no, so asking again would show nothing. */
-    public bool $notificationsDeclined = false;
+    /** Where asking for notifications stands, while the reason for them is open. */
+    public ?WhereAskingForNotificationsStands $askingForNotifications = null;
 
     /** Whether this screen offers the switch: to the operator, and never in a member's words. */
     public function offersNotifications(): bool
@@ -63,16 +60,16 @@ trait ChoosesNotifications
             return;
         }
 
-        $this->notificationsDeclined = $this->notifications->standing() === Asked::Declined;
-        $this->explainingNotifications = true;
+        $this->askingForNotifications = $this->notifications->standing() === Asked::Declined
+            ? WhereAskingForNotificationsStands::Declined
+            : WhereAskingForNotificationsStands::Explained;
     }
 
     /** The operator read the reason and allowed notifications: the phone is asked now, and they are on where it said yes. */
     public function allowNotifications(): void
     {
-        $this->notificationsDeclined = ! $this->notifications->turnOn()->mayProceed();
+        $this->askingForNotifications = $this->notifications->turnOn()->mayProceed() ? null : WhereAskingForNotificationsStands::Declined;
         $this->notifying = $this->notifications->current();
-        $this->explainingNotifications = $this->notificationsDeclined;
     }
 
     /** Why the app wants notifications, said before the phone is asked. */
@@ -90,6 +87,6 @@ trait ChoosesNotifications
     /** The operator closed the reason without allowing anything. */
     public function notNow(): void
     {
-        $this->explainingNotifications = false;
+        $this->askingForNotifications = null;
     }
 }

@@ -25,16 +25,14 @@ namespace Modules\Household\Internal\ViewModels;
 final readonly class WhatOneOfTheirRequestsSays
 {
     /**
-     * @param string $title what they asked for, in the stack's words, or empty where nothing has named it yet
-     * @param string $untitled the key for the kind of thing it is, where nothing has named it yet, or empty
+     * @param string|ALineAsShown $title what they asked for, in the stack's words, or the line for the kind of thing it is where nothing has named it yet
      * @param string $standing where it stands, as a key in the member's words
      * @param string $reason why it was refused, or empty where it was not
      */
     public function __construct(
-        public string $title,
+        public string|ALineAsShown $title,
         public string $standing,
         public string $reason,
-        public string $untitled = '',
     ) {}
 
     /**

@@ -37,7 +37,7 @@ final readonly class HowUpkeepReads
     /** Where the stack said it stands, read on this frame's asking. */
     public function standing(Upkeep $upkeep): WhatTheUpkeepTurnedOutToBe
     {
-        return $this->read($upkeep, HowTheReadingWent::itCameBack(), AgoAsShown::live(), waits: false);
+        return $this->read($upkeep, HowTheReadingWent::itCameBack());
     }
 
     /**
@@ -49,7 +49,7 @@ final readonly class HowUpkeepReads
      */
     public function kept(Upkeep $upkeep, Instant $readAt, Instant $now, HowTheReadingWent $askedNow): WhatTheUpkeepTurnedOutToBe
     {
-        return $this->read($upkeep, $askedNow, AgoAsShown::from(HowLongAgo::since($readAt, $now), $readAt, $now), waits: true);
+        return $this->read($upkeep, $askedNow, AgoAsShown::from(HowLongAgo::since($readAt, $now), $readAt, $now));
     }
 
     /**
@@ -66,7 +66,7 @@ final readonly class HowUpkeepReads
         return $this->nothingRead(HowTheReadingWent::somethingStopped($why));
     }
 
-    private function read(Upkeep $upkeep, HowTheReadingWent $askedNow, AgoAsShown $ago, bool $waits): WhatTheUpkeepTurnedOutToBe
+    private function read(Upkeep $upkeep, HowTheReadingWent $askedNow, ?AgoAsShown $keptAgo = null): WhatTheUpkeepTurnedOutToBe
     {
         $history = [];
 
@@ -97,8 +97,7 @@ final readonly class HowUpkeepReads
             // on every pin.
             offer: $upkeep->hasSomethingToOffer() ? TakingAnUpdate::offeredBy($upkeep) : null,
             askedNow: $askedNow,
-            readAgo: $ago,
-            waitsForTheStack: $waits,
+            keptAgo: $keptAgo,
         );
     }
 
@@ -111,13 +110,11 @@ final readonly class HowUpkeepReads
             running: '',
             runningWasWithdrawn: false,
             inUse: null,
-            notesWithheld: new HowWithheldNotesRead()->of(HowTheNotesStand::Current),
+            notesWithheld: null,
             editsKept: [],
             history: [],
             offer: null,
             askedNow: $went,
-            readAgo: AgoAsShown::live(),
-            waitsForTheStack: false,
         );
     }
 }

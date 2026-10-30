@@ -13,6 +13,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\WhatARunCovers;
 use Modules\Operator\Internal\ViewModels\ADisturbanceAsShown;
+use Modules\Operator\Internal\ViewModels\ARunAsShown;
 use Modules\Operator\Internal\ViewModels\ARunOffered;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheChecksTurnedOutToBe;
@@ -51,7 +52,7 @@ final readonly class HowARunOfChecksReads
      */
     public function offered(?Category $reading): array
     {
-        $every = new ARunOffered(said: self::OFFER_EVERY, familySaid: '', covers: WhatARunCovers::everyCheck());
+        $every = new ARunOffered(said: self::OFFER_EVERY, familySaid: null, covers: WhatARunCovers::everyCheck());
 
         return $reading instanceof Category
             ? [$every, new ARunOffered(said: self::OFFER_FAMILY, familySaid: $reading->saidOnTheScreen(), covers: WhatARunCovers::theFamily($reading))]
@@ -61,7 +62,7 @@ final readonly class HowARunOfChecksReads
     /** A route that names no run this app knows, which offers nothing to run. */
     public function unknown(): TheChecksTurnedOutToBe
     {
-        return new TheChecksTurnedOutToBe(went: HowTheReadingWent::itCameBack(), titleSaid: self::UNKNOWN, familySaid: '', disturbing: [], found: [], runnable: false);
+        return new TheChecksTurnedOutToBe(HowTheReadingWent::itCameBack(), new ARunAsShown(self::UNKNOWN, null, [], runnable: false));
     }
 
     /** What the run would disturb, read from what the stack last reported. */
@@ -82,11 +83,15 @@ final readonly class HowARunOfChecksReads
             $disturbing = [...$disturbing, ...$shown->lines];
         }
 
-        return $this->drawn(HowTheReadingWent::itCameBack(), $covers, $disturbing, []);
+        return new TheChecksTurnedOutToBe(HowTheReadingWent::itCameBack(), $this->drawn($covers, $disturbing));
     }
 
-    /** What the run came back with, every finding it covers. */
-    public function after(Report $report, WhatARunCovers $covers): TheChecksTurnedOutToBe
+    /**
+     * What the run came back with, every finding it covers.
+     *
+     * @return list<WhatOneFindingSays>
+     */
+    public function after(Report $report, WhatARunCovers $covers): array
     {
         $run = new TheCauseBeforeItsSymptoms()->over(new WorstFirst()->over($this->covered($report->findings(), $covers)));
         $reads = new HowAFindingReads($run);
@@ -96,25 +101,19 @@ final readonly class HowARunOfChecksReads
             $found[] = $reads->of($finding);
         }
 
-        return $this->drawn(HowTheReadingWent::itCameBack(), $covers, [], $found);
+        return $found;
     }
 
     /** It did not answer, and this is what the operator met. */
     public function met(Obstacle $why): TheChecksTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::somethingStopped($why));
+        return new TheChecksTurnedOutToBe(HowTheReadingWent::somethingStopped($why));
     }
 
     /** This device no longer holds a session for that stack. */
     public function signedOut(): TheChecksTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::theSessionEnded());
-    }
-
-    /** Nothing to draw but what the reading came to. */
-    private function without(HowTheReadingWent $went): TheChecksTurnedOutToBe
-    {
-        return new TheChecksTurnedOutToBe(went: $went, titleSaid: '', familySaid: '', disturbing: [], found: [], runnable: false);
+        return new TheChecksTurnedOutToBe(HowTheReadingWent::theSessionEnded());
     }
 
     /** The findings this run covers, in the order they arrived. */
@@ -132,14 +131,15 @@ final readonly class HowARunOfChecksReads
     }
 
     /**
-     * @param list<ADisturbanceAsShown>                                       $disturbing
-     * @param list<WhatOneFindingSays>   $found
+     * The run the route names, with every check it runs that disturbs something.
+     *
+     * @param list<ADisturbanceAsShown> $disturbing
      */
-    private function drawn(HowTheReadingWent $went, WhatARunCovers $covers, array $disturbing, array $found): TheChecksTurnedOutToBe
+    private function drawn(WhatARunCovers $covers, array $disturbing): ARunAsShown
     {
         return $covers->either(
-            every: static fn(): TheChecksTurnedOutToBe => new TheChecksTurnedOutToBe(went: $went, titleSaid: self::EVERY, familySaid: '', disturbing: $disturbing, found: $found, runnable: true),
-            family: static fn(Category $family): TheChecksTurnedOutToBe => new TheChecksTurnedOutToBe(went: $went, titleSaid: self::FAMILY, familySaid: $family->saidOnTheScreen(), disturbing: $disturbing, found: $found, runnable: true),
+            every: static fn(): ARunAsShown => new ARunAsShown(self::EVERY, null, $disturbing, runnable: true),
+            family: static fn(Category $family): ARunAsShown => new ARunAsShown(self::FAMILY, $family->saidOnTheScreen(), $disturbing, runnable: true),
         );
     }
 }

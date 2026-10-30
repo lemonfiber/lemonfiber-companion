@@ -104,16 +104,16 @@
                 @endforelse
             </x-design::chips>
 
-            @if ($this->howTheSwitchIsGoing()->notAskable !== '')
+            @if ($this->howTheSwitchIsGoing()->notAskable !== null)
                 <x-design::notice>
                     <x-design::strong>{{ __($this->howTheSwitchIsGoing()->notAskable) }}</x-design::strong>
                 </x-design::notice>
             @endif
 
-            @if ($this->howTheSwitchIsGoing()->went->cameBack())
-                @if ($this->howTheSwitchIsGoing()->isWorking)
+            @if ($this->howTheSwitchIsGoing()->stands->went->cameBack())
+                @if ($this->howTheSwitchIsGoing()->stands->isWorking())
                     <x-design::standing :said="__('stacks.switch.working')" tone="working" />
-                @elseif ($this->howTheSwitchIsGoing()->hasEnded)
+                @elseif ($this->howTheSwitchIsGoing()->stands->hasEnded())
                     <x-design::notice tone="unknown">
                         <x-design::strong>{{ __('stacks.switch.no_outcome') }}</x-design::strong>
                     </x-design::notice>
@@ -156,15 +156,15 @@
                     @endif
                 @endif
 
-                @unless ($this->howTheSwitchIsGoing()->isWorking)
+                @unless ($this->howTheSwitchIsGoing()->stands->isWorking())
                     <x-operator::offered-action :label="__('stacks.switch.rehearse')" tap="rehearseTheSwitch()" tone="tonal" :offer="$this->offered(SwitchingTheForms::Switch)" />
                 @endunless
             @else
                 <x-design::notice tone="unknown">
                     <x-design::strong>{{ __('stacks.switch.unread') }}</x-design::strong>
-                    @if ($this->howTheSwitchIsGoing()->went->isSignedIn)
-                        <x-design::body>{{ __($this->howTheSwitchIsGoing()->went->met, $this->howTheSwitchIsGoing()->went->filling()) }}</x-design::body>
-                        <x-design::body>{{ __($this->howTheSwitchIsGoing()->went->remedy, $this->howTheSwitchIsGoing()->went->filling()) }}</x-design::body>
+                    @if ($this->howTheSwitchIsGoing()->stands->went->isSignedIn)
+                        <x-design::body>{{ __($this->howTheSwitchIsGoing()->stands->went->met, $this->howTheSwitchIsGoing()->stands->went->filling()) }}</x-design::body>
+                        <x-design::body>{{ __($this->howTheSwitchIsGoing()->stands->went->remedy, $this->howTheSwitchIsGoing()->stands->went->filling()) }}</x-design::body>
                     @else
                         <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
                     @endif

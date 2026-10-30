@@ -17,6 +17,7 @@ use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\WhatSettledIt;
 use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyItWasChosen;
+use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\Listed;
 use Modules\Operator\Internal\ViewModels\AClaimantAsShown;
 use Modules\Operator\Internal\ViewModels\ALinkAsShown;
@@ -122,13 +123,21 @@ final readonly class HowTheLinksRead
                 $whose === WhoSettledIt::Operator ? 'stacks.wiring.fills.chosen_operator' : 'stacks.wiring.fills.chosen_stack',
                 ['service' => $reached, 'over' => self::named($over)],
                 $claimants,
-                why: $why->saying(
-                    stated: static fn(string $said): WhatTheCatalogueNames => new WhatTheCatalogueNames($said),
-                    unstated: static fn(): WhatTheCatalogueNames => new WhatTheCatalogueNames(''),
-                )->said,
+                why: $this->whyItWasChosen($why),
             ),
             unfilled: fn(): ALinkAsShown => $this->settled($asks, $services, 'stacks.wiring.fills.unfilled', [], $claimants),
         );
+    }
+
+    /** Why a choice was made, in the stack's words, or null where it said nothing. */
+    private function whyItWasChosen(WhyItWasChosen $why): ?string
+    {
+        $named = $why->saying(
+            stated: static fn(string $said): WhatTheCatalogueNames => new WhatTheCatalogueNames($said),
+            unstated: static fn(): AsText => AsText::nothing(),
+        );
+
+        return $named instanceof WhatTheCatalogueNames ? $named->said : null;
     }
 
     /**
@@ -137,7 +146,7 @@ final readonly class HowTheLinksRead
      * @param array{by: string, capability: string} $asks        the service that asked and the capability, which fill the line that heads it
      * @param array<string, string>                 $settledWith
      */
-    private function settled(array $asks, Services $answering, string $settledSaid, array $settledWith, TheClaimants $claimants, ?Services $inTheContestsOrder = null, string $why = ''): ALinkAsShown
+    private function settled(array $asks, Services $answering, string $settledSaid, array $settledWith, TheClaimants $claimants, ?Services $inTheContestsOrder = null, ?string $why = null): ALinkAsShown
     {
         $shown = $inTheContestsOrder instanceof Services ? $this->contesting($inTheContestsOrder, $claimants) : $this->claiming($claimants);
 

@@ -138,6 +138,8 @@ it('plays a series\' first episode from its own Play, and the episode pressed fr
     $page->play();
     $page->playTheEpisode('e2');
     $page->playTheEpisode('not-an-episode-here');
+    $page->playTheEpisode('');
+    $page->playTheEpisode('  ');
 
     expect(array_map(static fn(string $line): string => (string) strrchr($line, '|'), whatThePlayerWasGiven($player)))
         ->toBe(['| Failure\'s Contagious', '| Work Drinks']);
@@ -231,7 +233,8 @@ it('plays nothing across Home where the core no longer plays the title, and open
     $home->play('a1');
 
     expect($player->opened())->toBe([])
-        ->and($home->playingSaid)->toBe('');
+        ->and($home->playingSaid)->toBe('')
+        ->and($home->getNavigationIntent()?->uri)->toBe($home->goes()->title(HoldingId::called('a1')));
 });
 
 it('says on Home what stood in the way of asking for the title', function (): void {
@@ -272,12 +275,27 @@ it('plays something part-way through on from where the member left off, as the c
         ->and($watching->partWayAskings())->toBe(2);
 });
 
-it('draws no row where the member was part-way through nothing', function (): void {
-    $home = aHomeToPressPlayOn(ATitleThatPlays::onTheShelf(), APlayerOnAHandset::working());
+it('plays on the one pressed of several the member was part-way through', function (): void {
+    $alsoPartWay = APartWay::of(Holding::of(HoldingId::called('b2'), 'Aliens', Medium::Film, WhenItCameOut::in(1986)), HowFarIn::at(600), 8_220, ATitleThatPlays::streamingAtTheDoor('b2'));
+    $player = APlayerOnAHandset::working();
+    $home = aHomeToPressPlayOn(ATitleThatPlays::onTheShelf()->answeringPartWay(PartWays::of(...[...alienPartWay(), $alsoPartWay])), $player);
+
+    $home->resume('b2');
+
+    expect(array_map(static fn(string $line): string => (string) strrchr($line, '|'), whatThePlayerWasGiven($player)))->toBe(['| Aliens']);
+});
+
+it('draws no row where the member was part-way through nothing, asked once a frame', function (): void {
+    $watching = ATitleThatPlays::onTheShelf();
+    $home = aHomeToPressPlayOn($watching, APlayerOnAHandset::working());
     $drawn = WhatTheDeviceWouldDraw::by($home);
 
     expect($home->whereTheyLeftOff()->cameBack)->toBeTrue()
         ->and($drawn->said())->not->toContain(__('household.shelf.carry_on'));
+
+    $home->whereTheyLeftOff();
+
+    expect($watching->partWayAskings())->toBe(1);
 });
 
 it('says what stood in the way where only what they were part-way through could not be asked for, and offers to ask again', function (): void {

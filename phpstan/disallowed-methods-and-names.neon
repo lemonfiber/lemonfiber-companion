@@ -159,6 +159,9 @@ parameters:
             message: "B1 — time arrives through the Clock port. Constructing a DateTimeImmutable with no argument reads the system clock, which is the hidden input B1 exists to remove. Take an Instant from Modules\\Kernel\\Api\\Clock; the device adapter is the only place allowed to build one from the platform (B1)."
             allowIn:
                 - app-modules/device/src/*
+                # A moment built from the seconds a Zone is handed, to ask the zone
+                # its offset then. It reads no clock.
+                - app-modules/kernel/src/Api/Zone.php
                 - tests/*
                 - app-modules/*/tests/*
                 - bridge/tests/*

@@ -212,6 +212,17 @@ it('forms that could not be read stop the screen on the next frame, and say noth
         ->and($third->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 });
 
+it('asks for forms that could not be read again when asked to', function (): void {
+    $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings())->whoseFormsMeet(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+    $screen = theThingScreen($supervising, 'library');
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $before = $supervising->formsAskings();
+    $screen->again();
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+
+    expect($supervising->formsAskings())->toBe($before + 1);
+});
+
 it('never asks for the forms where a service goes by the name', function (): void {
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull());
 
@@ -337,6 +348,15 @@ it('carries no restart warning on a stop of a service that is looping', function
 
 it('carries no restart warning on a restart of a service that is not looping', function (): void {
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()));
+
+    $screen->wouldYouLike(WhatToDoWithIt::Restart->value);
+
+    expect($screen->asking())->not->toBeNull()
+        ->and($screen->aRestartWouldNotHelp())->toBeFalse();
+});
+
+it('carries no restart warning on a restart of a whole form, which is no one service', function (): void {
+    $screen = everythingRead(theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()), 'library'));
 
     $screen->wouldYouLike(WhatToDoWithIt::Restart->value);
 
@@ -489,6 +509,7 @@ it('a standing thing is not polled', function (): void {
     $screen->answer();
     $screen->whileItSettles();
     $screen->whileItSettles();
+    $screen->answer();
 
     expect($supervising->askings())->toBe(1);
 });
@@ -715,6 +736,8 @@ it('a rehearsal is asked for once, however often the template reads it', functio
     $screen = everythingRead(theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()), 'library', rehearsing: $rehearsing));
     $screen->rehearsal();
     $screen->rehearsal();
+    $screen->render();
+    $screen->rehearsal();
 
     expect($rehearsing->asked())->toHaveCount(1);
 });
@@ -734,10 +757,7 @@ it('a rehearsal that could not be had says what stood in the way, and lets go of
     ))->rehearsal();
 
     expect($unanswered->rehearsal()?->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($unanswered->rehearsal()?->wouldStart)->toBe([])
-        ->and($unanswered->rehearsal()?->leftOut)->toBe([])
-        ->and($unanswered->rehearsal()?->estimatedMib)->toBeNull()
-        ->and($unanswered->rehearsal()?->unestimated)->toBe([])
+        ->and($unanswered->rehearsal()?->read)->toBeNull()
         ->and(WhatTheDeviceWouldDraw::by($unanswered)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($keychain->isHolding(theMachineTheseVerbsReach()->id()))->toBeFalse();
 });
@@ -746,10 +766,7 @@ it('a rehearsal on a device holding no session for the stack says so', function 
     $screen = everythingRead(theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()), 'library', signedIn: false));
 
     expect($screen->rehearsal()?->went->isSignedIn)->toBeFalse()
-        ->and($screen->rehearsal()?->wouldStart)->toBe([])
-        ->and($screen->rehearsal()?->leftOut)->toBe([])
-        ->and($screen->rehearsal()?->estimatedMib)->toBeNull()
-        ->and($screen->rehearsal()?->unestimated)->toBe([]);
+        ->and($screen->rehearsal()?->read)->toBeNull();
 });
 
 it('says a service that ended stopped with an error, and leaves its exit code for its logs', function (): void {

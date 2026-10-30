@@ -22,9 +22,11 @@
         },
         "lemonfiber": {
             "floors": {
-                "coverage": 100,
-                "mutation": 100
+                "coverage": 100
             }
+        },
+        "mutation-gate": {
+            "floor": 100
         },
         "nativephp": {
             "manifest": "nativephp.json"

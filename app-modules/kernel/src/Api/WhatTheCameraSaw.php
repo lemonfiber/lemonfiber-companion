@@ -30,33 +30,19 @@ use Closure;
  */
 final readonly class WhatTheCameraSaw
 {
-    /**
-     * What the payload is on the arm that has none.
-     *
-     * A named constant rather than a `''` written into {@see nothing()}, and
-     * rather than the `?string` this held before. Nullable was the obvious
-     * shape and it put a `?? ''` in {@see either()} for a state the two
-     * constructors cannot produce — unreachable code, which the mutation gate
-     * reports as exactly that: a line whose removal nothing notices.
-     *
-     * The reason is the discriminator, and it is the only one. A payload is
-     * what the camera read, and a refusal means it read nothing — so `''` is
-     * not a sentinel anybody tests against, it is the absence of characters.
-     */
-    private const string NOTHING_WAS_READ = '';
-
-    private function __construct(private string $payload, private ?WhyNothingWasScanned $why) {}
+    /** @param string|WhyNothingWasScanned $saw what the camera read, or why it read nothing */
+    private function __construct(private string|WhyNothingWasScanned $saw) {}
 
     /** The camera read something. Whether it is pairing material is not asked here. */
     public static function read(string $payload): self
     {
-        return new self($payload, null);
+        return new self($payload);
     }
 
     /** It did not, and this is which of the three ways. */
     public static function nothing(WhyNothingWasScanned $why): self
     {
-        return new self(self::NOTHING_WAS_READ, $why);
+        return new self($why);
     }
 
     /**
@@ -76,10 +62,6 @@ final readonly class WhatTheCameraSaw
      */
     public function either(Closure $read, Closure $nothing): object
     {
-        if ($this->why instanceof WhyNothingWasScanned) {
-            return $nothing($this->why);
-        }
-
-        return $read($this->payload);
+        return $this->saw instanceof WhyNothingWasScanned ? $nothing($this->saw) : $read($this->saw);
     }
 }

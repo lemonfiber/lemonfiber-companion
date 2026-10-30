@@ -38,16 +38,14 @@ trait ShowsWhatTheYesWillRun
     /** The handle of the rehearsal asked for the question on the screen, while it is still being worked out. */
     public ?string $rehearsalOfTheYes = null;
 
-    /** The command the verb being asked about will run, as the stack's rehearsal said it, or empty until it has. */
-    public string $willRun = '';
+    /** What the stack's rehearsal said of the command the verb being asked about will run, once it said anything. */
+    public ?TheLineTheYesRuns $willRun = null;
 
-    /** Whether the rehearsal asked for could not be read, which is said rather than drawn as no command. */
-    public bool $willRunUnread = false;
+    /** The name the stack gave what its rehearsal offers, which the yes carries back, once the rehearsal answered. */
+    public ?AnOffer $offered = null;
 
     abstract public function stack(): Stack;
 
-    /** The question on the screen takes the name the stack gave what its rehearsal offers. */
-    abstract protected function rehearsalOffered(AnOffer $offer): void;
 
     /** Ask the stack to rehearse the verb now being asked about, and take its answer if it is already there. */
     private function rehearseTheQuestion(AgreedTo $agreed): void
@@ -60,8 +58,9 @@ trait ShowsWhatTheYesWillRun
                 started: static fn(Job $job): AsText => AsText::of($job->shown()),
                 met: function (Obstacle $why) use ($stack): AsText {
                     $this->letGoOfTheSession($why, $stack);
+                    $this->willRun = TheLineTheYesRuns::unread();
 
-                    return $this->unread();
+                    return AsText::nothing();
                 },
             ),
             notHeld: static fn(): AsText => AsText::nothing(),
@@ -89,7 +88,7 @@ trait ShowsWhatTheYesWillRun
         // Held only while the stack is still working it out: a rehearsal that
         // finished, ended or could not be asked after has nothing left to read.
         $this->rehearsalOfTheYes = null;
-        $this->willRun = $became->either(
+        $said = $became->either(
             stillRunning: function () use ($asked): AsText {
                 $this->rehearsalOfTheYes = $asked;
 
@@ -98,48 +97,41 @@ trait ShowsWhatTheYesWillRun
             // A report that was not a rehearsal is not a line the yes will run:
             // whatever it ran has already run, and saying it before the yes would
             // be saying it about the wrong thing.
-            done: fn(WhatTheVerbCameTo $report): AsText => $report->was() === WhetherItWasRehearsed::Rehearsed
+            done: fn(WhatTheVerbCameTo $report): AsText|TheLineTheYesRuns => $report->was() === WhetherItWasRehearsed::Rehearsed
                 ? $this->rehearsed($report)->whetherItRan(
-                    ran: static fn(TheCommandLine $command): AsText => AsText::of($command->asTyped()),
+                    ran: static fn(TheCommandLine $command): TheLineTheYesRuns => TheLineTheYesRuns::command($command->asTyped()),
                     declined: static fn(): AsText => AsText::nothing(),
                 )
-                : $this->unread(),
-            ended: fn(): AsText => $this->unread(),
-            met: function (Obstacle $why) use ($stack): AsText {
+                : TheLineTheYesRuns::unread(),
+            ended: static fn(): TheLineTheYesRuns => TheLineTheYesRuns::unread(),
+            met: function (Obstacle $why) use ($stack): TheLineTheYesRuns {
                 $this->letGoOfTheSession($why, $stack);
 
-                return $this->unread();
+                return TheLineTheYesRuns::unread();
             },
             // A rehearsal answers no yes, so nothing it was given for can move;
             // a stack saying otherwise has said nothing readable.
-            moved: fn(): AsText => $this->unread(),
-        )->said;
+            moved: static fn(): TheLineTheYesRuns => TheLineTheYesRuns::unread(),
+        );
+        $this->willRun = $said instanceof TheLineTheYesRuns ? $said : null;
     }
 
     /**
-     * A rehearsal that answered: the question takes the name the stack gave what
-     * it offers, so the yes carries it back.
+     * A rehearsal that answered: the name the stack gave what it offers is
+     * kept, so the yes carries it back.
      */
     private function rehearsed(WhatTheVerbCameTo $report): WhatTheVerbCameTo
     {
-        $this->rehearsalOffered($report->offer());
+        $this->offered = $report->offer();
 
         return $report;
-    }
-
-    /** The rehearsal could not be read: no line, and that said. */
-    private function unread(): AsText
-    {
-        $this->willRunUnread = true;
-
-        return AsText::nothing();
     }
 
     /** Put away whatever was rehearsed for a question that is no longer on the screen. */
     private function forgetTheRehearsal(): void
     {
         $this->rehearsalOfTheYes = null;
-        $this->willRun = '';
-        $this->willRunUnread = false;
+        $this->willRun = null;
+        $this->offered = null;
     }
 }

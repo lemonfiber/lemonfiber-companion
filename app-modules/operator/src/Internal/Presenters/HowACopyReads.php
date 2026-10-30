@@ -14,7 +14,7 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Operator\Internal\ViewModels\APaceAsShown;
 use Modules\Operator\Internal\ViewModels\ASizeAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheCopyWent;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * What became of a copy asked for, as the template draws it.
@@ -28,31 +28,31 @@ final readonly class HowACopyReads
     /** Nothing was asked for from this screen, so there is nothing to follow. */
     public function notAsked(): HowTheCopyWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), wasAsked: false);
+        return $this->following(WhereTheWorkStands::notAsked());
     }
 
     /** This device no longer holds a session for the stack the copy was asked of. */
     public function signedOut(): HowTheCopyWent
     {
-        return $this->following(HowTheReadingWent::theSessionEnded());
+        return $this->following(WhereTheWorkStands::signedOut());
     }
 
     /** Asking for it, or asking after it, met this instead. */
     public function met(Obstacle $why): HowTheCopyWent
     {
-        return $this->following(HowTheReadingWent::somethingStopped($why));
+        return $this->following(WhereTheWorkStands::met($why));
     }
 
     /** The stack is still taking the copy asked for. */
     public function running(ScopeOfACopy $asked): HowTheCopyWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), isWorking: true, scope: $asked);
+        return $this->following(WhereTheWorkStands::running(), scope: $asked);
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
     public function ended(ScopeOfACopy $asked): HowTheCopyWent
     {
-        return $this->following(HowTheReadingWent::itCameBack(), hasEnded: true, scope: $asked);
+        return $this->following(WhereTheWorkStands::ended(), scope: $asked);
     }
 
     /** The stack's report of the copy, in the tense it allows. */
@@ -61,10 +61,7 @@ final readonly class HowACopyReads
         $rehearsed = $report->was() === WhetherItWasRehearsed::Rehearsed;
 
         return new HowTheCopyWent(
-            went: HowTheReadingWent::itCameBack(),
-            wasAsked: true,
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             wasRehearsed: $rehearsed,
             scope: new HowAScopeReads()->of($report->scope()),
             tookSaid: $rehearsed ? 'stacks.copy.would_copy' : 'stacks.copy.copied',
@@ -113,17 +110,11 @@ final readonly class HowACopyReads
 
     /** A state with no report to draw. */
     private function following(
-        HowTheReadingWent $went,
-        bool $wasAsked = true,
-        bool $isWorking = false,
-        bool $hasEnded = false,
+        WhereTheWorkStands $stands,
         ?ScopeOfACopy $scope = null,
     ): HowTheCopyWent {
         return new HowTheCopyWent(
-            went: $went,
-            wasAsked: $wasAsked,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
+            stands: $stands,
             wasRehearsed: false,
             scope: $scope instanceof ScopeOfACopy ? new HowAScopeReads()->of($scope) : null,
             tookSaid: null,

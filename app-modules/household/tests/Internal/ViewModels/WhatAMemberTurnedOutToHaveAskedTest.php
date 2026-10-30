@@ -16,19 +16,19 @@ use Modules\Kernel\Api\WhatTheHouseholdWasTold;
 it('fills its obstacle sentences with the versions that disagreed', function (): void {
     $met = Obstacle::versionsDisagree(TheVersionsSpoken::between(answered: 2, spoken: 1));
 
-    expect(WhatAMemberTurnedOutToHaveAsked::somethingStopped($met)->filling())->toBe(['answered' => 2, 'spoken' => 1]);
+    expect(WhatAMemberTurnedOutToHaveAsked::somethingStopped($met)->stopped?->filling())->toBe(['answered' => 2, 'spoken' => 1]);
 });
 
 it('fills in nothing where nothing stood in the way', function (): void {
-    expect(WhatAMemberTurnedOutToHaveAsked::these([])->filling())->toBe([]);
+    expect(WhatAMemberTurnedOutToHaveAsked::these([])->stopped)->toBeNull();
 });
 
 it('is put right in the app\'s settings only where the local network was refused', function (): void {
     expect([
-        WhatAMemberTurnedOutToHaveAsked::somethingStopped(Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted))->isPutRightInTheAppsSettings(),
-        WhatAMemberTurnedOutToHaveAsked::somethingStopped(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->isPutRightInTheAppsSettings(),
-        WhatAMemberTurnedOutToHaveAsked::these([])->isPutRightInTheAppsSettings(),
-    ])->toBe([true, false, false]);
+        WhatAMemberTurnedOutToHaveAsked::somethingStopped(Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted))->stopped?->isPutRightInTheAppsSettings(),
+        WhatAMemberTurnedOutToHaveAsked::somethingStopped(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->stopped?->isPutRightInTheAppsSettings(),
+        WhatAMemberTurnedOutToHaveAsked::these([])->stopped?->isPutRightInTheAppsSettings(),
+    ])->toBe([true, false, null]);
 });
 
 it('says what they asked for could not be read in the core\'s own words where it wrote any, and in this app\'s otherwise', function (): void {
@@ -37,7 +37,7 @@ it('says what they asked for could not be read in the core\'s own words where it
     $inItsWords = WhatAMemberTurnedOutToHaveAsked::somethingStopped($told);
     $inOurs = WhatAMemberTurnedOutToHaveAsked::somethingStopped(Obstacle::of(KindOfObstacle::MediaServerDidNotAnswer));
 
-    expect([$inItsWords->isInTheStacksWords(), $inItsWords->met, $inItsWords->remedy])->toBe([true, 'Your library is not answering right now.', 'Try again in a little while'])
-        ->and([$inOurs->isInTheStacksWords(), $inOurs->met])->toBe([false, KindOfObstacle::MediaServerDidNotAnswer->saidToTheHousehold()])
-        ->and(WhatAMemberTurnedOutToHaveAsked::theSessionEnded()->isInTheStacksWords())->toBeFalse();
+    expect([$inItsWords->stopped?->isInTheStacksWords(), $inItsWords->stopped?->met, $inItsWords->stopped?->remedy])->toBe([true, 'Your library is not answering right now.', 'Try again in a little while'])
+        ->and([$inOurs->stopped?->isInTheStacksWords(), $inOurs->stopped?->met])->toBe([false, KindOfObstacle::MediaServerDidNotAnswer->saidToTheHousehold()])
+        ->and(WhatAMemberTurnedOutToHaveAsked::theSessionEnded()->stopped)->toBeNull();
 });

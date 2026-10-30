@@ -52,8 +52,9 @@ principle applied three times rather than three cases:
 manifest. Derived rather than listed, which is what makes *every tree
 `phpunit.xml` measures is held to a bar* checkable instead of a list somebody
 maintains: `Tests\Support\MeasuredTree` reads the trees out of `phpunit.xml`
-and the floors out of whichever manifest is nearest each, and G7, G9 and
-`scripts/mutation.php` all read it.
+and the floors out of whichever manifest is nearest each, and G7 and G9 read
+it. nightworksio/mutation-gate reads the same trees out of `phpunit.xml` and
+each one's mutation floor out of the same manifest.
 
 The rule it replaces was *in the module's own manifest*, and two trees could
 not obey it. `bridge/src` is a path package: its namespace is
@@ -84,15 +85,14 @@ floors move only when somebody edits a manifest, so the total can never be
 tripped by code getting better. The slack between a floor and the real number is
 printed every run and argued down in review.
 
-**Mutation floors are declared in the same place and cannot be read the same
-way.** There is no machine-readable mutation report — Pest offers `--min`, which
-fails a run, and nothing that emits a score. So the floors are enforced by
-invocation: trees sharing a floor share one run, because a floor of 100 admits
-no offsetting between them, and a tree whose floor differs gets its own. The
-path list comes from the same derivation the coverage floors do rather than
-being written out, which is what stops it going stale the day a tree is added.
-The invocation is `composer test:mutation`, run locally: mutation testing is not
-run in CI.
+**Mutation floors are declared in the same manifests, under the key the gate
+reads.** `extra.mutation-gate.floor` holds a tree's floor, and
+`extra.mutation-gate.floorReason` says what holds a tree whose floor is 0.
+nightworksio/mutation-gate takes the trees from `phpunit.xml` and each floor
+from the manifest nearest the tree, the derivation the coverage floors use, so
+a tree added tomorrow is mutated and held the day it is measured. CI runs it
+through the gate's reusable workflow, and `mutation / verdict` is the check
+`main` requires; `composer test:mutation` runs it locally.
 
 **Why G6 is worth a rule of its own.** A committed `->only()` makes Pest run
 that one test and report green. Every other rule on this page stops holding, the

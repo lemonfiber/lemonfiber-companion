@@ -11,6 +11,7 @@ use function max;
 
 use Modules\Kernel\Api\AKeysName;
 use Modules\Kernel\Api\AKeyToMint;
+use Modules\Kernel\Api\APhoneKeysName;
 use Modules\Kernel\Api\Assembled;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\HowAKeyIsScoped;
@@ -109,7 +110,7 @@ trait MintsAKeyAsAClaim
     /** Whether making a key here registers this phone's key first, which asks for the password. */
     public function needsThePassword(): bool
     {
-        return $this->mintsFromThisPhone->thisPhonesName($this->stack()->id()) === '';
+        return ! $this->mintsFromThisPhone->thisPhonesKey($this->stack()->id()) instanceof APhoneKeysName;
     }
 
     /** The operator asked to make a key. */
@@ -176,7 +177,7 @@ trait MintsAKeyAsAClaim
         $this->minted = $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatMintingShows => $this->mintsFromThisPhone->mint($stack, $session, $key, $password, $this->clock->now(), $this->lettingGoIfRefused(
                 $stack,
-                static fn(Obstacle $why): WhatMintingShows => new WhatMintingShows(claim: null, refused: null, met: HowTheReadingWent::somethingStopped($why), said: ''),
+                static fn(Obstacle $why): WhatMintingShows => new WhatMintingShows(claim: null, refused: null, met: HowTheReadingWent::somethingStopped($why), said: null),
             )),
             notHeld: static fn(): WhatMintingShows => new WhatMintingShows(claim: null, refused: null, met: null, said: 'connection.session_has_ended'),
         );
@@ -203,10 +204,13 @@ trait MintsAKeyAsAClaim
     {
         $claim = $this->minted?->claim;
 
-        $left = $claim === null ? 0 : max(0, $claim->lapsesAt - $this->clock->now()->epochSeconds());
+        if ($claim === null) {
+            return 0;
+        }
+
         $minute = HowLongAgo::Minutes->seconds();
 
-        return intdiv($left, $minute) + ($left % $minute > 0 ? 1 : 0);
+        return max(0, intdiv($claim->lapsesAt - $this->clock->now()->epochSeconds() + $minute - 1, $minute));
     }
 
     /** The screen came back to the front: the link it showed is gone. */

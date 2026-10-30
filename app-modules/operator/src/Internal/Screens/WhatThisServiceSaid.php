@@ -87,14 +87,8 @@ final class WhatThisServiceSaid extends NativeComponent
      * `public`, which is what `NativeComponent`'s property syncing needs to
      * reach: since 4.5.1 it writes only public, non-static properties, and a
      * screen whose state it cannot write silently stops holding what it thinks
-     * it holds. It is also what fills the view's data, so the compiled
-     * template finds the variable rather than an undefined one.
-     *
-     * **`render()` hands it to the view by name.** `native:model` expands to a
-     * bare `$looking` in the compiled view, and the package fills the view's
-     * data from a component's *public* properties — so a protected one arrives
-     * undefined, which is a warning rather than a stop and draws an empty
-     * field.
+     * it holds. It is also how the field reaches the view: the package fills
+     * a view's data from a component's public properties.
      */
     public string $looking = '';
 
@@ -139,9 +133,7 @@ final class WhatThisServiceSaid extends NativeComponent
      */
     public function service(): ServiceId
     {
-        $named = $this->param('service');
-
-        return ServiceId::called(is_string($named) ? $named : '');
+        return ServiceId::called($this->around->aboutOn($this));
     }
 
     /**
@@ -247,7 +239,7 @@ final class WhatThisServiceSaid extends NativeComponent
 
     public function render(): View
     {
-        return view('operator::what-this-service-said', ['looking' => $this->looking]);
+        return view('operator::what-this-service-said');
     }
 
     /**

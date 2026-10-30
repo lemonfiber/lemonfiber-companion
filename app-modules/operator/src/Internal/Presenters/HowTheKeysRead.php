@@ -34,7 +34,7 @@ final readonly class HowTheKeysRead
     /** This device no longer holds a session for that stack. */
     public function signedOut(): TheKeysTurnedOutToBe
     {
-        return new TheKeysTurnedOutToBe(went: HowTheReadingWent::theSessionEnded(), keys: [], purposes: '');
+        return new TheKeysTurnedOutToBe(HowTheReadingWent::theSessionEnded());
     }
 
     /** The stack answered, and these are its keys, each dated against `$now`. */
@@ -50,15 +50,19 @@ final readonly class HowTheKeysRead
     }
 
     /** The stack refused a revoke, in its words: said beside the keys as they were shown. */
-    public function refused(ARefusalInItsWords $why, TheKeysTurnedOutToBe $shown): TheKeysTurnedOutToBe
+    public function refused(ARefusalInItsWords $why, ?TheKeysTurnedOutToBe $shown): TheKeysTurnedOutToBe
     {
-        return new TheKeysTurnedOutToBe(went: $shown->went, keys: $shown->keys, purposes: $shown->purposes, refused: new HowARefusalReads()->inItsWords($why));
+        $refused = new HowARefusalReads()->inItsWords($why);
+
+        return $shown instanceof TheKeysTurnedOutToBe
+            ? new TheKeysTurnedOutToBe(went: $shown->went, keys: $shown->keys, purposes: $shown->purposes, refused: $refused)
+            : new TheKeysTurnedOutToBe(went: HowTheReadingWent::itCameBack(), refused: $refused);
     }
 
     /** It did not, and this is what the operator met. */
     public function met(Obstacle $why): TheKeysTurnedOutToBe
     {
-        return new TheKeysTurnedOutToBe(went: HowTheReadingWent::somethingStopped($why), keys: [], purposes: '');
+        return new TheKeysTurnedOutToBe(HowTheReadingWent::somethingStopped($why));
     }
 
     /** One key, as the card that draws it. */
@@ -88,7 +92,7 @@ final readonly class HowTheKeysRead
     {
         return $moment->read(
             read: static fn(Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
-            unreadable: AgoAsShown::unsaid(...),
+            unreadable: AgoAsShown::saysNothing(...),
         );
     }
 }

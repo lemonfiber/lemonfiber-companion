@@ -33,6 +33,9 @@ it('reads the moment an RFC 3339 timestamp names, to the second', function (stri
     'the first of March after one' => ['2024-03-01T00:00:00Z', 1_709_251_200],
     'the last day of a year' => ['2025-12-31T23:59:59Z', 1_767_225_599],
     'the epoch itself' => ['1970-01-01T00:00:00Z', 0],
+    'the eve of the epoch, written from a clock behind it' => ['1969-12-31T23:00:00-02:00', 3_600],
+    'a century year, which has no leap day' => ['2100-03-01T00:00:00Z', 4_107_542_400],
+    'the last spring before a century' => ['1999-03-01T00:00:00Z', 920_246_400],
     'a leap second' => ['2016-12-31T23:59:60Z', 1_483_228_800],
 ]);
 
@@ -88,3 +91,10 @@ it('reads a moment written out as whole seconds since the epoch, and nothing els
     'too long for an integer' => ['1234567890123456789', null],
     'a timestamp' => ['2026-09-29T21:39:01Z', null],
 ]);
+
+it('reads no moment where nothing was written', function (): void {
+    expect(AMomentAsWritten::unwritten()->read(
+        read: static fn(Instant $moment): WhatTheTimestampNamed => new WhatTheTimestampNamed($moment->epochSeconds()),
+        unreadable: static fn(): WhatTheTimestampNamed => new WhatTheTimestampNamed(null),
+    )->seconds)->toBeNull();
+});

@@ -26,7 +26,7 @@ it('says a pair asks for an approval exactly where the stack gave it one, apart 
         $pairs = [...$pairs, ...$recipe->pairs];
     }
 
-    expect(array_map(static fn(AValueCarriedAsShown $pair): string => sprintf('%s:%s:%s:%s', $pair->value, $pair->asksForApproval ? 'asks' : 'stays', $pair->approval ?? 'no switch', $pair->approved ? 'approved' : 'not approved'), $pairs))
+    expect(array_map(static fn(AValueCarriedAsShown $pair): string => sprintf('%s:%s:%s:%s', $pair->value, $pair->asksForApproval ? 'asks' : 'stays', $pair->switch->place ?? 'no switch', $pair->switch?->on === true ? 'approved' : 'not approved'), $pairs))
         ->toBe(['api_key:stays:no switch:not approved', 'library:asks:0:approved']);
 });
 
@@ -38,6 +38,6 @@ it('offers no install switch for a pair only a demand recipe carries, while sayi
         $pairs = [...$pairs, ...$recipe->pairs];
     }
 
-    expect(array_map(static fn(AValueCarriedAsShown $pair): string => sprintf('%s:%s:%s', $pair->value, $pair->asksForApproval ? 'asks' : 'stays', $pair->approval ?? 'no switch'), $pairs))
+    expect(array_map(static fn(AValueCarriedAsShown $pair): string => sprintf('%s:%s:%s', $pair->value, $pair->asksForApproval ? 'asks' : 'stays', $pair->switch->place ?? 'no switch'), $pairs))
         ->toBe(['api_key:stays:no switch', 'library:asks:0', 'token:asks:no switch']);
 });

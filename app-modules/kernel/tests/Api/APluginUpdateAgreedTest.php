@@ -47,3 +47,8 @@ it('agrees to an update only against a reading of updating that plugin', functio
         ->and($agreed->agreement())->toBe(APluginAsItArrives::AGREEMENT)
         ->and($approved)->toBe([APluginAsItArrives::APPROVAL]);
 });
+
+it('refuses a yes to updating against a reading that names no agreement to quote', function (): void {
+    expect(static fn(): APluginUpdateAgreed => APluginUpdateAgreed::after(APluginAsItArrives::theUpdateReading(''), APluginAsItArrives::held(), PluginLines::none()))
+        ->toThrow(APluginActWasNotRehearsed::class);
+});

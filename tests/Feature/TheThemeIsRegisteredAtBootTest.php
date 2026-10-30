@@ -9,9 +9,9 @@ use Native\Mobile\Edge\TailwindParser;
 use Tests\Support\Edge;
 
 // Runs the composition root rather than reading it, so its mutants are judged
-// here: see `scripts/mutation.php`. It is also the canary a mutation shard runs
-// in place of the suite when it takes its coverage map from the tests job,
-// because it boots the application: see scripts/patch_pest_mutate_shared_coverage.php.
+// here, by its `holds:` group. It is also the canary a mutation shard runs in
+// place of the suite when it reads the planning job's coverage map, because it
+// boots the application: the gate's `pest.canary` group.
 pest()->group('holds:bootstrap/Composition', 'mutation-canary');
 
 // The one line that connects the design module to the renderer.

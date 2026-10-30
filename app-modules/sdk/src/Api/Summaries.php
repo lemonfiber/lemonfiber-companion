@@ -20,6 +20,7 @@ use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\WhatFollowedFromIt;
 use Modules\Sdk\Api\Fields\DashboardField;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\StoppedRows;
 use Modules\Sdk\Internal\TheDownloadsMoving;
 use Modules\Sdk\Internal\Wire;
@@ -166,15 +167,13 @@ final readonly class Summaries
         }
 
         $affected = [];
-        $position = 0;
 
-        foreach ($rows as $row) {
+        foreach (InTheOrderSent::rows($rows) as $position => $row) {
             if (! is_array($row)) {
                 throw SummaryIsUnreadable::inItem($position, DashboardField::Affected);
             }
 
             $affected[] = self::item($row, $position);
-            $position++;
         }
 
         return $affected;

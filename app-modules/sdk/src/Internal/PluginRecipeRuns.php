@@ -36,7 +36,7 @@ final readonly class PluginRecipeRuns
     public static function in(array $demand): ARecipeRun
     {
         $plugin = APluginId::called(Required::text($demand, WireField::Plugin, PluginsAreUnreadable::missing(WireField::Plugin)));
-        $recipe = PluginRecords::recipe(self::table($demand, PluginsField::Recipe), 0);
+        $recipe = PluginRecords::recipe(self::table($demand, PluginsField::Recipe), static fn(NamesAWireField $field): PluginsAreUnreadable => PluginsAreUnreadable::within(PluginsField::Recipe, $field));
 
         if (! array_key_exists(PluginsField::Ran->value, $demand) || $demand[PluginsField::Ran->value] === null) {
             return ARecipeRun::rehearsed($plugin, $recipe);
@@ -53,15 +53,13 @@ final readonly class PluginRecipeRuns
     private static function did(array $ran): WhatARecipeRunDid
     {
         $steps = [];
-        $at = 0;
 
-        foreach (Required::rows($ran, WireField::Steps, PluginsAreUnreadable::missing(WireField::Steps)) as $step) {
+        foreach (InTheOrderSent::rows(Required::rows($ran, WireField::Steps, PluginsAreUnreadable::missing(WireField::Steps))) as $at => $step) {
             if (! is_array($step)) {
                 throw PluginsAreUnreadable::entry(WireField::Steps, WireField::Step, $at);
             }
 
             $steps[] = self::step($step, $at);
-            $at++;
         }
 
         return WhatARecipeRunDid::reported(

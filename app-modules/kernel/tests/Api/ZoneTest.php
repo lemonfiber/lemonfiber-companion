@@ -43,3 +43,9 @@ it('reads a name that places nothing as UTC', function (): void {
 it('reads UTC as no offset at all', function (): void {
     expect(Zone::utc()->timeOfDayAt(Instant::atEpochSeconds(IN_SUMMER))->shown())->toBe('21:39:01');
 });
+
+it('reads a zone written as an offset, or as an abbreviation, at that offset', function (): void {
+    expect(Zone::named('+02:00')->timeOfDayAt(Instant::atEpochSeconds(IN_SUMMER))->shown())->toBe('23:39:01')
+        ->and(Zone::named('-04:30')->timeOfDayAt(Instant::atEpochSeconds(IN_SUMMER))->shown())->toBe('17:09:01')
+        ->and(Zone::named('CET')->timeOfDayAt(Instant::atEpochSeconds(IN_WINTER))->shown())->toBe('22:39:01');
+});

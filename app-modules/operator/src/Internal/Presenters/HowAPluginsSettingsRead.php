@@ -15,12 +15,14 @@ use Modules\Kernel\Api\TheServicesReadingIt;
 use Modules\Kernel\Api\TheServicesSettings;
 use Modules\Kernel\Api\TheSettingsRead;
 use Modules\Kernel\Api\WhoseASettingIs;
+use Modules\Operator\Internal\AsText;
+use Modules\Operator\Internal\ViewModels\ALineToSay;
 use Modules\Operator\Internal\ViewModels\APluginsSettingAsShown;
 use Modules\Operator\Internal\ViewModels\ASecretAsShown;
 use Modules\Operator\Internal\ViewModels\AServiceReadingItAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\ThePluginsSettingsAsRead;
 use Modules\Operator\Internal\ViewModels\WhatAPluginsSettingsShow;
-use Modules\Operator\Internal\ViewModels\WhoseItIsAsShown;
 
 /**
  * One plugin's settings and secrets, as the template draws them.
@@ -50,36 +52,27 @@ final readonly class HowAPluginsSettingsRead
         }
 
         return new WhatAPluginsSettingsShow(
-            went: HowTheReadingWent::itCameBack(),
-            isInstalled: true,
-            plugin: $plugin->shown(),
-            settings: $this->settings($plugin, $its->settings()),
-            secrets: $this->secrets($plugin, $its->secrets()),
-            grants: $grants,
+            HowTheReadingWent::itCameBack(),
+            new ThePluginsSettingsAsRead($plugin->shown(), $this->settings($plugin, $its->settings()), $this->secrets($plugin, $its->secrets()), $grants),
         );
     }
 
     /** The plugin is not among those installed. */
     public function notInstalled(): WhatAPluginsSettingsShow
     {
-        return new WhatAPluginsSettingsShow(went: HowTheReadingWent::itCameBack(), isInstalled: false, plugin: '', settings: [], secrets: [], grants: []);
+        return new WhatAPluginsSettingsShow(HowTheReadingWent::itCameBack());
     }
 
     /** This phone holds no session for the stack. */
     public function signedOut(): WhatAPluginsSettingsShow
     {
-        return $this->nothingFrom(HowTheReadingWent::theSessionEnded());
+        return new WhatAPluginsSettingsShow(HowTheReadingWent::theSessionEnded());
     }
 
     /** What stood in the way of reading either. */
     public function met(Obstacle $why): WhatAPluginsSettingsShow
     {
-        return $this->nothingFrom(HowTheReadingWent::somethingStopped($why));
-    }
-
-    private function nothingFrom(HowTheReadingWent $went): WhatAPluginsSettingsShow
-    {
-        return new WhatAPluginsSettingsShow(went: $went, isInstalled: true, plugin: '', settings: [], secrets: [], grants: []);
+        return new WhatAPluginsSettingsShow(HowTheReadingWent::somethingStopped($why));
     }
 
     /**
@@ -116,12 +109,9 @@ final readonly class HowAPluginsSettingsRead
 
     private function setting(APlugin $plugin, ASetting $setting): APluginsSettingAsShown
     {
-        $whose = $this->whose($plugin, $setting->whose());
-
         return new APluginsSettingAsShown(
             name: $setting->name(),
-            whoseSaid: $whose->said,
-            namespace: $whose->namespace,
+            whose: $this->whose($plugin, $setting->whose()),
             isSet: $setting->value()->isHeld(),
             value: $setting->value()->said(),
             readers: $this->readers($setting->readers()),
@@ -130,12 +120,9 @@ final readonly class HowAPluginsSettingsRead
 
     private function secret(APlugin $plugin, ASecret $secret): ASecretAsShown
     {
-        $whose = $this->whose($plugin, $secret->whose());
-
         return new ASecretAsShown(
             name: $secret->name(),
-            whoseSaid: $whose->said,
-            namespace: $whose->namespace,
+            whose: $this->whose($plugin, $secret->whose()),
             heldSaid: $secret->isHeld() ? self::HELD : self::UNSET,
             fromSaid: $secret->from()->saidOnTheScreen(),
             readers: $this->readers($secret->readers()),
@@ -169,11 +156,13 @@ final readonly class HowAPluginsSettingsRead
     }
 
     /** Whose it is, said only where it is not the plugin's own. */
-    private function whose(APlugin $plugin, WhoseASettingIs $whose): WhoseItIsAsShown
+    private function whose(APlugin $plugin, WhoseASettingIs $whose): ?ALineToSay
     {
-        return $whose->either(
-            core: static fn(): WhoseItIsAsShown => new WhoseItIsAsShown(said: self::THE_CORES, namespace: ''),
-            namespace: static fn(string $namespace): WhoseItIsAsShown => new WhoseItIsAsShown(said: $namespace === $plugin->id() ? '' : self::A_NAMESPACES, namespace: $namespace),
+        $said = $whose->either(
+            core: static fn(): ALineToSay => new ALineToSay(self::THE_CORES, []),
+            namespace: static fn(string $namespace): ALineToSay|AsText => $namespace === $plugin->id() ? AsText::nothing() : new ALineToSay(self::A_NAMESPACES, ['namespace' => $namespace]),
         );
+
+        return $said instanceof ALineToSay ? $said : null;
     }
 }

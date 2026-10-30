@@ -106,15 +106,15 @@ final readonly class HowTheReadingWent
     }
 
     /**
-     * The address a reach that met nothing was tried at, or nothing.
+     * The address a reach that met nothing was tried at, or null where nothing stood in the way.
      *
      * The one place an address is drawn: the operator's screen that says the
      * stack was not reached, where a stale or wrong address is often the whole
      * story. A member's screen has no such method to call.
      */
-    public function whereItWasTried(): string
+    public function whereItWasTried(): ?string
     {
-        return $this->why instanceof Obstacle ? $this->why->whereItWasTried() : '';
+        return $this->why?->whereItWasTried();
     }
 
     /**

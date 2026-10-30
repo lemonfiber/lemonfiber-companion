@@ -12,7 +12,7 @@ use Modules\Design\Api\WhoseTheme;
 use Native\Mobile\UI\Theme as WhatTheWidgetsPaintWith;
 
 // Runs the composition root rather than reading it, so its mutants are judged
-// here: see `scripts/mutation.php`.
+// here, by its `holds:` group.
 pest()->group('holds:bootstrap/Composition');
 
 // The widgets (filled buttons, list rows, fields, the top and bottom bars) take
@@ -39,6 +39,9 @@ it('paints the widgets in the member\'s theme once booted, the same in light and
         ->and(TheTheme::WIDGET_ROLES['secondary'])->toBe(ThemeToken::Line)
         ->and(TheTheme::WIDGET_ROLES['on-secondary'])->toBe(ThemeToken::Text)
         ->and(TheTheme::WIDGET_ROLES['outline'])->toBe(ThemeToken::Line)
+        ->and(TheTheme::WIDGET_ROLES['outline-variant'])->toBe(ThemeToken::Line)
+        ->and(TheTheme::WIDGET_ROLES['surface'])->toBe(ThemeToken::Surface)
+        ->and(TheTheme::WIDGET_ROLES['on-surface'])->toBe(ThemeToken::Text)
         ->and(TheTheme::WIDGET_ROLES)->not->toHaveKeys(['destructive', 'success', 'accent']);
 });
 

@@ -141,3 +141,12 @@ it('keeps nothing, finds nothing and forgets nothing where it cannot be reached'
             ->and($store->forgetEverything()->howMany())->toBe(0, $which);
     }
 });
+
+it('writes down in its own table when a stack\'s row was last kept', function (): void {
+    $database = AKeptDatabase::migrated();
+    $store = new NewsInTheDatabase($database);
+    $store->keep(aStackItsNewsIsKeptFor(), SealedPayload::of('first'), Shape::One, Instant::atEpochSeconds(WHEN_THE_NEWS_WAS_NOTED));
+    $store->keep(aStackItsNewsIsKeptFor(), SealedPayload::of('second'), Shape::One, Instant::atEpochSeconds(WHEN_THE_NEWS_WAS_NOTED + 60));
+
+    expect($database->table('news_kept')->where('stack_hash', aStackItsNewsIsKeptFor()->forTheStore())->value('noted_at'))->toBe(WHEN_THE_NEWS_WAS_NOTED + 60);
+});

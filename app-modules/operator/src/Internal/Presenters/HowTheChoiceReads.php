@@ -9,6 +9,7 @@ use Modules\Kernel\Api\AFillTurnedDown;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhyTheFillWasTurnedDown;
+use Modules\Operator\Internal\ViewModels\ALineToSay;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheChoiceAsShown;
 use Modules\Operator\Internal\ViewModels\TheChoiceTurnedOutToBe;
@@ -24,25 +25,21 @@ final readonly class HowTheChoiceReads
     /** No session is held for the stack, so nothing was asked. */
     public function signedOut(): TheChoiceTurnedOutToBe
     {
-        return new TheChoiceTurnedOutToBe(went: HowTheReadingWent::theSessionEnded(), reading: null, said: '', saidWith: [], meaning: '', refused: null);
+        return new TheChoiceTurnedOutToBe(HowTheReadingWent::theSessionEnded());
     }
 
     /** The stack worked the choice out, and nothing is written until the operator agrees. */
     public function read(AFill $fill): TheChoiceTurnedOutToBe
     {
-        return new TheChoiceTurnedOutToBe(went: HowTheReadingWent::itCameBack(), reading: $this->reading($fill), said: '', saidWith: [], meaning: '', refused: null);
+        return new TheChoiceTurnedOutToBe(HowTheReadingWent::itCameBack(), reading: $this->reading($fill));
     }
 
     /** The stack made the choice. */
     public function made(AFill $fill): TheChoiceTurnedOutToBe
     {
         return new TheChoiceTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            reading: null,
-            said: 'stacks.wiring.fills.made',
-            saidWith: ['service' => $fill->now()->named(), 'capability' => $fill->capability()->named()],
-            meaning: '',
-            refused: null,
+            HowTheReadingWent::itCameBack(),
+            said: new ALineToSay('stacks.wiring.fills.made', ['service' => $fill->now()->named(), 'capability' => $fill->capability()->named()]),
         );
     }
 
@@ -58,27 +55,25 @@ final readonly class HowTheChoiceReads
         $why = $down->why();
 
         return new TheChoiceTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
+            HowTheReadingWent::itCameBack(),
             reading: $stillShown instanceof AFill ? $this->reading($stillShown) : null,
-            said: $this->saying($why),
-            saidWith: [],
+            said: new ALineToSay($this->saying($why), []),
             // Already filling it is said whole by this app's words; every
             // other refusal keeps the stack's account of it beside them.
-            meaning: $why === WhyTheFillWasTurnedDown::AlreadyFills ? '' : $down->said()->meaning(),
-            refused: null,
+            meaning: $why === WhyTheFillWasTurnedDown::AlreadyFills ? null : $down->said()->meaning(),
         );
     }
 
     /** The stack refused for a reason of its own, in its words. */
     public function refused(ARefusalInItsWords $why): TheChoiceTurnedOutToBe
     {
-        return new TheChoiceTurnedOutToBe(went: HowTheReadingWent::itCameBack(), reading: null, said: '', saidWith: [], meaning: '', refused: new HowARefusalReads()->inItsWords($why));
+        return new TheChoiceTurnedOutToBe(HowTheReadingWent::itCameBack(), refused: new HowARefusalReads()->inItsWords($why));
     }
 
     /** It did not answer, and this is what the operator met. */
     public function met(Obstacle $why): TheChoiceTurnedOutToBe
     {
-        return new TheChoiceTurnedOutToBe(went: HowTheReadingWent::somethingStopped($why), reading: null, said: '', saidWith: [], meaning: '', refused: null);
+        return new TheChoiceTurnedOutToBe(HowTheReadingWent::somethingStopped($why));
     }
 
     /** The words for one refusal of a choice. */

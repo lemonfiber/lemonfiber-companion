@@ -7,15 +7,12 @@ namespace Modules\Sdk\Internal;
 use function array_key_exists;
 use function is_array;
 use function is_int;
-use function is_string;
 
 use Modules\Kernel\Api\ACheckThatDisturbs;
 use Modules\Kernel\Api\WhetherCheckingDisturbs;
 use Modules\Sdk\Api\Fields\DoctorField;
 use Modules\Sdk\Api\ReportIsUnreadable;
 use Modules\Sdk\Api\WireField;
-
-use function trim;
 
 /**
  * Reads one finding's `disruptive`: what checking it disturbs, the check a diagnosis runs it under, and its bound.
@@ -57,10 +54,6 @@ final readonly class TheCheckThatDisturbs
     /** @param array<mixed> $disruptive */
     private static function word(array $disruptive, DoctorField|WireField $field, int $position): string
     {
-        if (! array_key_exists($field->value, $disruptive) || ! is_string($disruptive[$field->value]) || trim($disruptive[$field->value]) === '') {
-            throw ReportIsUnreadable::inFinding($position, $field);
-        }
-
-        return $disruptive[$field->value];
+        return Required::text($disruptive, $field, ReportIsUnreadable::inFinding($position, $field));
     }
 }

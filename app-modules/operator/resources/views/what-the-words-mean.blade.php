@@ -40,13 +40,13 @@
     {{-- A word searched for that the held glossary has no entry for. Asking
          is the operator's, for that one word; the stack saying it has none
          either is its answer, and the word stands as it came. --}}
-    @if ($this->answer()->unexplained !== '')
+    @if ($this->answer()->unexplained !== null)
         <x-design::note>{{ __('stacks.words.unexplained', ['word' => $this->answer()->unexplained]) }}</x-design::note>
     @endif
-    @if ($this->answer()->askingMet !== '')
+    @if ($this->answer()->askingMet !== null)
         <x-design::body>{{ __($this->answer()->askingMet) }}</x-design::body>
     @endif
-    @if ($this->answer()->mayAsk !== '')
+    @if ($this->answer()->mayAsk !== null)
         <x-design::action :label="__('stacks.words.ask', ['word' => $this->answer()->mayAsk])" tap="askTheStack()" tone="tonal" />
     @endif
 

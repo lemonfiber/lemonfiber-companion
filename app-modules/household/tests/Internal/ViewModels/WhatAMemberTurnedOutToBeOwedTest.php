@@ -15,17 +15,17 @@ use Modules\Kernel\Api\TheVersionsSpoken;
 it('fills its obstacle sentences with the versions that disagreed', function (): void {
     $met = Obstacle::versionsDisagree(TheVersionsSpoken::between(answered: 2, spoken: 1));
 
-    expect(WhatAMemberTurnedOutToBeOwed::somethingStopped($met)->filling())->toBe(['answered' => 2, 'spoken' => 1]);
+    expect(WhatAMemberTurnedOutToBeOwed::somethingStopped($met)->stopped?->filling())->toBe(['answered' => 2, 'spoken' => 1]);
 });
 
 it('fills in nothing where nothing stood in the way', function (): void {
-    expect(WhatAMemberTurnedOutToBeOwed::these([])->filling())->toBe([]);
+    expect(WhatAMemberTurnedOutToBeOwed::these([])->stopped)->toBeNull();
 });
 
 it('is put right in the app\'s settings only where the local network was refused', function (): void {
     expect([
-        WhatAMemberTurnedOutToBeOwed::somethingStopped(Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted))->isPutRightInTheAppsSettings(),
-        WhatAMemberTurnedOutToBeOwed::somethingStopped(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->isPutRightInTheAppsSettings(),
-        WhatAMemberTurnedOutToBeOwed::these([])->isPutRightInTheAppsSettings(),
-    ])->toBe([true, false, false]);
+        WhatAMemberTurnedOutToBeOwed::somethingStopped(Obstacle::of(KindOfObstacle::LocalNetworkIsNotPermitted))->stopped?->isPutRightInTheAppsSettings(),
+        WhatAMemberTurnedOutToBeOwed::somethingStopped(Obstacle::of(KindOfObstacle::StackDidNotAnswer))->stopped?->isPutRightInTheAppsSettings(),
+        WhatAMemberTurnedOutToBeOwed::these([])->stopped?->isPutRightInTheAppsSettings(),
+    ])->toBe([true, false, null]);
 });

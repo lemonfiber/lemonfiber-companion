@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
-
 use InvalidArgumentException;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -60,6 +58,16 @@ final class CredentialsIsUnreadable extends InvalidArgumentException
         ));
     }
 
+    /** The one grant a revoke names was not readable, named by the field. */
+    public static function within(NamesAWireField $record, NamesAWireField $field): self
+    {
+        return new self(sprintf(
+            '`%s` in the credentials envelope has no readable `%s`. A grant that will not say which credential crosses, to whom or what for is refused rather than shown.',
+            $record->value,
+            $field->value,
+        ));
+    }
+
     /** A word from a closed set this app has no case for. */
     public static function word(NamesAWireField $field, string $said, int $position, string ...$accepted): self
     {
@@ -68,7 +76,7 @@ final class CredentialsIsUnreadable extends InvalidArgumentException
             $position,
             $field->value,
             $said,
-            implode(', ', array_map(static fn(string $word): string => sprintf('`%s`', $word), $accepted)),
+            TheWordsItReads::quoted(...$accepted),
         ));
     }
 }

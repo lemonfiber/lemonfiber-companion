@@ -18,10 +18,12 @@
     "extra": {
         "lemonfiber": {
             "floors": {
-                "coverage": 100,
-                "mutation": 100
+                "coverage": 100
             },
             "kind": "adapter"
+        },
+        "mutation-gate": {
+            "floor": 100
         }
     }
 }

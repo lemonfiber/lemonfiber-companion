@@ -25,6 +25,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AHouseholdThatAsked;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatIsKeptOfRequests;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -75,7 +76,7 @@ function nothingKeptOfTheGardenRoom(): KeepingWhatWasAsked
 }
 
 /** The garden room's Requests screen, over a household that answers as a test says, signed in or not. */
-function theGardenRoomsRequests(AHouseholdThatAsked $wanting, KeepingWhatWasAsked $kept, bool $signedIn = true): WhatTheHouseholdAsked
+function theGardenRoomsRequests(AHouseholdThatAsked $wanting, KeepingWhatWasAsked $kept, bool $signedIn = true, ?AStackThatSpeaksUp $hearing = null): WhatTheHouseholdAsked
 {
     $room = theStackWhoseRequestsWereKept();
     $keychain = AKeychainInMemory::working();
@@ -89,7 +90,7 @@ function theGardenRoomsRequests(AHouseholdThatAsked $wanting, KeepingWhatWasAske
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($room)),
         new AppsSettingsThatOpen(),
-        AroundThePhone::listening(),
+        AroundThePhone::listening($hearing),
         $kept,
     );
     $screen->setParams(['stack' => $room->id()->stored()]);
@@ -168,6 +169,16 @@ it('draws the kept reading with its age on the first frame, and the fresh one re
         ->and($wanting->askings())->toBe(1);
 });
 
+
+it('opens the stack\'s stream once it is shown', function (): void {
+    $hearing = AStackThatSpeaksUp::holdingOpen();
+    $screen = theGardenRoomsRequests(theGardenRoomAnswering(), nothingKeptOfTheGardenRoom(), hearing: $hearing);
+    $before = $hearing->asked();
+    $screen->mount();
+
+    expect([$before, $hearing->asked()])->toBe([0, 1]);
+});
+
 it('keeps the fresh reading for the next opening', function (): void {
     $kept = nothingKeptOfTheGardenRoom();
     $screen = theGardenRoomsRequests(theGardenRoomAnswering(), $kept);
@@ -199,7 +210,7 @@ it('keeps the kept reading, waiting, beside what stopped the stack answering, an
 
     expect($screen->turningDown())->toBeNull();
 
-    $screen->turningDown = new WhatOneRequestSays(1, 'Dune', 'Mira', 'household.waiting', wantsADecision: true, sizeSaid: 'household.size_unknown', sizeFigure: 0, sizeUnit: '');
+    $screen->turningDown = new WhatOneRequestSays(1, 'Dune', 'Mira', 'household.waiting', wantsADecision: true, sizeSaid: 'household.size_unknown', sizeFigure: 0, sizeUnit: '', refusedReason: '', refusedAt: '', untitled: '');
     $screen->because = 'We have it already';
     $writing = WhatTheDeviceWouldDraw::by($screen);
     $screen->decline();

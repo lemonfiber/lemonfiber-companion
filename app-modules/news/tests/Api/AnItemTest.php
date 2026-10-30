@@ -33,7 +33,7 @@ it('is the same item only where its kind, name and order all are', function (): 
 
 it('refuses an item named by nothing, and a request numbered below one', function (): void {
     expect(static fn(): AnItem => AnItem::anUpdate('  '))->toThrow(NotAnItem::class, 'update')
-        ->and(static fn(): AnItem => AnItem::aProblem('', Instant::atEpochSeconds(1)))->toThrow(NotAnItem::class, 'problem')
+        ->and(static fn(): AnItem => AnItem::aProblem(' ', Instant::atEpochSeconds(1)))->toThrow(NotAnItem::class, 'problem')
         ->and(static fn(): AnItem => AnItem::aRequest(0))->toThrow(NotAnItem::class, 'numbered 0');
 });
 

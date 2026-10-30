@@ -9,6 +9,8 @@ use function min;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Connection\Api\TurningNotificationsOn;
+use Modules\Kernel\Api\Hearing;
+use Modules\Kernel\Api\HowLongEachReadWaits;
 use Modules\Kernel\Api\Notifying;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
@@ -54,12 +56,17 @@ final readonly class HearingWhileAway
     /** How long one read waits at most for what a stack has not yet sent, in milliseconds. */
     public const int EACH_READ_WAITS_MS = 250;
 
+    /** What each stack is heard on, each read waiting {@see self::EACH_READ_WAITS_MS}. */
+    private Hearing $hearing;
+
     public function __construct(
         private WhatItListensWith $with,
         private SecureStorage $storage,
         private Stacks $stacks,
         private TurningNotificationsOn $notifications,
-    ) {}
+    ) {
+        $this->hearing = $with->hearing->eachReadWaitingAtMost(HowLongEachReadWaits::ofMilliseconds(self::EACH_READ_WAITS_MS));
+    }
 
     /** Hear each stack the operator is signed in to until it has said what it raised meanwhile, let go, and say how far it got. */
     public function hear(): HowTheWakeWent
@@ -81,7 +88,7 @@ final readonly class HearingWhileAway
             $left -= $asking;
         }
 
-        $this->with->hearing->letGo();
+        $this->hearing->letGo();
 
         return $pending->isEmpty() ? HowTheWakeWent::HeardEveryStack : HowTheWakeWent::GaveUpOnSome;
     }
@@ -121,7 +128,7 @@ final readonly class HearingWhileAway
     /** Ask one stack what it has sent, tell and keep it, and answer whether that ends this wake's listening to it. */
     private function heardOut(Stack $stack, Session $session): bool
     {
-        $heard = $this->with->kept($this->with->hearing->howItIs($stack, $session), $stack, $this->with->clock->now());
+        $heard = $this->with->kept($this->hearing->howItIs($stack, $session), $stack, $this->with->clock->now());
 
         return $heard->either(
             nothing: static fn(): HowFarItGot => HowFarItGot::StillSpeaking,

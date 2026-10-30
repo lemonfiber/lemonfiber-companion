@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Household\Internal\Screens\WhatYouAreOwed;
+use Modules\Household\Internal\ViewModels\ALineAsShown;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
@@ -128,8 +129,7 @@ it('hands over what the core wrote, word for word and in its order', function ()
         // Neither of the obstacle's two keys, because nothing was met. The
         // template branches on these, so a word here would put an error above
         // a reading that arrived perfectly well.
-        ->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->remedy)->toBe('')
+        ->and($screen->answer()->stopped)->toBeNull()
         ->and($screen->answer()->cameBack())->toBeTrue();
 });
 
@@ -152,8 +152,8 @@ it('draws a refusal as a refusal rather than as an empty reading', function (): 
 
     expect($refused->answer()->cameBack())->toBeFalse()
         ->and($refused->answer()->isSignedIn)->toBeTrue()
-        ->and($refused->answer()->met)->toBe('household.stood_in_the_way.not_for_this_account')
-        ->and($refused->answer()->remedy)->toBe('household.stood_in_the_way.not_for_this_account_action')
+        ->and($refused->answer()->stopped?->met)->toBe('household.stood_in_the_way.not_for_this_account')
+        ->and($refused->answer()->stopped?->remedy)->toBe('household.stood_in_the_way.not_for_this_account_action')
         ->and($nothing->answer()->cameBack())->toBeTrue()
         ->and($nothing->answer()->sentences)->toBe([]);
 });
@@ -165,8 +165,8 @@ it('says nothing about entitlement that the core did not say', function (): void
     // them would be a second wording able to drift from the one beside it.
     $screen = theOwedScreen(AMemberWhoIsOwed::met(Obstacle::of(KindOfObstacle::NotForThisAccount)));
 
-    expect($screen->answer()->met)->toEqual(KindOfObstacle::NotForThisAccount->saidToTheHousehold())
-        ->and($screen->answer()->remedy)->toEqual(KindOfObstacle::NotForThisAccount->remedyForTheHousehold());
+    expect($screen->answer()->stopped?->met)->toEqual(KindOfObstacle::NotForThisAccount->saidToTheHousehold())
+        ->and($screen->answer()->stopped?->remedy)->toEqual(KindOfObstacle::NotForThisAccount->remedyForTheHousehold());
 });
 
 it('a refused credential signs the device out and the session is let go of', function (): void {
@@ -181,8 +181,7 @@ it('a refused credential signs the device out and the session is let go of', fun
     // remedy for that is a screen rather than a sentence. A word in either
     // would put an error above a password field.
     expect($screen->answer()->isSignedIn)->toBeFalse()
-        ->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->remedy)->toBe('')
+        ->and($screen->answer()->stopped)->toBeNull()
         ->and(WhatTheKeychainStillHolds::forThe($keychain, theStackAMemberReadsFrom()->id())->held)->toBeFalse();
 });
 
@@ -203,8 +202,7 @@ it('asks for nothing where this device holds no session for the machine', functi
 
     expect($screen->answer()->isSignedIn)->toBeFalse()
         ->and($screen->answer()->sentences)->toBe([])
-        ->and($screen->answer()->met)->toBe('')
-        ->and($screen->answer()->remedy)->toBe('')
+        ->and($screen->answer()->stopped)->toBeNull()
         ->and($owing->askedAbout())->toBeNull();
 });
 
@@ -281,8 +279,7 @@ it('shows what they asked for, each with where it stands', function (): void {
         // Neither of the obstacle's two keys, because nothing was met. The
         // template branches on these, so a word in either would put an error
         // above a list that arrived perfectly well.
-        ->and($screen->requests()->met)->toBe('')
-        ->and($screen->requests()->remedy)->toBe('')
+        ->and($screen->requests()->stopped)->toBeNull()
         ->and($rows)->toHaveCount(2)
         ->and($rows[0]->title)->toBe('The Third Man')
         ->and($rows[0]->standing)->toBe('household.asked.waiting-for-approval')
@@ -301,8 +298,7 @@ it('shows a request no service has named yet in their words, by its kind, beside
     $rows = $screen->requests()->rows;
 
     expect($screen->requests()->cameBack())->toBeTrue()
-        ->and($rows[0]->title)->toBe('')
-        ->and($rows[0]->untitled)->toBe('household.not_yet_named.theirs.series')
+        ->and($rows[0]->title)->toEqual(new ALineAsShown('household.not_yet_named.theirs.series', []))
         ->and($rows[1]->title)->toBe('The Third Man')
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.not_yet_named.theirs.series'), 'The Third Man');
 });
@@ -331,7 +327,6 @@ it('carries no requester on a member\'s own row', function (): void {
             'title' => $row->title,
             'standing' => $row->standing,
             'reason' => $row->reason,
-            'untitled' => $row->untitled,
         ]);
     }
 });
@@ -345,10 +340,19 @@ it('draws a refusal as a refusal rather than as having asked for nothing', funct
 
     expect($refused->requests()->cameBack())->toBeFalse()
         ->and($refused->requests()->isSignedIn)->toBeTrue()
-        ->and($refused->requests()->met)->toBe('household.stood_in_the_way.not_for_this_account')
-        ->and($refused->requests()->remedy)->toBe('household.stood_in_the_way.not_for_this_account_action')
+        ->and($refused->requests()->stopped?->met)->toBe('household.stood_in_the_way.not_for_this_account')
+        ->and($refused->requests()->stopped?->remedy)->toBe('household.stood_in_the_way.not_for_this_account_action')
         ->and($nothing->requests()->cameBack())->toBeTrue()
         ->and($nothing->requests()->rows)->toBe([]);
+});
+
+it('says what stopped their requests being read beneath what they are owed, without saying again what to do about it', function (): void {
+    $screen = theOwedScreen(AMemberWhoIsOwed::owedWithTheirRequestsUnread(whatThisMemberIsTold(), Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($screen->answer()->cameBack())->toBeTrue()
+        ->and($said)->toContain(__(KindOfObstacle::StackDidNotAnswer->saidToTheHousehold()))
+        ->and($said)->not->toContain(__(KindOfObstacle::StackDidNotAnswer->remedyForTheHousehold()));
 });
 
 it('asks for no requests where this device holds no session for the machine', function (): void {
@@ -364,8 +368,7 @@ it('asks for no requests where this device holds no session for the machine', fu
         // signed out and the remedy for that is a screen rather than a
         // sentence, so a word in either would put an error above a password
         // field.
-        ->and($screen->requests()->met)->toBe('')
-        ->and($screen->requests()->remedy)->toBe('')
+        ->and($screen->requests()->stopped)->toBeNull()
         ->and($owing->askings())->toBe(0);
 });
 

@@ -13,8 +13,9 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheForgetting;
 use Modules\Kernel\Api\ThePlacesGone;
 use Modules\Operator\Internal\ViewModels\APlaceLeftAsShown;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheForgettingTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhatForgettingRemoved;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * Where removing everything lemonfiber keeps has got to, as the template draws it.
@@ -23,36 +24,29 @@ final readonly class HowForgettingReads
 {
     public function notAsked(): TheForgettingTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack());
+        return new TheForgettingTurnedOutToBe(WhereTheWorkStands::notAsked());
     }
 
     public function signedOut(): TheForgettingTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::theSessionEnded());
+        return new TheForgettingTurnedOutToBe(WhereTheWorkStands::signedOut());
     }
 
     public function running(): TheForgettingTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), isWorking: true);
+        return new TheForgettingTurnedOutToBe(WhereTheWorkStands::running());
     }
 
     public function ended(): TheForgettingTurnedOutToBe
     {
-        return $this->without(HowTheReadingWent::itCameBack(), hasEnded: true);
+        return new TheForgettingTurnedOutToBe(WhereTheWorkStands::ended());
     }
 
     public function refused(ARefusalInItsWords $why): TheForgettingTurnedOutToBe
     {
         return new TheForgettingTurnedOutToBe(
-            went: HowTheReadingWent::itCameBack(),
-            isWorking: false,
-            hasEnded: false,
+            stands: WhereTheWorkStands::answered(),
             refused: new HowARefusalReads()->inItsWords($why),
-            wouldGo: null,
-            theWayInWent: false,
-            isDone: false,
-            gone: [],
-            left: [],
         );
     }
 
@@ -60,25 +54,18 @@ final readonly class HowForgettingReads
     public function met(Obstacle $why, bool $agreed): TheForgettingTurnedOutToBe
     {
         return $agreed
-            ? $this->without(HowTheReadingWent::itCameBack(), theWayInWent: true)
-            : $this->without(HowTheReadingWent::somethingStopped($why));
+            ? new TheForgettingTurnedOutToBe(WhereTheWorkStands::answered(), theWayInWent: true)
+            : new TheForgettingTurnedOutToBe(WhereTheWorkStands::met($why));
     }
 
     /** What the stack answered: the list of what would go, or what went. */
     public function answered(TheForgetting $forgetting): TheForgettingTurnedOutToBe
     {
         return $forgetting->got()->either(
-            notAsked: fn(): TheForgettingTurnedOutToBe => $this->without(HowTheReadingWent::itCameBack()),
+            notAsked: static fn(): TheForgettingTurnedOutToBe => new TheForgettingTurnedOutToBe(WhereTheWorkStands::answered()),
             unconfirmed: static fn(): TheForgettingTurnedOutToBe => new TheForgettingTurnedOutToBe(
-                went: HowTheReadingWent::itCameBack(),
-                isWorking: false,
-                hasEnded: false,
-                refused: null,
+                stands: WhereTheWorkStands::answered(),
                 wouldGo: new HowWhatIsKeptReads()->this($forgetting->listed()),
-                theWayInWent: false,
-                isDone: false,
-                gone: [],
-                left: [],
             ),
             done: static function (ThePlacesGone $gone, APathLeft ...$left): TheForgettingTurnedOutToBe {
                 $places = [];
@@ -88,32 +75,13 @@ final readonly class HowForgettingReads
                 }
 
                 return new TheForgettingTurnedOutToBe(
-                    went: HowTheReadingWent::itCameBack(),
-                    isWorking: false,
-                    hasEnded: false,
-                    refused: null,
-                    wouldGo: null,
-                    theWayInWent: false,
-                    isDone: true,
-                    gone: $places,
-                    left: array_map(static fn(APathLeft $one): APlaceLeftAsShown => new APlaceLeftAsShown(where: $one->where(), why: $one->why()), array_values($left)),
+                    stands: WhereTheWorkStands::answered(),
+                    removed: new WhatForgettingRemoved(
+                        gone: $places,
+                        left: array_map(static fn(APathLeft $one): APlaceLeftAsShown => new APlaceLeftAsShown(where: $one->where(), why: $one->why()), array_values($left)),
+                    ),
                 );
             },
-        );
-    }
-
-    private function without(HowTheReadingWent $went, bool $isWorking = false, bool $hasEnded = false, bool $theWayInWent = false): TheForgettingTurnedOutToBe
-    {
-        return new TheForgettingTurnedOutToBe(
-            went: $went,
-            isWorking: $isWorking,
-            hasEnded: $hasEnded,
-            refused: null,
-            wouldGo: null,
-            theWayInWent: $theWayInWent,
-            isDone: false,
-            gone: [],
-            left: [],
         );
     }
 }

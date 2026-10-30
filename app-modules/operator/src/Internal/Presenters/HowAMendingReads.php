@@ -6,8 +6,9 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatWasMended;
-use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\WhatTheMendingCameTo;
 use Modules\Operator\Internal\ViewModels\WhatThisStackPutRight;
+use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
  * What carrying out an agreement produces, as the fields a template reads.
@@ -29,7 +30,7 @@ final readonly class HowAMendingReads
     /** The stack is still carrying out what it was agreed to. */
     public function stillWorkingItOut(): WhatThisStackPutRight
     {
-        return new WhatThisStackPutRight(went: HowTheReadingWent::itCameBack(), isWorking: true);
+        return new WhatThisStackPutRight(stands: WhereTheWorkStands::running());
     }
 
     /** It finished, and this is what became of each repair. */
@@ -46,16 +47,15 @@ final readonly class HowAMendingReads
         // by `WhatBecameOfIt` — and this screen cannot come to disagree with
         // another about whether a run did anything.
         return new WhatThisStackPutRight(
-            went: HowTheReadingWent::itCameBack(),
-            outcomes: $rows,
-            changed: $mended->changed(),
+            stands: WhereTheWorkStands::answered(),
+            came: new WhatTheMendingCameTo($rows, $mended->changed()),
         );
     }
 
     /** The stack has no outcome for that job any more. */
     public function ended(): WhatThisStackPutRight
     {
-        return new WhatThisStackPutRight(went: HowTheReadingWent::itCameBack(), hasEnded: true);
+        return new WhatThisStackPutRight(stands: WhereTheWorkStands::ended());
     }
 
     /** The machine could not be reached, and this is what the operator met. */
@@ -67,6 +67,6 @@ final readonly class HowAMendingReads
         // {@see HowTheReadingWent}'s to answer — the outcome is not the thing
         // that changed, this device's standing with the stack is, and that is
         // a fact about the reading rather than a flag on the mending.
-        return new WhatThisStackPutRight(went: HowTheReadingWent::somethingStopped($why));
+        return new WhatThisStackPutRight(stands: WhereTheWorkStands::met($why));
     }
 }

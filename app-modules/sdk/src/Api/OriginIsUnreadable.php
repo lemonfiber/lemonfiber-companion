@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use function array_map;
-use function implode;
+use function array_column;
 
 use InvalidArgumentException;
 use Modules\Kernel\Api\AnOriginIsUnnamed;
 use Modules\Kernel\Api\WhoSetIt;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -56,10 +56,7 @@ final class OriginIsUnreadable extends InvalidArgumentException
         return new self(sprintf(
             'It attributes this to `%s`, and this app reads %s. This answer came from a lemonfiber newer than this app.',
             $word,
-            implode(', ', array_map(
-                static fn(WhoSetIt $who): string => sprintf('`%s`', $who->value),
-                WhoSetIt::cases(),
-            )),
+            TheWordsItReads::quoted(...array_column(WhoSetIt::cases(), 'value')),
         ));
     }
 

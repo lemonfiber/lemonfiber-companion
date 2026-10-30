@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6893f1b6043cb00fe6cf7bd545c36d1b",
+    "content-hash": "0a5784a86706c170c5d3805b6fe94d12",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -3068,7 +3068,7 @@
             "dist": {
                 "type": "path",
                 "url": "bridge",
-                "reference": "9143919b0d648fe63d7c4b3b92a2086fbd184f30"
+                "reference": "1d42ecee35201f5fb4b70c11dc07ec47ecee28c4"
             },
             "require": {
                 "ext-sodium": "*",
@@ -3084,9 +3084,11 @@
                 },
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     }
+                },
+                "mutation-gate": {
+                    "floor": 100
                 },
                 "nativephp": {
                     "manifest": "nativephp.json"
@@ -3337,7 +3339,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/backups",
-                "reference": "3f21963dc257497a321cab5c3dca658b189025c4"
+                "reference": "07e6ef74f5012962e24ef75aae8da77d893e1421"
             },
             "require": {
                 "modules/kernel": "dev-main",
@@ -3347,10 +3349,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "capability"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -3374,7 +3378,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/codes",
-                "reference": "f8077a7fcfc4a8be0f6d6f3b955bcc5fc6807443"
+                "reference": "c0b6e0cd8dc0f2aef6a5586aac54b58deb891688"
             },
             "require": {
                 "bacon/bacon-qr-code": "^3.0",
@@ -3385,10 +3389,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "adapter"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -3412,7 +3418,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/connection",
-                "reference": "88b083bba1353f91d87a8807c0d8c9a51d1363c4"
+                "reference": "e067afd936b26a32d9526a37874594266b08a0fb"
             },
             "require": {
                 "illuminate/database": "^13.17",
@@ -3423,10 +3429,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "capability"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -3450,7 +3458,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/design",
-                "reference": "729ee1e1aa086d1ee162c61f4fa5077436c890f7"
+                "reference": "487a8f953b011e9559fa535f320ebdbb1d4447fd"
             },
             "require": {
                 "modules/kernel": "dev-main",
@@ -3461,11 +3469,13 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 0,
-                        "mutation-is-zero-because": "Five enums and a resolver; `Typeface` has cases and no methods. `ThemeToken::in()` and `safeAsText()`, `Radius::points()` and `TypeSize::points()` are read arm by arm: `ThemeTokenTest` and `ThemeTest` here, `BrandPaletteParityTest` and `BrandMeasuresParityTest` against the brand's own token file, and `TheAccentIsTheBrandsTest` and `TheThemeIsRegisteredAtBootTest` through the booted application. A mutant in a table arm is a value spelled differently, and those refuse one by name. `ATap` writes a value as the package parses it, and `ATapTest` reads every hostile value back through that parse."
+                        "coverage": 100
                     },
                     "kind": "design"
+                },
+                "mutation-gate": {
+                    "floor": 0,
+                    "floorReason": "Five enums and a resolver; `Typeface` has cases and no methods. `ThemeToken::in()` and `safeAsText()`, `Radius::points()` and `TypeSize::points()` are read arm by arm: `ThemeTokenTest` and `ThemeTest` here, `BrandPaletteParityTest` and `BrandMeasuresParityTest` against the brand's own token file, and `TheAccentIsTheBrandsTest` and `TheThemeIsRegisteredAtBootTest` through the booted application. A mutant in a table arm is a value spelled differently, and those refuse one by name. `ATap` writes a value as the package parses it, and `ATapTest` reads every hostile value back through that parse."
                 }
             },
             "autoload": {
@@ -3489,7 +3499,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/device",
-                "reference": "d3deb09d05b8bb85eace4c5188003b84f485d10e"
+                "reference": "488a498d6e71195b3793d1e87318e239fe8cc983"
             },
             "require": {
                 "ext-sodium": "*",
@@ -3501,11 +3511,13 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 0,
-                        "mutation-is-zero-because": "Adapters over the bridge and one word table. Each adapter is held by its port's contract, which runs the shipped adapter and its fake over one set of assertions. What a mutant would land in beyond that is the call itself, and a bridge call is measured against a scripted answer rather than against a device."
+                        "coverage": 100
                     },
                     "kind": "adapter"
+                },
+                "mutation-gate": {
+                    "floor": 0,
+                    "floorReason": "Adapters over the bridge and one word table. Each adapter is held by its port's contract, which runs the shipped adapter and its fake over one set of assertions. What a mutant would land in beyond that is the call itself, and a bridge call is measured against a scripted answer rather than against a device."
                 }
             },
             "autoload": {
@@ -3529,7 +3541,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/health",
-                "reference": "bd3cc18f810ac8a55df721c39c2137a79fab2257"
+                "reference": "50cf5975a03b67d93be2c74336a711ce6432de83"
             },
             "require": {
                 "illuminate/database": "^13.17",
@@ -3541,10 +3553,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "capability"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -3568,7 +3582,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/household",
-                "reference": "80a4ac5ecfc67c8c429e7a0c871800e7b57b0b8c"
+                "reference": "b59db0204d7b0429a5a5c2feafb73649805f9e2e"
             },
             "require": {
                 "modules/connection": "dev-main",
@@ -3589,10 +3603,12 @@
                 },
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "surface"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -3616,7 +3632,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/kernel",
-                "reference": "b57a8f552d71037d67b86e5b3df662295b6c947b"
+                "reference": "10b028f54317493868b937b48831b0531841dda1"
             },
             "require": {
                 "ext-mbstring": "*",
@@ -3626,10 +3642,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "kernel"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -3653,7 +3671,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/news",
-                "reference": "493f0487a788006fe93934dee90966c692f14a71"
+                "reference": "e8a86bf39830ad4c0c88757cea654b64b08eabd0"
             },
             "require": {
                 "illuminate/database": "^13.17",
@@ -3664,10 +3682,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "capability"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -3691,7 +3711,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/operator",
-                "reference": "1f32b55be13bb02ae4ad45a9ce4cd0cb74cf9d0e"
+                "reference": "c3105f07e806c5ffd67dd592c5aa326b243bd985"
             },
             "require": {
                 "modules/backups": "dev-main",
@@ -3717,10 +3737,12 @@
                 },
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "surface"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -3744,7 +3766,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/requests",
-                "reference": "f6e2a78391f6f98927a0edfe24df8adad25ac2fe"
+                "reference": "d4b1347df11ec934234459217bb79aaf19727ae6"
             },
             "require": {
                 "illuminate/database": "^13.17",
@@ -3756,10 +3778,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "capability"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -3783,7 +3807,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/sdk",
-                "reference": "a183e631eab7fcf8f0ee6743170c592dfb35ad55"
+                "reference": "8e4f1b54ac660912f1a5aacd15287502801ae408"
             },
             "require": {
                 "lemonfiber/sdk-php": "dev-main",
@@ -3795,10 +3819,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "adapter"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -3822,7 +3848,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/seal",
-                "reference": "24913a756e5d5f0a8f49bc77ff11997bb9e498ca"
+                "reference": "d6813e228087abd74b8b7259cdc399c656f126b2"
             },
             "require": {
                 "illuminate/encryption": "^13.17",
@@ -3833,10 +3859,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "adapter"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -3860,7 +3888,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/services",
-                "reference": "497986083b4bf975fb18cd48d03af7a06e5a1099"
+                "reference": "37399ae874ef764c1d487e94475234065af27bed"
             },
             "require": {
                 "illuminate/database": "^13.17",
@@ -3872,10 +3900,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "capability"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -3899,7 +3929,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/stacks",
-                "reference": "e3b72c8c8344e585342f359bacdd669d556fcdfc"
+                "reference": "64dfac675ceee799e7e6c067b0da7fdc1cdcd712"
             },
             "require": {
                 "modules/kernel": "dev-main",
@@ -3909,10 +3939,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "capability"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -3936,7 +3968,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/store-kit",
-                "reference": "373b0cff7c8055b53d5b0b794614aa1c34e9f195"
+                "reference": "69ad3e2cd3a339d92e8a291f2c99996939e3f66d"
             },
             "require": {
                 "illuminate/database": "^13.17",
@@ -3947,10 +3979,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "store-kit"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -3974,7 +4008,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/updates",
-                "reference": "1d0b69ba6e4f20086af9387e7c39246452d72d5b"
+                "reference": "f2fa5bb4040d472b9721177f61002b5ac07b2b0f"
             },
             "require": {
                 "illuminate/database": "^13.17",
@@ -3986,10 +4020,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "capability"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -4013,7 +4049,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/vault",
-                "reference": "d858a41ba17f10668569a60927c4f218e51b75c2"
+                "reference": "7689b95755818488f2f54af86f13e926679ccdbb"
             },
             "require": {
                 "ext-sodium": "*",
@@ -4025,11 +4061,13 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 0,
-                        "mutation-is-zero-because": "Five adapters over the device's store, each held by its port's contract — SecureStorage, Stacks, Standings, WorkLeftRunning and HoldsTheSealKeys — run against the shipped adapter and the fake over one set of assertions, and by `PlatformStacksTest`, `PlatformStandingsTest`, `PlatformWorkLeftRunningTest` and `PlatformSealKeysTest` over the keys each is kept under and the form it is written in."
+                        "coverage": 100
                     },
                     "kind": "adapter"
+                },
+                "mutation-gate": {
+                    "floor": 0,
+                    "floorReason": "Five adapters over the device's store, each held by its port's contract — SecureStorage, Stacks, Standings, WorkLeftRunning and HoldsTheSealKeys — run against the shipped adapter and the fake over one set of assertions, and by `PlatformStacksTest`, `PlatformStandingsTest`, `PlatformWorkLeftRunningTest` and `PlatformSealKeysTest` over the keys each is kept under and the form it is written in."
                 }
             },
             "autoload": {
@@ -4053,7 +4091,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/watching",
-                "reference": "1dd50c6d983fd7aaa89f4143a2a159eada0998f7"
+                "reference": "bba4451a9043dd4907144ed8937c70bee8910135"
             },
             "require": {
                 "illuminate/database": "^13.17",
@@ -4065,10 +4103,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "capability"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -4092,7 +4132,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/wayfinding",
-                "reference": "7c2bb7144c27accdb9d8674f92384b4994e9ea94"
+                "reference": "e05247cdd25b9294a0fe74734d1bbf715b28508e"
             },
             "require": {
                 "modules/connection": "dev-main",
@@ -4109,10 +4149,12 @@
             "extra": {
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 100
+                        "coverage": 100
                     },
                     "kind": "wayfinding"
+                },
+                "mutation-gate": {
+                    "floor": 100
                 }
             },
             "autoload": {
@@ -6289,16 +6331,16 @@
         },
         {
             "name": "symfony/console",
-            "version": "v8.1.7",
+            "version": "v8.1.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "29afb89f4e941f68a6e90f28e3f52ff1f6793a7d"
+                "reference": "630e74196a2635ec0f06c12bd3fb47cfedf85157"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/29afb89f4e941f68a6e90f28e3f52ff1f6793a7d",
-                "reference": "29afb89f4e941f68a6e90f28e3f52ff1f6793a7d",
+                "url": "https://api.github.com/repos/symfony/console/zipball/630e74196a2635ec0f06c12bd3fb47cfedf85157",
+                "reference": "630e74196a2635ec0f06c12bd3fb47cfedf85157",
                 "shasum": ""
             },
             "require": {
@@ -6365,7 +6407,7 @@
                 "terminal"
             ],
             "support": {
-                "source": "https://github.com/symfony/console/tree/v8.1.7"
+                "source": "https://github.com/symfony/console/tree/v8.1.9"
             },
             "funding": [
                 {
@@ -6385,7 +6427,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-09-13T10:55:57+00:00"
+            "time": "2026-10-12T19:11:16+00:00"
         },
         {
             "name": "symfony/css-selector",
@@ -7355,16 +7397,16 @@
         },
         {
             "name": "symfony/polyfill-intl-grapheme",
-            "version": "v1.41.0",
+            "version": "v1.43.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-intl-grapheme.git",
-                "reference": "bb899c1db0aa8127dc3afe8cda4a67eb24915f8d"
+                "reference": "5cac8f4db97208823aa353f59a01faad2da52c75"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/bb899c1db0aa8127dc3afe8cda4a67eb24915f8d",
-                "reference": "bb899c1db0aa8127dc3afe8cda4a67eb24915f8d",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-grapheme/zipball/5cac8f4db97208823aa353f59a01faad2da52c75",
+                "reference": "5cac8f4db97208823aa353f59a01faad2da52c75",
                 "shasum": ""
             },
             "require": {
@@ -7413,7 +7455,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.41.0"
+                "source": "https://github.com/symfony/polyfill-intl-grapheme/tree/v1.43.0"
             },
             "funding": [
                 {
@@ -7433,7 +7475,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-07-28T08:25:59+00:00"
+            "time": "2026-09-25T15:46:47+00:00"
         },
         {
             "name": "symfony/polyfill-intl-idn",
@@ -7609,16 +7651,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.43.3",
+            "version": "v1.43.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "122889ed24dc000165bcbfd77ec412f15cbdfc6a"
+                "reference": "4d5d331bf731e0aedbc6b2f5e61135b7b7996a72"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/122889ed24dc000165bcbfd77ec412f15cbdfc6a",
-                "reference": "122889ed24dc000165bcbfd77ec412f15cbdfc6a",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/4d5d331bf731e0aedbc6b2f5e61135b7b7996a72",
+                "reference": "4d5d331bf731e0aedbc6b2f5e61135b7b7996a72",
                 "shasum": ""
             },
             "require": {
@@ -7670,7 +7712,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.43.3"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.43.0"
             },
             "funding": [
                 {
@@ -7690,7 +7732,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-10-28T09:35:49+00:00"
+            "time": "2026-09-24T15:19:04+00:00"
         },
         {
             "name": "symfony/polyfill-php73",
@@ -7774,16 +7816,16 @@
         },
         {
             "name": "symfony/polyfill-php80",
-            "version": "v1.37.0",
+            "version": "v1.43.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php80.git",
-                "reference": "dfb55726c3a76ea3b6459fcfda1ec2d80a682411"
+                "reference": "9c6a5d6b01ca51d486c813e9a9c0ed55f208bb74"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/dfb55726c3a76ea3b6459fcfda1ec2d80a682411",
-                "reference": "dfb55726c3a76ea3b6459fcfda1ec2d80a682411",
+                "url": "https://api.github.com/repos/symfony/polyfill-php80/zipball/9c6a5d6b01ca51d486c813e9a9c0ed55f208bb74",
+                "reference": "9c6a5d6b01ca51d486c813e9a9c0ed55f208bb74",
                 "shasum": ""
             },
             "require": {
@@ -7834,7 +7876,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php80/tree/v1.37.0"
+                "source": "https://github.com/symfony/polyfill-php80/tree/v1.43.0"
             },
             "funding": [
                 {
@@ -7854,7 +7896,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-10T16:19:22+00:00"
+            "time": "2026-09-25T15:50:05+00:00"
         },
         {
             "name": "symfony/polyfill-php81",
@@ -8098,16 +8140,16 @@
         },
         {
             "name": "symfony/polyfill-php85",
-            "version": "v1.41.0",
+            "version": "v1.43.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php85.git",
-                "reference": "255fab485aaa1006ed411040c42aecd7b5302d7a"
+                "reference": "86a42cbcc07adc331481a5ab310a4024bfc227f6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php85/zipball/255fab485aaa1006ed411040c42aecd7b5302d7a",
-                "reference": "255fab485aaa1006ed411040c42aecd7b5302d7a",
+                "url": "https://api.github.com/repos/symfony/polyfill-php85/zipball/86a42cbcc07adc331481a5ab310a4024bfc227f6",
+                "reference": "86a42cbcc07adc331481a5ab310a4024bfc227f6",
                 "shasum": ""
             },
             "require": {
@@ -8154,7 +8196,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php85/tree/v1.41.0"
+                "source": "https://github.com/symfony/polyfill-php85/tree/v1.43.0"
             },
             "funding": [
                 {
@@ -8174,7 +8216,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-07-01T12:47:55+00:00"
+            "time": "2026-09-25T15:46:47+00:00"
         },
         {
             "name": "symfony/polyfill-php86",
@@ -8341,16 +8383,16 @@
         },
         {
             "name": "symfony/process",
-            "version": "v8.1.7",
+            "version": "v8.1.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
-                "reference": "10823b09358e690df4ff943e24e8492bb1019fc3"
+                "reference": "59a682fd049b2d4d37c444f5ac21b7d01b8c7189"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/process/zipball/10823b09358e690df4ff943e24e8492bb1019fc3",
-                "reference": "10823b09358e690df4ff943e24e8492bb1019fc3",
+                "url": "https://api.github.com/repos/symfony/process/zipball/59a682fd049b2d4d37c444f5ac21b7d01b8c7189",
+                "reference": "59a682fd049b2d4d37c444f5ac21b7d01b8c7189",
                 "shasum": ""
             },
             "require": {
@@ -8382,7 +8424,7 @@
             "description": "Executes commands in sub-processes",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/process/tree/v8.1.7"
+                "source": "https://github.com/symfony/process/tree/v8.1.9"
             },
             "funding": [
                 {
@@ -8402,7 +8444,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-09-02T12:40:29+00:00"
+            "time": "2026-10-08T16:57:43+00:00"
         },
         {
             "name": "symfony/routing",
@@ -8573,16 +8615,16 @@
         },
         {
             "name": "symfony/string",
-            "version": "v8.1.7",
+            "version": "v8.1.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "d950140b5f56f31901e5b7a0c04ffc3a3deb943c"
+                "reference": "07fb208558f941eab50ec49c89c2a6a93fb11f01"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/d950140b5f56f31901e5b7a0c04ffc3a3deb943c",
-                "reference": "d950140b5f56f31901e5b7a0c04ffc3a3deb943c",
+                "url": "https://api.github.com/repos/symfony/string/zipball/07fb208558f941eab50ec49c89c2a6a93fb11f01",
+                "reference": "07fb208558f941eab50ec49c89c2a6a93fb11f01",
                 "shasum": ""
             },
             "require": {
@@ -8639,7 +8681,7 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/v8.1.7"
+                "source": "https://github.com/symfony/string/tree/v8.1.9"
             },
             "funding": [
                 {
@@ -8659,7 +8701,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-09-11T14:51:16+00:00"
+            "time": "2026-10-03T15:16:03+00:00"
         },
         {
             "name": "symfony/translation",
@@ -9061,12 +9103,12 @@
             "version": "v5.7.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/vlucas/phpdotenv.git",
+                "url": "https://github.com/phpdotenv/phpdotenv.git",
                 "reference": "301c07936b16d88628b126b01d082ba153cf4c40"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vlucas/phpdotenv/zipball/301c07936b16d88628b126b01d082ba153cf4c40",
+                "url": "https://api.github.com/repos/phpdotenv/phpdotenv/zipball/301c07936b16d88628b126b01d082ba153cf4c40",
                 "reference": "301c07936b16d88628b126b01d082ba153cf4c40",
                 "shasum": ""
             },
@@ -9967,23 +10009,23 @@
         },
         {
             "name": "fidry/cpu-core-counter",
-            "version": "1.3.0",
+            "version": "1.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/theofidry/cpu-core-counter.git",
-                "reference": "db9508f7b1474469d9d3c53b86f817e344732678"
+                "reference": "d384a7d0d6e67aa497327260ca95023e92dc2032"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/theofidry/cpu-core-counter/zipball/db9508f7b1474469d9d3c53b86f817e344732678",
-                "reference": "db9508f7b1474469d9d3c53b86f817e344732678",
+                "url": "https://api.github.com/repos/theofidry/cpu-core-counter/zipball/d384a7d0d6e67aa497327260ca95023e92dc2032",
+                "reference": "d384a7d0d6e67aa497327260ca95023e92dc2032",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.2 || ^8.0"
             },
             "require-dev": {
-                "fidry/makefile": "^0.2.0",
+                "fidry/makefile": "^0.2.0 || ^1.1.2",
                 "fidry/php-cs-fixer-config": "^1.1.2",
                 "phpstan/extension-installer": "^1.2.0",
                 "phpstan/phpstan": "^2.0",
@@ -9991,6 +10033,7 @@
                 "phpstan/phpstan-phpunit": "^2.0",
                 "phpstan/phpstan-strict-rules": "^2.0",
                 "phpunit/phpunit": "^8.5.31 || ^9.5.26",
+                "symfony/polyfill-mbstring": "^1.33",
                 "webmozarts/strict-phpunit": "^7.5"
             },
             "type": "library",
@@ -10016,7 +10059,7 @@
             ],
             "support": {
                 "issues": "https://github.com/theofidry/cpu-core-counter/issues",
-                "source": "https://github.com/theofidry/cpu-core-counter/tree/1.3.0"
+                "source": "https://github.com/theofidry/cpu-core-counter/tree/1.4.1"
             },
             "funding": [
                 {
@@ -10024,7 +10067,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-08-14T07:29:31+00:00"
+            "time": "2026-09-29T22:11:39+00:00"
         },
         {
             "name": "filp/whoops",
@@ -10418,7 +10461,7 @@
             "dist": {
                 "type": "path",
                 "url": "app-modules/dx",
-                "reference": "3ff6d5a3f09eb7ab61dd060109f161fbb58977e4"
+                "reference": "a128df5a5b53418a082296ddbfeb051a0548d460"
             },
             "require": {
                 "lemonfiber/sdk-php": "dev-main",
@@ -10438,11 +10481,13 @@
                 },
                 "lemonfiber": {
                     "floors": {
-                        "coverage": 100,
-                        "mutation": 0,
-                        "mutation-is-zero-because": "A stand-in is a fake by construction, so a mutant here is measured against the thing being stood in for. What it builds is held instead: `EveryPayloadTheStandInBuildsFitsTheContractTest` runs every payload it generates against the SDK's own declared shapes, and `EveryStandInReplacesItsOwnPortTest` runs the registry — no two claiming one port, each claiming an interface, each answering with an instance of it."
+                        "coverage": 100
                     },
                     "kind": "stand-in"
+                },
+                "mutation-gate": {
+                    "floor": 0,
+                    "floorReason": "A stand-in is a fake by construction, so a mutant here is measured against the thing being stood in for. What it builds is held instead: `EveryPayloadTheStandInBuildsFitsTheContractTest` runs every payload it generates against the SDK's own declared shapes, and `EveryStandInReplacesItsOwnPortTest` runs the registry — no two claiming one port, each claiming an interface, each answering with an instance of it."
                 }
             },
             "autoload": {
@@ -10519,6 +10564,233 @@
                 }
             ],
             "time": "2026-08-11T10:17:44+00:00"
+        },
+        {
+            "name": "nightworksio/mutation-gate",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nightworksio/php-mutation-gate.git",
+                "reference": "53ef3c228ac2225e249d314a76288efc8b5a11fe"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nightworksio/php-mutation-gate/zipball/53ef3c228ac2225e249d314a76288efc8b5a11fe",
+                "reference": "53ef3c228ac2225e249d314a76288efc8b5a11fe",
+                "shasum": ""
+            },
+            "require": {
+                "composer-runtime-api": "^2.2",
+                "ext-json": "*",
+                "ext-libxml": "*",
+                "ext-mbstring": "*",
+                "ext-simplexml": "*",
+                "ext-sodium": "*",
+                "ext-tokenizer": "*",
+                "ext-zlib": "*",
+                "fidry/cpu-core-counter": "^1.3",
+                "nikic/php-parser": "^5.9",
+                "php": "^8.5",
+                "psr/clock": "^1.0",
+                "symfony/console": "^7.4 || ^8.0",
+                "symfony/http-client": "^7.4 || ^8.0",
+                "symfony/http-client-contracts": "^3.5",
+                "symfony/process": "^7.4.5 || ^8.0.5"
+            },
+            "conflict": {
+                "pestphp/pest": "<5.1",
+                "pestphp/pest-plugin-mutate": "<5.0.2 || >5.0.2",
+                "phpunit/phpunit": "<12.5.8 || >=12.5.21 <12.5.22 || >=13.1.5 <13.1.6",
+                "symfony/yaml": "<7.4.12 || >=8.0 <8.0.12"
+            },
+            "require-dev": {
+                "async-aws/core": "^1.30",
+                "async-aws/s3": "^3",
+                "codeception/codeception": "^5.3.6",
+                "colinodell/json5": "^3.0",
+                "ergebnis/composer-normalize": "^2.54",
+                "ergebnis/phpstan-rules": "^2.13",
+                "ext-dom": "*",
+                "ext-pcntl": "*",
+                "ext-pdo": "*",
+                "ext-posix": "*",
+                "infection/infection": "~0.35.0",
+                "infection/mutator": "^0.4.1",
+                "justinrainbow/json-schema": "^6.13",
+                "laravel/pint": "^1.32",
+                "nette/neon": "^3.4",
+                "pestphp/pest": "^5.2",
+                "pestphp/pest-plugin-mutate": "^5.0.2",
+                "phpspec/phpspec": "^8.2",
+                "phpstan/phpdoc-parser": "^2.3",
+                "phpstan/phpstan": "^2.2",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "phpunit/php-code-coverage": "^14.3",
+                "phpunit/phpunit": "^13.3",
+                "rector/rector": "^2.6",
+                "roave/security-advisories": "dev-latest",
+                "shipmonk/composer-dependency-analyser": "^1.8",
+                "shipmonk/phpstan-rules": "^4.4",
+                "spaze/phpstan-disallowed-calls": "^4.14",
+                "symfony/event-dispatcher": "^7.4 || ^8.0",
+                "symfony/event-dispatcher-contracts": "^3.5",
+                "symfony/finder": "^7.4 || ^8.0",
+                "symfony/yaml": "^7.4 || ^8.0",
+                "tomasvotruba/cognitive-complexity": "^1.2",
+                "tomasvotruba/type-coverage": "^2.3"
+            },
+            "suggest": {
+                "async-aws/s3": "To keep proofs in S3 or R2 (^3)",
+                "codeception/codeception": "To mutate with Codeception (^5.3.6), through the Codeception runner, which measures its coverage with phpunit/php-code-coverage (^14)",
+                "colinodell/json5": "To read a project's infection.json5, which the Infection adapter does (^3.0; infection/infection requires it)",
+                "ext-dom": "To read PHPUnit's XML coverage and JUnit log, which the Infection adapter does (infection/infection requires it)",
+                "ext-pcntl": "To fork each mutant from a warm worker under the PHPUnit runner, and under Pest with pest:patch, which run each in a fresh process without it",
+                "ext-pdo": "To start each mutant of a Laravel suite under Pest's warm workers on the test database a first child migrated, where every child migrates again without it",
+                "ext-posix": "To fork each mutant from a warm worker under Pest with pest:patch, which runs each in a fresh process without it",
+                "infection/infection": "To mutate with Infection (~0.35.0) and PHPUnit 12 or 13, through the Infection adapter",
+                "nette/neon": "To read a mutation-gate.neon config",
+                "pestphp/pest": "To mutate with Pest (^5.1), through the Pest adapter and its plugin",
+                "phpspec/phpspec": "To mutate with PhpSpec (^8.2), through the PhpSpec runner, which measures its coverage with phpunit/php-code-coverage (^14)",
+                "symfony/yaml": "To read a mutation-gate.yaml config"
+            },
+            "default-branch": true,
+            "bin": [
+                "bin/mutation-gate"
+            ],
+            "type": "library",
+            "extra": {
+                "mutation-gate": {
+                    "extensions": [
+                        "NightWorksIO\\MutationGate\\Cli\\FirstParty",
+                        "NightWorksIO\\MutationGateDefault\\DefaultExtension",
+                        "NightWorksIO\\MutationGateLaravel\\LaravelExtension",
+                        "NightWorksIO\\MutationGateSymfony\\SymfonyExtension",
+                        "NightWorksIO\\MutationGateSecurity\\SecurityExtension"
+                    ]
+                },
+                "pest": {
+                    "plugins": [
+                        "NightWorksIO\\MutationGate\\Cli\\PestPlugin"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "NightWorksIO\\MutationGateDefault\\": "plugins/default/src/",
+                    "NightWorksIO\\MutationGateLaravel\\": "plugins/laravel/src/",
+                    "NightWorksIO\\MutationGateSecurity\\": "plugins/security/src/",
+                    "NightWorksIO\\MutationGateSymfony\\": "plugins/symfony/src/",
+                    "NightWorksIO\\MutationGate\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "NightWorksIO\\MutationGateDefault\\Tests\\": "plugins/default/tests/",
+                    "NightWorksIO\\MutationGateLaravel\\Tests\\": "plugins/laravel/tests/",
+                    "NightWorksIO\\MutationGateSecurity\\Tests\\": "plugins/security/tests/",
+                    "NightWorksIO\\MutationGateSymfony\\Tests\\": "plugins/symfony/tests/",
+                    "NightWorksIO\\MutationGate\\PHPStan\\": "phpstan/",
+                    "NightWorksIO\\MutationGate\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "post-install-cmd": [
+                    "git config core.hooksPath .githooks",
+                    "@php bin/mutation-gate pest:patch"
+                ],
+                "post-update-cmd": [
+                    "git config core.hooksPath .githooks",
+                    "@php bin/mutation-gate pest:patch"
+                ],
+                "analyse": [
+                    "phpstan analyse --memory-limit=1G"
+                ],
+                "bench": [
+                    "bash scripts/bench.sh"
+                ],
+                "bot:rules": [
+                    "@php scripts/bot-rules/pint.php > .github/bot/rules/pint.json",
+                    "@php scripts/bot-rules/rector.php > .github/bot/rules/rector.json"
+                ],
+                "ci": [
+                    "@composer validate --strict",
+                    "@composer normalize --dry-run",
+                    "@composer audit --locked",
+                    "@lint",
+                    "@analyse",
+                    "@refactor",
+                    "@deps",
+                    "@test:guards",
+                    "@test:report"
+                ],
+                "deps": [
+                    "composer-dependency-analyser"
+                ],
+                "lint": [
+                    "pint --test --parallel"
+                ],
+                "lint:fix": [
+                    "pint --parallel"
+                ],
+                "phar": [
+                    "bash scripts/phar.sh"
+                ],
+                "refactor": [
+                    "rector process --dry-run"
+                ],
+                "refactor:fix": [
+                    "rector process"
+                ],
+                "report:schema": [
+                    "@php scripts/report-schema.php"
+                ],
+                "test": [
+                    "pest --parallel --exclude-testsuite=Guards"
+                ],
+                "test:coverage": [
+                    "sh scripts/coverage.sh"
+                ],
+                "test:guards": [
+                    "pest --testsuite=Guards"
+                ],
+                "test:guards:ci": [
+                    "pest --testsuite=Guards --group=ci-only"
+                ],
+                "test:network": [
+                    "pest --group=network"
+                ],
+                "test:report": [
+                    "sh scripts/coverage.sh --coverage-clover=coverage/clover.xml --log-junit=coverage/junit.xml"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "NightWorksIO",
+                    "homepage": "https://nightworks.io"
+                },
+                {
+                    "name": "Wessel Verheij",
+                    "email": "info@nightworks.io"
+                }
+            ],
+            "description": "Mutation testing as a CI gate: floors per tree that only rise, sharded runs, proofs that skip what is already proved, for Pest and Infection.",
+            "homepage": "https://github.com/nightworksio/php-mutation-gate",
+            "keywords": [
+                "ci",
+                "infection",
+                "mutation testing",
+                "pest",
+                "quality gate"
+            ],
+            "support": {
+                "issues": "https://github.com/nightworksio/php-mutation-gate/issues",
+                "source": "https://github.com/nightworksio/php-mutation-gate"
+            },
+            "time": "2026-10-30T08:07:36+00:00"
         },
         {
             "name": "nunomaduro/collision",
@@ -11605,16 +11877,16 @@
         },
         {
             "name": "phpunit/php-code-coverage",
-            "version": "14.3.5",
+            "version": "14.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "96af7aaa1e15561a67b2fa5b98906b063ebec9c2"
+                "reference": "f1e54f06b6b4cea73cd6104ba3c0cfa0efa6d73f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/96af7aaa1e15561a67b2fa5b98906b063ebec9c2",
-                "reference": "96af7aaa1e15561a67b2fa5b98906b063ebec9c2",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/f1e54f06b6b4cea73cd6104ba3c0cfa0efa6d73f",
+                "reference": "f1e54f06b6b4cea73cd6104ba3c0cfa0efa6d73f",
                 "shasum": ""
             },
             "require": {
@@ -11624,16 +11896,16 @@
                 "ext-xmlwriter": "*",
                 "nikic/php-parser": "^5.9.0",
                 "php": ">=8.4",
-                "phpunit/php-text-template": "^6.0",
+                "phpunit/php-text-template": "^6.0.1",
                 "sebastian/complexity": "^6.0",
-                "sebastian/environment": "^9.3.2",
+                "sebastian/environment": "^9.3.3",
                 "sebastian/git-state": "^1.0",
                 "sebastian/lines-of-code": "^5.0.2",
                 "sebastian/version": "^7.0",
                 "theseer/tokenizer": "^2.0.1"
             },
             "require-dev": {
-                "phpunit/phpunit": "^13.3.4"
+                "phpunit/phpunit": "^13.3.6"
             },
             "suggest": {
                 "ext-pcov": "PHP extension that provides line coverage",
@@ -11642,7 +11914,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "14.3.x-dev"
+                    "dev-main": "14.4.x-dev"
                 }
             },
             "autoload": {
@@ -11671,7 +11943,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/php-code-coverage/issues",
                 "security": "https://github.com/sebastianbergmann/php-code-coverage/security/policy",
-                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/14.3.5"
+                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/14.4.1"
             },
             "funding": [
                 {
@@ -11691,7 +11963,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-09-25T08:28:49+00:00"
+            "time": "2026-10-03T14:05:38+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -11844,23 +12116,23 @@
         },
         {
             "name": "phpunit/php-text-template",
-            "version": "6.0.0",
+            "version": "6.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-text-template.git",
-                "reference": "a47af19f93f76aa3368303d752aa5272ca3299f4"
+                "reference": "97107691cb2b6c743b5e0c44be19e983cb337a02"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-text-template/zipball/a47af19f93f76aa3368303d752aa5272ca3299f4",
-                "reference": "a47af19f93f76aa3368303d752aa5272ca3299f4",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-text-template/zipball/97107691cb2b6c743b5e0c44be19e983cb337a02",
+                "reference": "97107691cb2b6c743b5e0c44be19e983cb337a02",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.4"
             },
             "require-dev": {
-                "phpunit/phpunit": "^13.0"
+                "phpunit/phpunit": "^13.3.6"
             },
             "type": "library",
             "extra": {
@@ -11892,7 +12164,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/php-text-template/issues",
                 "security": "https://github.com/sebastianbergmann/php-text-template/security/policy",
-                "source": "https://github.com/sebastianbergmann/php-text-template/tree/6.0.0"
+                "source": "https://github.com/sebastianbergmann/php-text-template/tree/6.0.1"
             },
             "funding": [
                 {
@@ -11912,7 +12184,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-02-06T04:36:37+00:00"
+            "time": "2026-10-03T04:54:24+00:00"
         },
         {
             "name": "phpunit/php-timer",
@@ -13594,23 +13866,23 @@
         },
         {
             "name": "sebastian/environment",
-            "version": "9.3.2",
+            "version": "9.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/environment.git",
-                "reference": "6c9e487c9eb706a8d258102a1c0b0a3e53e86c2e"
+                "reference": "d4dd10267a11055066a2a78ae04583d8ddd4f595"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/6c9e487c9eb706a8d258102a1c0b0a3e53e86c2e",
-                "reference": "6c9e487c9eb706a8d258102a1c0b0a3e53e86c2e",
+                "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/d4dd10267a11055066a2a78ae04583d8ddd4f595",
+                "reference": "d4dd10267a11055066a2a78ae04583d8ddd4f595",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.4"
             },
             "require-dev": {
-                "phpunit/phpunit": "^13.1.11"
+                "phpunit/phpunit": "^13.3.6"
             },
             "suggest": {
                 "ext-posix": "*"
@@ -13646,7 +13918,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/environment/issues",
                 "security": "https://github.com/sebastianbergmann/environment/security/policy",
-                "source": "https://github.com/sebastianbergmann/environment/tree/9.3.2"
+                "source": "https://github.com/sebastianbergmann/environment/tree/9.3.3"
             },
             "funding": [
                 {
@@ -13666,7 +13938,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-25T13:41:38+00:00"
+            "time": "2026-10-01T12:37:56+00:00"
         },
         {
             "name": "sebastian/exporter",
@@ -13829,28 +14101,28 @@
         },
         {
             "name": "sebastian/git-state",
-            "version": "1.0.0",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/git-state.git",
-                "reference": "792a952e0eba55b6960a48aeceb9f371aad1f76b"
+                "reference": "31a565f463686f0eefa85f899549256bf5805985"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/git-state/zipball/792a952e0eba55b6960a48aeceb9f371aad1f76b",
-                "reference": "792a952e0eba55b6960a48aeceb9f371aad1f76b",
+                "url": "https://api.github.com/repos/sebastianbergmann/git-state/zipball/31a565f463686f0eefa85f899549256bf5805985",
+                "reference": "31a565f463686f0eefa85f899549256bf5805985",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.4"
             },
             "require-dev": {
-                "phpunit/phpunit": "^13.0"
+                "phpunit/phpunit": "^13.4.3"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-main": "1.0-dev"
+                    "dev-main": "1.1-dev"
                 }
             },
             "autoload": {
@@ -13874,7 +14146,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/git-state/issues",
                 "security": "https://github.com/sebastianbergmann/git-state/security/policy",
-                "source": "https://github.com/sebastianbergmann/git-state/tree/1.0.0"
+                "source": "https://github.com/sebastianbergmann/git-state/tree/1.1.0"
             },
             "funding": [
                 {
@@ -13894,7 +14166,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-03-21T12:54:28+00:00"
+            "time": "2026-10-21T05:59:52+00:00"
         },
         {
             "name": "sebastian/global-state",
@@ -14324,16 +14596,16 @@
         },
         {
             "name": "sebastian/version",
-            "version": "7.0.0",
+            "version": "7.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/version.git",
-                "reference": "ad37a5552c8e2b88572249fdc19b6da7792e021b"
+                "reference": "f1598cf1d8d1ca4c0f194a52f2fe72a559a7b0b1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/version/zipball/ad37a5552c8e2b88572249fdc19b6da7792e021b",
-                "reference": "ad37a5552c8e2b88572249fdc19b6da7792e021b",
+                "url": "https://api.github.com/repos/sebastianbergmann/version/zipball/f1598cf1d8d1ca4c0f194a52f2fe72a559a7b0b1",
+                "reference": "f1598cf1d8d1ca4c0f194a52f2fe72a559a7b0b1",
                 "shasum": ""
             },
             "require": {
@@ -14366,7 +14638,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/version/issues",
                 "security": "https://github.com/sebastianbergmann/version/security/policy",
-                "source": "https://github.com/sebastianbergmann/version/tree/7.0.0"
+                "source": "https://github.com/sebastianbergmann/version/tree/7.0.1"
             },
             "funding": [
                 {
@@ -14386,7 +14658,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-02-06T04:52:52+00:00"
+            "time": "2026-10-04T05:51:14+00:00"
         },
         {
             "name": "shipmonk/composer-dependency-analyser",
@@ -14632,6 +14904,185 @@
                 }
             ],
             "time": "2024-10-20T05:08:20+00:00"
+        },
+        {
+            "name": "symfony/http-client",
+            "version": "v8.1.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/http-client.git",
+                "reference": "f892301df77ac25613b19fc2450139c950d1368a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/http-client/zipball/f892301df77ac25613b19fc2450139c950d1368a",
+                "reference": "f892301df77ac25613b19fc2450139c950d1368a",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.4.1",
+                "psr/log": "^1|^2|^3",
+                "symfony/deprecation-contracts": "^2.5|^3.0",
+                "symfony/http-client-contracts": "^3.7",
+                "symfony/service-contracts": "^2.5|^3"
+            },
+            "conflict": {
+                "amphp/amp": "<3",
+                "php-http/discovery": "<1.15"
+            },
+            "provide": {
+                "php-http/async-client-implementation": "*",
+                "php-http/client-implementation": "*",
+                "psr/http-client-implementation": "1.0",
+                "symfony/http-client-implementation": "3.0"
+            },
+            "require-dev": {
+                "amphp/http-client": "^5.3.2",
+                "amphp/http-tunnel": "^2.0",
+                "guzzlehttp/guzzle": "^7.10|^8.0",
+                "nyholm/psr7": "^1.0",
+                "php-http/httplug": "^1.0|^2.0",
+                "psr/http-client": "^1.0",
+                "symfony/cache": "^7.4|^8.0",
+                "symfony/dependency-injection": "^7.4|^8.0",
+                "symfony/http-kernel": "^7.4|^8.0",
+                "symfony/messenger": "^7.4|^8.0",
+                "symfony/process": "^7.4|^8.0",
+                "symfony/rate-limiter": "^7.4|^8.0",
+                "symfony/stopwatch": "^7.4|^8.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Component\\HttpClient\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Tests/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Provides powerful methods to fetch HTTP resources synchronously or asynchronously",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "http"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/http-client/tree/v8.1.9"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-10-13T15:31:40+00:00"
+        },
+        {
+            "name": "symfony/http-client-contracts",
+            "version": "v3.7.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/http-client-contracts.git",
+                "reference": "35be0019e2c2c9fba80f9dc033290a5240f7b44f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/http-client-contracts/zipball/35be0019e2c2c9fba80f9dc033290a5240f7b44f",
+                "reference": "35be0019e2c2c9fba80f9dc033290a5240f7b44f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/contracts",
+                    "name": "symfony/contracts"
+                },
+                "branch-alias": {
+                    "dev-main": "3.7-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Contracts\\HttpClient\\": ""
+                },
+                "exclude-from-classmap": [
+                    "/Test/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "Generic abstractions related to HTTP clients",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "abstractions",
+                "contracts",
+                "decoupling",
+                "interfaces",
+                "interoperability",
+                "standards"
+            ],
+            "support": {
+                "source": "https://github.com/symfony/http-client-contracts/tree/v3.7.3"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-08-04T08:41:16+00:00"
         },
         {
             "name": "ta-tikoma/phpunit-architecture-test",
@@ -14968,6 +15419,7 @@
         "modules/vault": 20,
         "modules/watching": 20,
         "modules/wayfinding": 20,
+        "nightworksio/mutation-gate": 20,
         "roave/security-advisories": 20
     },
     "prefer-stable": true,
@@ -14984,7 +15436,7 @@
         "ext-tokenizer": "*"
     },
     "platform-overrides": {
-        "php": "8.5.0"
+        "php": "8.5.12"
     },
     "plugin-api-version": "2.9.0"
 }

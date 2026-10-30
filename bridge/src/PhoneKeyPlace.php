@@ -9,18 +9,19 @@ use Closure;
 /** Where this phone could keep its key, in the device's word, or why it could not. */
 final readonly class PhoneKeyPlace
 {
-    private function __construct(private string $lives, private ?WhyNoPhoneKey $why) {}
+    /** @param string|WhyNoPhoneKey $place where it could live, or why it could not */
+    private function __construct(private string|WhyNoPhoneKey $place) {}
 
     /** It could, there. */
     public static function lives(string $where): self
     {
-        return new self($where, null);
+        return new self($where);
     }
 
     /** It could not, for this reason. */
     public static function not(WhyNoPhoneKey $why): self
     {
-        return new self('', $why);
+        return new self($why);
     }
 
     /**
@@ -35,6 +36,6 @@ final readonly class PhoneKeyPlace
      */
     public function either(Closure $lives, Closure $not): mixed
     {
-        return $this->why instanceof WhyNoPhoneKey ? $not($this->why) : $lives($this->lives);
+        return $this->place instanceof WhyNoPhoneKey ? $not($this->place) : $lives($this->place);
     }
 }

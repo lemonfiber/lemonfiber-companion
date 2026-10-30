@@ -15,23 +15,30 @@ final readonly class WhatPlayingSays
     /** Why a series with no episode to play has nothing to press. */
     private const string NOTHING_TO_PLAY = 'household.title.nothing_to_play';
 
-    private function __construct(public bool $canPlay, public string $why, public bool $isInTheCoresWords) {}
+    /** @param string|ALineAsShown|null $waits why Play waits: the core's words, this app's line, or null where Play plays */
+    private function __construct(public string|ALineAsShown|null $waits) {}
 
     /** The core says where it plays, so Play plays it. */
     public static function plays(): self
     {
-        return new self(canPlay: true, why: '', isInTheCoresWords: false);
+        return new self(null);
     }
 
     /** The core states no location for it, and this is why, in its words. */
     public static function cannot(string $coresWords): self
     {
-        return new self(canPlay: false, why: $coresWords, isInTheCoresWords: true);
+        return new self($coresWords);
     }
 
     /** Nothing in it streams. */
     public static function nothingPlays(): self
     {
-        return new self(canPlay: false, why: self::NOTHING_TO_PLAY, isInTheCoresWords: false);
+        return new self(new ALineAsShown(self::NOTHING_TO_PLAY, []));
+    }
+
+    /** Whether Play can be pressed. */
+    public function canPlay(): bool
+    {
+        return $this->waits === null;
     }
 }

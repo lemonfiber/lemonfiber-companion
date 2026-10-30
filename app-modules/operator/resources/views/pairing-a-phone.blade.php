@@ -1,4 +1,5 @@
 @use('Modules\Kernel\Api\WhatToDoAboutPairing')
+@use('Modules\Operator\Internal\ViewModels\WhyThePairingCodeIsNotShown')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -9,14 +10,14 @@
          stack to another phone and signs nobody in. --}}
     <x-design::body>{{ __('stacks.pairing.what_it_is') }}</x-design::body>
 
-    @if (! $this->going()->went->cameBack())
+    @if (! $this->going()->stands->went->cameBack())
         <x-operator::what-stood-in-the-way
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
-            :went="$this->going()->went"
+            :went="$this->going()->stands->went"
             :goes="$this->goes()"
             ask-again="make()"
         />
-    @elseif ($this->going()->isWorking)
+    @elseif ($this->going()->stands->isWorking())
         <x-design::standing :said="__('stacks.invitation.working')" tone="working" />
     @elseif ($this->going()->code !== null)
         {{-- The line as a code, then the same line to type, then what to
@@ -40,13 +41,13 @@
              and then how it is replaced, in this app's: at the machine. --}}
         <x-design::note>{{ $this->going()->code->replacing }}</x-design::note>
         <x-design::note>{{ __('stacks.pairing.replaced_at_the_machine') }}</x-design::note>
-    @elseif ($this->going()->isCheckedDifferently)
+    @elseif ($this->going()->notShown === WhyThePairingCodeIsNotShown::CheckedDifferently)
         {{-- No line and no code: one the other phone could never check is
              not handed out. --}}
         <x-design::notice tone="trouble">
             <x-design::strong>{{ __('stacks.pairing.checked_differently') }}</x-design::strong>
         </x-design::notice>
-    @elseif ($this->going()->hasExpired)
+    @elseif ($this->going()->notShown === WhyThePairingCodeIsNotShown::Expired)
         <x-design::notice tone="unknown">
             <x-design::strong>{{ __('stacks.pairing.expired') }}</x-design::strong>
         </x-design::notice>
@@ -54,7 +55,7 @@
     @else
         {{-- Nothing asked yet, or a refusal in the stack's own words: either
              way the next thing to do is to ask for a code. --}}
-        @if ($this->going()->refused !== '')
+        @if ($this->going()->refused !== null)
             <x-operator::emphasis>{{ $this->going()->refused }}</x-operator::emphasis>
         @endif
         <x-operator::offered-action :label="__('stacks.pairing.make')" tap="make()" :offer="$this->offered(WhatToDoAboutPairing::MakeACode)" />

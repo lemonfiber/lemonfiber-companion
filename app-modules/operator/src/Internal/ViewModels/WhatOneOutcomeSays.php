@@ -41,6 +41,6 @@ final readonly class WhatOneOutcomeSays
         public WhatOneRepairSays $repair,
         public string $became,
         public string $left,
-        public bool $worthAnotherGo = false,
+        public bool $worthAnotherGo,
     ) {}
 }

@@ -74,11 +74,11 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
     /** Each member a change can be about, once a frame of its own has asked. */
     public ?WhoToChooseAsShown $household = null;
 
-    /** The change the rehearsal on the screen was asked with, which is the one a yes sends. */
+    /** The change the last rehearsal was asked with. */
     public ?AnAllowanceChange $asked = null;
 
-    /** Whether the report on the screen is a rehearsal a yes may be given to. */
-    public bool $rehearsed = false;
+    /** The change a rehearsal on the screen came back for, which is the one a yes sends. */
+    public ?AnAllowanceChange $rehearsed = null;
 
     /** The handle of the work being followed, where there is one. */
     public ?string $following = null;
@@ -110,7 +110,7 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
     public function startAgain(): void
     {
         $this->asked = null;
-        $this->rehearsed = false;
+        $this->rehearsed = null;
         $this->following = null;
         $this->going = null;
     }
@@ -131,27 +131,27 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
 
     public function apply(): void
     {
-        $change = $this->asked;
+        $change = $this->rehearsed;
 
-        if (! $change instanceof AnAllowanceChange || ! $this->rehearsed) {
+        if (! $change instanceof AnAllowanceChange) {
             return;
         }
 
-        $this->rehearsed = false;
+        $this->rehearsed = null;
         $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->choosing->carryOut($stack, $session, $change));
     }
 
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItRuns(): void
     {
-        if ($this->howItIsGoing()->isWorking) {
+        if ($this->howItIsGoing()->stands->isWorking()) {
             $this->going = null;
         }
     }
 
     public function awaitsAnOutcome(): bool
     {
-        return $this->howItIsGoing()->isWorking;
+        return $this->howItIsGoing()->stands->isWorking();
     }
 
     /** What the stack said, asked once per frame. */
@@ -220,9 +220,9 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
             },
             answered: function (TheAllowanceAsChanged $report): TheAllowanceChangeTurnedOutToBe {
                 $this->following = null;
-                $this->rehearsed = $report->did() === WhetherItWasRehearsed::Rehearsed;
+                $this->rehearsed = $report->did() === WhetherItWasRehearsed::Rehearsed ? $this->asked : null;
 
-                if (! $this->rehearsed) {
+                if (!$this->rehearsed instanceof AnAllowanceChange) {
                     $this->answered = null;
                 }
 

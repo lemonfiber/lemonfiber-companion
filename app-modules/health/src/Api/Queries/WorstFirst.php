@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Health\Api\Queries;
 
+use function array_flip;
+use function array_map;
+
 use Modules\Kernel\Api\Code;
+use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Severity;
+use UnitEnum;
 
 use function usort;
 
@@ -49,19 +54,8 @@ use function usort;
  */
 final readonly class WorstFirst
 {
-    /** What `usort` wants back, named so that the comparison reads as English. */
-    private const int BEFORE = -1;
-
-    private const int TOGETHER = 0;
-
-    private const int AFTER = 1;
-
     public function over(Findings $findings): Findings
     {
-        // Collected by hand rather than with `iterator_to_array`, which wants
-        // a `preserve_keys` argument it cannot be wrong about here: `Findings`
-        // always holds a list, so either value produces the same array. An
-        // argument that cannot change the answer is a line no test can defend.
         $ordered = [];
 
         foreach ($findings as $finding) {
@@ -70,21 +64,32 @@ final readonly class WorstFirst
 
         usort($ordered, $this->whichComesFirst(...));
 
-        // Spread rather than handed over as an array: a collection whose
-        // published signature took one would be the hole rather than the
-        // exception.
         return Findings::of(...$ordered);
     }
 
     private function whichComesFirst(Finding $one, Finding $other): int
     {
-        return match (true) {
-            $this->costOf($one)->isWorseThan($this->costOf($other)) => self::BEFORE,
-            $this->costOf($other)->isWorseThan($this->costOf($one)) => self::AFTER,
-            $one->conclusion()->isWorseThan($other->conclusion()) => self::BEFORE,
-            $other->conclusion()->isWorseThan($one->conclusion()) => self::AFTER,
-            default => self::TOGETHER,
-        };
+        return $this->rankOf($one) <=> $this->rankOf($other);
+    }
+
+    /**
+     * Where a finding ranks: by what it costs, then by its verdict, each counted from the worst.
+     *
+     * @return array{int, int}
+     */
+    private function rankOf(Finding $finding): array
+    {
+        return [$this->countedFromTheWorst($this->costOf($finding), Severity::cases()), $this->countedFromTheWorst($finding->conclusion(), Conclusion::cases())];
+    }
+
+    /**
+     * How many cases are worse than this one, in an enum declared worst first.
+     *
+     * @param list<UnitEnum> $cases
+     */
+    private function countedFromTheWorst(UnitEnum $case, array $cases): int
+    {
+        return array_flip(array_map(static fn(UnitEnum $one): string => $one->name, $cases))[$case->name];
     }
 
     /**

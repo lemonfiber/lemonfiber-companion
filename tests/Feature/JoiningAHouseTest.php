@@ -181,13 +181,29 @@ it('signs in with the name and password given, keeps the session and lands on Ho
         ->and(NativeRouter::resolve($home))->not->toBeNull();
 });
 
-it('offers nothing to the door until a name is typed', function (): void {
-    $screen = signingInAs(theWayIn(ACameraInMemory::reading(theCodeForANewPhone())), name: '   ');
+it('offers nothing to the door until a name and a password are typed', function (string $name, string $password): void {
+    $door = ADoorThatWasKnockedOn::openingFor(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(JOINED_AT * 2), Whose::member('a-member'));
+    $screen = signingInAs(theWayIn(ACameraInMemory::reading(theCodeForANewPhone()), $door), name: $name, password: $password);
 
     $screen->signIn();
 
     expect($screen->went)->toBe(HowTheSignInWent::NotYet)
+        ->and($door->knocks())->toBe(0)
         ->and($screen->getNavigationIntent())->toBeNull();
+})->with([
+    'no name' => ['   ', 'a-members-password'],
+    'no password' => ['Robin', '  '],
+]);
+
+it('offers nothing to the door before a password is typed at all', function (): void {
+    $door = ADoorThatWasKnockedOn::openingFor(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(JOINED_AT * 2), Whose::member('a-member'));
+    $screen = theWayIn(ACameraInMemory::reading(theCodeForANewPhone()), $door);
+    $screen->findTheHouse();
+    $screen->__syncProperty('theirName', 'Robin');
+
+    $screen->signIn();
+
+    expect($door->knocks())->toBe(0);
 });
 
 it('says a name and password that did not match in the household words, and stays', function (): void {
@@ -321,6 +337,16 @@ it('adds the house a join link names, pinned to its certificate, once they say s
         ->and($door->knocks())->toBe(0)
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('onboarding.step', ['step' => 2, 'of' => 3]));
 })->with(['scanned', 'opened while it was running', 'opened from cold']);
+
+it('lets go of the house a join link offered once the camera is opened for another code, so confirming after it adds nothing', function (): void {
+    [$screen, $stacks] = aJoinLinkOpenedBy('opened from cold');
+
+    $screen->findTheHouse();
+    $screen->confirmTheHouse();
+
+    expect($screen->offeredAt)->toBe('')
+        ->and($stacks->holdsAny())->toBeFalse();
+});
 
 it('keeps nothing of a join link they say nobody in their house sent, and confirming afterwards adds nothing', function (): void {
     [$screen, $stacks] = aJoinLinkOpenedBy('scanned');
@@ -554,7 +580,7 @@ it('claims or signs in only as the account the link names, whatever the name fie
 
     choosing($screen)->signIn();
 
-    expect($screen->nameIsTheLinks)->toBeTrue()
+    expect($screen->namedByTheLink)->not->toBeNull()
         ->and($door->namedAs())->toBe('Robin Ash');
 });
 
@@ -562,7 +588,7 @@ it('leaves the name to the person where the house was found by a code rather tha
     $screen = theWayIn(ACameraInMemory::reading(theCodeForANewPhone()));
     $screen->findTheHouse();
 
-    expect($screen->nameIsTheLinks)->toBeFalse();
+    expect($screen->namedByTheLink)->toBeNull();
 });
 
 it('goes straight to choosing a password where the phone holds the house the claim is for under the same certificate', function (): void {

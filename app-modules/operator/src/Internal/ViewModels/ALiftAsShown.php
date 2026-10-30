@@ -8,7 +8,7 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class ALiftAsShown
 {
     /**
-     * @param string $said  the catalogue key for where it stands, blank where there is none
+     * @param string $said  the catalogue key for where it stands
      * @param int    $count how many of its unit that key counts
      * @param string $says  what it amounts to in the stack's words, blank where it gave none
      */

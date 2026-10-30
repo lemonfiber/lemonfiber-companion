@@ -14,17 +14,13 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class TheWiringTurnedOutToBe
 {
     /**
-     * @param HowTheReadingWent     $went      whether the stack was reached, and what stood in the way where it was not
-     * @param bool                  $isWorking whether the stack is still carrying the run out
-     * @param bool                  $hasEnded  whether the stack has no outcome for it any more
-     * @param string                $refusal   the stack's words turning the request down, or empty
+     * @param WhereTheWorkStands     $stands      where the work stands, and whether the stack could be asked at all
+     * @param ?string               $refusal   the stack's words turning the request down, where it did
      * @param TheWiringAsShown|null $wiring    what the run came to, or nothing where none has come back
      */
     public function __construct(
-        public HowTheReadingWent $went,
-        public bool $isWorking,
-        public bool $hasEnded,
-        public string $refusal,
-        public ?TheWiringAsShown $wiring,
+        public WhereTheWorkStands $stands,
+        public ?string $refusal = null,
+        public ?TheWiringAsShown $wiring = null,
     ) {}
 }

@@ -57,7 +57,7 @@ final readonly class HowTheOneLineReads
         return $heard->summary(
             none: fn(): WhatTheOneLineSays => $this->nothingHeard($why),
             current: fn(TheHealthSummary $summary): WhatTheOneLineSays
-                => $this->said($summary, $summary->standing(), AgoAsShown::live(), $why),
+                => $this->said($summary, $summary->standing(), AgoAsShown::saysNothing(), $why),
             asOf: fn(TheHealthSummary $summary, Instant $at): WhatTheOneLineSays
                 => $this->said($summary, HowItStands::Unknown, AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now), $why),
         );
@@ -79,7 +79,7 @@ final readonly class HowTheOneLineReads
      */
     public function neverHeard(): WhatTheOneLineSays
     {
-        return $this->aloneOnTheList(HowItStands::Unknown, AgoAsShown::live());
+        return $this->aloneOnTheList(HowItStands::Unknown, AgoAsShown::saysNothing());
     }
 
     /** A word with no count, no worst thing and no stream, which is all the list has. */
@@ -112,7 +112,7 @@ final readonly class HowTheOneLineReads
             counted: '',
             howMany: 0,
             worst: '',
-            ago: AgoAsShown::live(),
+            ago: AgoAsShown::saysNothing(),
             met: $why->met,
             remedy: $why->remedy,
             filling: $why->filling(),
