@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
-use function array_filter;
-use function array_values;
-
 use Modules\Kernel\Api\AServiceWaiting;
 use Modules\Kernel\Api\ASetting;
 use Modules\Kernel\Api\Obstacle;
@@ -66,14 +63,18 @@ final readonly class HowWhatAServiceWaitsForReads
 
         foreach ($settings as $setting) {
             if ($waiting->waitsFor($setting)) {
-                $found[$setting->name()] = $setting;
+                $found[] = $setting;
             }
         }
 
         foreach ($alongside as $named) {
-            $found[$named] ??= Among::theSettings($settings, $named);
+            $setting = Among::theSettings($settings, $named);
+
+            if ($setting instanceof ASetting && ! $waiting->waitsFor($setting)) {
+                $found[] = $setting;
+            }
         }
 
-        return TheSettingsRead::these(...array_values(array_filter($found, static fn(?ASetting $setting): bool => $setting instanceof ASetting)));
+        return TheSettingsRead::these(...$found);
     }
 }

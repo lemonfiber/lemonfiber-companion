@@ -29,6 +29,7 @@ use Modules\Kernel\Api\WhatAServiceWaitsFor;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWasFoundOfTheSettings;
+use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhoseASettingIs;
 use Modules\Operator\Internal\Screens\WhatThisServiceWaitsFor;
@@ -38,6 +39,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\ASettingChangeAsReported;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatTunesItsSettings;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -89,7 +91,7 @@ function aStackHoldingTheGuardBack(): AStackThatTunesItsSettings
 }
 
 /** The page about one service the stack holds back, on a phone signed in to it or not. */
-function thePageAboutWhatItWaitsFor(AStackThatTunesItsSettings $tuning, string $service = 'gluetun', bool $signedIn = true): WhatThisServiceWaitsFor
+function thePageAboutWhatItWaitsFor(AStackThatTunesItsSettings $tuning, string $service = 'gluetun', bool $signedIn = true, ?AStackThatSpeaksUp $hearing = null): WhatThisServiceWaitsFor
 {
     $stack = theMachineHoldingTheGuardBack();
     $keychain = AKeychainInMemory::working();
@@ -98,7 +100,7 @@ function thePageAboutWhatItWaitsFor(AStackThatTunesItsSettings $tuning, string $
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatThisServiceWaitsFor($tuning, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatThisServiceWaitsFor($tuning, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening($hearing));
     $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $service]);
 
     return $screen;
@@ -157,6 +159,7 @@ it('changes a setting the service waits for, and after a refusal offers the one 
     $screen->rehearse();
     $screen->whileItRuns();
     $refused = WhatTheDeviceWouldDraw::by($screen);
+    $readOnTheFrameItWasRefused = $tuning->askings();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
     $screen->alsoMove('vpn.type');
     $screen->choose('vpn.type', 'wireguard');
@@ -164,6 +167,7 @@ it('changes a setting the service waits for, and after a refusal offers the one 
 
     expect($apart)->toBeNull()
         ->and($refused->said())->toContain('vpn.type cannot hold its value; its choices are wireguard')
+        ->and($readOnTheFrameItWasRefused)->toBe(2)
         ->and($screen->toMoveAlongside())->toBe([])
         ->and($drawn->offers())->toContain(__('plugins.settings.also_move', ['setting' => 'vpn.type']))
         ->and(array_map(ASettingChangeAsReported::said(...), $tuning->rehearsed()))->toBe(['settings-set vpn.provider=pia', 'settings-set vpn.provider=pia vpn.type=wireguard']);
@@ -189,12 +193,14 @@ it('draws the settings moved alongside the one the service waits for', function 
 it('asks nothing of a phone holding no session, and draws what stood in the way of reading', function (): void {
     $tuning = aStackHoldingTheGuardBack();
     $signedOut = thePageAboutWhatItWaitsFor($tuning, signedIn: false);
-    $unreached = thePageAboutWhatItWaitsFor(AStackThatTunesItsSettings::sayingAtOnce(WhatWasFoundOfTheSettings::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), WhatBecameOfTheWork::ended()));
+    $unreachable = AStackThatTunesItsSettings::sayingAtOnce(WhatWasFoundOfTheSettings::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), WhatBecameOfTheWork::ended());
+    $unreached = thePageAboutWhatItWaitsFor($unreachable);
     WhatTheDeviceWouldDraw::by($unreached);
 
     expect($signedOut->answer()->went->isSignedIn)->toBeFalse()
         ->and($tuning->askings())->toBe(0)
-        ->and(WhatTheDeviceWouldDraw::by($unreached)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
+        ->and(WhatTheDeviceWouldDraw::by($unreached)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
+        ->and($unreachable->askings())->toBe(1);
 });
 
 it('reads the settings again when asked', function (): void {
@@ -218,4 +224,17 @@ it('opens no setting it does not list, and none on the page of a service nothing
     $running->change('vpn.provider');
 
     expect([$waiting->changing, $running->changing])->toBe([null, null]);
+});
+
+it('draws what the stream says of the settings without reading them again, a service no longer held back said so', function (): void {
+    $tuning = aStackHoldingTheGuardBack();
+    $released = TheServicesSettings::of(TheSettingsRead::these(aSettingTheGuardReads('vpn.provider')), TheSecretsRead::these());
+    $screen = thePageAboutWhatItWaitsFor($tuning, hearing: AStackThatSpeaksUp::holdingOpen(WhatWasHeard::aSignOfLife()->settledAs($released)));
+
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $screen->listen();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->toContain(__('plugins.waiting.not_held_back', ['service' => 'gluetun']))
+        ->and($tuning->askings())->toBe(1);
 });

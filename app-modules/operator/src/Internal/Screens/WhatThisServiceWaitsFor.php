@@ -110,13 +110,13 @@ final class WhatThisServiceWaitsFor extends NativeComponent implements AwaitsAnO
             return null;
         }
 
-        $waitedFor = [];
-
         foreach ($read->settings() as $one) {
-            $waitedFor = $waiting->waitsFor($one) ? [...$waitedFor, $one] : $waitedFor;
+            if ($waiting->waitsFor($one) && ($one->name() === $held->name() || $one->hangsTogetherWith($held))) {
+                return $held;
+            }
         }
 
-        return $waiting->waitsFor($held) || Among::theSettings($read->settings()->hangingTogetherWith(...$waitedFor), $setting) instanceof ASetting ? $held : null;
+        return null;
     }
 
     /**

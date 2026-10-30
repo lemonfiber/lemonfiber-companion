@@ -78,7 +78,7 @@ function aGuardSettingAmong(string $name, string $holding, AChoice ...$choices):
  *
  * The provider holds mullvad over wireguard. PIA is a provider only over
  * OpenVPN, and OpenVPN a protocol only with PIA, so neither moves alone. IVPN
- * needs a region, which takes any value.
+ * needs a region, which takes any value. Port 1194 is a port only over OpenVPN.
  */
 function theGuardsChoices(): TheServicesSettings
 {
@@ -99,6 +99,12 @@ function theGuardsChoices(): TheServicesSettings
             ),
             aGuardSettingAmong('vpn.legacy', 'retired', AChoice::of('current', WhatAChoiceNeeds::nothing(), open: true)),
             aGuardSettingAmong('vpn.region', 'us'),
+            aGuardSettingAmong(
+                'vpn.port',
+                '51820',
+                AChoice::of('51820', WhatAChoiceNeeds::nothing(), open: true),
+                AChoice::of('1194', WhatAChoiceNeeds::holding('vpn.type', 'openvpn'), open: false),
+            ),
             ASetting::read('vpn.countries', WhoseASettingIs::theNamespaces('gluetun'), TheServicesReadingIt::these(AServiceReadingIt::of(ServiceId::called('gluetun'), 'SERVER_COUNTRIES', ASettingValue::nothing())), ASettingValue::value('Belgium')),
         ),
         TheSecretsRead::these(),
@@ -361,4 +367,44 @@ it('leaves nothing out of a change nobody opened, nor while the stack works on o
     expect($unopened)->toBeNull()
         ->and($screen->following)->not->toBeNull()
         ->and($screen->changing?->alongside)->toBe(['vpn.type' => 'openvpn']);
+});
+
+it('offers, after a second refusal, what hangs together with a setting moved alongside, and not what is already moved', function (): void {
+    $tuning = aStackHoldingTheGuardsChoices(WhatBecameOfTheWork::refused(outsideItsChoices()));
+    $screen = piaAloneRefused($tuning);
+    $screen->alsoMove('vpn.type');
+    $screen->choose('vpn.type', 'openvpn');
+    $screen->rehearse();
+    $screen->whileItRuns();
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect($screen->toMoveAlongside())->toBe(['vpn.port']);
+});
+
+it('drops what the stack said of the change the moment the change is changed', function (): void {
+    $answered = theGuardsChoicesScreen(aStackHoldingTheGuardsChoices(WhatBecameOfTheWork::answered(thePairMoved(WhatTheSettingRunDid::Rehearsed))));
+    $answered->change('vpn.provider');
+    $answered->choose('vpn.provider', 'pia');
+    $answered->rehearse();
+    $answered->whileItRuns();
+    $rehearsed = $answered->howItIsGoing()->change;
+    $answered->choose('vpn.provider', 'mullvad');
+
+    $refused = piaAloneRefused(aStackHoldingTheGuardsChoices(WhatBecameOfTheWork::refused(outsideItsChoices())));
+    $wasRefused = $refused->howItIsGoing()->refused;
+    $refused->alsoMove('vpn.type');
+    $afterMovingAlongside = $refused->howItIsGoing()->refused;
+    $refused->choose('vpn.type', 'openvpn');
+    $refused->rehearse();
+    $refused->whileItRuns();
+    WhatTheDeviceWouldDraw::by($refused);
+    $refusedAgain = $refused->howItIsGoing()->refused;
+    $refused->leaveOut('vpn.type');
+
+    expect($rehearsed)->not->toBeNull()
+        ->and([$answered->report, $answered->howItIsGoing()->change])->toBe([null, null])
+        ->and($wasRefused)->not->toBeNull()
+        ->and($afterMovingAlongside)->toBeNull()
+        ->and($refusedAgain)->not->toBeNull()
+        ->and($refused->howItIsGoing()->refused)->toBeNull();
 });

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-use function array_slice;
 use function array_values;
 
 use ArrayIterator;
@@ -32,7 +31,7 @@ final readonly class TheSettingMoves implements IteratorAggregate
 
         $change = self::begun($listed[0]);
 
-        foreach (array_slice($listed, 1) as $move) {
+        foreach ($listed as $move) {
             $change = $change->andAlso(self::begun($move));
         }
 
