@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AFill;
 use Modules\Kernel\Api\AFillAgreed;
 use Modules\Kernel\Api\AFillTurnedDown;
+use Modules\Kernel\Api\ALeftBehind;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\ChoosingAFiller;
@@ -22,6 +23,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Unfilled;
 use Modules\Kernel\Api\WhatBecameOfTheFill;
 use Modules\Kernel\Api\WhatNothingFills;
+use Modules\Kernel\Api\WhatStaysBehind;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhyTheFillWasTurnedDown;
 use Modules\Sdk\Api\Fillers;
@@ -95,6 +97,7 @@ function theSameFillWorkedOut(): AFill
         Services::these(ServiceId::called('jellyfin')),
         Services::these(ServiceId::called('seerr'), ServiceId::called('bazarr')),
         WhatNothingFills::these(Unfilled::of(ServiceId::called('tdarr'), Capability::called('transcoder'))),
+        WhatStaysBehind::these(ALeftBehind::of(Capability::called('media-server'), 'the accounts the media server holds')),
         '',
         THE_READING_IS_NAMED,
     );
@@ -163,14 +166,21 @@ function whatTheChoiceCameTo(WhatBecameOfTheFill $became): string
                 $leaving[] = sprintf('%s loses %s', $left->asking()->named(), $left->capability()->named());
             }
 
+            $behind = [];
+
+            foreach ($fill->behind() as $left) {
+                $behind[] = sprintf('%s (%s)', $left->said(), $left->capability()->named());
+            }
+
             return new TheWordCarriedOut(sprintf(
-                '%s: %s answers %s, was %s, asked by %s, leaves %s, why "%s", named %s',
+                '%s: %s answers %s, was %s, asked by %s, leaves %s, behind %s, why "%s", named %s',
                 $fill->wasMade() ? 'made' : 'read',
                 $fill->now()->named(),
                 $fill->capability()->named(),
                 theServicesAFillNames($fill->was()),
                 theServicesAFillNames($fill->askedBy()),
                 implode('+', $leaving),
+                implode('+', $behind),
                 $fill->why(),
                 $fill->agreement(),
             ));
@@ -198,7 +208,7 @@ it('reads what a choice would come to, writing nothing', function (): void {
 
     foreach (everyWayOfChoosingAFiller($answered, WhatBecameOfTheFill::fill(theSameFillWorkedOut())) as $which => $build) {
         expect(whatFillingItWouldComeTo($build()))
-            ->toBe(sprintf('read: plex answers media-server, was jellyfin, asked by seerr+bazarr, leaves tdarr loses transcoder, why "", named %s', THE_READING_IS_NAMED), $which);
+            ->toBe(sprintf('read: plex answers media-server, was jellyfin, asked by seerr+bazarr, leaves tdarr loses transcoder, behind the accounts the media server holds (media-server), why "", named %s', THE_READING_IS_NAMED), $which);
     }
 });
 
@@ -210,22 +220,23 @@ it('reads a choice the stack made, with the reason it recorded', function (): vo
         Services::these(ServiceId::called('jellyfin')),
         Services::these(ServiceId::called('seerr'), ServiceId::called('bazarr')),
         WhatNothingFills::these(Unfilled::of(ServiceId::called('tdarr'), Capability::called('transcoder'))),
+        WhatStaysBehind::these(ALeftBehind::of(Capability::called('media-server'), 'the accounts the media server holds')),
         'Plex plays the 4K files',
         THE_READING_IS_NAMED,
     );
 
     foreach (everyWayOfChoosingAFiller($answered, WhatBecameOfTheFill::fill($made)) as $which => $build) {
         expect(whatAgreeingCameTo($build()))
-            ->toBe(sprintf('made: plex answers media-server, was jellyfin, asked by seerr+bazarr, leaves tdarr loses transcoder, why "Plex plays the 4K files", named %s', THE_READING_IS_NAMED), $which);
+            ->toBe(sprintf('made: plex answers media-server, was jellyfin, asked by seerr+bazarr, leaves tdarr loses transcoder, behind the accounts the media server holds (media-server), why "Plex plays the 4K files", named %s', THE_READING_IS_NAMED), $which);
     }
 });
 
-it('reads nothing answering now and nothing left unfilled as answers, absent or null', function (array $choice, array $without): void {
+it('reads nothing answering now, nothing left unfilled and nothing left behind as answers, absent or null', function (array $choice, array $without): void {
     expect(whatFillingItWouldComeTo(aFillerAnswered(MockResponse::make((string) json_encode(whatAStackSaysAFillComesTo(choice: $choice, without: $without))))))
-        ->toBe(sprintf('read: plex answers media-server, was nothing, asked by seerr+bazarr, leaves , why "", named %s', THE_READING_IS_NAMED));
+        ->toBe(sprintf('read: plex answers media-server, was nothing, asked by seerr+bazarr, leaves , behind , why "", named %s', THE_READING_IS_NAMED));
 })->with([
-    'left out' => [['leaves_unfilled' => []], ['was']],
-    'null' => [['leaves_unfilled' => [], 'was' => null, 'why' => null], []],
+    'left out' => [['leaves_unfilled' => [], 'leaves_behind' => []], ['was']],
+    'null' => [['leaves_unfilled' => [], 'leaves_behind' => [], 'was' => null, 'why' => null], []],
 ]);
 
 it('reads each refusal of a choice by its code, in words of its own', function (string $code, int $status, string $severity, WhyTheFillWasTurnedDown $why): void {

@@ -12,7 +12,8 @@ use function trim;
  * The answer to choosing a filler, whether it was only read or also made:
  * the capability, the service that would answer it, the one that answers it
  * now, every service that asks for it, what the change would leave unfilled,
- * the reason given, and the name the reading goes by. The stack works all of
+ * what the part it stops holds that does not carry over, the reason given,
+ * and the name the reading goes by. The stack works all of
  * it out before anything is written, so an operator agrees with every
  * consequence in front of them.
  *
@@ -30,6 +31,7 @@ final readonly class AFill
         private Services $was,
         private Services $askedBy,
         private WhatNothingFills $leaves,
+        private WhatStaysBehind $behind,
         private string $why,
         private string $agreement,
         private bool $made,
@@ -41,15 +43,15 @@ final readonly class AFill
      * `$was` is none where nothing answers the capability now, and `$why` is
      * blank where nobody gave a reason.
      */
-    public static function read(Capability $capability, ServiceId $now, Services $was, Services $askedBy, WhatNothingFills $leaves, string $why, string $agreement): self
+    public static function read(Capability $capability, ServiceId $now, Services $was, Services $askedBy, WhatNothingFills $leaves, WhatStaysBehind $behind, string $why, string $agreement): self
     {
-        return new self($capability, $now, $was, $askedBy, $leaves, $why, self::named($agreement), made: false);
+        return new self($capability, $now, $was, $askedBy, $leaves, $behind, $why, self::named($agreement), made: false);
     }
 
     /** A choice the stack worked out and made, with the reason it recorded. */
-    public static function made(Capability $capability, ServiceId $now, Services $was, Services $askedBy, WhatNothingFills $leaves, string $why, string $agreement): self
+    public static function made(Capability $capability, ServiceId $now, Services $was, Services $askedBy, WhatNothingFills $leaves, WhatStaysBehind $behind, string $why, string $agreement): self
     {
-        return new self($capability, $now, $was, $askedBy, $leaves, $why, self::named($agreement), made: true);
+        return new self($capability, $now, $was, $askedBy, $leaves, $behind, $why, self::named($agreement), made: true);
     }
 
     /** The capability being filled. */
@@ -80,6 +82,12 @@ final readonly class AFill
     public function leaves(): WhatNothingFills
     {
         return $this->leaves;
+    }
+
+    /** What the part the choice stops holds that its replacement is not carried, in the stack's words. */
+    public function behind(): WhatStaysBehind
+    {
+        return $this->behind;
     }
 
     /** The reason given for the choice, or blank where none was. */

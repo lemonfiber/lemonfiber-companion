@@ -99,6 +99,12 @@ final readonly class HowTheChoiceReads
             $leaves[] = ['by' => $left->asking()->named(), 'capability' => $left->capability()->named()];
         }
 
+        $behind = [];
+
+        foreach ($fill->behind() as $left) {
+            $behind[] = ['said' => $left->said(), 'capability' => $left->capability()->named()];
+        }
+
         return new TheChoiceAsShown(
             capability: $fill->capability()->named(),
             now: $fill->now()->named(),
@@ -106,6 +112,7 @@ final readonly class HowTheChoiceReads
             reachesWith: $fill->was()->isEmpty() ? [] : ['service' => HowTheLinksRead::named($fill->was())],
             askedBy: HowTheLinksRead::named($fill->askedBy()),
             leaves: $leaves,
+            behind: $behind,
         );
     }
 }

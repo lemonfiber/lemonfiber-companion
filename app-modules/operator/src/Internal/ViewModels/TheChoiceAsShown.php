@@ -17,6 +17,7 @@ final readonly class TheChoiceAsShown
     /**
      * @param array<string, string>              $reachesWith what fills the line that says what answers it now
      * @param list<array{by: string, capability: string}> $leaves every service that would lose a capability, with the capability
+     * @param list<array{said: string, capability: string}> $behind each kind of thing the part it stops holds that does not carry over, in the stack's words, with the capability that declares it
      */
     public function __construct(
         public string $capability,
@@ -25,5 +26,6 @@ final readonly class TheChoiceAsShown
         public array $reachesWith,
         public string $askedBy,
         public array $leaves,
+        public array $behind,
     ) {}
 }

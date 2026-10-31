@@ -17,6 +17,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\WhatBecameOfTheFill;
 use Modules\Kernel\Api\WhatNothingFills;
+use Modules\Kernel\Api\WhatStaysBehind;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhyTheFillWasTurnedDown;
 
@@ -38,7 +39,7 @@ function whichArmTheFillTook(WhatBecameOfTheFill $became): string
 it('takes a reader to the arm it was built on, with what that arm carries', function (): void {
     $said = ARefusalInItsWords::said('That choice was agreed to against a different reading', '', WhatTheRefusalNamed::nothing());
 
-    expect(whichArmTheFillTook(WhatBecameOfTheFill::fill(AFill::read(Capability::called('media-server'), ServiceId::called('plex'), Services::none(), Services::none(), WhatNothingFills::none(), '', 'cafe0001'))))->toBe('fill: plex')
+    expect(whichArmTheFillTook(WhatBecameOfTheFill::fill(AFill::read(Capability::called('media-server'), ServiceId::called('plex'), Services::none(), Services::none(), WhatNothingFills::none(), WhatStaysBehind::none(), '', 'cafe0001'))))->toBe('fill: plex')
         ->and(whichArmTheFillTook(WhatBecameOfTheFill::turnedDown(AFillTurnedDown::because(WhyTheFillWasTurnedDown::Moved, $said))))
         ->toBe('turned down: Moved, That choice was agreed to against a different reading')
         ->and(whichArmTheFillTook(WhatBecameOfTheFill::refused(ARefusalInItsWords::said('The stack would not read', '', WhatTheRefusalNamed::nothing()))))->toBe('refused: The stack would not read')

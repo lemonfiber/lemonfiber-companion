@@ -6,6 +6,7 @@ use Modules\Kernel\Api\AClaimant;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AFill;
 use Modules\Kernel\Api\AFillTurnedDown;
+use Modules\Kernel\Api\ALeftBehind;
 use Modules\Kernel\Api\ALink;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Capability;
@@ -26,6 +27,7 @@ use Modules\Kernel\Api\Unfilled;
 use Modules\Kernel\Api\WhatBecameOfTheFill;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatSettledIt;
+use Modules\Kernel\Api\WhatStaysBehind;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
@@ -80,7 +82,7 @@ function linksWithAChoiceToMake(): TheLinks
 }
 
 /** What choosing plex for media-server would come to, read or made. */
-function plexForTheMediaServer(bool $made = false, string $agreement = 'reading-1', ?Services $was = null, ?WhatNothingFills $leaves = null): AFill
+function plexForTheMediaServer(bool $made = false, string $agreement = 'reading-1', ?Services $was = null, ?WhatNothingFills $leaves = null, ?WhatStaysBehind $behind = null): AFill
 {
     $fill = $made ? AFill::made(...) : AFill::read(...);
 
@@ -90,6 +92,7 @@ function plexForTheMediaServer(bool $made = false, string $agreement = 'reading-
         $was ?? Services::these(ServiceId::called('jellyfin')),
         Services::these(ServiceId::called('seerr'), ServiceId::called('bazarr')),
         $leaves ?? WhatNothingFills::these(Unfilled::of(ServiceId::called('tdarr'), Capability::called('transcoder'))),
+        $behind ?? WhatStaysBehind::these(ALeftBehind::of(Capability::called('media-server'), 'the accounts Jellyfin holds')),
         '',
         $agreement,
     );
@@ -159,17 +162,18 @@ it('a tap asks what the choice would come to, writes nothing, and draws all of i
             __('stacks.wiring.fills.would_reach', ['service' => 'plex']),
             __('stacks.wiring.fills.asked_by', ['services' => 'seerr, bazarr']),
             __('stacks.wiring.fills.leaves_unfilled', ['by' => 'tdarr', 'capability' => 'transcoder']),
+            __('stacks.wiring.fills.leaves_behind', ['said' => 'the accounts Jellyfin holds', 'capability' => 'media-server']),
         )
-        ->and($drawn->said())->not->toContain(__('stacks.wiring.fills.leaves_nothing'))
+        ->and($drawn->said())->not->toContain(__('stacks.wiring.fills.leaves_nothing'), __('stacks.wiring.fills.leaves_nothing_behind'))
         ->and($drawn->offers())->toContain(__('stacks.wiring.fills.agree'), __('stacks.wiring.fills.never_mind'))
         ->and($drawn->offers())->not->toContain(__('stacks.wiring.fills.close'));
 });
 
-it('says so where nothing answers it now and the choice would leave nothing unanswered', function (): void {
-    $screen = theScreenChoosingAFiller(AStackThatChoosesFillers::answering(WhatBecameOfTheFill::fill(plexForTheMediaServer(was: Services::none(), leaves: WhatNothingFills::none()))));
+it('says so where nothing answers it now, the choice would leave nothing unanswered and nothing stays behind', function (): void {
+    $screen = theScreenChoosingAFiller(AStackThatChoosesFillers::answering(WhatBecameOfTheFill::fill(plexForTheMediaServer(was: Services::none(), leaves: WhatNothingFills::none(), behind: WhatStaysBehind::none()))));
     $screen->choose('media-server', 'plex');
 
-    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.wiring.fills.reaches_nothing'), __('stacks.wiring.fills.leaves_nothing'));
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.wiring.fills.reaches_nothing'), __('stacks.wiring.fills.leaves_nothing'), __('stacks.wiring.fills.leaves_nothing_behind'));
 });
 
 it('asks nothing for a choice the screen did not offer, or before it has read what answers what', function (): void {

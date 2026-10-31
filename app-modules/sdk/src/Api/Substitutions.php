@@ -11,11 +11,13 @@ use function is_bool;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\SubstitutionEnvelope;
 use Modules\Kernel\Api\AFill;
+use Modules\Kernel\Api\ALeftBehind;
 use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Unfilled;
 use Modules\Kernel\Api\WhatNothingFills;
+use Modules\Kernel\Api\WhatStaysBehind;
 use Modules\Sdk\Api\Fields\SubstitutionField;
 use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
@@ -57,6 +59,7 @@ final readonly class Substitutions
             $was === '' ? Services::none() : Services::these(ServiceId::called($was)),
             self::services($choice),
             WhatNothingFills::these(...self::unfilled($choice)),
+            WhatStaysBehind::these(...self::behind($choice)),
             self::optional($choice, WireField::Why),
             self::text($data, WireField::Agreement),
         );
@@ -112,6 +115,30 @@ final readonly class Substitutions
             $found[] = Unfilled::of(
                 ServiceId::called(self::entry($row, WireField::By, $position)),
                 Capability::called(self::entry($row, WireField::Capability, $position)),
+            );
+        }
+
+        return $found;
+    }
+
+    /**
+     * What the part the choice stops holds that its replacement is not carried, each in the stack's words.
+     *
+     * @param  array<mixed>      $choice
+     * @return list<ALeftBehind>
+     */
+    private static function behind(array $choice): array
+    {
+        $found = [];
+
+        foreach (InTheOrderSent::rows(self::rows($choice, SubstitutionField::LeavesBehind)) as $position => $row) {
+            if (! is_array($row)) {
+                throw SubstitutionIsUnreadable::entry(SubstitutionField::LeavesBehind, WireField::Said, $position);
+            }
+
+            $found[] = ALeftBehind::of(
+                Capability::called(Required::text($row, WireField::Capability, SubstitutionIsUnreadable::entry(SubstitutionField::LeavesBehind, WireField::Capability, $position))),
+                Required::text($row, WireField::Said, SubstitutionIsUnreadable::entry(SubstitutionField::LeavesBehind, WireField::Said, $position)),
             );
         }
 
