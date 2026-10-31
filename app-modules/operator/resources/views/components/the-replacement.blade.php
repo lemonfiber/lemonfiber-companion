@@ -20,17 +20,21 @@
         <x-design::note>{{ __('stacks.credentials.replace.nobody_watching') }}</x-design::note>
     @else
         <x-design::note>{{ __('stacks.credentials.replace.watching') }}</x-design::note>
-        @foreach ($watching->sessions as $session)
+        @forelse ($watching->sessions as $session)
             <x-design::body>{{ __('stacks.credentials.replace.session', $session) }}</x-design::body>
-        @endforeach
+        @empty
+            {{-- Unreachable: this list is drawn only where somebody is watching. --}}
+        @endforelse
     @endif
 @endif
-@foreach ($replacement->holders as $holder)
+@forelse ($replacement->holders as $holder)
     <x-design::body>{{ __('stacks.credentials.replace.holder', ['holder' => $holder->holder, 'reach' => __($holder->reachSaid)]) }}</x-design::body>
     @if ($holder->detail !== '')
         <x-design::note>{{ $holder->detail }}</x-design::note>
     @endif
-@endforeach
+@empty
+    {{-- No holder was reached: a reading names them in the stack's words above, and an outcome that never served the new certificate reached none. --}}
+@endforelse
 @if ($replacement->landed && $replacement->inForce !== '')
     <x-design::body>{{ __('stacks.credentials.replace.in_force', ['glance' => $replacement->inForce]) }}</x-design::body>
 @endif
