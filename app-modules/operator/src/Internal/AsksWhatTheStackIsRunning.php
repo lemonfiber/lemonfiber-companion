@@ -76,9 +76,11 @@ trait AsksWhatTheStackIsRunning
         Session $session,
         Supervising $supervising,
     ): WhatThisStackRunsTurnedOutToBe {
-        return $supervising->running($stack, $session)->either(
+        $running = $supervising->running($stack, $session);
+
+        return $running->either(
             these: static fn(Daemons $daemons): WhatThisStackRunsTurnedOutToBe
-                => new HowAListingReads()->these($daemons),
+                => new HowAListingReads()->these($daemons, $running->waiting()),
             met: $this->lettingGoIfRefused($stack, new HowAListingReads()->met(...)),
         );
     }

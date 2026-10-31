@@ -99,6 +99,8 @@ return [
             'resettle' => 'The setting lemonfiber keeps is put back to what it held',
             'rehold' => 'The secret lemonfiber keeps is put back to what it held',
             'regrant' => 'A credential granted to a plugin is given back, or the grant it gave is ended',
+            'unreplaced' => 'The media server\'s internal certificate is left as it is; only replacing it again puts it back',
+            'run' => 'A service is started again, or stopped again',
             'leave' => 'Your own overlay is left as it stands',
         ],
     ],

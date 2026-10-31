@@ -19,12 +19,13 @@ final readonly class WhatAnInstallChanges
         private TheShapesTaken $taking,
         private TheGrantsAsked $granting,
         private TheUpstreamsWritten $sharing,
+        private TheServicesWaiting $waiting,
     ) {}
 
     /** These, as the stack listed them. */
-    public static function these(ThePluginChanges $changes, TheContestsLeft $contests, TheSettingsItOverrides $overrides, TheShapesTaken $taking, TheGrantsAsked $granting, TheUpstreamsWritten $sharing): self
+    public static function these(ThePluginChanges $changes, TheContestsLeft $contests, TheSettingsItOverrides $overrides, TheShapesTaken $taking, TheGrantsAsked $granting, TheUpstreamsWritten $sharing, TheServicesWaiting $waiting): self
     {
-        return new self($changes, $contests, $overrides, $taking, $granting, $sharing);
+        return new self($changes, $contests, $overrides, $taking, $granting, $sharing, $waiting);
     }
 
     /** Every change, in order. */
@@ -61,5 +62,11 @@ final readonly class WhatAnInstallChanges
     public function sharing(): TheUpstreamsWritten
     {
         return $this->sharing;
+    }
+
+    /** Every service it would leave held back until the operator gives what it needs to start. */
+    public function waiting(): TheServicesWaiting
+    {
+        return $this->waiting;
     }
 }

@@ -11,6 +11,7 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\WhatIsRunning;
 use Modules\Operator\Internal\Presenters\HowAListingReads;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
@@ -111,19 +112,25 @@ trait TakesItsFormsAFrameLater
     private function askAndKeep(Stack $stack, SecureStorage $storage, Supervising $supervising, KeepingWhatItRuns $kept): WhatThisStackRunsTurnedOutToBe
     {
         return $storage->resume($stack->id())->either(
-            held: fn(Session $session): WhatThisStackRunsTurnedOutToBe => $supervising->running($stack, $session)->either(
-                these: static function (Daemons $daemons) use ($stack, $kept): WhatThisStackRunsTurnedOutToBe {
-                    $kept->keep($stack->id(), $daemons);
-
-                    return new HowAListingReads()->these($daemons);
-                },
-                met: function (Obstacle $why) use ($stack, $kept): WhatThisStackRunsTurnedOutToBe {
-                    $this->letGoOfTheSession($why, $stack);
-
-                    return $this->besideWhatWasKept($stack, $kept, HowTheReadingWent::somethingStopped($why), new HowAListingReads()->met($why));
-                },
-            ),
+            held: fn(Session $session): WhatThisStackRunsTurnedOutToBe => $this->listedFrom($supervising->running($stack, $session), $stack, $kept),
             notHeld: fn(): WhatThisStackRunsTurnedOutToBe => $this->besideWhatWasKept($stack, $kept, HowTheReadingWent::theSessionEnded(), new HowAListingReads()->signedOut()),
+        );
+    }
+
+    /** What the stack answered it is running and holds back, the running kept for the next opening, or what it met instead beside what was kept. */
+    private function listedFrom(WhatIsRunning $running, Stack $stack, KeepingWhatItRuns $kept): WhatThisStackRunsTurnedOutToBe
+    {
+        return $running->either(
+            these: static function (Daemons $daemons) use ($stack, $kept, $running): WhatThisStackRunsTurnedOutToBe {
+                $kept->keep($stack->id(), $daemons);
+
+                return new HowAListingReads()->these($daemons, $running->waiting());
+            },
+            met: function (Obstacle $why) use ($stack, $kept): WhatThisStackRunsTurnedOutToBe {
+                $this->letGoOfTheSession($why, $stack);
+
+                return $this->besideWhatWasKept($stack, $kept, HowTheReadingWent::somethingStopped($why), new HowAListingReads()->met($why));
+            },
         );
     }
 

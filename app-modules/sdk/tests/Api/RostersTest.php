@@ -17,6 +17,7 @@ use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\TheServicesWaiting;
 use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Sdk\Api\RosterIsUnreadable;
 use Modules\Sdk\Api\Rosters;
@@ -177,6 +178,7 @@ function aRosterOf(array $differently = []): array
             'describes' => 'Something running beside the stack',
             'state' => 'running',
         ]],
+        'waiting' => [['service' => 'gluetun', 'wants' => [['kind' => 'secret', 'secret' => 'vpn.key']]]],
     ];
 }
 
@@ -483,6 +485,11 @@ it('refuses a payload that is not a shape at all when asked what else the machin
     ))->toThrow(RosterIsUnreadable::class, 'data');
 });
 
+it('refuses a payload that is not a shape at all when asked what the machine holds back', function (): void {
+    expect(fn(): TheServicesWaiting => Rosters::whatIsWaiting(new Envelope(1, 'status', 'a sentence where a payload belongs')))
+        ->toThrow(RosterIsUnreadable::class, 'data');
+});
+
 it('refuses an undeclared entry that is not a row', function (): void {
     // A list of the right name holding the wrong thing. Refused by the field
     // that carried it rather than read as a container with nothing to say,
@@ -520,6 +527,23 @@ it('refuses a container the machine named but did not describe', function (): vo
         'undeclared' => [['id' => 'pihole', 'state' => 'running']],
     ])))->toThrow(RosterIsUnreadable::class);
 });
+
+it('reads every service the stack holds back, with what each waits for', function (): void {
+    $waiting = iterator_to_array(Rosters::whatIsWaiting(aRosterSaying(aRosterOf())), preserve_keys: false);
+
+    expect($waiting)->toHaveCount(1)
+        ->and($waiting[0]->service()->named())->toBe('gluetun')
+        ->and(iterator_to_array(Rosters::whatIsWaiting(aRosterSaying([...aRosterOf(), 'waiting' => []])), preserve_keys: false))->toBe([]);
+});
+
+it('refuses a listing that says nothing of what it holds back, or says it unreadably', function (array $waiting): void {
+    expect(fn(): TheServicesWaiting => Rosters::whatIsWaiting(aRosterSaying([...array_diff_key(aRosterOf(), ['waiting' => true]), ...$waiting])))
+        ->toThrow(RosterIsUnreadable::class);
+})->with([
+    'nothing said' => [[]],
+    'a word' => [['waiting' => 'gluetun']],
+    'a service with no name' => [['waiting' => [['service' => '', 'wants' => []]]]],
+]);
 
 it('stands in for a stack with a payload the contract would accept', function (): void {
     // Held to the generated types rather than to the reader, because a fixture

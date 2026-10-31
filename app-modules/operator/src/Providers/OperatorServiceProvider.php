@@ -55,6 +55,7 @@ use Modules\Operator\Internal\Screens\WhatTheStackItselfReads;
 use Modules\Operator\Internal\Screens\WhatTheWordsMean;
 use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
 use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
+use Modules\Operator\Internal\Screens\WhatThisServiceWaitsFor;
 use Modules\Operator\Internal\Screens\WhatThisStackIsSetTo;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
@@ -259,6 +260,8 @@ final class OperatorServiceProvider extends ServiceProvider
             // than held by the screen, so a frame whose URI names one service
             // cannot be showing another's lines under its heading.
             Router::native(AStacksScreen::Logs->value, WhatThisServiceSaid::class);
+
+            Router::native(AStacksScreen::Waiting->value, WhatThisServiceWaitsFor::class);
 
             // What the machine has changed about itself. Its own screen rather
             // than a section of the settings, because a setting is how the

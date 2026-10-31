@@ -370,5 +370,37 @@ final readonly class UnreadOnThePluginRollbacks
             'path' => 'PluginsEnvelope.update.install.reversed.reversed[].action.volume',
             'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.volume`: an update carries the new version\'s install account whole, and the one reader reads both.',
         ],
+        [
+            'path' => 'PluginsEnvelope.install.reversed.reversed[].action.service',
+            'because' => 'For `UndoEnvelope.reversed[].action.service`\'s reason: the same rollback report, carried inside a plugin install that did not hold.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.removal.went_back.reversed[].action.service',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.service`: what taking the plugin\'s changes off the machine came to is the same rollback report, read by the same reader.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.went_back.reversed[].action.service',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.service`: what putting the installed version\'s changes back came to is the same rollback report, read by the same reader.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.reversed.reversed[].action.service',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.service`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.reversed.reversed[].action.running',
+            'because' => 'For `UndoEnvelope.reversed[].action.running`\'s reason: the same rollback report, carried inside a plugin install that did not hold.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.removal.went_back.reversed[].action.running',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.running`: what taking the plugin\'s changes off the machine came to is the same rollback report, read by the same reader.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.went_back.reversed[].action.running',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.running`: what putting the installed version\'s changes back came to is the same rollback report, read by the same reader.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.reversed.reversed[].action.running',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.running`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
     ];
 }

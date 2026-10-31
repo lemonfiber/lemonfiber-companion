@@ -771,5 +771,9 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'the downloads the stack reported moving (`N30-R2`); where it could report none, there is '
                 . 'nothing to name, and no requirement asks the reason beside a check about to run.',
         ],
+        [
+            'path' => 'LifecycleEnvelope.secured',
+            'because' => 'What asking the egress guard to take up its control credential came to on a start. No `N` requirement asks what a verb came to to carry it: an install\'s account names it, and what `N16-R6` asks a start to name is what did not come back, which is read (`N1-R17`).',
+        ],
     ];
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Tests\Api;
 
+use function array_diff_key;
 use function array_map;
 
 use Closure;
@@ -186,6 +187,21 @@ it('reads each adapter writing the files of the service it fronts, and an instal
         ->and($silent)->toEqual(APluginAsItArrives::theReading());
 });
 
+it('reads each service an install would leave held back, with what it waits for', function (): void {
+    $waiting = PluginInstalls::in(pluginsSaying(APluginAsItArrives::theAnswer(APluginAsItArrives::aWaitingReadingOnTheWire(), APluginAsItArrives::AGREEMENT)['data']));
+
+    expect($waiting)->toEqual(APluginAsItArrives::theWaitingReading())
+        ->and(PluginInstalls::in(anInstallAnswerWith(static fn(array $data): array => $data)))->toEqual(APluginAsItArrives::theReading());
+});
+
+it('reads what securing the egress guard came to after the yes, and an install saying nothing of it as nothing to say', function (): void {
+    $secured = PluginInstalls::in(pluginsSaying(APluginAsItArrives::theAnswer(APluginAsItArrives::securedOnTheWire(), APluginAsItArrives::AGREEMENT)['data']));
+    $silent = PluginInstalls::in(pluginsSaying(APluginAsItArrives::theAnswer([...APluginAsItArrives::installedOnTheWire(), 'secured' => null], APluginAsItArrives::AGREEMENT)['data']));
+
+    expect($secured)->toEqual(APluginAsItArrives::theSecuredInstall())
+        ->and($silent)->toEqual(APluginAsItArrives::theInstall());
+});
+
 it('reads an update\'s new version writing the files of the service it fronts', function (): void {
     $update = PluginInstalls::in(pluginsSaying(APluginAsItArrives::theAnswerAbout('update', [...APluginAsItArrives::anUpdateReadingOnTheWire(), 'install' => APluginAsItArrives::aSharingReadingOnTheWire()])['data']));
 
@@ -333,6 +349,10 @@ function everyPluginsAnswerThatCannotBeRead(): array
         'a sharing that is not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => ['tdarr-adapter']])), $unreadable],
         'a sharing by no adapter' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => [['adapter' => ' ', 'upstream' => 'tdarr', 'at' => '/upstream']]])), $unreadable],
         'a sharing of no upstream' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => [['adapter' => 'tdarr-adapter', 'at' => '/upstream']]])), $unreadable],
+        'nothing said of what is held back' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => array_diff_key($install, ['waiting' => true]))), $unreadable],
+        'held back services that are a word' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'waiting' => 'tdarr'])), $unreadable],
+        'a held back service waiting for a kind nobody reads' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'waiting' => [['service' => 'tdarr', 'wants' => [['kind' => 'licence']]]]])), $unreadable],
+        'a guard secured in a number' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'secured' => 7])), $unreadable],
         'a sharing landing nowhere' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => [['adapter' => 'tdarr-adapter', 'upstream' => 'tdarr', 'at' => '']]])), $unreadable],
         'an override that is not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'overrides' => ['sonarr.rename']])), $unreadable],
         'checks that are not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'verified' => 'fine'])), $unreadable],

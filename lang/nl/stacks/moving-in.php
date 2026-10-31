@@ -105,6 +105,7 @@ return [
         'unassessable' => 'Of er iets met de hand is veranderd kon deze keer niet beoordeeld worden: wat lemonfiber het laatst schreef kon niet gelezen worden',
         'state' => [
             'wired' => 'Verbonden, en teruggelezen',
+            'restarted' => 'Verbonden, en van kracht zodra de service die het leest weer gestart is',
             'already_wired' => 'Was al verbonden; er is niets gedaan',
             'drifted' => 'Gehouden zoals jij het veranderde',
             'stale' => 'Nog de eigen waarde van lemonfiber, achter op wat het nu zou schrijven; gelaten zoals het is',

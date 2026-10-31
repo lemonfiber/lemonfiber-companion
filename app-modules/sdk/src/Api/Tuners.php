@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
+use function array_keys;
+
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
@@ -17,6 +19,7 @@ use Lemonfiber\Sdk\Generated\SettingsSetAction;
 use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\ASettingChange;
 use Modules\Kernel\Api\ASettingChangeAgreed;
+use Modules\Kernel\Api\ASettingChangeIsOneAct;
 use Modules\Kernel\Api\ChangingASetting;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\Job;
@@ -75,7 +78,7 @@ final readonly class Tuners implements SettingWhatServicesRead
     {
         try {
             return $this->work()->followed($stack, $session, $job, static fn(Envelope $envelope): TheSettingAsChanged => WhatTheSettingCameTo::in($envelope));
-        } catch (SettingsAreUnreadable|SettingSaysNothing|ServiceIsUnnamed $why) {
+        } catch (SettingsAreUnreadable|SettingSaysNothing|ASettingChangeIsOneAct|ServiceIsUnnamed $why) {
             return WhatBecameOfTheWork::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -91,9 +94,15 @@ final readonly class Tuners implements SettingWhatServicesRead
 
     private static function action(ASettingChange $change, ?string $offer): SettingsSetAction|SettingsClearAction
     {
+        $values = [];
+
+        foreach ($change as $setting => $value) {
+            $values[$setting] = $value->said();
+        }
+
         return match ($change->how()) {
-            ChangingASetting::Set => new SettingsSetAction(value: $change->value()->said(), setting: $change->setting(), offer: $offer),
-            ChangingASetting::Clear => new SettingsClearAction(setting: $change->setting(), offer: $offer),
+            ChangingASetting::Set => new SettingsSetAction(values: $values, offer: $offer),
+            ChangingASetting::Clear => new SettingsClearAction(settings: array_keys($values), offer: $offer),
         };
     }
 

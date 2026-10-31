@@ -21,6 +21,7 @@ final readonly class HowAConnectionEnded
     /** The states that carry nothing beside themselves. */
     private const array PLAIN = [
         WhereAConnectionStands::Wired,
+        WhereAConnectionStands::Restarted,
         WhereAConnectionStands::AlreadyWired,
         WhereAConnectionStands::Drifted,
         WhereAConnectionStands::Stale,

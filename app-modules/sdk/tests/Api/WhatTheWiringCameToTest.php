@@ -59,6 +59,7 @@ function aRunOfEveryState(): array
             ['connection' => 'Readarr into SABnzbd', 'severity' => $informational, 'state' => ['state' => 'observed', 'reason' => 'You declared it unmanaged']],
             ['connection' => 'Readarr into Prowlarr', 'severity' => $informational, 'state' => ['state' => 'refused', 'reason' => 'Two arrs share one root folder']],
             ['connection' => 'Sonarr into NZBGet', 'severity' => $informational, 'state' => ['state' => 'unmatched', 'reason' => 'NZBGet names no adapter lemonfiber pairs with Sonarr']],
+            ['connection' => 'Gluetun into qBittorrent', 'severity' => $informational, 'state' => ['state' => 'restarted', 'service' => 'qbittorrent']],
         ],
     ];
 }
@@ -130,6 +131,7 @@ it('reads every connection in its own state, with the stack\'s words and what a 
         'Readarr into SABnzbd|observed|You declared it unmanaged||||',
         'Readarr into Prowlarr|refused|Two arrs share one root folder||||',
         'Sonarr into NZBGet|unmatched|NZBGet names no adapter lemonfiber pairs with Sonarr||||',
+        'Gluetun into qBittorrent|restarted|||||',
     ]));
 });
 

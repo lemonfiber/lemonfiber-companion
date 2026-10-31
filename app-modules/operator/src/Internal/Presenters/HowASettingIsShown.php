@@ -7,10 +7,13 @@ namespace Modules\Operator\Internal\Presenters;
 use Modules\Kernel\Api\ASecret;
 use Modules\Kernel\Api\AServiceReadingIt;
 use Modules\Kernel\Api\ASetting;
+use Modules\Kernel\Api\TheChoices;
 use Modules\Kernel\Api\TheSecretsRead;
 use Modules\Kernel\Api\TheServicesReadingIt;
 use Modules\Kernel\Api\TheSettingsRead;
 use Modules\Kernel\Api\WhoseASettingIs;
+use Modules\Operator\Internal\Listed;
+use Modules\Operator\Internal\ViewModels\AChoiceAsShown;
 use Modules\Operator\Internal\ViewModels\ALineToSay;
 use Modules\Operator\Internal\ViewModels\ASecretAsShown;
 use Modules\Operator\Internal\ViewModels\AServiceReadingItAsShown;
@@ -32,6 +35,9 @@ final readonly class HowASettingIsShown
 
     /** The catalogue key for a secret that holds a value. */
     private const string HELD = 'plugins.settings.secret_held';
+
+    /** The catalogue key for what a value that is a choice only under other settings' values needs. */
+    private const string NEEDS = 'plugins.settings.needs';
 
     /** The catalogue key for a secret with no value yet. */
     private const string UNSET = 'plugins.settings.secret_unset';
@@ -88,7 +94,32 @@ final readonly class HowASettingIsShown
             isSet: $setting->value()->isHeld(),
             value: $setting->value()->said(),
             readers: $this->readers($setting->readers()),
+            choices: $this->choices($setting->choices()),
         );
+    }
+
+    /**
+     * Every value it accepts, each that is not a choice now with what it needs.
+     *
+     * @return list<AChoiceAsShown>
+     */
+    private function choices(TheChoices $choices): array
+    {
+        $shown = [];
+
+        foreach ($choices as $choice) {
+            $needs = [];
+            $hangsOn = [];
+
+            foreach ($choice->needs() as $setting => $values) {
+                $needs[] = new ALineToSay(self::NEEDS, ['setting' => $setting, 'values' => Listed::these(...$values)]);
+                $hangsOn[] = $setting;
+            }
+
+            $shown[] = new AChoiceAsShown($choice->value(), $choice->isOpenNow(), $needs, $hangsOn);
+        }
+
+        return $shown;
     }
 
     private function secret(ASecret $secret): ASecretAsShown

@@ -43,6 +43,7 @@ final readonly class WhatThisStackRunsTurnedOutToBe
      * @param HowTheReadingWent            $askedNow what this frame's asking met, which stands beside a kept listing where the stack did not answer
      * @param AgoAsShown                   $readAgo  how long ago the listing drawn was read, said only where it was kept
      * @param bool                         $waitsForTheStack whether the listing drawn is one the phone kept, so nothing on it can be acted on yet
+     * @param list<AServiceWaitingAsShown> $waiting  each service the stack holds back until the operator gives what it needs, none where the listing is kept or did not come back
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -55,7 +56,18 @@ final readonly class WhatThisStackRunsTurnedOutToBe
         public HowTheReadingWent $askedNow,
         public AgoAsShown $readAgo,
         public bool $waitsForTheStack,
+        public array $waiting = [],
     ) {}
+
+    /**
+     * The same listing, with these services held back.
+     *
+     * @param list<AServiceWaitingAsShown> $waiting
+     */
+    public function holdingBack(array $waiting): self
+    {
+        return new self($this->went, $this->services, $this->overall, $this->isSettling, $this->disturbs, $this->active, $this->leftOut, $this->askedNow, $this->readAgo, $this->waitsForTheStack, $waiting);
+    }
 
     /**
      * What it runs, and what it would run and has not got: everything but

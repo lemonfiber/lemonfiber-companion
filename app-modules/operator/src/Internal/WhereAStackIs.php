@@ -82,10 +82,15 @@ final readonly class WhereAStackIs
         return AStacksScreen::Trace->forTheStacksItem($this->stack, $item);
     }
 
-    /** What one of this machine's services has been saying. */
-    public function logsOf(ServiceId $service): string
+    /**
+     * One of this machine's screens about one of its services: what it has been saying, or everything it waits for while held back.
+     *
+     * A case whose path carries no service is refused by
+     * {@see AStacksScreen::forTheStacksService()}.
+     */
+    public function aboutItsService(AStacksScreen $screen, ServiceId $service): string
     {
-        return AStacksScreen::Logs->forTheStacksService($this->stack, $service);
+        return $screen->forTheStacksService($this->stack, $service);
     }
 
     /** One service of this machine, and the verbs about it. */

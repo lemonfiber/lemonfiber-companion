@@ -18,6 +18,7 @@ use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomethingElseRunning;
+use Modules\Kernel\Api\TheServicesWaiting;
 use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\WhatTheEngineCallsIt;
@@ -25,6 +26,7 @@ use Modules\Sdk\Api\Fields\StatusField;
 use Modules\Sdk\Internal\Costs;
 use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
+use Modules\Sdk\Internal\TheWaitingRead;
 use Modules\Sdk\Internal\WhatWasLeftOut;
 use Modules\Sdk\Internal\Wire;
 use Throwable;
@@ -124,6 +126,22 @@ final readonly class Rosters
         }
 
         return WhatElseIsRunning::these(...$found);
+    }
+
+    /**
+     * Every service the stack holds back until the operator gives what it needs to start.
+     *
+     * @param Envelope<mixed> $envelope the `status` envelope, as the client returned it
+     */
+    public static function whatIsWaiting(Envelope $envelope): TheServicesWaiting
+    {
+        $data = self::payload(Wire::checked($envelope));
+
+        if (! is_array($data)) {
+            throw RosterIsUnreadable::missing(WireField::Data);
+        }
+
+        return TheWaitingRead::in($data, RosterIsUnreadable::missing(WireField::Waiting));
     }
 
     /**

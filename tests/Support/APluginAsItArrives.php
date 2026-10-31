@@ -27,6 +27,7 @@ use Modules\Kernel\Api\AProof;
 use Modules\Kernel\Api\ARecipe;
 use Modules\Kernel\Api\ARecipeStep;
 use Modules\Kernel\Api\ARunPutBack;
+use Modules\Kernel\Api\AServiceWaiting;
 use Modules\Kernel\Api\ASettingItOverrides;
 use Modules\Kernel\Api\AShapeTaken;
 use Modules\Kernel\Api\ASourceAsked;
@@ -47,6 +48,7 @@ use Modules\Kernel\Api\ThePluginSources;
 use Modules\Kernel\Api\TheProofs;
 use Modules\Kernel\Api\TheRecipes;
 use Modules\Kernel\Api\TheRecipeSteps;
+use Modules\Kernel\Api\TheServicesWaiting;
 use Modules\Kernel\Api\TheSettingsItOverrides;
 use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Kernel\Api\TheUpstreamsWritten;
@@ -55,6 +57,7 @@ use Modules\Kernel\Api\TheVersionsItMovesBetween;
 use Modules\Kernel\Api\WhatAChangePuts;
 use Modules\Kernel\Api\WhatAnInstallChanges;
 use Modules\Kernel\Api\WhatAProofCameTo;
+use Modules\Kernel\Api\WhatAServiceWaitsFor;
 use Modules\Kernel\Api\WhatGoingBackDoes;
 use Modules\Kernel\Api\WhatPuttingTheOldVersionBackCameTo;
 use Modules\Kernel\Api\WhatTheChecksMade;
@@ -187,6 +190,7 @@ final readonly class APluginAsItArrives
             'taking' => [],
             'granting' => [],
             'sharing' => [],
+            'waiting' => [],
         ];
     }
 
@@ -461,7 +465,7 @@ final readonly class APluginAsItArrives
                 recorded: false,
                 changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(
                     AGrantAsked::of(ACredentialGrant::of(APluginId::called('tdarr'), 'plex.token', ServiceId::called('plex'), 'library-scan', AMomentAsWritten::inSeconds('')), self::GRANT_APPROVAL),
-                ), TheUpstreamsWritten::these()),
+                ), TheUpstreamsWritten::these(), TheServicesWaiting::none()),
                 proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
                 checks: WhatTheChecksMade::notAsked(),
             ),
@@ -510,7 +514,7 @@ final readonly class APluginAsItArrives
         return APluginInstall::reported(
             self::held(),
             recorded: false,
-            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), self::theGuard(), TheGrantsAsked::these(), TheUpstreamsWritten::these()),
+            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), self::theGuard(), TheGrantsAsked::these(), TheUpstreamsWritten::these(), TheServicesWaiting::none()),
             proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
             checks: WhatTheChecksMade::notAsked(),
         );
@@ -539,6 +543,70 @@ final readonly class APluginAsItArrives
         );
     }
 
+    /**
+     * The reading, with Tdarr held back until it is given a setting with choices and a secret.
+     *
+     * @return array<string, mixed>
+     */
+    public static function aWaitingReadingOnTheWire(): array
+    {
+        return [
+            ...self::aReadingOnTheWire(),
+            'waiting' => [['service' => 'tdarr', 'wants' => [['kind' => 'setting', 'setting' => 'tdarr.gpu', 'choices' => ['nvidia', 'none']], ['kind' => 'secret', 'secret' => 'tdarr.key']]]],
+        ];
+    }
+
+    /** The reading with Tdarr held back, as this app holds it. */
+    public static function theWaitingReading(): ThePlugins
+    {
+        return ThePlugins::aboutAnInstall(
+            TheInstalledPlugins::these(self::held()),
+            ThePluginSources::these(),
+            self::AGREEMENT,
+            APluginInstall::reported(
+                self::held(),
+                recorded: false,
+                changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these(), self::tdarrWaiting()),
+                proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
+                checks: WhatTheChecksMade::notAsked(),
+            ),
+        );
+    }
+
+    /** Tdarr, held back until it is given a setting with choices and a secret. */
+    public static function tdarrWaiting(): TheServicesWaiting
+    {
+        return TheServicesWaiting::these(AServiceWaiting::for(ServiceId::called('tdarr'), WhatAServiceWaitsFor::aSetting('tdarr.gpu', 'nvidia', 'none'), WhatAServiceWaitsFor::aSecret('tdarr.key')));
+    }
+
+    /**
+     * The account after the yes, where everything held and the egress guard restarted to take up its credential.
+     *
+     * @return array<string, mixed>
+     */
+    public static function securedOnTheWire(): array
+    {
+        return [...self::installedOnTheWire(), 'secured' => ' gluetun, restarted to take it up '];
+    }
+
+    /** The install that held, its egress guard restarted to take up its credential, as this app holds it. */
+    public static function theSecuredInstall(): ThePlugins
+    {
+        return ThePlugins::aboutAnInstall(
+            TheInstalledPlugins::these(self::held()),
+            ThePluginSources::these(),
+            self::AGREEMENT,
+            APluginInstall::reported(
+                self::held(),
+                recorded: true,
+                changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these(), TheServicesWaiting::none()),
+                proofs: TheProofs::these(self::proof(WhatAProofCameTo::passed())),
+                checks: WhatTheChecksMade::of(PluginLines::none(), PluginLines::none()),
+                secured: 'gluetun, restarted to take it up',
+            ),
+        );
+    }
+
     /** The install that held, as this app holds it. */
     public static function theInstall(): ThePlugins
     {
@@ -549,7 +617,7 @@ final readonly class APluginAsItArrives
             APluginInstall::reported(
                 self::held(),
                 recorded: true,
-                changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these()),
+                changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these(), TheServicesWaiting::none()),
                 proofs: TheProofs::these(self::proof(WhatAProofCameTo::passed())),
                 checks: WhatTheChecksMade::of(PluginLines::none(), PluginLines::none()),
             ),
@@ -562,7 +630,7 @@ final readonly class APluginAsItArrives
         return APluginInstall::reported(
             self::held(),
             recorded: false,
-            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these(AnAdapterWritingItsUpstream::by('tdarr-adapter', 'tdarr', '/upstream'))),
+            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these(AnAdapterWritingItsUpstream::by('tdarr-adapter', 'tdarr', '/upstream')), TheServicesWaiting::none()),
             proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
             checks: WhatTheChecksMade::notAsked(),
         );
@@ -609,7 +677,7 @@ final readonly class APluginAsItArrives
         return APluginInstall::reported(
             self::held(),
             recorded: false,
-            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these()),
+            changing: WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these(), TheServicesWaiting::none()),
             proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
             checks: WhatTheChecksMade::notAsked(),
         );
@@ -619,7 +687,7 @@ final readonly class APluginAsItArrives
     {
         return APluginInstall::putBack(
             self::held(),
-            WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these()),
+            WhatAnInstallChanges::these(self::changes(), self::contests(), self::overrides(), TheShapesTaken::these(), TheGrantsAsked::these(), TheUpstreamsWritten::these(), TheServicesWaiting::none()),
             TheProofs::these(self::proof(WhatAProofCameTo::failed(PluginLines::under('faults', 'It answered 502')))),
             WhatTheChecksMade::notAsked(),
             ARunPutBack::reported(

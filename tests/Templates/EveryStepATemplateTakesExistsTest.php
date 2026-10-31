@@ -45,7 +45,7 @@ use Tests\Support\Tree;
  * first step and this owns every step after it.
  *
  * **An argument may hold a call of its own**, and the parentheses have to be
- * counted rather than skipped to. `$this->goes()->logsOf($this->thing()->service->id)`
+ * counted rather than skipped to. `$this->goes()->aboutItsService(AStacksScreen::Logs, $this->thing()->service->id)`
  * read with a flat `[^()]*` stops at the inner `(`, so the call reads as a
  * property and the rule reports a method that is there as a field that is not.
  * One level of nesting is what a template writes; deeper than that is a step

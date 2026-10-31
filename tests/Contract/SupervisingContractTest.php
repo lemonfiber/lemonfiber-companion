@@ -9,6 +9,7 @@ use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\APortHeld;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AServiceLeftOut;
+use Modules\Kernel\Api\AServiceWaiting;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Disturbances;
@@ -32,7 +33,9 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
+use Modules\Kernel\Api\TheServicesWaiting;
 use Modules\Kernel\Api\TheStackEdits;
+use Modules\Kernel\Api\WhatAServiceWaitsFor;
 use Modules\Kernel\Api\WhatItTakesAway;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatLeansOnIt;
@@ -203,6 +206,10 @@ function whatAStackRunningSends(): array
                 'describes' => 'Something running beside the stack',
                 'state' => 'running',
             ]],
+            'waiting' => [
+                ['service' => 'gluetun', 'wants' => [['kind' => 'setting', 'setting' => 'vpn.provider', 'choices' => ['mullvad', 'pia']], ['kind' => 'secret', 'secret' => 'vpn.key']]],
+                ['service' => 'qbittorrent', 'wants' => [['kind' => 'service', 'service' => 'gluetun']]],
+            ],
         ],
     ];
 }
@@ -310,7 +317,7 @@ function everyWayOfSupervising(array $answered, ?Obstacle $why = null): array
     return [
         'the fake' => static fn(): Supervising => $why instanceof Obstacle
             ? AStackThatSupervises::met($why)
-            : AStackThatSupervises::with(theSameRunning())->declaring(Forms::these(Form::called('library'), Form::called('full'))),
+            : AStackThatSupervises::holdingBack(theSameRunning(), theSameWaiting())->declaring(Forms::these(Form::called('library'), Form::called('full'))),
         'the adapter' => static function () use ($answered): Supervising {
             MockClient::destroyGlobal();
             MockClient::global($answered);
@@ -319,6 +326,43 @@ function everyWayOfSupervising(array $answered, ?Obstacle $why = null): array
         },
     ];
 }
+
+/** What the listing above holds back, as the fake is handed it. */
+function theSameWaiting(): TheServicesWaiting
+{
+    return TheServicesWaiting::these(
+        AServiceWaiting::for(ServiceId::called('gluetun'), WhatAServiceWaitsFor::aSetting('vpn.provider', 'mullvad', 'pia'), WhatAServiceWaitsFor::aSecret('vpn.key')),
+        AServiceWaiting::for(ServiceId::called('qbittorrent'), WhatAServiceWaitsFor::aService(ServiceId::called('gluetun'))),
+    );
+}
+
+/** Every service held back, with what it waits for, folded to one line. */
+function everythingHeldBackIn(Supervising $supervising): string
+{
+    $said = [];
+
+    foreach ($supervising->running(aStackWithServices(), theSessionTheStackIsSupervisedWith())->waiting() as $waiting) {
+        $wants = [];
+
+        foreach ($waiting as $want) {
+            $wants[] = $want->either(
+                setting: static fn(string $setting, array $choices): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s(%s)', $setting, implode(',', $choices))),
+                secret: static fn(string $secret): TheWordCarriedOut => new TheWordCarriedOut(sprintf('secret %s', $secret)),
+                service: static fn(ServiceId $service): TheWordCarriedOut => new TheWordCarriedOut(sprintf('through %s', $service->named())),
+            )->said;
+        }
+
+        $said[] = sprintf('%s: %s', $waiting->service()->named(), implode(', ', $wants));
+    }
+
+    return implode(' | ', $said);
+}
+
+it('carries every service the stack holds back, with each setting, secret and service it waits for', function (): void {
+    foreach (everyWayOfSupervising(aRunningAnswer()) as $which => $make) {
+        expect(everythingHeldBackIn($make()))->toBe('gluetun: vpn.provider(mullvad,pia), secret vpn.key | qbittorrent: through gluetun', $which);
+    }
+});
 
 /** Every service, folded to a word each, so an order can be compared. */
 function everythingRunningIn(Supervising $supervising): string
@@ -574,6 +618,7 @@ it('an answer this app cannot read is an answer it could not read', function ():
                     'depends_on' => [],
                 ]],
                 'undeclared' => [],
+                'waiting' => [],
             ],
         ]),
     );

@@ -227,8 +227,17 @@ enum WireField: string implements NamesAWireField
      */
     case Filtered = 'filtered';
 
-    /** What a service left out would have needed to be started. */
+    /** What a service left out would have needed to be started, and what other settings a value or a reader needs. */
     case Needs = 'needs';
+
+    /** The presets in force, the overall choice first, and the values a setting accepts. */
+    case Choices = 'choices';
+
+    /** The services held back until the operator gives what they need to start. */
+    case Waiting = 'waiting';
+
+    /** Everything a service held back waits for. */
+    case Wants = 'wants';
 
     /**
      * Which of the two things an update reading is about — and, on a listing's

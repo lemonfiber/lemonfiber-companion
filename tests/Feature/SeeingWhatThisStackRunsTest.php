@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Design\View\Tone;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AServiceWaiting;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Fingerprint;
@@ -21,10 +22,13 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheServicesWaiting;
+use Modules\Kernel\Api\WhatAServiceWaitsFor;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatLeansOnIt;
 use Modules\Kernel\Api\Whose;
+use Modules\Operator\Internal\Screens\WhatThisServiceWaitsFor;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
 use Modules\Stacks\Api\AStacksScreen;
@@ -337,7 +341,7 @@ it('the way back to the machine and on to the logs are routes as well', function
     $screen = theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()));
 
     expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->logsOf(ServiceId::called('sonarr'))))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->aboutItsService(AStacksScreen::Logs, ServiceId::called('sonarr'))))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {
@@ -497,4 +501,41 @@ it('draws a service the forms left out and each form with no port, and what nobo
     $ports = count(array_filter($glyphs, static fn(string $glyph): bool => $glyph !== 'chevron_right'));
 
     expect($ports)->toBe(count($screen->answer()->installed()) + ($screen->answer()->notInstalled() === [] ? 0 : 1));
+});
+
+/** What the machine holds back: the guard, waiting on a setting with choices and a secret, and qbittorrent, which runs through it. */
+function whatTheMachineHoldsBack(): TheServicesWaiting
+{
+    return TheServicesWaiting::these(
+        AServiceWaiting::for(ServiceId::called('gluetun'), WhatAServiceWaitsFor::aSetting('vpn.provider', 'mullvad', 'pia'), WhatAServiceWaitsFor::aSetting('vpn.countries'), WhatAServiceWaitsFor::aSecret('vpn.key')),
+        AServiceWaiting::for(ServiceId::called('qbittorrent'), WhatAServiceWaitsFor::aService(ServiceId::called('gluetun'))),
+    );
+}
+
+it('draws each service the stack holds back apart from the services, with everything it waits for and the way to give it', function (): void {
+    $screen = theServicesScreen(AStackThatSupervises::holdingBack(WhatAMachineRuns::twoThings(), whatTheMachineHoldsBack()));
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $said = $drawn->said();
+    $theFirstService = array_search('Sonarr', $said, strict: true);
+
+    expect($said)->toContain(
+        __('plugins.waiting.heading'),
+        __('plugins.waiting.held_back', ['service' => 'gluetun']),
+        __('plugins.waiting.choice', ['setting' => 'vpn.provider', 'choices' => 'mullvad, pia']),
+        __('plugins.waiting.setting', ['setting' => 'vpn.countries']),
+        __('plugins.waiting.secret', ['secret' => 'vpn.key']),
+        __('plugins.waiting.held_back', ['service' => 'qbittorrent']),
+        __('plugins.waiting.service', ['service' => 'gluetun']),
+    )
+        ->and($theFirstService)->toBeInt()
+        ->and(array_slice($said, 0, is_int($theFirstService) ? $theFirstService : 0))->toContain(__('plugins.waiting.heading'), __('plugins.waiting.held_back', ['service' => 'qbittorrent']))
+        ->and($drawn->offers())->toContain(__('plugins.waiting.open', ['service' => 'gluetun']), __('plugins.waiting.open', ['service' => 'qbittorrent']))
+        ->and(array_map(static fn(WhatOneServiceSays $row): string => $row->id->named(), $screen->answer()->services))->toBe(['sonarr', 'jellyfin'])
+        ->and(NativeRouter::resolve($screen->goes()->aboutItsService(AStacksScreen::Waiting, ServiceId::called('gluetun')))['class'] ?? null)->toBe(WhatThisServiceWaitsFor::class);
+});
+
+it('draws no group of services held back where the stack holds none back', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())));
+
+    expect($drawn->said())->not->toContain(__('plugins.waiting.heading'));
 });

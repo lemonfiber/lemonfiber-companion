@@ -67,6 +67,12 @@ enum WhatGoingBackDoes: string
     /** A grant of a credential to a plugin is given back, or the one the change gave is ended. */
     case Regrant = 'regrant';
 
+    /** The media server's internal certificate is left as it is; only replacing it again puts it back. */
+    case Unreplaced = 'unreplaced';
+
+    /** A service is started again, or stopped again. */
+    case Run = 'run';
+
     /** The operator's own overlay is left as it stands, beyond what lemonfiber puts back. */
     case Leave = 'leave';
 

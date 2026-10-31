@@ -5,17 +5,20 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\ARefusalInItsWords;
+use Modules\Kernel\Api\ChangingASetting;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\TheSettingAsChanged;
+use Modules\Kernel\Api\TheSettingMoves;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
 use Modules\Operator\Internal\Listed;
+use Modules\Operator\Internal\ViewModels\ASettingMoveAsShown;
 use Modules\Operator\Internal\ViewModels\TheSettingChangeAsShown;
 use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
 /**
- * Where changing a setting has got to, as the template draws it.
+ * Where changing settings has got to, as the template draws it.
  */
 final readonly class HowASettingChangeReads
 {
@@ -68,16 +71,38 @@ final readonly class HowASettingChangeReads
             change: new TheSettingChangeAsShown(
                 didSaid: $report->did()->saidOnTheScreen(),
                 mayBeAgreed: $report->did() === WhatTheSettingRunDid::Rehearsed,
-                toDefault: ! $report->value()->isHeld(),
-                value: $report->value()->said(),
-                wasSet: $report->was()->isHeld(),
-                was: $report->was()->said(),
+                toDefault: $report->change()->how() === ChangingASetting::Clear,
+                moves: $this->moves($report->moves()),
                 restarts: $this->listed($report->reaches()->restarts()),
                 regenerates: $this->listed($report->reaches()->regenerates()),
-                consequence: $report->reaches()->consequence(),
+                starts: $this->listed($report->reaches()->starts()),
+                waiting: new HowAServiceWaitingReads()->these($report->reaches()->leavesWaiting()),
                 unrestarted: $report->reaches()->unrestarted(),
             ),
         );
+    }
+
+    /**
+     * Each setting the change moves, in the stack's order.
+     *
+     * @return list<ASettingMoveAsShown>
+     */
+    private function moves(TheSettingMoves $moves): array
+    {
+        $shown = [];
+
+        foreach ($moves as $move) {
+            $shown[] = new ASettingMoveAsShown(
+                setting: $move->setting(),
+                toDefault: ! $move->value()->isHeld(),
+                value: $move->value()->said(),
+                wasSet: $move->was()->isHeld(),
+                was: $move->was()->said(),
+                consequence: $move->consequence(),
+            );
+        }
+
+        return $shown;
     }
 
     /** The services, named and listed in their order. */

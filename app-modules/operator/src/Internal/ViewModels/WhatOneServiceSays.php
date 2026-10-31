@@ -25,7 +25,7 @@ use Modules\Operator\Internal\WhatTheLogsAreOpenedWith;
  *
  * **The id stays a {@see ServiceId} and is not flattened to text.** Everything
  * else here is a string because a template renders it, but this one is also
- * handed back to {@see \Modules\Operator\Internal\WhereAStackIs::logsOf()} —
+ * handed back to {@see \Modules\Operator\Internal\WhereAStackIs::aboutItsService()} —
  * and a template that had to build the value itself would be a template naming
  * a kernel class, which is the module boundary in the one file nothing
  * analyses as code.

@@ -104,6 +104,13 @@
         <x-operator::note>{{ __('plugins.granting.each') }}</x-operator::note>
     @endunless
 
+    <x-operator::heading>{{ __('plugins.waiting.once_installed') }}</x-operator::heading>
+    @forelse ($install->waiting as $waiting)
+        <x-operator::a-service-waiting :waiting="$waiting" />
+    @empty
+        <x-operator::note>{{ __('plugins.waiting.none_once_installed') }}</x-operator::note>
+    @endforelse
+
     {{-- Every recipe as its steps in order, and every value it would carry
          elsewhere as its own line with its own switch. --}}
     <x-operator::heading>{{ __('plugins.recipes') }}</x-operator::heading>
@@ -132,6 +139,10 @@
         @else
             <x-operator::note>{{ __('plugins.not_checked') }}</x-operator::note>
         @endif
+
+        @unless ($install->secured === '')
+            <x-operator::note>{{ __('plugins.secured', ['secured' => $install->secured]) }}</x-operator::note>
+        @endunless
 
         @if ($install->putBack !== null)
             {{-- What went back and what did not, each with its reason. --}}

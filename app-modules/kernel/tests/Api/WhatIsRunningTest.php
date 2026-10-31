@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\AServiceWaiting;
 use Modules\Kernel\Api\Daemon;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Disturbances;
@@ -10,6 +11,8 @@ use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\TheServicesWaiting;
+use Modules\Kernel\Api\WhatAServiceWaitsFor;
 use Modules\Kernel\Api\WhatElseIsRunning;
 use Modules\Kernel\Api\WhatIsRunning;
 use Modules\Kernel\Api\WhatItTakesAway;
@@ -56,7 +59,7 @@ it('a listing takes the arm that renders rows', function (): void {
         aServiceThatIsRunning(),
     );
 
-    expect(whatCameBackAboutWhatRuns(WhatIsRunning::these($daemons, WhatElseIsRunning::nothing())))->toBe('1 running');
+    expect(whatCameBackAboutWhatRuns(WhatIsRunning::these($daemons, WhatElseIsRunning::nothing(), TheServicesWaiting::none())))->toBe('1 running');
 });
 
 it('a stack running nothing is an answer and not a gap', function (): void {
@@ -64,11 +67,18 @@ it('a stack running nothing is an answer and not a gap', function (): void {
     // thing to do is start something. It must not fold together with *this
     // phone cannot reach the machine*, which looks identical on a screen and
     // means the opposite.
-    expect(whatCameBackAboutWhatRuns(WhatIsRunning::these(Daemons::none(whatTheRunningVerbsCostHere()), WhatElseIsRunning::nothing())))->toBe('0 running');
+    expect(whatCameBackAboutWhatRuns(WhatIsRunning::these(Daemons::none(whatTheRunningVerbsCostHere()), WhatElseIsRunning::nothing(), TheServicesWaiting::none())))->toBe('0 running');
 });
 
 it('an obstacle takes the other arm, carrying which one it was', function (): void {
     foreach (AnObstacleOfEachKind::all() as $why) {
         expect(whatCameBackAboutWhatRuns(WhatIsRunning::met($why)))->toBe($why->kind()->value);
     }
+});
+
+it('carries what the stack holds back beside what it runs, and nothing held back where it met an obstacle', function (): void {
+    $waiting = TheServicesWaiting::these(AServiceWaiting::for(ServiceId::called('gluetun'), WhatAServiceWaitsFor::aSecret('vpn.key')));
+
+    expect(WhatIsRunning::these(Daemons::none(whatTheRunningVerbsCostHere()), WhatElseIsRunning::nothing(), $waiting)->waiting())->toBe($waiting)
+        ->and(iterator_to_array(WhatIsRunning::met(AnObstacleOfEachKind::all()[0])->waiting(), preserve_keys: false))->toBe([]);
 });

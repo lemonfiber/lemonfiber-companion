@@ -17,9 +17,6 @@ enum QualityField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** The presets in force, the overall choice first. */
-    case Choices = 'choices';
-
     /** The resolution and encode a preset aims for. */
     case Resolution = 'resolution';
 

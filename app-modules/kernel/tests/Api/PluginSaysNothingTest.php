@@ -56,7 +56,7 @@ function everyWordAPluginOwes(): array
         'a step path' => [static fn(): object => ARecipeStep::calling('ask', 'GET', 'sonarr', ' ', ''), 'path'],
         'a value' => [static fn(): object => AValueItCarries::listed(' ', '', 'tdarr', '', '', ''), 'value'],
         'where a value goes' => [static fn(): object => AValueItCarries::listed('key', '', '', '', '', ''), 'to'],
-        'a change path' => [static fn(): object => APluginChange::at(' ', WhatAChangePuts::Region), 'path'],
+        'a change path' => [static fn(): object => APluginChange::at(' ', WhatAChangePuts::Document), 'path'],
         'a proof id' => [static fn(): object => AProof::of('', 'It answers', 'GET /', '', WhatAProofCameTo::notAsked()), 'proof'],
         'what a proof establishes' => [static fn(): object => AProof::of('answers', ' ', 'GET /', '', WhatAProofCameTo::notAsked()), 'establishes'],
         'what a proof asks' => [static fn(): object => AProof::of('answers', 'It answers', ' ', '', WhatAProofCameTo::notAsked()), 'asks'],

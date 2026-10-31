@@ -124,7 +124,6 @@ final readonly class HowAPluginAccountReads
         $taking = [];
 
         foreach ($install->taking() as $taken) {
-
             $taking[] = $this->shape($taken, $this->switchFor($taken->approval(), $approvals, $approved));
         }
 
@@ -150,6 +149,8 @@ final readonly class HowAPluginAccountReads
             broke: $this->lines($checks->broke()),
             unsettled: $this->lines($checks->unsettled()),
             putBack: $putBack instanceof HowPuttingARunBackWent ? $putBack : null,
+            waiting: new HowAServiceWaitingReads()->these($install->waiting()),
+            secured: $install->secured(),
         );
     }
 

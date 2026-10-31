@@ -1,1 +1,1 @@
-<native:chip native:key="{{ $named }}" label="{{ $label }}" a11y-label="{{ $named }}" :selected="$chosen" @change="{{ $tap }}" />
+<native:chip native:key="{{ $named }}" label="{{ $label }}" a11y-label="{{ $named }}" :selected="$chosen" :disabled="$disabled" @change="{{ $tap }}" />

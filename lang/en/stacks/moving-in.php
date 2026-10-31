@@ -118,6 +118,7 @@ return [
         // by hand is kept, not wired and not something to put back.
         'state' => [
             'wired' => 'Wired, and read back',
+            'restarted' => 'Wired, and in force once the service that reads it started again',
             'already_wired' => 'Already wired; nothing was done',
             'drifted' => 'Kept as you changed it',
             'stale' => 'Still lemonfiber\'s own value, behind what it would write now; left as it is',

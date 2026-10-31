@@ -116,6 +116,9 @@ enum AStacksScreen: string
     /** What one of this machine's services has been saying. */
     case Logs = '/stacks/{stack}/logs/{service}';
 
+    /** Everything one service this machine holds back waits for, and giving it the settings among that. */
+    case Waiting = '/stacks/{stack}/waiting/{service}';
+
     /**
      * What this machine says the member holding the session is owed, and what
      * they have asked it for: the member's Requests tab.

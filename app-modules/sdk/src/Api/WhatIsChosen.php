@@ -86,15 +86,15 @@ final readonly class WhatIsChosen
      */
     private static function choices(array $data): array
     {
-        if (! array_key_exists(QualityField::Choices->value, $data) || ! is_array($data[QualityField::Choices->value])) {
-            throw QualityIsUnreadable::missing(QualityEnvelope::KIND->value, QualityField::Choices);
+        if (! array_key_exists(WireField::Choices->value, $data) || ! is_array($data[WireField::Choices->value])) {
+            throw QualityIsUnreadable::missing(QualityEnvelope::KIND->value, WireField::Choices);
         }
 
         $found = [];
 
-        foreach (InTheOrderSent::rows($data[QualityField::Choices->value]) as $position => $row) {
+        foreach (InTheOrderSent::rows($data[WireField::Choices->value]) as $position => $row) {
             if (! is_array($row)) {
-                throw QualityIsUnreadable::entry(QualityEnvelope::KIND->value, QualityField::Choices, WireField::Preset, $position);
+                throw QualityIsUnreadable::entry(QualityEnvelope::KIND->value, WireField::Choices, WireField::Preset, $position);
             }
 
             $found[] = APresetInForce::reported(
@@ -119,7 +119,7 @@ final readonly class WhatIsChosen
     private static function transcodesHere(array $row, int $position): bool
     {
         if (! array_key_exists(QualityField::NeedsTranscodingHere->value, $row) || ! is_bool($row[QualityField::NeedsTranscodingHere->value])) {
-            throw QualityIsUnreadable::entry(QualityEnvelope::KIND->value, QualityField::Choices, QualityField::NeedsTranscodingHere, $position);
+            throw QualityIsUnreadable::entry(QualityEnvelope::KIND->value, WireField::Choices, QualityField::NeedsTranscodingHere, $position);
         }
 
         return $row[QualityField::NeedsTranscodingHere->value];
@@ -229,6 +229,6 @@ final readonly class WhatIsChosen
      */
     private static function inChoice(array $row, NamesAWireField $field, int $position): string
     {
-        return Required::text($row, $field, QualityIsUnreadable::entry(QualityEnvelope::KIND->value, QualityField::Choices, $field, $position));
+        return Required::text($row, $field, QualityIsUnreadable::entry(QualityEnvelope::KIND->value, WireField::Choices, $field, $position));
     }
 }

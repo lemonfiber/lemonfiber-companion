@@ -11,7 +11,7 @@ use function view;
 
 /**
  * One choice in a row of chips, drawn as chosen or not: which part of a list
- * is showing.
+ * is showing. A chip that is not a choice now is drawn and cannot be tapped.
  */
 final class Chip extends Component
 {
@@ -22,6 +22,7 @@ final class Chip extends Component
         public readonly string $tap,
         public readonly bool $chosen = false,
         string $answersTo = '',
+        public readonly bool $disabled = false,
     ) {
         $this->named = $answersTo === '' ? $label : $answersTo;
     }

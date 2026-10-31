@@ -638,7 +638,7 @@ it('the way back to the machine and on to the logs are routes as well', function
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()));
 
     expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Services)))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->logsOf(ServiceId::called('sonarr'))))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->aboutItsService(AStacksScreen::Logs, ServiceId::called('sonarr'))))->not->toBeNull();
 });
 
 it('draws the fetch\'s warning where a length would stand, and no length', function (): void {

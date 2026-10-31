@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\AChoice;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ASecret;
 use Modules\Kernel\Api\AServiceReadingIt;
+use Modules\Kernel\Api\AServiceWaiting;
 use Modules\Kernel\Api\ASetting;
 use Modules\Kernel\Api\ASettingChange;
 use Modules\Kernel\Api\ASettingChangeAgreed;
@@ -23,11 +25,16 @@ use Modules\Kernel\Api\SettingWhatServicesRead;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheChoices;
 use Modules\Kernel\Api\TheSecretsRead;
 use Modules\Kernel\Api\TheServicesReadingIt;
 use Modules\Kernel\Api\TheServicesSettings;
+use Modules\Kernel\Api\TheServicesWaiting;
 use Modules\Kernel\Api\TheSettingAsChanged;
+use Modules\Kernel\Api\TheSettingMoves;
 use Modules\Kernel\Api\TheSettingsRead;
+use Modules\Kernel\Api\WhatAChoiceNeeds;
+use Modules\Kernel\Api\WhatAServiceWaitsFor;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheChangeReaches;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
@@ -39,6 +46,7 @@ use Modules\Sdk\Api\Tuners;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\Response;
+use Tests\Support\ASettingChangeAsReported;
 use Tests\Support\Fakes\AStackThatTunesItsSettings;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
@@ -78,12 +86,24 @@ function whatAStackSaysOfItsSettings(array $changed = []): array
     return ['api_version' => 1, 'kind' => 'settings', 'data' => [
         'rehearsed' => false,
         'settings' => [
-            ['name' => 'vpn.countries', 'whose' => ['of' => 'namespace', 'namespace' => 'gluetun'], 'readers' => [['service' => 'gluetun', 'variable' => 'SERVER_COUNTRIES', 'default' => 'Netherlands']], 'value' => 'Belgium', 'environment' => 'GLUETUN_SERVER_COUNTRIES'],
-            ['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [['service' => 'caddy', 'variable' => 'DOMAIN'], ['service' => 'gluetun', 'variable' => 'PUBLIC_HOST']]],
+            ['name' => 'vpn.countries', 'whose' => ['of' => 'namespace', 'namespace' => 'gluetun'], 'readers' => [['service' => 'gluetun', 'variable' => 'SERVER_COUNTRIES', 'default' => 'Netherlands', 'needs' => [], 'met' => true]], 'value' => 'Belgium', 'environment' => 'GLUETUN_SERVER_COUNTRIES'],
+            ['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [['service' => 'caddy', 'variable' => 'DOMAIN', 'needs' => [], 'met' => true], ['service' => 'gluetun', 'variable' => 'PUBLIC_HOST', 'needs' => ['vpn.type' => ['wireguard']], 'met' => false]]],
+            ['name' => 'vpn.provider', 'whose' => ['of' => 'namespace', 'namespace' => 'gluetun'], 'readers' => [], 'value' => 'mullvad', 'choices' => [
+                ['value' => 'mullvad', 'needs' => [], 'open' => true],
+                ['value' => 'pia', 'needs' => ['vpn.type' => ['openvpn'], 'vpn.port' => ['1194', '1197']], 'open' => false],
+            ]],
         ],
         'secrets' => [
-            ['name' => 'vpn.key', 'whose' => ['of' => 'namespace', 'namespace' => 'gluetun'], 'readers' => [['service' => 'gluetun', 'variable' => 'WIREGUARD_PRIVATE_KEY']], 'held' => true, 'from' => 'operator'],
-            ['name' => 'proxy.token', 'whose' => ['of' => 'core'], 'readers' => [['service' => 'caddy', 'variable' => 'TOKEN']], 'held' => false],
+            ['name' => 'vpn.key', 'whose' => ['of' => 'namespace', 'namespace' => 'gluetun'], 'readers' => [['service' => 'gluetun', 'variable' => 'WIREGUARD_PRIVATE_KEY', 'needs' => [], 'met' => true]], 'held' => true, 'from' => 'operator'],
+            ['name' => 'proxy.token', 'whose' => ['of' => 'core'], 'readers' => [['service' => 'caddy', 'variable' => 'TOKEN', 'needs' => [], 'met' => true]], 'held' => false],
+        ],
+        'waiting' => [
+            ['service' => 'gluetun', 'wants' => [
+                ['kind' => 'setting', 'setting' => 'vpn.provider', 'choices' => ['mullvad', 'pia']],
+                ['kind' => 'setting', 'setting' => 'vpn.countries'],
+                ['kind' => 'secret', 'secret' => 'vpn.key'],
+            ]],
+            ['service' => 'qbittorrent', 'wants' => [['kind' => 'service', 'service' => 'gluetun']]],
         ],
         ...$changed,
     ]];
@@ -101,11 +121,11 @@ function whatAStackSaysOfAChangeToASetting(array $change = [], array $changed = 
     return whatAStackSaysOfItsSettings([
         'rehearsed' => true,
         'change' => [
-            'setting' => 'vpn.countries',
-            'value' => 'Germany',
-            'was' => 'Belgium',
+            'settings' => [['setting' => 'vpn.countries', 'value' => 'Germany', 'was' => 'Belgium']],
             'regenerates' => ['gluetun'],
             'restarts' => ['gluetun', 'qbittorrent'],
+            'starts' => [],
+            'waiting' => [],
             'applied' => false,
             'agreement' => 'settings-set:vpn.countries:7',
             ...$change,
@@ -121,21 +141,27 @@ function theSameSettingsTheServicesRead(): TheServicesSettings
         TheSettingsRead::these(
             ASetting::read('vpn.countries', WhoseASettingIs::theNamespaces('gluetun'), TheServicesReadingIt::these(AServiceReadingIt::of(ServiceId::called('gluetun'), 'SERVER_COUNTRIES', ASettingValue::value('Netherlands'))), ASettingValue::value('Belgium')),
             ASetting::read('domain', WhoseASettingIs::theCores(), TheServicesReadingIt::these(AServiceReadingIt::of(ServiceId::called('caddy'), 'DOMAIN', ASettingValue::nothing()), AServiceReadingIt::of(ServiceId::called('gluetun'), 'PUBLIC_HOST', ASettingValue::nothing())), ASettingValue::nothing()),
+            ASetting::read('vpn.provider', WhoseASettingIs::theNamespaces('gluetun'), TheServicesReadingIt::these(), ASettingValue::value('mullvad'))->among(TheChoices::these(
+                AChoice::of('mullvad', WhatAChoiceNeeds::nothing(), open: true),
+                AChoice::of('pia', WhatAChoiceNeeds::holding('vpn.type', 'openvpn')->and(WhatAChoiceNeeds::holding('vpn.port', '1194', '1197')), open: false),
+            )),
         ),
         TheSecretsRead::these(
             ASecret::read('vpn.key', WhoseASettingIs::theNamespaces('gluetun'), TheServicesReadingIt::these(AServiceReadingIt::of(ServiceId::called('gluetun'), 'WIREGUARD_PRIVATE_KEY', ASettingValue::nothing())), held: true, from: WhereASecretCameFrom::Operator),
             ASecret::read('proxy.token', WhoseASettingIs::theCores(), TheServicesReadingIt::these(AServiceReadingIt::of(ServiceId::called('caddy'), 'TOKEN', ASettingValue::nothing())), held: false, from: WhereASecretCameFrom::Unsaid),
         ),
-    );
+    )->holdingBack(TheServicesWaiting::these(
+        AServiceWaiting::for(ServiceId::called('gluetun'), WhatAServiceWaitsFor::aSetting('vpn.provider', 'mullvad', 'pia'), WhatAServiceWaitsFor::aSetting('vpn.countries'), WhatAServiceWaitsFor::aSecret('vpn.key')),
+        AServiceWaiting::for(ServiceId::called('qbittorrent'), WhatAServiceWaitsFor::aService(ServiceId::called('gluetun'))),
+    ));
 }
 
 /** The rehearsal that change payload stands for, as the fake is handed it. */
 function theSameRehearsalOfASetting(): TheSettingAsChanged
 {
     return TheSettingAsChanged::said(
-        ASettingChange::toHold('vpn.countries', 'Germany'),
-        ASettingValue::value('Belgium'),
-        WhatTheChangeReaches::said(Services::these(ServiceId::called('gluetun')), Services::these(ServiceId::called('gluetun'), ServiceId::called('qbittorrent')), '', ''),
+        ASettingChangeAsReported::moves(ASettingChange::toHold('vpn.countries', 'Germany'), ASettingValue::value('Belgium')),
+        WhatTheChangeReaches::said(Services::these(ServiceId::called('gluetun')), Services::these(ServiceId::called('gluetun'), ServiceId::called('qbittorrent')), Services::none(), TheServicesWaiting::none(), ''),
         WhatTheSettingRunDid::Rehearsed,
         AnOffer::named('settings-set:vpn.countries:7'),
         theSameSettingsTheServicesRead(),
@@ -208,11 +234,12 @@ function everySettingSaid(TheServicesSettings $settings): string
 
     foreach ($settings->settings() as $setting) {
         $said[] = sprintf(
-            '%s(%s)[%s]%s',
+            '%s(%s)[%s]%s%s',
             $setting->name(),
             whoseItIsSaid($setting->whose()),
             theReadersSaid($setting->readers()),
             $setting->value()->isHeld() ? sprintf('=%s', $setting->value()->said()) : '',
+            theChoicesSaid($setting->choices()),
         );
     }
 
@@ -227,7 +254,75 @@ function everySettingSaid(TheServicesSettings $settings): string
         );
     }
 
+    foreach ($settings->waiting() as $waiting) {
+        $said[] = sprintf('waiting %s', theWaitingSaid($waiting));
+    }
+
     return implode(' | ', $said);
+}
+
+/** A setting's choices, folded, or nothing where it lists none. */
+function theChoicesSaid(TheChoices $choices): string
+{
+    $said = [];
+
+    foreach ($choices as $choice) {
+        $needs = [];
+
+        foreach ($choice->needs() as $setting => $values) {
+            $needs[] = sprintf('%s=%s', $setting, implode('/', $values));
+        }
+
+        $said[] = sprintf('%s %s%s', $choice->value(), $choice->isOpenNow() ? 'open' : 'closed', $needs === [] ? '' : sprintf(' needs %s', implode(',', $needs)));
+    }
+
+    return $choices->isEmpty() ? '' : sprintf('{%s}', implode('; ', $said));
+}
+
+/** A service held back, and what it waits for, folded. */
+function theWaitingSaid(AServiceWaiting $waiting): string
+{
+    $wants = [];
+
+    foreach ($waiting as $want) {
+        $wants[] = $want->either(
+            setting: static fn(string $setting, array $choices): TheWordCarriedOut => new TheWordCarriedOut(sprintf('setting %s(%s)', $setting, implode(',', $choices))),
+            secret: static fn(string $secret): TheWordCarriedOut => new TheWordCarriedOut(sprintf('secret %s', $secret)),
+            service: static fn(ServiceId $service): TheWordCarriedOut => new TheWordCarriedOut(sprintf('service %s', $service->named())),
+        )->said;
+    }
+
+    return sprintf('%s: %s', $waiting->service()->named(), implode(', ', $wants));
+}
+
+/** Every service held back, folded. */
+function everyWaitingSaid(TheServicesWaiting $waiting): string
+{
+    $said = [];
+
+    foreach ($waiting as $one) {
+        $said[] = theWaitingSaid($one);
+    }
+
+    return implode(' + ', $said);
+}
+
+/** Each setting a change moved, folded. */
+function theMovesSaid(TheSettingMoves $moves): string
+{
+    $said = [];
+
+    foreach ($moves as $move) {
+        $said[] = sprintf(
+            '%s:%s>%s%s',
+            $move->setting(),
+            $move->was()->isHeld() ? $move->was()->said() : 'default',
+            $move->value()->isHeld() ? $move->value()->said() : 'default',
+            $move->consequence() === '' ? '' : sprintf('[%s]', $move->consequence()),
+        );
+    }
+
+    return implode(',', $said);
 }
 
 /** What reading came to, folded to one line. */
@@ -261,15 +356,14 @@ function whatTheSettingChangeCameTo(WhatBecameOfTheWork $became): string
     return $became->either(
         underway: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut(sprintf('following %s', $job->shown())),
         answered: static fn(TheSettingAsChanged $report): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
-            '%s|%s|%s|%s|regenerates %s|restarts %s|%s|%s|%s|%d settings',
+            '%s|%s|regenerates %s|restarts %s|starts %s|waiting %s|%s|%s|%d settings',
             $report->did()->value,
-            $report->setting(),
-            $report->value()->isHeld() ? $report->value()->said() : 'default',
-            $report->was()->isHeld() ? $report->was()->said() : 'default',
+            theMovesSaid($report->moves()),
             theServicesSaid($report->reaches()->regenerates()),
             theServicesSaid($report->reaches()->restarts()),
+            theServicesSaid($report->reaches()->starts()),
+            everyWaitingSaid($report->reaches()->leavesWaiting()),
             $report->offer()->either(named: static fn(string $named): TheWordCarriedOut => new TheWordCarriedOut($named), none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no offer'))->said,
-            $report->reaches()->consequence(),
             $report->reaches()->unrestarted(),
             iterator_count($report->settings()->settings()),
         )),
@@ -286,7 +380,7 @@ function theYesToGermany(): ASettingChangeAgreed
 }
 
 /** What the listing above folds to. */
-const EVERY_SETTING_SAID = 'vpn.countries(gluetun)[gluetun:SERVER_COUNTRIES=Netherlands]=Belgium | domain(core)[caddy:DOMAIN,gluetun:PUBLIC_HOST] | secret vpn.key(gluetun)[gluetun:WIREGUARD_PRIVATE_KEY] held operator | secret proxy.token(core)[caddy:TOKEN] unset unsaid';
+const EVERY_SETTING_SAID = 'vpn.countries(gluetun)[gluetun:SERVER_COUNTRIES=Netherlands]=Belgium | domain(core)[caddy:DOMAIN,gluetun:PUBLIC_HOST] | vpn.provider(gluetun)[]=mullvad{mullvad open; pia closed needs vpn.type=openvpn,vpn.port=1194/1197} | secret vpn.key(gluetun)[gluetun:WIREGUARD_PRIVATE_KEY] held operator | secret proxy.token(core)[caddy:TOKEN] unset unsaid | waiting gluetun: setting vpn.provider(mullvad,pia), setting vpn.countries(), secret vpn.key | waiting qbittorrent: service gluetun';
 
 it('reads every setting and secret the services read, whose each is and who reads it, never a secret\'s value', function (): void {
     $ways = [
@@ -300,7 +394,7 @@ it('reads every setting and secret the services read, whose each is and who read
 });
 
 it('reads none at all as an answer, not as a listing it could not read', function (): void {
-    expect(whatTheSettingsCameTo(aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfItsSettings(['settings' => [], 'secrets' => [], 'unvetted' => ['overlay' => 'compose.override.yml', 'services' => ['gluetun']]]))))->readOn(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith())))
+    expect(whatTheSettingsCameTo(aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfItsSettings(['settings' => [], 'secrets' => [], 'waiting' => [], 'unvetted' => ['overlay' => 'compose.override.yml', 'services' => ['gluetun']]]))))->readOn(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith())))
         ->toBe('');
 });
 
@@ -332,6 +426,32 @@ it('reads a listing it cannot read whole as one it could not read, never as a sh
     'a default that is not text' => [['settings' => [['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [['service' => 'caddy', 'variable' => 'DOMAIN', 'default' => 443]]]]]],
     'a value that is not text' => [['settings' => [['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [], 'value' => false]]]],
     'no secrets' => [['secrets' => 'none']],
+    'choices that are a word' => [['settings' => [['name' => 'vpn.provider', 'whose' => ['of' => 'core'], 'readers' => [], 'choices' => 'mullvad']]]],
+    'choices keyed rather than listed' => [['settings' => [['name' => 'vpn.provider', 'whose' => ['of' => 'core'], 'readers' => [], 'choices' => ['first' => ['value' => 'mullvad', 'needs' => [], 'open' => true]]]]]],
+    'a choice that is a word' => [['settings' => [['name' => 'vpn.provider', 'whose' => ['of' => 'core'], 'readers' => [], 'choices' => ['mullvad']]]]],
+    'a choice with no value' => [['settings' => [['name' => 'vpn.provider', 'whose' => ['of' => 'core'], 'readers' => [], 'choices' => [['needs' => [], 'open' => true]]]]]],
+    'a choice whose value is not text' => [['settings' => [['name' => 'vpn.provider', 'whose' => ['of' => 'core'], 'readers' => [], 'choices' => [['value' => 7, 'needs' => [], 'open' => true]]]]]],
+    'a choice with no word on what it needs' => [['settings' => [['name' => 'vpn.provider', 'whose' => ['of' => 'core'], 'readers' => [], 'choices' => [['value' => 'mullvad', 'open' => true]]]]]],
+    'needs listed rather than keyed by setting' => [['settings' => [['name' => 'vpn.provider', 'whose' => ['of' => 'core'], 'readers' => [], 'choices' => [['value' => 'pia', 'needs' => [['openvpn']], 'open' => false]]]]]],
+    'a need that is a word' => [['settings' => [['name' => 'vpn.provider', 'whose' => ['of' => 'core'], 'readers' => [], 'choices' => [['value' => 'pia', 'needs' => ['vpn.type' => 'openvpn'], 'open' => false]]]]]],
+    'a need keyed rather than listed' => [['settings' => [['name' => 'vpn.provider', 'whose' => ['of' => 'core'], 'readers' => [], 'choices' => [['value' => 'pia', 'needs' => ['vpn.type' => ['first' => 'openvpn']], 'open' => false]]]]]],
+    'a needed value that is not text' => [['settings' => [['name' => 'vpn.provider', 'whose' => ['of' => 'core'], 'readers' => [], 'choices' => [['value' => 'pia', 'needs' => ['vpn.type' => [7]], 'open' => false]]]]]],
+    'a choice with no word on whether it is open' => [['settings' => [['name' => 'vpn.provider', 'whose' => ['of' => 'core'], 'readers' => [], 'choices' => [['value' => 'mullvad', 'needs' => []]]]]]],
+    'no word on what is waiting' => [['waiting' => null]],
+    'waiting keyed rather than listed' => [['waiting' => ['gluetun' => ['service' => 'gluetun', 'wants' => []]]]],
+    'a service waiting that is a word' => [['waiting' => ['gluetun']]],
+    'a service waiting with no name' => [['waiting' => [['service' => ' ', 'wants' => []]]]],
+    'a service waiting for nothing said' => [['waiting' => [['service' => 'gluetun']]]],
+    'wants keyed rather than listed' => [['waiting' => [['service' => 'gluetun', 'wants' => ['first' => ['kind' => 'secret', 'secret' => 'vpn.key']]]]]],
+    'a want that is a word' => [['waiting' => [['service' => 'gluetun', 'wants' => ['vpn.key']]]]],
+    'a want of a kind this app does not read' => [['waiting' => [['service' => 'gluetun', 'wants' => [['kind' => 'licence', 'licence' => 'pro']]]]]],
+    'a want with no kind' => [['waiting' => [['service' => 'gluetun', 'wants' => [['secret' => 'vpn.key']]]]]],
+    'a setting waited for with no name' => [['waiting' => [['service' => 'gluetun', 'wants' => [['kind' => 'setting', 'setting' => ' ']]]]]],
+    'choices waited for that are a word' => [['waiting' => [['service' => 'gluetun', 'wants' => [['kind' => 'setting', 'setting' => 'vpn.provider', 'choices' => 'mullvad']]]]]],
+    'choices waited for keyed rather than listed' => [['waiting' => [['service' => 'gluetun', 'wants' => [['kind' => 'setting', 'setting' => 'vpn.provider', 'choices' => ['first' => 'mullvad']]]]]]],
+    'a choice waited for that is not text' => [['waiting' => [['service' => 'gluetun', 'wants' => [['kind' => 'setting', 'setting' => 'vpn.provider', 'choices' => [7]]]]]]],
+    'a secret waited for with no name' => [['waiting' => [['service' => 'gluetun', 'wants' => [['kind' => 'secret']]]]]],
+    'a service waited for with no name' => [['waiting' => [['service' => 'qbittorrent', 'wants' => [['kind' => 'service', 'service' => ' ']]]]]],
     'a secret that is a word' => [['secrets' => ['vpn.key']]],
     'a secret with no word on whether it is held' => [['secrets' => [['name' => 'vpn.key', 'whose' => ['of' => 'core'], 'readers' => []]]]],
     'a secret from somewhere this app does not read' => [['secrets' => [['name' => 'vpn.key', 'whose' => ['of' => 'core'], 'readers' => [], 'held' => true, 'from' => 'neighbour']]]],
@@ -343,9 +463,9 @@ it('reads a payload that is not a table as a listing it could not read', functio
 });
 
 it('reads a setting set to nothing apart from one left as it came', function (): void {
-    $empty = aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfItsSettings(['settings' => [['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [], 'value' => '']], 'secrets' => []]))))
+    $empty = aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfItsSettings(['settings' => [['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [], 'value' => '']], 'secrets' => [], 'waiting' => []]))))
         ->readOn(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith());
-    $unset = aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfItsSettings(['settings' => [['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [], 'value' => null]], 'secrets' => []]))))
+    $unset = aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfItsSettings(['settings' => [['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [], 'value' => null]], 'secrets' => [], 'waiting' => []]))))
         ->readOn(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith());
 
     expect(whatTheSettingsCameTo($empty))->toBe('domain(core)[]=')
@@ -353,7 +473,7 @@ it('reads a setting set to nothing apart from one left as it came', function ():
 });
 
 it('reads where a secret came from in each of the stack\'s words', function (string $from, WhereASecretCameFrom $said): void {
-    $read = aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfItsSettings(['settings' => [], 'secrets' => [['name' => 'vpn.key', 'whose' => ['of' => 'core'], 'readers' => [], 'held' => true, 'from' => $from]]]))))
+    $read = aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfItsSettings(['settings' => [], 'secrets' => [['name' => 'vpn.key', 'whose' => ['of' => 'core'], 'readers' => [], 'held' => true, 'from' => $from]], 'waiting' => []]))))
         ->readOn(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith());
 
     expect(whatTheSettingsCameTo($read))->toBe(sprintf('secret vpn.key(core)[] held %s', $said->value));
@@ -384,18 +504,32 @@ it('reads what the work came to, the rehearsal labelled as one with what it rege
 
     foreach ($ways as $which => $build) {
         expect(whatTheSettingChangeCameTo($build()->whatBecameOf(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith(), Job::named(AStackThatTunesItsSettings::THE_REHEARSAL))))
-            ->toBe('rehearsed|vpn.countries|Germany|Belgium|regenerates gluetun|restarts gluetun,qbittorrent|settings-set:vpn.countries:7|||2 settings', $which);
+            ->toBe('rehearsed|vpn.countries:Belgium>Germany|regenerates gluetun|restarts gluetun,qbittorrent|starts |waiting |settings-set:vpn.countries:7||3 settings', $which);
     }
 });
 
 it('reads a written change back to the default, with what it costs and why nothing restarted', function (): void {
     $written = aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfAChangeToASetting(
-        ['value' => null, 'was' => null, 'applied' => true, 'restarts' => [], 'consequence' => ' The tunnel drops for a moment ', 'unrestarted' => ' gluetun was stopped '],
+        ['settings' => [['setting' => 'vpn.countries', 'value' => null, 'was' => null, 'consequence' => ' The tunnel drops for a moment ']], 'applied' => true, 'restarts' => [], 'unrestarted' => ' gluetun was stopped '],
         ['rehearsed' => false],
     ))));
 
     expect(whatTheSettingChangeCameTo($written->whatBecameOf(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith(), Job::named('a-job'))))
-        ->toBe('applied|vpn.countries|default|default|regenerates gluetun|restarts |settings-set:vpn.countries:7|The tunnel drops for a moment|gluetun was stopped|2 settings');
+        ->toBe('applied|vpn.countries:default>default[The tunnel drops for a moment]|regenerates gluetun|restarts |starts |waiting |settings-set:vpn.countries:7|gluetun was stopped|3 settings');
+});
+
+it('reads every setting one change moves, each with what moving it costs, and the services it starts and leaves waiting', function (): void {
+    $moved = aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfAChangeToASetting([
+        'settings' => [
+            ['setting' => 'vpn.provider', 'was' => 'mullvad', 'value' => 'pia', 'consequence' => 'The tunnel drops for a moment'],
+            ['setting' => 'vpn.type', 'was' => 'wireguard', 'value' => 'openvpn'],
+        ],
+        'starts' => ['gluetun'],
+        'waiting' => [['service' => 'qbittorrent', 'wants' => [['kind' => 'secret', 'secret' => 'vpn.user']]]],
+    ]))));
+
+    expect(whatTheSettingChangeCameTo($moved->whatBecameOf(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith(), Job::named('a-job'))))
+        ->toBe('rehearsed|vpn.provider:mullvad>pia[The tunnel drops for a moment],vpn.type:wireguard>openvpn|regenerates gluetun|restarts gluetun,qbittorrent|starts gluetun|waiting qbittorrent: secret vpn.user|settings-set:vpn.countries:7||3 settings');
 });
 
 it('reads a run that neither rehearsed nor wrote as one that wrote nothing', function (): void {
@@ -438,9 +572,19 @@ it('reads work that came back unreadable as an answer it could not read', functi
         ->toBe(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
     'no change at all' => [[], ['change' => null]],
-    'a change to no setting' => [['setting' => ''], []],
-    'a value that is not text' => [['value' => 3], []],
-    'what it was, as a list' => [['was' => ['Belgium']], []],
+    'no settings moved' => [['settings' => []], []],
+    'settings moved that are a word' => [['settings' => 'vpn.countries'], []],
+    'settings moved keyed rather than listed' => [['settings' => ['first' => ['setting' => 'vpn.countries']]], []],
+    'a move that is a word' => [['settings' => ['vpn.countries']], []],
+    'a move of no setting' => [['settings' => [['setting' => '']]], []],
+    'a move with a value that is not text' => [['settings' => [['setting' => 'vpn.countries', 'value' => 3]]], []],
+    'a move from what it was, as a list' => [['settings' => [['setting' => 'vpn.countries', 'was' => ['Belgium']]]], []],
+    'a move whose cost is not text' => [['settings' => [['setting' => 'vpn.countries', 'value' => 'Germany', 'consequence' => 7]]], []],
+    'moves both giving a value and putting one back' => [['settings' => [['setting' => 'vpn.countries', 'value' => 'Germany'], ['setting' => 'vpn.type', 'value' => null]]], []],
+    'no word on what it starts' => [['starts' => null], []],
+    'no word on what it leaves waiting' => [['waiting' => null], []],
+    'a service left waiting that is a word' => [['waiting' => ['gluetun']], []],
+    'why nothing restarted, as a number' => [['unrestarted' => 7], []],
     'restarts that are a word' => [['restarts' => 'gluetun'], []],
     'restarts keyed rather than listed' => [['restarts' => ['first' => 'gluetun']], []],
     'a restart that is not a name' => [['restarts' => [7]], []],
@@ -458,7 +602,7 @@ it('reads work that came back unreadable as an answer it could not read', functi
  */
 function whatWasSentAboutASetting(Response $recorded): array
 {
-    $body = $recorded->getPendingRequest()->body()?->all();
+    $body = json_decode((string) json_encode($recorded->getPendingRequest()->body()?->all()), associative: true);
 
     return [
         'to' => $recorded->getPendingRequest()->getRequest()->resolveEndpoint(),
@@ -474,26 +618,38 @@ it('rehearses as a dry run carrying no offer, and the yes carries the offer that
 
     [$rehearsal, $yes] = array_map(whatWasSentAboutASetting(...), MockClient::global()->getRecordedResponses());
 
-    expect($rehearsal)->toMatchArray(['to' => '/api/actions/settings-set', 'dry_run' => true, 'setting' => 'vpn.countries', 'value' => 'Germany'])
+    expect($rehearsal)->toMatchArray(['to' => '/api/actions/settings-set', 'dry_run' => true, 'values' => ['vpn.countries' => 'Germany']])
         ->and($rehearsal['offer'] ?? null)->toBeNull()
-        ->and($yes)->toMatchArray(['to' => '/api/actions/settings-set', 'setting' => 'vpn.countries', 'value' => 'Germany', 'offer' => 'settings-set:vpn.countries:7'])
+        ->and($yes)->toMatchArray(['to' => '/api/actions/settings-set', 'values' => ['vpn.countries' => 'Germany'], 'offer' => 'settings-set:vpn.countries:7'])
         ->and($yes['dry_run'] ?? false)->toBeFalse();
 });
 
 it('puts a setting back to its default with settings-clear, naming no value', function (): void {
     $tuners = aTunerAnswered(aChangeToASettingTakenOn('a'), aChangeToASettingTakenOn('b'));
     $back = ASettingChange::backToDefault('vpn.countries');
-    $rehearsal = TheSettingAsChanged::said($back, ASettingValue::value('Belgium'), WhatTheChangeReaches::said(Services::none(), Services::none(), '', ''), WhatTheSettingRunDid::Rehearsed, AnOffer::none(), theSameSettingsTheServicesRead());
+    $rehearsal = TheSettingAsChanged::said(ASettingChangeAsReported::moves($back, ASettingValue::value('Belgium')), WhatTheChangeReaches::said(Services::none(), Services::none(), Services::none(), TheServicesWaiting::none(), ''), WhatTheSettingRunDid::Rehearsed, AnOffer::none(), theSameSettingsTheServicesRead());
 
     $tuners->rehearse(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith(), $back);
     $tuners->carryOut(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith(), ASettingChangeAgreed::after($rehearsal, $back));
 
     [$rehearsed, $yes] = array_map(whatWasSentAboutASetting(...), MockClient::global()->getRecordedResponses());
 
-    expect($rehearsed)->toMatchArray(['to' => '/api/actions/settings-clear', 'dry_run' => true, 'setting' => 'vpn.countries'])
-        ->and($yes)->toMatchArray(['to' => '/api/actions/settings-clear', 'setting' => 'vpn.countries'])
-        ->and(array_key_exists('value', $yes))->toBeFalse()
+    expect($rehearsed)->toMatchArray(['to' => '/api/actions/settings-clear', 'dry_run' => true, 'settings' => ['vpn.countries']])
+        ->and($yes)->toMatchArray(['to' => '/api/actions/settings-clear', 'settings' => ['vpn.countries']])
+        ->and(array_key_exists('values', $yes))->toBeFalse()
         ->and($yes['offer'] ?? null)->toBeNull();
+});
+
+it('asks every setting one change moves in the one request', function (): void {
+    $tuners = aTunerAnswered(aChangeToASettingTakenOn('a'), aChangeToASettingTakenOn('b'));
+
+    $tuners->rehearse(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith(), ASettingChange::toHold('vpn.provider', 'pia')->andAlso(ASettingChange::toHold('vpn.type', 'openvpn')));
+    $tuners->rehearse(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith(), ASettingChange::backToDefault('vpn.provider')->andAlso(ASettingChange::backToDefault('vpn.type')));
+
+    [$set, $cleared] = array_map(whatWasSentAboutASetting(...), MockClient::global()->getRecordedResponses());
+
+    expect($set)->toMatchArray(['to' => '/api/actions/settings-set', 'values' => ['vpn.provider' => 'pia', 'vpn.type' => 'openvpn']])
+        ->and($cleared)->toMatchArray(['to' => '/api/actions/settings-clear', 'settings' => ['vpn.provider', 'vpn.type']]);
 });
 
 it('the fake remembers each reading, each change rehearsed and agreed to, and each handle followed', function (): void {

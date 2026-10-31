@@ -31,6 +31,7 @@ use Modules\Operator\Internal\Screens\WhatRunningChecksDisturbs;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
 use Modules\Operator\Internal\Screens\WhatTheStackItselfReads;
 use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
+use Modules\Operator\Internal\Screens\WhatThisServiceWaitsFor;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
@@ -77,6 +78,7 @@ const EVERY_SCREEN_FOLLOWING_WORK = [
     WhatItHoldsToLetThemIn::class,
     WhatTheHouseholdIsAllowed::class,
     WhatTheStackItselfReads::class,
+    WhatThisServiceWaitsFor::class,
     WhatWouldBePutRight::class,
 ];
 
