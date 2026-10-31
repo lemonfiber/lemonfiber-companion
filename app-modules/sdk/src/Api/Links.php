@@ -124,10 +124,10 @@ final readonly class Links
      */
     private static function settled(array $reaches, int $position): WhatSettledIt
     {
-        $settled = self::table($reaches, WiringField::Settled, $position);
-        $said = self::text($settled, WiringField::Wired, WiringField::Settled, $position);
+        $settled = self::table($reaches, WireField::Settled, $position);
+        $said = self::text($settled, WiringField::Wired, WireField::Settled, $position);
 
-        return match (HowItSettled::tryFrom($said) ?? throw LinksAreUnreadable::unnamed(WiringField::Settled, $said, $position)) {
+        return match (HowItSettled::tryFrom($said) ?? throw LinksAreUnreadable::unnamed(WireField::Settled, $said, $position)) {
             HowItSettled::Outright => WhatSettledIt::outright(),
             HowItSettled::Each => WhatSettledIt::each(),
             HowItSettled::Contested => WhatSettledIt::contested(self::services($settled, WireField::Claimants, $position)),

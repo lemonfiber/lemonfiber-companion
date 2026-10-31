@@ -270,12 +270,6 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'confirmation here because there is no change.',
         ],
         [
-            'path' => 'CredentialsEnvelope.held[].fingerprint',
-            'because' => 'A short likeness of the value, for telling two copies apart in a report. Nothing on the '
-                . 'credentials screen compares copies, and a likeness of a value drawn beside a credential is '
-                . 'the nearest this surface would come to drawing the value, which `N9-R4` refuses.',
-        ],
-        [
             'path' => 'CredentialsEnvelope.held[].from',
             'because' => 'Whose line the credential is: the stack\'s own, or an installed plugin\'s. `N9-R3` asks '
                 . 'who produced it, which `origin` answers. `N25-R13` asks for a plugin\'s secrets on the plugin, '
@@ -285,19 +279,39 @@ final readonly class UnreadOnEnvelopesAToL
         [
             'path' => 'CredentialsEnvelope.held[].location',
             'because' => 'Where the value lives on the machine, as a path. It is where somebody at the machine '
-                . 'goes to replace it, and nothing on this surface replaces a credential (`N9-R4`); a path on a '
-                . 'phone is a direction to a place the person holding it is not.',
+                . 'goes to set it, which is never done from here (`N9-R4`), and the internal certificate replaced from '
+                . 'here is made in place by the core (`N9-R14`); a path on a phone is a direction to a place the person '
+                . 'holding it is not.',
+        ],
+        [
+            'path' => 'CredentialsEnvelope.rotated.credential',
+            'because' => 'Which credential a replacement was of, by the inventory\'s name. This app asks to replace the internal '
+                . 'certificate alone, so the answer is about the one it asked of, which the credentials screen lists by its '
+                . 'own entry (`N9-R13`).',
+        ],
+        [
+            'path' => 'CredentialsEnvelope.rotated.settled.afterwards',
+            'because' => 'What a rehearsed replacement would still owe once carried out. The internal certificate\'s reading '
+                . 'owes nothing afterwards, and `N9-R14` asks for the holders and the restart, which `detail` says in '
+                . 'the stack\'s words.',
+        ],
+        [
+            'path' => 'CredentialsEnvelope.rotated.settled.location',
+            'because' => 'Where on the machine the value a replacement would write over is kept, as a path. It is where somebody '
+                . 'at the machine goes, and a path on a phone is a direction to a place the person holding it is not; '
+                . '`N9-R14` asks for what the replacement does, not where.',
+        ],
+        [
+            'path' => 'CredentialsEnvelope.rotated.settled.known',
+            'because' => 'The credential names a stack would have accepted, where none answers to the one asked. This app '
+                . 'asks by the one name the contract gives the internal certificate, and says the stack holds none; '
+                . 'a list of names to ask by instead is for the terminal (`N9-R15`).',
         ],
         [
             'path' => 'CredentialsEnvelope.revealed',
             'because' => 'One value, handed back only where an operator asked at the terminal to see it and '
                 . 'confirmed. This app never asks for one and never draws one (`N9-R4`), so the field that '
                 . 'could carry a value is the one field of this envelope that is never read.',
-        ],
-        [
-            'path' => 'CredentialsEnvelope.rotated',
-            'because' => 'What became of a rotation, where one was asked for. Rotating is done at the machine, '
-                . 'and nothing here asks for one, so no answer this app receives carries it.',
         ],
         [
             'path' => 'KeysEnvelope.keys[].revoked',

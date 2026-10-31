@@ -25,7 +25,7 @@ it('names the list, the row and the field of an entry it could not read', functi
 });
 
 it('names the field and the word it has no case for', function (): void {
-    expect(LinksAreUnreadable::unnamed(WiringField::Settled, 'first-installed', 1)->getMessage())
+    expect(LinksAreUnreadable::unnamed(WireField::Settled, 'first-installed', 1)->getMessage())
         ->toBe('Row 1 of `wired` in the wiring envelope says `settled` is `first-installed`, which this app has no word for.');
 });
 

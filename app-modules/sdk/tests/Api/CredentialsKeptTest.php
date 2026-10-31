@@ -11,6 +11,7 @@ use function it;
 use function iterator_to_array;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
+use Modules\Kernel\Api\AnInternalCertificate;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\TheCredentialsHeld;
 use Modules\Kernel\Api\WhatARevokeCameTo;
@@ -18,6 +19,7 @@ use Modules\Sdk\Api\CredentialsIsUnreadable;
 use Modules\Sdk\Api\CredentialsKept;
 
 use function sprintf;
+use function str_repeat;
 
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
@@ -261,3 +263,48 @@ it('refuses grants or a revoke that are missing or not what the contract says', 
     'a revoke restarting a blank' => [['revoked' => ['agreement' => 'r', 'ended' => false, 'grant' => aGrantOnTheCredentialsRead(), 'restarts' => [' ']]], 'no readable `restarts`'],
     'a revoke with an unreadable why' => [['revoked' => ['agreement' => 'r', 'ended' => true, 'grant' => aGrantOnTheCredentialsRead(), 'restarts' => [], 'unrestarted' => 7]], 'no readable `unrestarted`'],
 ]);
+
+/**
+ * The media server's internal certificate as the credentials read lists it, with this SHA-256.
+ *
+ * @return array<string, mixed>
+ */
+function theInternalCertificateWith(mixed $fingerprint): array
+{
+    return [...aPlainCredential(), 'name' => 'Media server internal certificate', 'origin' => 'lemonfiber', 'setting' => AnInternalCertificate::SETTING, 'fingerprint' => $fingerprint];
+}
+
+/** The certificate in force each credential a payload holds carries, by setting, as lines. */
+function theCertificatesEachCarries(mixed $data): string
+{
+    $lines = [];
+
+    foreach (CredentialsKept::in(credentialsSaying($data)) as $credential) {
+        $lines[] = sprintf('%s:%s', $credential->setting(), $credential->certificateInForce()->wasSaid() ? $credential->certificateInForce()->atAGlance() : '-');
+    }
+
+    return implode("\n", $lines);
+}
+
+it('reads the internal certificate in force by its SHA-256, and no other credential\'s likeness', function (): void {
+    $digest = str_repeat('a', 64);
+    $another = [...aPlainCredential(), 'fingerprint' => str_repeat('f', 64)];
+
+    expect(theCertificatesEachCarries(aPayloadHolding([theInternalCertificateWith($digest), $another])))
+        ->toBe(sprintf("internal-certificate:%s\nindexer.api_key:-", AnInternalCertificate::of($digest)->atAGlance()->shown()))
+        ->and(theCertificatesEachCarries(aPayloadHolding([theInternalCertificateWith(null)])))->toBe('internal-certificate:-')
+        ->and(WhatTheContractAccepts::complaintsAbout('CredentialsEnvelope', ['api_version' => 1, 'kind' => 'credentials', 'data' => aPayloadHolding([theInternalCertificateWith($digest)])]))->toBe([]);
+});
+
+it('refuses an internal certificate whose SHA-256 is not one, by its position', function (mixed $said): void {
+    expect(fn(): TheCredentialsHeld => CredentialsKept::in(credentialsSaying(aPayloadHolding([aPlainCredential(), theInternalCertificateWith($said)]))))
+        ->toThrow(CredentialsIsUnreadable::class, 'Entry 1 of `held` in the credentials envelope gives the internal certificate a `fingerprint` that is not a SHA-256');
+})->with([
+    'too short' => ['ab12'],
+    'not hexadecimal' => [str_repeat('z', 64)],
+]);
+
+it('refuses an internal certificate whose SHA-256 is not text, by its position', function (): void {
+    expect(fn(): TheCredentialsHeld => CredentialsKept::in(credentialsSaying(aPayloadHolding([theInternalCertificateWith(7)]))))
+        ->toThrow(CredentialsIsUnreadable::class, 'Entry 0 of `held` in the credentials envelope has no readable `fingerprint`');
+});

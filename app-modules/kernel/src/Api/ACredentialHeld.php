@@ -13,7 +13,9 @@ use function trim;
  * credential without disclosing it, and this type has no field a value could
  * be carried in.
  *
- * `advisory` is empty where the stack had nothing to say.
+ * `advisory` is empty where the stack had nothing to say. The media server's
+ * internal certificate also carries the SHA-256 of the one in force, which is
+ * public; no other credential carries a likeness of anything.
  */
 final readonly class ACredentialHeld
 {
@@ -24,6 +26,7 @@ final readonly class ACredentialHeld
         private WhoMadeACredential $origin,
         private WhatUsesIt $consumers,
         private string $advisory,
+        private TheCertificateInForce $inForce,
     ) {}
 
     /** What the stack said of one credential; a blank name, setting or advisory is refused. */
@@ -47,7 +50,29 @@ final readonly class ACredentialHeld
             throw CredentialSaysNothing::about('advisory');
         }
 
-        return new self($name, $setting, $state, $origin, $consumers, $advisory);
+        return new self($name, $setting, $state, $origin, $consumers, $advisory, TheCertificateInForce::unsaid());
+    }
+
+    /** The same credential, as the media server's internal certificate with this one in force; any other credential is refused. */
+    public function inForce(AnInternalCertificate $certificate): self
+    {
+        if (! $this->isTheInternalCertificate()) {
+            throw NotTheInternalCertificate::named($this->setting);
+        }
+
+        return new self($this->name, $this->setting, $this->state, $this->origin, $this->consumers, $this->advisory, TheCertificateInForce::of($certificate));
+    }
+
+    /** Whether this is the media server's internal certificate. */
+    public function isTheInternalCertificate(): bool
+    {
+        return $this->setting === AnInternalCertificate::SETTING;
+    }
+
+    /** The internal certificate in force, where this is that certificate and the stack said which; unsaid otherwise. */
+    public function certificateInForce(): TheCertificateInForce
+    {
+        return $this->inForce;
     }
 
     /** What it is, in the operator's words. */

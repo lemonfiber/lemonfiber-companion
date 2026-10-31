@@ -66,6 +66,7 @@ use Modules\Kernel\Api\ReadingNews;
 use Modules\Kernel\Api\ReadingVersions;
 use Modules\Kernel\Api\Rehearsing;
 use Modules\Kernel\Api\RemovingSomebody;
+use Modules\Kernel\Api\ReplacingTheInternalCertificate;
 use Modules\Kernel\Api\ResettingTheConfiguration;
 use Modules\Kernel\Api\RunningACheck;
 use Modules\Kernel\Api\Safekeeping;
@@ -99,6 +100,7 @@ use Modules\Sdk\Api\Askers;
 use Modules\Sdk\Api\Assessors;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Cataloguers;
+use Modules\Sdk\Api\CertificateReplacers;
 use Modules\Sdk\Api\CheckRunners;
 use Modules\Sdk\Api\Chroniclers;
 use Modules\Sdk\Api\Clients;
@@ -419,6 +421,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // door, each read beside the rest and bound for the same reason.
         $this->app->bind(Safekeeping::class, Keyholders::class);
         $this->app->bind(EndingACredentialGrant::class, GrantEnders::class);
+        $this->app->bind(ReplacingTheInternalCertificate::class, CertificateReplacers::class);
         $this->app->bind(KeepingKeysForApps::class, KeyKeepers::class);
         $this->app->bind(KeepingPhoneKeys::class, PhoneKeyKeepers::class);
         $this->app->bind(MintingKeysAsClaims::class, KeyMinters::class);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use InvalidArgumentException;
+use Modules\Kernel\Api\FingerprintIsNotAFingerprint;
 use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
@@ -78,5 +79,35 @@ final class CredentialsIsUnreadable extends InvalidArgumentException
             $said,
             TheWordsItReads::quoted(...$accepted),
         ));
+    }
+
+    /** What a replacement came to was not readable, named by the field. */
+    public static function replacement(NamesAWireField $field): self
+    {
+        return new self(sprintf(
+            '`rotated` in the credentials envelope has no readable `%s`. A replacement that will not say what it came to is refused rather than drawn as one that landed.',
+            $field->value,
+        ));
+    }
+
+    /** What a replacement came to says a word this app has no case for. */
+    public static function replacementSaid(NamesAWireField $field, string $said, string ...$accepted): self
+    {
+        return new self(sprintf(
+            '`rotated` in the credentials envelope says `%s` is `%s`, and this app reads %s. Drawing it as the nearest one would be a guess about whether it landed.',
+            $field->value,
+            $said,
+            TheWordsItReads::quoted(...$accepted),
+        ));
+    }
+
+    /** The internal certificate's SHA-256 is not one, which is refused rather than drawn as a certificate in force. */
+    public static function fingerprint(int $position, FingerprintIsNotAFingerprint $why): self
+    {
+        return new self(sprintf(
+            'Entry %d of `held` in the credentials envelope gives the internal certificate a `fingerprint` that is not a SHA-256: %s',
+            $position,
+            $why->getMessage(),
+        ), previous: $why);
     }
 }

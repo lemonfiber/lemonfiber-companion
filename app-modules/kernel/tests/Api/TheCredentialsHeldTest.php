@@ -10,7 +10,9 @@ use function it;
 use function iterator_to_array;
 
 use Modules\Kernel\Api\ACredentialHeld;
+use Modules\Kernel\Api\AnInternalCertificate;
 use Modules\Kernel\Api\CredentialSaysNothing;
+use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
@@ -23,6 +25,7 @@ use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhoMadeACredential;
 
 use function sprintf;
+use function str_repeat;
 
 use Tests\Support\TheWordCarriedOut;
 
@@ -75,4 +78,13 @@ it('a stack that could not be asked never holds an empty list', function (): voi
 
     expect($fold(WhatWasFoundOfTheCredentials::found(TheCredentialsHeld::of(aStoreThatProtects(), TheCredentialGrants::of()))))->toBe('found:0')
         ->and($fold(WhatWasFoundOfTheCredentials::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
+});
+
+it('finds the internal certificate in force among those held, and leaves it unsaid where the stack said none', function (): void {
+    $certificate = AnInternalCertificate::of(str_repeat('a', Fingerprint::CHARACTERS));
+    $internal = ACredentialHeld::described('Media server internal certificate', AnInternalCertificate::SETTING, WhereACredentialStands::Active, WhoMadeACredential::Lemonfiber, WhatUsesIt::of('the decline service'), '');
+    $other = ACredentialHeld::described('Indexer API key', 'indexer.api_key', WhereACredentialStands::Active, WhoMadeACredential::Operator, WhatUsesIt::of('sonarr'), '');
+
+    expect(TheCredentialsHeld::of(aStoreThatProtects(), TheCredentialGrants::of(), $internal->inForce($certificate), $other)->theInternalCertificateInForce()->is($certificate))->toBeTrue()
+        ->and(TheCredentialsHeld::of(aStoreThatProtects(), TheCredentialGrants::of(), $internal, $other)->theInternalCertificateInForce()->wasSaid())->toBeFalse();
 });

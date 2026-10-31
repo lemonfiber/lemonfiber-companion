@@ -11,15 +11,19 @@ use function is_array;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\CredentialsEnvelope;
 use Modules\Kernel\Api\ACredentialHeld;
+use Modules\Kernel\Api\AnInternalCertificate;
+use Modules\Kernel\Api\FingerprintIsNotAFingerprint;
 use Modules\Kernel\Api\Remarks;
 use Modules\Kernel\Api\TheCredentialGrants;
 use Modules\Kernel\Api\TheCredentialsHeld;
+use Modules\Kernel\Api\WhatAReplacementCameTo;
 use Modules\Kernel\Api\WhatARevokeCameTo;
 use Modules\Kernel\Api\WhatTheStoreProtects;
 use Modules\Kernel\Api\WhatUsesIt;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Sdk\Api\Fields\CredentialsField;
+use Modules\Sdk\Internal\CertificateReplacementRead;
 use Modules\Sdk\Internal\CredentialGrantsRead;
 use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
@@ -34,7 +38,8 @@ use Modules\Sdk\Internal\Wire;
  *
  * **No value is read, and none could be.** A credential on the wire carries
  * none, and the one place the envelope can carry a value — what an operator
- * asked to be shown — is not read at all. Only what the requirements ask for
+ * asked to be shown — is not read at all. A likeness is read for the media
+ * server's internal certificate alone, whose SHA-256 is public. Only what the requirements ask for
  * is read; the rest is recorded in `WhatThisAppDoesNotRead`, each with its
  * reason.
  */
@@ -60,6 +65,18 @@ final readonly class CredentialsKept
         $data = self::data($envelope);
 
         return WhatARevokeCameTo::of(CredentialGrantsRead::revoked($data), self::heldIn($data));
+    }
+
+    /**
+     * What replacing the internal certificate would do or came to, with every credential and grant after it; an answer with no word of the replacement is refused.
+     *
+     * @param Envelope<mixed> $envelope the `credentials` envelope, as the work finished with it
+     */
+    public static function afterAReplacement(Envelope $envelope): WhatAReplacementCameTo
+    {
+        $data = self::data($envelope);
+
+        return WhatAReplacementCameTo::of(CertificateReplacementRead::rotated($data), self::heldIn($data));
     }
 
     /**
@@ -168,17 +185,35 @@ final readonly class CredentialsKept
                 throw CredentialsIsUnreadable::row($position);
             }
 
-            $found[] = ACredentialHeld::described(
+            $found[] = self::inForce(ACredentialHeld::described(
                 self::text($row, WireField::Name, $position),
                 self::text($row, WireField::Setting, $position),
                 self::state($row, $position),
                 self::origin($row, $position),
                 WhatUsesIt::of(...self::consumers($row, $position)),
                 self::advisory($row, $position),
-            );
+            ), $row, $position);
         }
 
         return $found;
+    }
+
+    /**
+     * The internal certificate with the one in force, where the stack said which; every other credential as it is, its likeness never read.
+     *
+     * @param array<mixed> $row
+     */
+    private static function inForce(ACredentialHeld $held, array $row, int $position): ACredentialHeld
+    {
+        if (! $held->isTheInternalCertificate() || ! array_key_exists(WireField::Fingerprint->value, $row) || $row[WireField::Fingerprint->value] === null) {
+            return $held;
+        }
+
+        try {
+            return $held->inForce(AnInternalCertificate::of(self::text($row, WireField::Fingerprint, $position)));
+        } catch (FingerprintIsNotAFingerprint $why) {
+            throw CredentialsIsUnreadable::fingerprint($position, $why);
+        }
     }
 
     /**

@@ -51,6 +51,4 @@ enum OutboundField: string implements NamesAWireField
     /** The setting that switches one of lemonfiber's requests off. */
     case Switch = 'switch';
 
-    /** Which of lemonfiber's own requests a row is. */
-    case Reach = 'reach';
 }

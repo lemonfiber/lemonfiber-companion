@@ -6,6 +6,8 @@ namespace Tests\Support;
 
 use Closure;
 use Modules\Kernel\Api\ABundleAsked;
+use Modules\Kernel\Api\ACertificateReplacement;
+use Modules\Kernel\Api\ACertificateReplacementAgreed;
 use Modules\Kernel\Api\AChallengeToSign;
 use Modules\Kernel\Api\ACheckThatDisturbs;
 use Modules\Kernel\Api\ACopy;
@@ -190,6 +192,7 @@ use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Askers;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Cataloguers;
+use Modules\Sdk\Api\CertificateReplacers;
 use Modules\Sdk\Api\CheckRunners;
 use Modules\Sdk\Api\Chroniclers;
 use Modules\Sdk\Api\Connectors;
@@ -440,6 +443,12 @@ final readonly class EveryAdapterCallThatReads
                 )),
             'GrantEnders::whatBecameOf' => static fn(): object
                 => new GrantEnders($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+            'CertificateReplacers::read' => static fn(): object
+                => new CertificateReplacers($clients, $entropy)->read($stack, $session),
+            'CertificateReplacers::replace' => static fn(): object
+                => new CertificateReplacers($clients, $entropy)->replace($stack, $session, ACertificateReplacementAgreed::after(ACertificateReplacement::read('an-offer', 'the decline service is handed it'))),
+            'CertificateReplacers::whatBecameOf' => static fn(): object
+                => new CertificateReplacers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Acceptors::accept' => static fn(): object
                 => new Acceptors($clients, $entropy)->accept($stack, $session, Check::of('vpn')),
             'Acceptors::whatBecameOf' => static fn(): object

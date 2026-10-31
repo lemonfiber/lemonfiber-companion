@@ -18,6 +18,8 @@ final readonly class ACredentialAsShown
      * @param list<string> $consumers  everything that authenticates with it, possibly nothing
      * @param string              $advisory   what is worth saying about it, or empty
      * @param list<AGrantAsShown> $grants     every grant of it to a third-party plugin
+     * @param bool                $replaceable whether it is the media server's internal certificate, which the operator may replace from here
+     * @param string              $inForce    the certificate in force at a glance, or empty where it is not that certificate or the stack did not say
      */
     public function __construct(
         public string $name,
@@ -26,5 +28,7 @@ final readonly class ACredentialAsShown
         public array $consumers,
         public string $advisory,
         public array $grants,
+        public bool $replaceable,
+        public string $inForce,
     ) {}
 }

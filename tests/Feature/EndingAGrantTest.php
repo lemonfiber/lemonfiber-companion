@@ -10,6 +10,7 @@ use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowPlayingWasRead;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
@@ -26,6 +27,7 @@ use Modules\Kernel\Api\TheCredentialGrants;
 use Modules\Kernel\Api\TheCredentialsHeld;
 use Modules\Kernel\Api\WhatARevokeCameTo;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
+use Modules\Kernel\Api\WhatTheHouseholdIsPlaying;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatTheStoreProtects;
 use Modules\Kernel\Api\WhatUsesIt;
@@ -40,6 +42,8 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatEndsGrants;
 use Tests\Support\Fakes\AStackThatHoldsCredentials;
+use Tests\Support\Fakes\AStackThatPlays;
+use Tests\Support\Fakes\AStackThatReplacesItsCertificate;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -87,6 +91,8 @@ function theGrantingScreen(AStackThatEndsGrants $ending, ?TheCredentialsHeld $he
     $screen = new WhatItHoldsToLetThemIn(
         AStackThatHoldsCredentials::holding($held ?? thePasswordsWithTheirGrants(plexsTokenGrantedToTdarr())),
         $ending,
+        AStackThatReplacesItsCertificate::untouched(),
+        AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these())),
         FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_GRANT_WAS_APPROVED + 86_400)),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),
@@ -219,7 +225,7 @@ it('asks the stack again for the passwords and grants when the operator asks aga
     $stack = theMachineWhoseGrantIsEnded();
     $keychain = AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
-    $screen = new WhatItHoldsToLetThemIn($safekeeping, AStackThatEndsGrants::untouched(), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_GRANT_WAS_APPROVED)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatItHoldsToLetThemIn($safekeeping, AStackThatEndsGrants::untouched(), AStackThatReplacesItsCertificate::untouched(), AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these())), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_GRANT_WAS_APPROVED)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
     $screen->answer();
     $screen->answer();
