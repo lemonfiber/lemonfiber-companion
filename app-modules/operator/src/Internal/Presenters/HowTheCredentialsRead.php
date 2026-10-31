@@ -85,6 +85,8 @@ final readonly class HowTheCredentialsRead
             consumers: $consumers,
             advisory: $credential->advisory(),
             grants: $grants,
+            replaceable: $credential->isTheInternalCertificate(),
+            inForce: $credential->certificateInForce()->atAGlance(),
         );
     }
 

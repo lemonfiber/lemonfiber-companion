@@ -32,8 +32,6 @@ enum WiringField: string implements NamesAWireField
     /** Where each service that claims a capability came from, by the service's name. */
     case Origins = 'origins';
 
-    /** How an ask was settled, tagged by its own word. */
-    case Settled = 'settled';
 
     /** The claimants not chosen, where a choice is recorded. */
     case Over = 'over';

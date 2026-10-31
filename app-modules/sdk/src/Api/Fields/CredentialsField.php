@@ -34,4 +34,13 @@ enum CredentialsField: string implements NamesAWireField
 
     /** The grant ending one would end. */
     case Grant = 'grant';
+
+    /** What became of replacing a credential, where one was asked for. */
+    case Rotated = 'rotated';
+
+    /** What a replacement that landed did while proving it. */
+    case Observed = 'observed';
+
+    /** The one service a replacement reached, or did not. */
+    case Consumer = 'consumer';
 }

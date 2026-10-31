@@ -227,7 +227,7 @@ final readonly class WhatLeaves
      */
     private static function asksFor(array $row, int $position): WhatLemonfiberAsksFor
     {
-        $said = self::text($row, WireField::Ours, OutboundField::Reach, $position);
+        $said = self::text($row, WireField::Ours, WireField::Reach, $position);
 
         return WhatLemonfiberAsksFor::tryFrom($said) ?? throw OutboundIsUnreadable::reach($said, $position);
     }

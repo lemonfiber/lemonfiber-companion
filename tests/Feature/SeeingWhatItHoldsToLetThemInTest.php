@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\ACredentialHeld;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowPlayingWasRead;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
@@ -17,6 +18,7 @@ use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheCredentialGrants;
 use Modules\Kernel\Api\TheCredentialsHeld;
+use Modules\Kernel\Api\WhatTheHouseholdIsPlaying;
 use Modules\Kernel\Api\WhatTheStoreProtects;
 use Modules\Kernel\Api\WhatUsesIt;
 use Modules\Kernel\Api\WhereACredentialStands;
@@ -31,6 +33,8 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatEndsGrants;
 use Tests\Support\Fakes\AStackThatHoldsCredentials;
+use Tests\Support\Fakes\AStackThatPlays;
+use Tests\Support\Fakes\AStackThatReplacesItsCertificate;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -87,7 +91,7 @@ function theCredentialsScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatItHoldsToLetThemIn($safekeeping, $ending ?? AStackThatEndsGrants::untouched(), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_CREDENTIALS_ARE_READ)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatItHoldsToLetThemIn($safekeeping, $ending ?? AStackThatEndsGrants::untouched(), AStackThatReplacesItsCertificate::untouched(), AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these())), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_CREDENTIALS_ARE_READ)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

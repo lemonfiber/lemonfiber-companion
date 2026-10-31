@@ -14,6 +14,7 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Lemonfiber\Sdk\Generated\RefusalCode;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\IdempotencyKey;
@@ -32,10 +33,12 @@ use Modules\Sdk\Api\TheStackDoesNotOfferIt;
  * Work asked of a stack through the SDK, sent under its own idempotency key and followed by the handle it answered.
  *
  * What finished work answers with is the caller's to read, and a reading it cannot make is the caller's to catch.
+ * Given the code a stack refuses a yes with when what it was given for has
+ * moved, that refusal answers as moved rather than as refused.
  */
 final readonly class TheWorkAsked
 {
-    public function __construct(private Clients $clients, private Entropy $entropy) {}
+    public function __construct(private Clients $clients, private Entropy $entropy, private ?RefusalCode $moved = null) {}
 
     /**
      * Send the action: the handle the stack answered, its refusal in its own words, or what stood in the way.
@@ -115,9 +118,11 @@ final readonly class TheWorkAsked
     /** @return WhatBecameOfTheWork<never> */
     private function refusal(CertificateWasRefused|RequestFailed $why): WhatBecameOfTheWork
     {
+        $moved = $why instanceof RequestFailed && $this->moved instanceof RefusalCode && $why->code() === $this->moved;
+
         return WhatARefusalMeant::inItsWords(
             $why,
-            refused: static fn(ARefusalInItsWords $said): WhatBecameOfTheWork => WhatBecameOfTheWork::refused($said),
+            refused: static fn(ARefusalInItsWords $said): WhatBecameOfTheWork => $moved ? WhatBecameOfTheWork::moved($said) : WhatBecameOfTheWork::refused($said),
             met: static fn(Obstacle $met): WhatBecameOfTheWork => WhatBecameOfTheWork::met($met),
         );
     }

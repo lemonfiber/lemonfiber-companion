@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Closure;
-
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\ACredentialGrant;
@@ -17,10 +14,12 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\EndingACredentialGrant;
+use Modules\Kernel\Api\FollowingWhatIsPlaying;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\ReplacingTheInternalCertificate;
 use Modules\Kernel\Api\Safekeeping;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -34,6 +33,7 @@ use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowACredentialRevokeReads;
 use Modules\Operator\Internal\Presenters\HowTheCredentialsRead;
+use Modules\Operator\Internal\ReplacesTheInternalCertificate;
 use Modules\Operator\Internal\ViewModels\TheCredentialRevokeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheCredentialsTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
@@ -45,7 +45,7 @@ use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
- * The credentials a stack holds to let services in, each with the grants of it to third-party plugins, and ending a grant.
+ * The credentials a stack holds to let services in, each with the grants of it to third-party plugins, ending a grant, and replacing the media server's internal certificate.
  *
  * Each state is drawn in its own words, so a stale credential, an invalid one
  * and one mid-rotation are three different rows. A credential nothing uses
@@ -53,9 +53,12 @@ use Native\Mobile\Edge\NativeComponent;
  * list.
  *
  * **It sets, changes and shows no value.** None reaches this app, and a
- * credential is replaced at the machine. A grant is ended by reading what
+ * credential's value is set at the machine. A grant is ended by reading what
  * ending it would restart first, and the yes carries the offer that reading
- * named; the answer replaces what was read.
+ * named; the answer replaces what was read. The media server's internal
+ * certificate is replaced the same way, through
+ * {@see ReplacesTheInternalCertificate}: the core makes it on the machine,
+ * and it is not the certificate this app pinned for the stack.
  *
  * `Concealed` for the reason every stack-facing screen here is.
  */
@@ -65,6 +68,7 @@ use Native\Mobile\Edge\NativeComponent;
 final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOutcome
 {
     use WritesItsTaps;
+    use ReplacesTheInternalCertificate;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
@@ -91,6 +95,8 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
     public function __construct(
         private readonly Safekeeping $safekeeping,
         private readonly EndingACredentialGrant $ending,
+        protected readonly ReplacingTheInternalCertificate $replacingIt,
+        protected readonly FollowingWhatIsPlaying $playing,
         private readonly Clock $clock,
         private readonly SecureStorage $storage,
         protected readonly TheWayAround $around,
@@ -98,10 +104,11 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
         protected readonly WhatItListensWith $listening,
     ) {}
 
-    /** What came back, after where ending a grant has got to; the machine is asked only where nothing it said is held. */
+    /** What came back, after where ending a grant or replacing the certificate has got to; the machine is asked only where nothing it said is held. */
     public function answer(): TheCredentialsTurnedOutToBe
     {
         $this->howItIsGoing();
+        $this->howTheReplacementGoes();
 
         return $this->ask();
     }
@@ -111,7 +118,7 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
     {
         $grant = $this->theGrantAt($which);
 
-        if (is_string($this->following) || ! $grant instanceof ACredentialGrant) {
+        if ($this->workRuns() || ! $grant instanceof ACredentialGrant) {
             return;
         }
 
@@ -141,13 +148,14 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
         $this->held = null;
     }
 
-    /** Leave ending a grant, back to the list as last read. */
+    /** Leave ending a grant or replacing the certificate, back to the list as last read. */
     public function backToTheCredentials(): void
     {
         $this->revoking = null;
         $this->reading = null;
         $this->following = null;
         $this->going = null;
+        $this->leaveTheReplacement();
     }
 
     /** Ask after the work again while the stack is at it, at {@see HowOftenAScreenLooks}'s interval. */
@@ -157,12 +165,16 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
         if ($this->howItIsGoing()->stands->isWorking()) {
             $this->going = null;
         }
+
+        if ($this->howTheReplacementGoes()->stands->isWorking()) {
+            $this->replacementGoing = null;
+        }
     }
 
     /** The same question this screen's cadence asks, answered from what it last heard. */
     public function awaitsAnOutcome(): bool
     {
-        return $this->howItIsGoing()->stands->isWorking();
+        return $this->howItIsGoing()->stands->isWorking() || $this->howTheReplacementGoes()->stands->isWorking();
     }
 
     /** Where ending a grant has got to, asked once per frame. */

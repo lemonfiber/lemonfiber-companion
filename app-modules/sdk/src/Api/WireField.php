@@ -942,4 +942,10 @@ enum WireField: string implements NamesAWireField
 
     /** The capability of the plugin's own a credential was granted to fill. */
     case For = 'for';
+
+    /** How an ask was settled, and where a replacement of a credential settled, each tagged by its own word. */
+    case Settled = 'settled';
+
+    /** Which of lemonfiber's own requests a row is, and how far a replacement reached one holder. */
+    case Reach = 'reach';
 }

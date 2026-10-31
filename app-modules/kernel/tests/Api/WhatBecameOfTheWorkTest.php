@@ -53,3 +53,17 @@ it('takes the arm for each state, and carries what each holds', function (): voi
         ->and(whichArmTheWorkTook(WhatBecameOfTheWork::refused(ARefusalInItsWords::said('No download client to limit', '', WhatTheRefusalNamed::nothing()))))->toBe('refused:No download client to limit')
         ->and(whichArmTheWorkTook(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe(sprintf('met:%s', KindOfObstacle::CredentialWasRefused->value));
 });
+
+it('takes a refusal because the offer moved to its own arm where one is given, and to the refused arm where none is', function (): void {
+    $moved = WhatBecameOfTheWork::moved(ARefusalInItsWords::said('It moved', '', WhatTheRefusalNamed::nothing()));
+
+    expect(whichArmTheWorkTook($moved))->toBe('refused:It moved')
+        ->and($moved->eitherOrMoved(
+            underway: static fn(): TheWordCarriedOut => new TheWordCarriedOut('underway'),
+            answered: static fn(): TheWordCarriedOut => new TheWordCarriedOut('answered'),
+            ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+            refused: static fn(): TheWordCarriedOut => new TheWordCarriedOut('refused'),
+            met: static fn(): TheWordCarriedOut => new TheWordCarriedOut('met'),
+            moved: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('moved:%s', $why->summary())),
+        )->said)->toBe('moved:It moved');
+});

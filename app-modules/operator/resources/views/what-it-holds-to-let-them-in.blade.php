@@ -1,5 +1,6 @@
 @use('Modules\Stacks\Api\AStacksScreen')
 @use('Modules\Kernel\Api\RevokingAGrant')
+@use('Modules\Kernel\Api\ReplacingACertificate')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -29,6 +30,34 @@
             <x-operator::the-revoke :revoke="$this->howItIsGoing()->revoke" :offer="$this->offered(RevokingAGrant::Revoke)" />
         @endif
         <x-operator::quiet-action :label="__('stacks.credentials.revoke.back')" tap="backToTheCredentials()" />
+    @elseif ($this->replacing)
+        {{-- Replacing the internal certificate: read first, agreed to as that reading, followed to its end. --}}
+        @if (! $this->howTheReplacementGoes()->stands->went->cameBack())
+            <x-operator::what-stood-in-the-way
+                :settings-would-not-open="$this->theSettingsWouldNotOpen"
+                :went="$this->howTheReplacementGoes()->stands->went"
+                :goes="$this->goes()"
+            />
+        @elseif ($this->howTheReplacementGoes()->stands->isWorking())
+            <x-design::standing :said="__('stacks.credentials.replace.working')" tone="working" />
+        @elseif ($this->howTheReplacementGoes()->stands->hasEnded())
+            <x-design::notice tone="unknown">
+                <x-design::strong>{{ __('stacks.credentials.replace.no_outcome') }}</x-design::strong>
+            </x-design::notice>
+        @elseif ($this->howTheReplacementGoes()->refused !== null)
+            <x-design::notice>
+                <x-design::strong>{{ __('stacks.credentials.replace.refused') }}</x-design::strong>
+                <x-operator::refused-in-its-words :refused="$this->howTheReplacementGoes()->refused" />
+            </x-design::notice>
+        @elseif ($this->howTheReplacementGoes()->replacement !== null)
+            <x-operator::the-replacement
+                :replacement="$this->howTheReplacementGoes()->replacement"
+                :offer="$this->offered(ReplacingACertificate::Replace)"
+                :watching="$this->watching"
+                :moved-on="$this->movedOn"
+            />
+        @endif
+        <x-operator::quiet-action :label="__('stacks.credentials.replace.back')" tap="backToTheCredentials()" />
     @else
     @forelse ($this->answer()->held as $credential)
         <x-design::card>
@@ -50,6 +79,20 @@
 
             @if ($credential->advisory !== '')
                 <x-design::note>{{ $credential->advisory }}</x-design::note>
+            @endif
+
+            @if ($credential->replaceable)
+                @if ($credential->inForce !== '')
+                    <x-design::body>{{ __('stacks.credentials.certificate.in_force', ['glance' => $credential->inForce]) }}</x-design::body>
+                @endif
+                <x-design::note>{{ __('stacks.credentials.certificate.not_the_pairing') }}</x-design::note>
+                <x-operator::offered-action
+                    :label="__('stacks.credentials.certificate.replace')"
+                    :answers-to="__('stacks.credentials.certificate.replace_it')"
+                    tap="replaceTheCertificate()"
+                    :offer="$this->offered(ReplacingACertificate::Replace)"
+                    tone="tonal"
+                />
             @endif
 
             @forelse ($credential->grants as $grant)

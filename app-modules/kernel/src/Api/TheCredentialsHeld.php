@@ -45,6 +45,18 @@ final readonly class TheCredentialsHeld implements Countable, IteratorAggregate
         return $this->protection;
     }
 
+    /** The media server's internal certificate in force, where the stack holds one and said which; unsaid otherwise. */
+    public function theInternalCertificateInForce(): TheCertificateInForce
+    {
+        $found = TheCertificateInForce::unsaid();
+
+        foreach ($this->held as $credential) {
+            $found = $credential->certificateInForce()->wasSaid() ? $credential->certificateInForce() : $found;
+        }
+
+        return $found;
+    }
+
     /** @return Traversable<int, ACredentialHeld> */
     public function getIterator(): Traversable
     {

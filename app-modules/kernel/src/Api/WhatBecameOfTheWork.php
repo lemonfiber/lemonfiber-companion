@@ -14,6 +14,11 @@ use Closure;
  * `WhatBecameOfTheWork<Report>`, `<TheLineAsChanged>` or `<TheAllowanceAsChanged>`,
  * so the answered arm stays typed and a screen cannot read one report as another.
  *
+ * A refusal because what a yes was given for has moved is a refusal too, kept
+ * apart for the screen that offers it again rather than reporting it as a
+ * failure through {@see self::eitherOrMoved()}; {@see self::either()} reads it
+ * as refused.
+ *
  * @template-covariant TAnswer of object = never
  */
 final readonly class WhatBecameOfTheWork
@@ -24,6 +29,7 @@ final readonly class WhatBecameOfTheWork
         private ?object $answer = null,
         private ?ARefusalInItsWords $refused = null,
         private ?Obstacle $met = null,
+        private ?ARefusalInItsWords $moved = null,
     ) {}
 
     /**
@@ -71,6 +77,16 @@ final readonly class WhatBecameOfTheWork
     }
 
     /**
+     * The stack refused the yes because what it was given for has moved, in its own words.
+     *
+     * @return self<never>
+     */
+    public static function moved(ARefusalInItsWords $why): self
+    {
+        return new self(moved: $why);
+    }
+
+    /**
      * The stack could not be reached, or would not admit the session.
      *
      * @return self<never>
@@ -81,7 +97,7 @@ final readonly class WhatBecameOfTheWork
     }
 
     /**
-     * Say what happens in each case, and get back what you built.
+     * Say what happens in each case, and get back what you built; a refusal because what a yes was given for moved is a refusal here.
      *
      * @template T of object
      *
@@ -95,10 +111,30 @@ final readonly class WhatBecameOfTheWork
      */
     public function either(Closure $underway, Closure $answered, Closure $ended, Closure $refused, Closure $met): object
     {
+        return $this->eitherOrMoved($underway, $answered, $ended, $refused, $met, $refused);
+    }
+
+    /**
+     * Say what happens in each case, a refusal because what a yes was given for moved among them, and get back what you built.
+     *
+     * @template T of object
+     *
+     * @param Closure(Job): T                $underway
+     * @param Closure(TAnswer): T            $answered
+     * @param Closure(): T                   $ended
+     * @param Closure(ARefusalInItsWords): T $refused
+     * @param Closure(Obstacle): T           $met
+     * @param Closure(ARefusalInItsWords): T $moved
+     *
+     * @return T
+     */
+    public function eitherOrMoved(Closure $underway, Closure $answered, Closure $ended, Closure $refused, Closure $met, Closure $moved): object
+    {
         return match (true) {
             $this->job instanceof Job => $underway($this->job),
             $this->answer !== null => $answered($this->answer),
             $this->refused instanceof ARefusalInItsWords => $refused($this->refused),
+            $this->moved instanceof ARefusalInItsWords => $moved($this->moved),
             $this->met instanceof Obstacle => $met($this->met),
             default => $ended(),
         };

@@ -10,10 +10,15 @@ use function it;
 use function iterator_to_array;
 
 use Modules\Kernel\Api\ACredentialHeld;
+use Modules\Kernel\Api\AnInternalCertificate;
 use Modules\Kernel\Api\CredentialSaysNothing;
+use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\NotTheInternalCertificate;
 use Modules\Kernel\Api\WhatUsesIt;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhoMadeACredential;
+
+use function str_repeat;
 
 /** A credential with the name and advisory given here. */
 function aCredentialSaying(string $name, string $advisory): ACredentialHeld
@@ -55,4 +60,16 @@ it('refuses a consumer that says nothing', function (): void {
 it('says each state and each origin under a key of its own', function (): void {
     expect(WhereACredentialStands::Rotating->saidOnTheScreen())->toBe('stacks.credentials.state.rotating')
         ->and(WhoMadeACredential::Lemonfiber->saidOnTheScreen())->toBe('stacks.credentials.origin.lemonfiber');
+});
+
+it('carries a certificate in force on the internal certificate alone, and leaves it unsaid until the stack says which', function (): void {
+    $certificate = AnInternalCertificate::of(str_repeat('a', Fingerprint::CHARACTERS));
+    $held = ACredentialHeld::described('Media server internal certificate', AnInternalCertificate::SETTING, WhereACredentialStands::Active, WhoMadeACredential::Lemonfiber, WhatUsesIt::of('the decline service'), '');
+    $inForce = $held->inForce($certificate);
+
+    expect([$held->isTheInternalCertificate(), $held->certificateInForce()->wasSaid(), $inForce->certificateInForce()->is($certificate)])->toBe([true, false, true])
+        ->and([$inForce->name(), $inForce->setting(), $inForce->state(), $inForce->origin(), $inForce->consumers(), $inForce->advisory()])
+        ->toBe([$held->name(), $held->setting(), $held->state(), $held->origin(), $held->consumers(), $held->advisory()])
+        ->and(aCredentialSaying('Indexer API key', '')->isTheInternalCertificate())->toBeFalse()
+        ->and(fn(): ACredentialHeld => aCredentialSaying('Indexer API key', '')->inForce($certificate))->toThrow(NotTheInternalCertificate::class, '`a.setting` is not the internal certificate');
 });

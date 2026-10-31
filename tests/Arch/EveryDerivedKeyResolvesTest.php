@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HowAServiceRuns;
+use Modules\Kernel\Api\HowFarAHolderWasReached;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\HowItEnded;
@@ -74,6 +75,7 @@ use Modules\Kernel\Api\WhereADownloadStands;
 use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Kernel\Api\WhereAMemberStands;
 use Modules\Kernel\Api\WhereAPhoneKeyLives;
+use Modules\Kernel\Api\WhereAReplacementSettled;
 use Modules\Kernel\Api\WhereItsSourceStands;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\WhereTheFrontDoorStands;
@@ -437,6 +439,14 @@ function everyDerivedKey(): array
         WhereACredentialStands::class => aPairPerCase(
             WhereACredentialStands::cases(),
             static fn(WhereACredentialStands $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhereAReplacementSettled::class => aPairPerCase(
+            WhereAReplacementSettled::cases(),
+            static fn(WhereAReplacementSettled $case): array => [$case->saidOnTheScreen()],
+        ),
+        HowFarAHolderWasReached::class => aPairPerCase(
+            HowFarAHolderWasReached::cases(),
+            static fn(HowFarAHolderWasReached $case): array => [$case->saidOnTheScreen()],
         ),
         WhoMadeACredential::class => aPairPerCase(
             WhoMadeACredential::cases(),
