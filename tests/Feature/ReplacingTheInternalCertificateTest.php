@@ -3,10 +3,13 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\ACertificateReplacement;
+use Modules\Kernel\Api\ACredentialGrant;
 use Modules\Kernel\Api\ACredentialHeld;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AHolderReached;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AnInternalCertificate;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ASessionPlaying;
 use Modules\Kernel\Api\Fingerprint;
@@ -18,6 +21,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -35,6 +39,7 @@ use Modules\Kernel\Api\WhereAReplacementSettled;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatItHoldsToLetThemIn;
+use Modules\Operator\Internal\ViewModels\ACredentialAsShown;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -332,4 +337,29 @@ it('leaves the replacement for the list, keeping nothing it read', function (): 
 
     expect([$screen->replacing, $screen->replacement, $screen->watching, $screen->movedOn, $screen->followingTheReplacement])->toBe([false, null, null, null, null])
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(aLineAboutTheCertificate('stacks.credentials.certificate.replace'));
+});
+
+it('leaves a grant being ended for the replacement, so the replacement is what is drawn', function (): void {
+    $replacing = AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::answered(theReplacementAsRead()), WhatBecameOfTheWork::ended());
+    $screen = theReplacingScreen($replacing);
+    $screen->held = TheCredentialsHeld::of(
+        WhatTheStoreProtects::said('Plain files readable only by you', Remarks::of(), Remarks::of()),
+        TheCredentialGrants::of(ACredentialGrant::of(APluginId::called('tdarr'), 'indexer.api_key', ServiceId::called('sonarr'), 'library-scan', AMomentAsWritten::inSeconds(''))),
+        ...iterator_to_array(theCertificateAmongThePasswords(theDigestBefore()), preserve_keys: false),
+    );
+    $screen->revoke(0);
+    $screen->replaceTheCertificate();
+    $screen->whileItRuns();
+
+    expect($screen->revoking)->toBeNull()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aLineAboutTheCertificate('stacks.credentials.replace.reading'));
+});
+
+it('reads the list after where the replacement got to, so a certificate replaced on a frame no one has looked at yet is already in force', function (): void {
+    $replacing = AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::answered(theReplacementAsRead()), WhatBecameOfTheWork::answered(theReplacementLanded()));
+    $screen = theReplacementReadOn($replacing);
+    $screen->agreeToReplace();
+    $screen->whileItRuns();
+
+    expect(array_map(static fn(ACredentialAsShown $held): string => $held->inForce, $screen->answer()->held))->toBe([theCertificateAtAGlance(theDigestAfter()), '']);
 });
