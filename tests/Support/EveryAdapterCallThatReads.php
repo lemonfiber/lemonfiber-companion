@@ -155,6 +155,7 @@ use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatStaysBehind;
 use Modules\Kernel\Api\WhatTakingItOffComesTo;
 use Modules\Kernel\Api\WhatTheChangeReaches;
+use Modules\Kernel\Api\WhatTheChoiceLeaves;
 use Modules\Kernel\Api\WhatTheRemovalFound;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
 use Modules\Kernel\Api\WhatThisMachineKeeps;
@@ -716,7 +717,7 @@ final readonly class EveryAdapterCallThatReads
     /** A choice of filler the stack worked out, to agree against. */
     private static function aFillToSpoilTheAnswerTo(): AFillAgreed
     {
-        return AFillAgreed::after(AFill::read(Capability::called('media-server'), ServiceId::called('plex'), Services::none(), Services::none(), WhatNothingFills::none(), WhatStaysBehind::none(), '', 'cafe0001'), '');
+        return AFillAgreed::after(AFill::read(Capability::called('media-server'), ServiceId::called('plex'), Services::none(), Services::none(), WhatTheChoiceLeaves::of(WhatNothingFills::none(), WhatStaysBehind::none()), '', 'cafe0001'), '');
     }
 
     /** A reading of the services, to agree against. */

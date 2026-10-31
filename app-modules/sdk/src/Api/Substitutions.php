@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Unfilled;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatStaysBehind;
+use Modules\Kernel\Api\WhatTheChoiceLeaves;
 use Modules\Sdk\Api\Fields\SubstitutionField;
 use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
@@ -58,8 +59,7 @@ final readonly class Substitutions
             ServiceId::called(self::text($choice, WireField::Now)),
             $was === '' ? Services::none() : Services::these(ServiceId::called($was)),
             self::services($choice),
-            WhatNothingFills::these(...self::unfilled($choice)),
-            WhatStaysBehind::these(...self::behind($choice)),
+            WhatTheChoiceLeaves::of(WhatNothingFills::these(...self::unfilled($choice)), WhatStaysBehind::these(...self::behind($choice))),
             self::optional($choice, WireField::Why),
             self::text($data, WireField::Agreement),
         );

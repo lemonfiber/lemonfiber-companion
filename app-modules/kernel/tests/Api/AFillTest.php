@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Unfilled;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatStaysBehind;
+use Modules\Kernel\Api\WhatTheChoiceLeaves;
 
 /** A choice of filler the stack worked out, with what it leaves unfilled. */
 function aFillWorkedOut(string $agreement = '1a2b3c4d-5e6f7a8b-9c0d1e2f-0a0b0c0d'): AFill
@@ -25,8 +26,7 @@ function aFillWorkedOut(string $agreement = '1a2b3c4d-5e6f7a8b-9c0d1e2f-0a0b0c0d
         ServiceId::called('plex'),
         Services::these(ServiceId::called('jellyfin')),
         Services::these(ServiceId::called('seerr'), ServiceId::called('bazarr')),
-        WhatNothingFills::these(Unfilled::of(ServiceId::called('tdarr'), Capability::called('transcoder'))),
-        WhatStaysBehind::these(ALeftBehind::of(Capability::called('media-server'), 'the accounts the media server holds')),
+        WhatTheChoiceLeaves::of(WhatNothingFills::these(Unfilled::of(ServiceId::called('tdarr'), Capability::called('transcoder'))), WhatStaysBehind::these(ALeftBehind::of(Capability::called('media-server'), 'the accounts the media server holds'))),
         '',
         $agreement,
     );
@@ -47,7 +47,7 @@ it('carries every part of the reading as the stack worked it out', function (): 
 });
 
 it('says a choice the stack made was made, with the reason it recorded and nothing answering before', function (): void {
-    $made = AFill::made(Capability::called('indexer'), ServiceId::called('prowlarr'), Services::none(), Services::these(ServiceId::called('radarr')), WhatNothingFills::none(), WhatStaysBehind::none(), 'Jackett is too slow here', 'cafe0001');
+    $made = AFill::made(Capability::called('indexer'), ServiceId::called('prowlarr'), Services::none(), Services::these(ServiceId::called('radarr')), WhatTheChoiceLeaves::of(WhatNothingFills::none(), WhatStaysBehind::none()), 'Jackett is too slow here', 'cafe0001');
 
     expect($made->wasMade())->toBeTrue()
         ->and($made->was()->isEmpty())->toBeTrue()
@@ -56,5 +56,5 @@ it('says a choice the stack made was made, with the reason it recorded and nothi
 
 it('refuses a reading with no name, which no yes could quote', function (): void {
     expect(static fn(): AFill => aFillWorkedOut('  '))->toThrow(FillSaysNothing::class, '`agreement`')
-        ->and(static fn(): AFill => AFill::made(Capability::called('indexer'), ServiceId::called('prowlarr'), Services::none(), Services::none(), WhatNothingFills::none(), WhatStaysBehind::none(), '', ''))->toThrow(FillSaysNothing::class);
+        ->and(static fn(): AFill => AFill::made(Capability::called('indexer'), ServiceId::called('prowlarr'), Services::none(), Services::none(), WhatTheChoiceLeaves::of(WhatNothingFills::none(), WhatStaysBehind::none()), '', ''))->toThrow(FillSaysNothing::class);
 });

@@ -28,6 +28,7 @@ use Modules\Kernel\Api\WhatBecameOfTheFill;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatSettledIt;
 use Modules\Kernel\Api\WhatStaysBehind;
+use Modules\Kernel\Api\WhatTheChoiceLeaves;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
@@ -91,8 +92,10 @@ function plexForTheMediaServer(bool $made = false, string $agreement = 'reading-
         ServiceId::called('plex'),
         $was ?? Services::these(ServiceId::called('jellyfin')),
         Services::these(ServiceId::called('seerr'), ServiceId::called('bazarr')),
-        $leaves ?? WhatNothingFills::these(Unfilled::of(ServiceId::called('tdarr'), Capability::called('transcoder'))),
-        $behind ?? WhatStaysBehind::these(ALeftBehind::of(Capability::called('media-server'), 'the accounts Jellyfin holds')),
+        WhatTheChoiceLeaves::of(
+            $leaves ?? WhatNothingFills::these(Unfilled::of(ServiceId::called('tdarr'), Capability::called('transcoder'))),
+            $behind ?? WhatStaysBehind::these(ALeftBehind::of(Capability::called('media-server'), 'the accounts Jellyfin holds')),
+        ),
         '',
         $agreement,
     );

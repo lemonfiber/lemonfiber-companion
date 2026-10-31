@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Unfilled;
 use Modules\Kernel\Api\WhatBecameOfTheFill;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatStaysBehind;
+use Modules\Kernel\Api\WhatTheChoiceLeaves;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhyTheFillWasTurnedDown;
 use Modules\Sdk\Api\Fillers;
@@ -96,8 +97,7 @@ function theSameFillWorkedOut(): AFill
         ServiceId::called('plex'),
         Services::these(ServiceId::called('jellyfin')),
         Services::these(ServiceId::called('seerr'), ServiceId::called('bazarr')),
-        WhatNothingFills::these(Unfilled::of(ServiceId::called('tdarr'), Capability::called('transcoder'))),
-        WhatStaysBehind::these(ALeftBehind::of(Capability::called('media-server'), 'the accounts the media server holds')),
+        WhatTheChoiceLeaves::of(WhatNothingFills::these(Unfilled::of(ServiceId::called('tdarr'), Capability::called('transcoder'))), WhatStaysBehind::these(ALeftBehind::of(Capability::called('media-server'), 'the accounts the media server holds'))),
         '',
         THE_READING_IS_NAMED,
     );
@@ -219,8 +219,7 @@ it('reads a choice the stack made, with the reason it recorded', function (): vo
         ServiceId::called('plex'),
         Services::these(ServiceId::called('jellyfin')),
         Services::these(ServiceId::called('seerr'), ServiceId::called('bazarr')),
-        WhatNothingFills::these(Unfilled::of(ServiceId::called('tdarr'), Capability::called('transcoder'))),
-        WhatStaysBehind::these(ALeftBehind::of(Capability::called('media-server'), 'the accounts the media server holds')),
+        WhatTheChoiceLeaves::of(WhatNothingFills::these(Unfilled::of(ServiceId::called('tdarr'), Capability::called('transcoder'))), WhatStaysBehind::these(ALeftBehind::of(Capability::called('media-server'), 'the accounts the media server holds'))),
         'Plex plays the 4K files',
         THE_READING_IS_NAMED,
     );

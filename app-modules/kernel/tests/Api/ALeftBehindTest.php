@@ -11,7 +11,9 @@ use function iterator_to_array;
 use Modules\Kernel\Api\ALeftBehind;
 use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\FillSaysNothing;
+use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatStaysBehind;
+use Modules\Kernel\Api\WhatTheChoiceLeaves;
 
 it('carries what stays behind in the stack\'s words, with the capability that declares it', function (): void {
     $left = ALeftBehind::of(Capability::called('media-server'), ' the accounts Jellyfin holds ');
@@ -31,4 +33,12 @@ it('keeps what stays behind in the stack\'s order, and nothing as an answer', fu
         ->and(iterator_to_array(WhatStaysBehind::these(first: $accounts), preserve_keys: true))->toBe([0 => $accounts])
         ->and(WhatStaysBehind::none()->count())->toBe(0)
         ->and(WhatStaysBehind::these($accounts, $watched)->count())->toBe(2);
+});
+
+it('holds what a choice leaves unfilled and what it leaves behind together', function (): void {
+    $unfilled = WhatNothingFills::none();
+    $behind = WhatStaysBehind::these(ALeftBehind::of(Capability::called('media-server'), 'the accounts Jellyfin holds'));
+    $leaves = WhatTheChoiceLeaves::of($unfilled, $behind);
+
+    expect([$leaves->unfilled(), $leaves->behind()])->toBe([$unfilled, $behind]);
 });
