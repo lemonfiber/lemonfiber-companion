@@ -82,7 +82,7 @@ return [
             ],
             'in_force' => 'Nu in gebruik: :glance',
             'agree' => 'Vervangen',
-            'again' => 'Opnieuw beginnen',
+            'again' => 'Het opnieuw proberen te vervangen',
             'no_outcome' => 'De machine zegt niet meer wat ervan kwam',
             'refused' => 'De machine heeft het niet vervangen',
             'back' => 'Terug naar de wachtwoorden',

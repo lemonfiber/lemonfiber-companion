@@ -86,7 +86,7 @@ return [
             ],
             'in_force' => 'Now in force: :glance',
             'agree' => 'Replace it',
-            'again' => 'Start again',
+            'again' => 'Try replacing it again',
             'no_outcome' => 'The machine no longer says what came of it',
             'refused' => 'The machine did not replace it',
             'back' => 'Back to the passwords',
