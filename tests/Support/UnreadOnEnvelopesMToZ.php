@@ -80,6 +80,10 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'The setting a choice of filler is recorded under, in lemonfiber\'s own spelling of it. The screen says the same thing in the operator\'s terms, from the capability and the service that would answer it.',
         ],
         [
+            'path' => 'SubstitutionEnvelope.substitution.leaves_behind',
+            'because' => 'Each kind of thing the part a choice of filler stops holds that its replacement is not carried, which `F14-R11` asks the rehearsal to say. No `N` requirement asks the phone for it yet: `N5-R4` asks a choice to name what it would leave unfilled, which is read (`N1-R17`).',
+        ],
+        [
             'path' => 'SubstitutionEnvelope.substitution.leaves_unfilled[].native',
             'because' => 'As `WiringEnvelope.unfilled[].native`: a capability the substitution leaves unanswered is drawn as lost, which it is, and no requirement asks which upstream API its ask talks in.',
         ],

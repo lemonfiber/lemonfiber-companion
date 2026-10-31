@@ -68,6 +68,7 @@ function whatAStackSaysAFillComesTo(array $changed = [], array $choice = [], arr
         'asked_by' => ['seerr', 'bazarr'],
         'capability' => 'media-server',
         'leaves_unfilled' => [['by' => 'tdarr', 'capability' => 'transcoder']],
+        'leaves_behind' => [['capability' => 'media-server', 'kind' => 'accounts', 'said' => 'the accounts the media server holds']],
         'now' => 'plex',
         'setting' => 'media-server=plex',
         'starts' => [],
