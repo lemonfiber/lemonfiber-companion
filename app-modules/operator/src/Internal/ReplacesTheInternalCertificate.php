@@ -66,7 +66,6 @@ trait ReplacesTheInternalCertificate
             return;
         }
 
-        $this->backToTheCredentials();
         $this->replacing = true;
         $this->readTheReplacement();
     }

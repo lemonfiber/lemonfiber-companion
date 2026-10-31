@@ -16,13 +16,16 @@ use Modules\Kernel\Api\WhatAReplacementCameTo;
 use Modules\Kernel\Api\WhatTheStoreProtects;
 use Modules\Kernel\Api\WhereAReplacementSettled;
 use Modules\Operator\Internal\Presenters\HowAReplacementReads;
+use Modules\Operator\Internal\ViewModels\AReplacementAsShown;
 
 /** How a replacement is toned once the stack answered. */
 function theToneOf(ACertificateReplacement $replacement): string
 {
     $held = TheCredentialsHeld::of(WhatTheStoreProtects::said('Plain files', Remarks::of(), Remarks::of()), TheCredentialGrants::of());
 
-    return new HowAReplacementReads()->answered(WhatAReplacementCameTo::of($replacement, $held))->replacement?->tone ?? '';
+    $shown = new HowAReplacementReads()->answered(WhatAReplacementCameTo::of($replacement, $held))->replacement;
+
+    return $shown instanceof AReplacementAsShown ? $shown->tone : '';
 }
 
 it('tones a reading as wanting a look, a landed replacement as fine, and anything else as not known to have landed', function (): void {
