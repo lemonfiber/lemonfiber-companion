@@ -25,4 +25,7 @@ enum SubstitutionField: string implements NamesAWireField
 
     /** What the choice would leave unfilled, each with the service that would lose it. */
     case LeavesUnfilled = 'leaves_unfilled';
+
+    /** What the part the choice stops holds that its replacement is not carried. */
+    case LeavesBehind = 'leaves_behind';
 }

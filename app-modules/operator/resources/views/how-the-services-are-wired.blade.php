@@ -48,6 +48,11 @@
                     @empty
                         <x-design::body>{{ __('stacks.wiring.fills.leaves_nothing') }}</x-design::body>
                     @endforelse
+                    @forelse ($this->choice->reading->behind as $left)
+                        <x-design::body>{{ __('stacks.wiring.fills.leaves_behind', $left) }}</x-design::body>
+                    @empty
+                        <x-design::body>{{ __('stacks.wiring.fills.leaves_nothing_behind') }}</x-design::body>
+                    @endforelse
                     <native:outlined-text-input native:model="because" label="{{ __('stacks.wiring.fills.reason') }}" />
                 @endif
             @endif

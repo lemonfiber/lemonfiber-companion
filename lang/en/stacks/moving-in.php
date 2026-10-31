@@ -162,6 +162,8 @@ return [
             'asked_by' => 'Asked for by :services',
             'leaves_unfilled' => ':by would lose :capability',
             'leaves_nothing' => 'Nothing is left unanswered',
+            'leaves_behind' => 'Would not come across (:capability): :said',
+            'leaves_nothing_behind' => 'Everything it holds would come across',
             'reason' => 'Your reason (optional)',
             'agree' => 'Make this the choice',
             'never_mind' => 'Leave it as it is',

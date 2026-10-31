@@ -80,8 +80,8 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'The setting a choice of filler is recorded under, in lemonfiber\'s own spelling of it. The screen says the same thing in the operator\'s terms, from the capability and the service that would answer it.',
         ],
         [
-            'path' => 'SubstitutionEnvelope.substitution.leaves_behind',
-            'because' => 'Each kind of thing the part a choice of filler stops holds that its replacement is not carried, which `F14-R11` asks the rehearsal to say. No `N` requirement asks the phone for it yet: `N5-R4` asks a choice to name what it would leave unfilled, which is read (`N1-R17`).',
+            'path' => 'SubstitutionEnvelope.substitution.leaves_behind[].kind',
+            'because' => 'The stable id of a kind of thing that stays behind. `N5-R14` asks for each in the stack\'s words, which `said` carries; the id tells kinds apart for a machine, not for an operator.',
         ],
         [
             'path' => 'SubstitutionEnvelope.substitution.leaves_unfilled[].native',

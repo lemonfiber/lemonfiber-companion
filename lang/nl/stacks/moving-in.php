@@ -149,6 +149,8 @@ return [
             'asked_by' => 'Gevraagd door :services',
             'leaves_unfilled' => ':by zou :capability kwijtraken',
             'leaves_nothing' => 'Er blijft niets onbeantwoord',
+            'leaves_behind' => 'Zou niet meekomen (:capability): :said',
+            'leaves_nothing_behind' => 'Alles wat het bewaart, zou meekomen',
             'reason' => 'Jouw reden (mag leeg)',
             'agree' => 'Maak dit de keuze',
             'never_mind' => 'Laat het zoals het is',
