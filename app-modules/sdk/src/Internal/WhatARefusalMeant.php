@@ -196,6 +196,7 @@ final readonly class WhatARefusalMeant
         RefusalCode::ProjectEdited,
         RefusalCode::RootRefused,
         RefusalCode::MountLinked,
+        RefusalCode::ServiceUnfenced,
         // Minting, collecting and revoking a key for an app, refused for
         // what was asked: a claim that collects nothing is one of them, and
         // ends no session whatever status it came with.

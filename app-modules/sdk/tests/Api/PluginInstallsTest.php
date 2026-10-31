@@ -133,6 +133,7 @@ it('reads a proof answered as unproven with its reason, and one failing only as 
     expect(howTheProofsCameOut(PluginInstalls::in($withVerdict(['outcome' => 'unproven', 'why' => 'The service did not settle']))))->toBe('unproven The service did not settle')
         ->and(howTheProofsCameOut(PluginInstalls::in($withVerdict(['outcome' => 'failing-as-declared', 'declared' => [['constraint' => 'status', 'fixture' => 'a', 'held' => '502', 'reason' => 'Recorded against an old release']]]))))
         ->toBe('failing-as-declared Recorded against an old release')
+        ->and(howTheProofsCameOut(PluginInstalls::in($withVerdict(['outcome' => 'open', 'why' => 'Nobody entered the claim code']))))->toBe('open Nobody entered the claim code')
         ->and(WhatAProofSays::FailingAsDeclared->value)->toBe('failing-as-declared');
 });
 
@@ -366,6 +367,7 @@ function everyPluginsAnswerThatCannotBeRead(): array
         'a verdict that says it was not asked' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'proofs' => [['proof' => 'a', 'establishes' => 'b', 'asks' => 'c', 'why' => 'd', 'came_to' => ['outcome' => 'not_asked']]]])), $unreadable],
         'a failure with no faults' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'proofs' => [['proof' => 'a', 'establishes' => 'b', 'asks' => 'c', 'why' => 'd', 'came_to' => ['outcome' => 'failed']]]])), $unreadable],
         'a blank fault' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'proofs' => [['proof' => 'a', 'establishes' => 'b', 'asks' => 'c', 'why' => 'd', 'came_to' => ['outcome' => 'failed', 'faults' => ['']]]]])), $unreadable],
+        'left open with no why' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'proofs' => [['proof' => 'a', 'establishes' => 'b', 'asks' => 'c', 'why' => 'd', 'came_to' => ['outcome' => 'open', 'why' => ' ']]]])), $unreadable],
         'declared failures that are not a list' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'proofs' => [['proof' => 'a', 'establishes' => 'b', 'asks' => 'c', 'why' => 'd', 'came_to' => ['outcome' => 'failing-as-declared']]]])), $unreadable],
         'a declared failure that is not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'proofs' => [['proof' => 'a', 'establishes' => 'b', 'asks' => 'c', 'why' => 'd', 'came_to' => ['outcome' => 'failing-as-declared', 'declared' => ['x']]]]])), $unreadable],
         'recipes that are not a list' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'recipes' => 'one'])), $unreadable],

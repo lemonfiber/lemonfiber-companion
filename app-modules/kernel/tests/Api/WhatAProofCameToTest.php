@@ -19,6 +19,7 @@ it('tells not asked from passed, and could not conclude from failed, and only fa
         'failed' => [WhatAProofCameTo::failed(PluginLines::under('faults', 'It answered 502')), WhatAProofSays::Failed, ['It answered 502'], true],
         'unproven' => [WhatAProofCameTo::unproven(' The service did not settle '), WhatAProofSays::Unproven, ['The service did not settle'], false],
         'failing as declared' => [WhatAProofCameTo::failingAsDeclared(PluginLines::under('reason', 'Recorded against an old release')), WhatAProofSays::FailingAsDeclared, ['Recorded against an old release'], false],
+        'open' => [WhatAProofCameTo::open(' Nobody entered the claim code '), WhatAProofSays::Open, ['Nobody entered the claim code'], false],
     ];
 
     foreach ($answers as $which => [$cameTo, $says, $said, $stops]) {

@@ -48,13 +48,19 @@ final readonly class WhatAProofCameTo
         return new self(WhatAProofSays::FailingAsDeclared, $reasons);
     }
 
-    /** Which of the five it is. */
+    /** The part it claims is left open, because nobody entered the code its claim takes, and this is why; neither passed nor failed. */
+    public static function open(string $why): self
+    {
+        return new self(WhatAProofSays::Open, PluginLines::under('why', trim($why)));
+    }
+
+    /** Which of the six it is. */
     public function says(): WhatAProofSays
     {
         return $this->says;
     }
 
-    /** What the stack said with it: each fault, the reason it was unproven, or each declared failure. */
+    /** What the stack said with it: each fault, the reason it was unproven or left open, or each declared failure. */
     public function said(): PluginLines
     {
         return $this->said;

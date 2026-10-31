@@ -100,6 +100,10 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'Whether taking lemonfiber off was only rehearsed. `N13-R10` asks for that rehearsal, and the `uninstall` action takes `dry_run` now; the screen does not ask for one yet, so every answer it reads says it was not, and asking for one is the work `N13-R10` is owed.',
         ],
         [
+            'path' => 'UpdateEnvelope.moves[].configured_by',
+            'because' => 'As `LifecycleEnvelope.moves[].configured_by`: `N2-R31` asks an update\'s confirmation to name each move\'s service and the plugin that would take its place, which are read, and no `N` requirement asks it to name the adapter that writes the moved service\'s configuration (`N1-R17`).',
+        ],
+        [
             'path' => 'UpdateEnvelope.unvetted',
             'because' => WhatThisAppDoesNotRead::THE_OPERATORS_OVERLAY,
         ],
