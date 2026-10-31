@@ -17,6 +17,7 @@ enum WhatAProofSays: string
     case Failed = 'failed';
     case Unproven = 'unproven';
     case FailingAsDeclared = 'failing-as-declared';
+    case Open = 'open';
 
     /** What it came to, as a catalogue key. */
     public function saidOnTheScreen(): string
@@ -27,6 +28,7 @@ enum WhatAProofSays: string
             self::Failed => 'plugins.proof.failed',
             self::Unproven => 'plugins.proof.unproven',
             self::FailingAsDeclared => 'plugins.proof.failing_as_declared',
+            self::Open => 'plugins.proof.open',
         };
     }
 }

@@ -58,6 +58,7 @@ return [
         'failed' => 'Hield geen stand',
         'unproven' => 'Geen conclusie mogelijk',
         'failing_as_declared' => 'Faalt alleen waar de plug-in zegt dat hij zal falen',
+        'open' => 'Open gelaten: niemand voerde de code in die de claim nodig heeft, dus wie er het eerst bij is, kan het claimen',
     ],
     'overrides' => 'Instellingen die hij wijzigt',
     'no_overrides' => 'Hij wijzigt geen meegeleverde instelling',

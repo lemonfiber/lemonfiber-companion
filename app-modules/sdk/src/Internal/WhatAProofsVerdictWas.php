@@ -83,6 +83,7 @@ final readonly class WhatAProofsVerdictWas
             WhatAProofSays::Failed => WhatAProofCameTo::failed(PluginLines::under(PluginsField::Faults->value, ...self::words($verdict, PluginsField::Faults, $position))),
             WhatAProofSays::Unproven => WhatAProofCameTo::unproven(self::text($verdict, WireField::Why, $position)),
             WhatAProofSays::FailingAsDeclared => WhatAProofCameTo::failingAsDeclared(PluginLines::under(WireField::Reason->value, ...self::reasons($verdict, $position))),
+            WhatAProofSays::Open => WhatAProofCameTo::open(self::text($verdict, WireField::Why, $position)),
             WhatAProofSays::NotAsked, null => throw PluginsAreUnreadable::said(WireField::Outcome, $said),
         };
     }

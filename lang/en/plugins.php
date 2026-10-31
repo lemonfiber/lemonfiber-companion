@@ -58,6 +58,7 @@ return [
         'failed' => 'Did not hold',
         'unproven' => 'Could not conclude',
         'failing_as_declared' => 'Fails only where the plugin says it will',
+        'open' => 'Left open: nobody entered the code its claim takes, so whoever reaches it first can claim it',
     ],
     'overrides' => 'Settings it changes',
     'no_overrides' => 'It changes no bundled setting',

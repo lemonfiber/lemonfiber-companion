@@ -530,6 +530,18 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'Raise it against the spec before reading it, which is `N1-R17`.',
         ],
         [
+            'path' => 'LifecycleEnvelope.fencing',
+            'because' => 'Why the addresses of the engine\'s host were not asked or kept for a fence, on a start where a service is fenced. No `N` requirement asks what a verb came to to carry it: a fenced service a start holds back does not run, and what `N16-R6` asks a start to name is what did not come back, which is read (`N1-R17`).',
+        ],
+        [
+            'path' => 'LifecycleEnvelope.unfenced',
+            'because' => 'Each fenced service a start holds back because no fence can be written for it, in the stack\'s words. What `N16-R6` asks a start to name is what did not come back, which is read off the services it answers with; no `N` requirement asks for the stack\'s sentence on why (`N1-R17`).',
+        ],
+        [
+            'path' => 'LifecycleEnvelope.moves[].configured_by',
+            'because' => 'The adapter that writes the configuration a moved service reads, once the move is taken. `N2-R31` asks a move in place to name the stack\'s own service and the plugin that would take its place, which are read; no `N` requirement asks it to name the adapter (`N1-R17`).',
+        ],
+        [
             'path' => 'LifecycleEnvelope.swept',
             'because' => 'Every network the engine held for the project that the project no longer declares, taken away before a start or named by a rehearsal. No `N` requirement asks what a verb came to to name a network: what `N16-R6` asks a start to name is what did not come back, which is read.',
         ],
