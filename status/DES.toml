@@ -13,5 +13,6 @@ requirement = [
   { id = "DES-R30", state = "done", evidence = ["app-modules/design/resources/views/components/marked-line.blade.php", "app-modules/design/resources/views/components/notice.blade.php", "app-modules/design/tests/Api/ThemeTokenTest.php", "app-modules/design/tests/View/Components/MarkedLineTest.php"] },
   { id = "DES-R32", state = "done", evidence = ["app-modules/design/src/Api/Typeface.php", "tests/Arch/EveryTextIsSetInABundledFaceTest.php", "tests/Arch/TheBundledFacesAreTheBrandsTest.php"] },
   { id = "DES-R33", state = "done", evidence = ["app-modules/design/src/Api/Radius.php", "app-modules/design/src/Api/ThemeToken.php", "tests/Arch/BrandMeasuresParityTest.php", "tests/Arch/BrandPaletteParityTest.php"] },
+  { id = "DES-R35", state = "done", evidence = ["bridge/resources/brand/mark-primary.svg", "public/icon.png", "scripts/patch_nativephp/57-the-first-frame-is-the-launch-mark.patch", "scripts/patch_nativephp/58-the-ios-launch-is-the-launch-mark.patch", "tests/Arch/TheBrandIsDrawnFromItsOwnFilesTest.php"] },
   { id = "DES-R36", state = "partial", evidence = ["app-modules/design/src/Api/ThemeToken.php", "app-modules/design/tests/Api/ThemeTokenTest.php", "tests/Arch/BrandPaletteParityTest.php"] },
 ]

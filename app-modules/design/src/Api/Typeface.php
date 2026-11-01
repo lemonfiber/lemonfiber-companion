@@ -14,8 +14,8 @@ namespace Modules\Design\Api;
  * never fetched while it runs. One face per weight: a text element names the
  * face its weight is drawn in, so neither platform has a weight to synthesise.
  *
- * Bricolage Grotesque is the brand's display face and is not one of these: it
- * appears only inside the outlined wordmark, which is drawn rather than set.
+ * Bricolage Grotesque, the brand's display face, is not one of these and sets
+ * no text here: the wordmark is the brand's drawn file, never typeset.
  */
 enum Typeface: string
 {

@@ -282,6 +282,21 @@
             "self_closing": true
         }
     ],
+    "assets": {
+        "android": {
+            "android/res/drawable/lemonfiber_notification.xml": "res/drawable/lemonfiber_notification.xml",
+            "android/res/drawable/lemonfiber_launcher_foreground.xml": "res/drawable/lemonfiber_launcher_foreground.xml",
+            "android/res/drawable/lemonfiber_launch_mark.xml": "res/drawable/lemonfiber_launch_mark.xml",
+            "android/res/values/lemonfiber_brand.xml": "res/values/lemonfiber_brand.xml",
+            "android/res/mipmap-anydpi-v26/ic_launcher.xml": "res/mipmap-anydpi-v26/ic_launcher.xml",
+            "android/res/mipmap-anydpi-v26/ic_launcher_round.xml": "res/mipmap-anydpi-v26/ic_launcher_round.xml"
+        },
+        "ios": {
+            "brand/mark-primary.svg": "Resources/../Assets.xcassets/LaunchMark.imageset/mark-primary.svg",
+            "catalog/LaunchMark.imageset/Contents.json": "Resources/../Assets.xcassets/LaunchMark.imageset/Contents.json",
+            "catalog/LemonfiberCanvas.colorset/Contents.json": "Resources/../Assets.xcassets/LemonfiberCanvas.colorset/Contents.json"
+        }
+    },
     "android": {
         "min_version": 26,
         "init_function": "app.lemonfiber.native.installLemonfiber",

@@ -181,7 +181,7 @@ it('reads a face\'s weight from the file', function (): void {
         ->and(theWeightTheFaceDeclares(Tree::at(sprintf('%s/%s.ttf', WHERE_THE_FACES_ARE, Typeface::InterfaceDisplay->value))))->toBe(800);
 });
 
-it('bundles no face of the brand\'s display family, which only the outlined wordmark carries', function (): void {
+it('bundles no face of the brand\'s display family', function (): void {
     $display = theBrandsFamilies()['display'] ?? '';
     $found = array_filter(
         Typeface::cases(),

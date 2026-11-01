@@ -6,6 +6,7 @@
 bridge/resources/ios/              what actually ships, and what SwiftPM compiles
   <Capability>Rule.swift           the decision, no UIKit in it
   <Capability>Functions.swift      the shim: gather, ask the rule, apply
+bridge/resources/catalog/          the launch mark and the canvas, copied into the asset catalog
 bridge/Package.swift               the package: one library target, one test target per rule
 bridge/ios/Tests/<Rule>Tests/      one test file per rule
 ```

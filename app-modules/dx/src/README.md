@@ -17,3 +17,12 @@ it is, these `StandsIn` implementations take the place of real ones:
 `ClientsThatReachNothing` and `DoorsThatOpenOnNothing` wrap the real SDK
 client and door with a transport that answers from the installed SDK's own
 contract, so the SDK's envelope reading and version check still run.
+
+## The brand, drawn for the platforms
+
+`ACellDrawing` reads a brand SVG back as the cells its generator painted, and
+`AnAndroidVector` writes one as an Android vector drawable, a viewport unit a
+cell. `WhatAndroidDrawsOfTheBrand` names each drawable the bridge ships, with
+its brand file, side and cell size, and `TheColoursBeforeTheAppDraws` takes the
+colours a phone paints before the app draws from the brand's tokens.
+`scripts/brand_drawables.php` writes them into `bridge/resources`.
