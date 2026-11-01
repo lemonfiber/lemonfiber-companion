@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Taken from app-modules/design/resources/tokens.json by scripts/brand_drawables.php. Do not edit. -->
+<resources>
+    <color name="lemonfiber_paper">#FBF7EA</color>
+    <color name="lemonfiber_canvas">#100F0A</color>
+</resources>

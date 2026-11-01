@@ -20,8 +20,10 @@ import androidx.media3.common.Tracks
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.session.DefaultMediaNotificationProvider
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import com.nativephp.mobile.R
 
 /**
  * The player itself, kept by a service so it plays on with the screen locked and in picture-in-picture.
@@ -72,6 +74,11 @@ public class PlaybackService : MediaSessionService() {
         playing.addListener(Listening())
         player = playing
         session = MediaSession.Builder(this, playing).setCallback(OnlyTheAppAndTheSystem()).build()
+        setMediaNotificationProvider(
+            DefaultMediaNotificationProvider.Builder(this).build().apply {
+                setSmallIcon(R.drawable.lemonfiber_notification)
+            },
+        )
         PlayerSession.service = this
         PlayerSession.asked?.let(::play)
     }

@@ -18,6 +18,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.FragmentActivity
+import com.nativephp.mobile.R
 import com.nativephp.mobile.bridge.BridgeError
 import com.nativephp.mobile.bridge.BridgeFunction
 
@@ -156,7 +157,7 @@ public object TellingFunctions {
                 NotificationCompat.Builder(context, CHANNEL)
                     .setContentTitle(said.title)
                     .setContentText(said.body)
-                    .setSmallIcon(context.applicationInfo.icon)
+                    .setSmallIcon(R.drawable.lemonfiber_notification)
                     .setAutoCancel(true)
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .apply {

@@ -1,0 +1,86 @@
+On iOS the launch screen and the splash after it are the launch mark on the
+member theme's ground.
+
+The package's launch screen fills the screen with a launch image on white,
+and its splash view repeats it until the app is ready. Both now draw the
+brand's `mark-primary.svg` centred at 96pt, three points a cell, so every
+cell is whole pixels at 2x and 3x, on the ink theme's `canvas`. The mark and
+the colour are named from the asset catalog, where the bridge's manifest
+copies the brand's own SVG, kept as a vector, and the colour set
+`scripts/brand_drawables.php` takes from the brand's tokens. The named
+colour's value in the storyboard is what Interface Builder shows when the
+catalog is not at hand; the catalog's colour is the one drawn.
+
+--- a/vendor/nativephp/mobile/resources/xcode/NativePHP/LaunchScreen.storyboard
++++ b/vendor/nativephp/mobile/resources/xcode/NativePHP/LaunchScreen.storyboard
+@@ -15,17 +15,17 @@
+                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                         <subviews>
+-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LaunchImage" translatesAutoresizingMaskIntoConstraints="NO" id="splash-image">
+-                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
++                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LaunchMark" translatesAutoresizingMaskIntoConstraints="NO" id="splash-image">
++                                <rect key="frame" x="148.5" y="378" width="96" height="96"/>
+                             </imageView>
+                         </subviews>
+                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+-                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
++                        <color key="backgroundColor" name="LemonfiberCanvas"/>
+                         <constraints>
+-                            <constraint firstItem="splash-image" firstAttribute="bottom" secondItem="Ze5-6b-2t3" secondAttribute="bottom" id="bottom"/>
+-                            <constraint firstItem="splash-image" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="leading"/>
+-                            <constraint firstItem="splash-image" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="top"/>
+-                            <constraint firstItem="splash-image" firstAttribute="trailing" secondItem="Ze5-6b-2t3" secondAttribute="trailing" id="trailing"/>
++                            <constraint firstItem="splash-image" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="centerX"/>
++                            <constraint firstItem="splash-image" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="centerY"/>
++                            <constraint firstItem="splash-image" firstAttribute="width" constant="96" id="width"/>
++                            <constraint firstItem="splash-image" firstAttribute="height" constant="96" id="height"/>
+                         </constraints>
+                     </view>
+                 </viewController>
+@@ -35,6 +35,9 @@
+         </scene>
+     </scenes>
+     <resources>
+-        <image name="LaunchImage" width="1206" height="2622"/>
++        <image name="LaunchMark" width="512" height="512"/>
++        <namedColor name="LemonfiberCanvas">
++            <color red="0.0627" green="0.0588" blue="0.0392" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
++        </namedColor>
+     </resources>
+ </document>
+--- a/vendor/nativephp/mobile/resources/xcode/NativePHP/SplashView.swift
++++ b/vendor/nativephp/mobile/resources/xcode/NativePHP/SplashView.swift
+@@ -1,25 +1,17 @@
+ import SwiftUI
+ 
+-/// A view that replicates the launch screen appearance.
++/// A view that replicates the launch screen: the brand's launch mark at 96pt on the member theme's ground.
+ /// This allows the app to appear launched while heavy initialization continues in the background.
+ struct SplashView: View {
+     var body: some View {
+-        GeometryReader { geometry in
+-            ZStack {
+-                // Background color matching launch screen (white)
+-                Color.white
+-                    .ignoresSafeArea()
++        ZStack {
++            Color("LemonfiberCanvas")
++                .ignoresSafeArea()
+ 
+-                // LaunchImage scaled to fill (matching LaunchScreen.storyboard scaleAspectFill)
+-                Image("LaunchImage")
+-                    .resizable()
+-                    .aspectRatio(contentMode: .fill)
+-                    .frame(width: geometry.size.width, height: geometry.size.height)
+-                    .clipped()
+-                    .ignoresSafeArea()
+-            }
++            Image("LaunchMark")
++                .resizable()
++                .frame(width: 96, height: 96)
+         }
+-        .ignoresSafeArea()
+     }
+ }
+ 

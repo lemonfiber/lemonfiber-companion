@@ -6,10 +6,18 @@
 bridge/resources/android/          what actually ships, and what the harness compiles
   <Capability>Rule.kt              the decision, no framework in it
   <Capability>Functions.kt         the shim: gather, ask the rule, apply
+  res/                             the launcher icon, launch mark, notification icon and first colours
+bridge/resources/brand/            the brand's own SVGs that `res/` is drawn from
 bridge/android/                    a plain Kotlin/JVM project, deliberately not an Android one
   build.gradle.kts                 ktlint, detekt, kover
   src/test/kotlin/                 one test file per rule
 ```
+
+`res/` is copied into the Android project by the `assets` of
+`bridge/nativephp.json`. Its drawables and colours are written by
+`php scripts/brand_drawables.php` from the brand's files and tokens, and
+`tests/Arch/TheBrandIsDrawnFromItsOwnFilesTest.php` fails while one differs
+from what that writes.
 
 The harness points its source directory at `resources/android` rather than at a
 copy. A harness built on a copy proves something about the copy, and the copy is

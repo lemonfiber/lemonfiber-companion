@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Drawn from brand/mark-primary.svg by scripts/brand_drawables.php. Do not edit. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="54"
+    android:viewportHeight="54">
+    <path
+        android:fillColor="#17160F"
+        android:pathData="M35,15h3v1h-3z M33,16h2v1h-2z M37,16h1v2h-1z M31,17h2v1h-2z M30,18h1v1h-1z M36,18h1v1h-1z M29,19h1v2h-1z M35,19h1v1h-1z M33,20h2v1h-2z M27,21h1v2h-1z M30,21h3v1h-3z M23,22h4v1h-4z M30,22h1v1h-1z M20,23h3v1h-3z M31,23h3v1h-3z M18,24h2v1h-2z M34,24h2v1h-2z M17,25h1v1h-1z M25,25h1v12h-1z M36,25h1v1h-1z M16,26h1v1h-1z M26,26h1v10h-1z M37,26h1v1h-1z M15,27h1v2h-1z M27,27h1v8h-1z M38,27h1v2h-1z M28,28h1v6h-1z M14,29h1v1h-1z M29,29h1v4h-1z M39,29h1v1h-1z M13,30h1v2h-1z M30,30h1v2h-1z M40,30h1v2h-1z M14,32h1v1h-1z M39,32h1v1h-1z M15,33h1v2h-1z M38,33h1v2h-1z M16,35h1v1h-1z M37,35h1v1h-1z M17,36h1v1h-1z M36,36h1v1h-1z M18,37h2v1h-2z M34,37h2v1h-2z M20,38h3v1h-3z M31,38h3v1h-3z M23,39h8v1h-8z" />
+    <path
+        android:fillColor="#5B6B2A"
+        android:pathData="M35,16h2v2h-2z M33,17h2v3h-2z M31,18h2v3h-2z M35,18h1v1h-1z M30,19h1v2h-1z" />
+    <path
+        android:fillColor="#9C5411"
+        android:pathData="M28,21h2v2h-2z" />
+    <path
+        android:fillColor="#FFD84D"
+        android:pathData="M23,23h3v1h-3z M20,24h3v1h-3z M18,25h2v1h-2z M17,26h1v1h-1z M16,27h1v2h-1z M15,29h1v1h-1z M14,30h1v2h-1z M15,32h1v1h-1z" />
+    <path
+        android:fillColor="#F0C419"
+        android:pathData="M26,23h5v3h-5z M23,24h3v1h-3z M31,24h3v13h-3z M20,25h5v1h-5z M34,25h2v11h-2z M18,26h2v1h-2z M22,26h3v12h-3z M27,26h4v1h-4z M36,26h1v9h-1z M17,27h2v9h-2z M21,27h1v11h-1z M28,27h3v1h-3z M37,27h1v6h-1z M19,28h2v9h-2z M29,28h2v1h-2z M16,29h1v6h-1z M30,29h1v1h-1z M38,29h1v3h-1z M15,30h1v2h-1z M39,30h1v2h-1z M30,32h1v6h-1z M29,33h1v5h-1z M28,34h1v4h-1z M27,35h1v3h-1z M18,36h1v1h-1z M26,36h1v3h-1z M20,37h1v1h-1z M25,37h1v2h-1z M23,38h2v1h-2z" />
+    <path
+        android:fillColor="#FBF7EA"
+        android:pathData="M20,26h2v1h-2z M19,27h2v1h-2z" />
+    <path
+        android:fillColor="#F09A3C"
+        android:pathData="M38,32h1v1h-1z M37,33h1v2h-1z M36,35h1v1h-1z M34,36h2v1h-2z M31,37h3v1h-3z M27,38h4v1h-4z" />
+</vector>

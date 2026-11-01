@@ -1,0 +1,117 @@
+The first frame is the launch mark on the member theme's ground.
+
+Before the app has drawn anything, Android paints the window, and from
+Android 12 a system splash with the launcher icon on it, and then the
+package's splash until the app is ready. The window and the system splash
+are the ink theme's `canvas`, the system splash draws no icon, and the
+package's splash draws the brand's launch mark centred on the same ground,
+at the largest whole multiple of its 32 cells that fits in 96dp, so every
+cell is whole pixels and the first thing drawn is the mark at the size it
+stays. The colour and the drawable are the bridge's resources, drawn from
+the brand's files by `scripts/brand_drawables.php`.
+
+--- a/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/MainActivity.kt
++++ b/vendor/nativephp/mobile/resources/androidstudio/app/src/main/java/com/nativephp/mobile/ui/MainActivity.kt
+@@ -1449,81 +1449,25 @@
+     }
+ 
+     /**
+-     * Splash screen composable - shows custom image or fallback text
++     * The launch mark, centred on the member theme's ground, at the largest whole multiple of its 32 cells that fits in 96dp.
+      */
+     @Composable
+     private fun SplashScreen() {
+-        val splashResourceId = remember {
+-            try {
+-                resources.getIdentifier("splash", "drawable", packageName)
+-            } catch (e: Exception) {
+-                0
+-            }
+-        }
+-
+-        // Decode the full-screen splash bitmap OFF the main thread. painterResource
+-        // decodes synchronously inside the first composition — directly on the TTID
+-        // critical path (tens of ms for a full-screen PNG). The first frame paints
+-        // solid black (identical to the theme's windowBackground, so there's no
+-        // visible seam) and the image fades in as soon as the decode lands.
+-        var splashBitmap by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+-        LaunchedEffect(splashResourceId) {
+-            if (splashResourceId != 0) {
+-                splashBitmap = withContext(Dispatchers.IO) {
+-                    try {
+-                        android.graphics.BitmapFactory
+-                            .decodeResource(resources, splashResourceId)
+-                            ?.asImageBitmap()
+-                    } catch (t: Throwable) {
+-                        Log.w("Splash", "Failed to decode splash: ${t.message}")
+-                        null
+-                    }
+-                }
+-            }
++        val cells = 32f
++        val side = with(androidx.compose.ui.platform.LocalDensity.current) {
++            (kotlin.math.floor(96.dp.toPx() / cells) * cells).toDp()
+         }
+ 
+         Box(
+             modifier = Modifier
+                 .fillMaxSize()
+-                .background(Color.Black),
++                .background(androidx.compose.ui.res.colorResource(com.nativephp.mobile.R.color.lemonfiber_canvas)),
+             contentAlignment = Alignment.Center
+         ) {
+-            val bitmap = splashBitmap
+-            if (bitmap != null) {
+-                // MutableTransitionState(false) → targetState = true makes the
+-                // fade-in play on the Image's FIRST composition (plain
+-                // AnimatedVisibility(visible = true) would skip it).
+-                val fadeInState = remember {
+-                    androidx.compose.animation.core.MutableTransitionState(false)
+-                }.apply { targetState = true }
+-                AnimatedVisibility(
+-                    visibleState = fadeInState,
+-                    enter = fadeIn(animationSpec = tween(150))
+-                ) {
+-                    Image(
+-                        bitmap = bitmap,
+-                        contentDescription = "App splash screen",
+-                        modifier = Modifier.fillMaxSize(),
+-                        contentScale = ContentScale.Crop
+-                    )
+-                }
+-            } else if (splashResourceId == 0) {
+-                SplashText()
+-            }
+-        }
+-    }
+-
+-    @Composable
+-    private fun SplashText() {
+-        Box(
+-            modifier = Modifier.fillMaxSize(),
+-            contentAlignment = Alignment.BottomCenter
+-        ) {
+-            Text(
+-                text = "Loading…",
+-                fontSize = 16.sp,
+-                color = Color.White,
+-                modifier = Modifier.padding(bottom = 64.dp)
++            Image(
++                painter = androidx.compose.ui.res.painterResource(com.nativephp.mobile.R.drawable.lemonfiber_launch_mark),
++                contentDescription = null,
++                modifier = Modifier.size(side)
+             )
+         }
+     }
+--- a/vendor/nativephp/mobile/src/Concerns/InstallsAndroid.php
++++ b/vendor/nativephp/mobile/src/Concerns/InstallsAndroid.php
+@@ -101,6 +101,9 @@
+                     <item name="colorOnPrimary">{$onPrimary}</item>
+                     <item name="colorAccent">{$primary}</item>
+                     <item name="android:colorAccent">{$primary}</item>
++                    <item name="android:windowBackground">@color/lemonfiber_canvas</item>
++                    <item name="android:windowSplashScreenBackground">@color/lemonfiber_canvas</item>
++                    <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+                     <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+                     <item name="android:statusBarColor">@android:color/transparent</item>
+                     <item name="android:navigationBarColor">@android:color/transparent</item>
