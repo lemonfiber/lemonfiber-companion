@@ -204,7 +204,7 @@ final readonly class UnreadOnThePluginsEnvelope
         ],
         [
             'path' => 'PluginsEnvelope.install.would.declared.secrets',
-            'because' => 'Every credential the plugin says it will hold, with no value. `N25-R13` asks for each secret on the plugin with whether a value is held and where it came from, which this list does not carry: it waits for the settings read the SDK does not offer yet — `N1-R17`.',
+            'because' => 'Every credential the plugin says it will hold, with no value. No requirement asks an install\'s rehearsal to list them, and once the plugin is installed its screen lists each from the settings read with whether a value is held and where it came from (`N25-R13`).',
         ],
         [
             'path' => 'PluginsEnvelope.install.would.description',
@@ -244,7 +244,7 @@ final readonly class UnreadOnThePluginsEnvelope
         ],
         [
             'path' => 'PluginsEnvelope.installed[].declared.secrets',
-            'because' => 'Every credential the plugin says it will hold, with no value. `N25-R13` asks for each secret on the plugin with whether a value is held and where it came from, which this list does not carry: it waits for the settings read the SDK does not offer yet — `N1-R17`.',
+            'because' => 'Every credential the installed plugin says it holds, with no value. `N25-R13` asks for each secret on the plugin with whether a value is held and where it came from, which this list does not carry; the plugin\'s screen lists them from the settings read, which does.',
         ],
         [
             'path' => 'PluginsEnvelope.installed[].description',

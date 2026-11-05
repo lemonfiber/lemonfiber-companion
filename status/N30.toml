@@ -17,4 +17,5 @@ requirement = [
   { id = "N30-R9", state = "partial", evidence = ["app-modules/operator/resources/views/components/refused-in-its-words.blade.php", "app-modules/sdk/src/Internal/WhatARefusalMeant.php", "tests/Contract/SharingTheLineContractTest.php", "tests/Feature/ChangingHowTheLineIsSharedTest.php"] },
   { id = "N30-R10", state = "done", evidence = ["app-modules/kernel/src/Api/WhatARunCovers.php", "app-modules/sdk/src/Api/CheckRunners.php", "app-modules/operator/src/Internal/Screens/WhatRunningChecksDisturbs.php", "tests/Contract/RunningACheckContractTest.php", "tests/Feature/RunningEveryCheckTest.php"] },
   { id = "N30-R11", state = "done", evidence = ["app-modules/kernel/src/Api/WhatARunCovers.php", "app-modules/operator/src/Internal/Presenters/HowARunOfChecksReads.php", "app-modules/operator/resources/views/how-this-stack-is.blade.php", "tests/Feature/RunningEveryCheckTest.php"] },
+  { id = "N30-R12", state = "open" },
 ]

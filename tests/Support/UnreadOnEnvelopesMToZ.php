@@ -37,7 +37,7 @@ final readonly class UnreadOnEnvelopesMToZ
         ],
         [
             'path' => 'RemovalEnvelope.rehearsed',
-            'because' => 'Whether taking somebody out of the household was only rehearsed. `N13-R10` asks for that rehearsal, and the `remove` action takes `dry_run` now; the screen does not ask for one yet, so every answer it reads says it was not, and asking for one is the work `N13-R10` is owed.',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
             'path' => 'RepairEnvelope.rehearsed',
@@ -97,7 +97,7 @@ final readonly class UnreadOnEnvelopesMToZ
         ],
         [
             'path' => 'UninstallEnvelope.rehearsed',
-            'because' => 'Whether taking lemonfiber off was only rehearsed. `N13-R10` asks for that rehearsal, and the `uninstall` action takes `dry_run` now; the screen does not ask for one yet, so every answer it reads says it was not, and asking for one is the work `N13-R10` is owed.',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
             'path' => 'UpdateEnvelope.moves[].configured_by',
