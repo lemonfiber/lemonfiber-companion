@@ -144,7 +144,7 @@ final readonly class WhatTheReviewFound
 
             $interrupts[] = ADownloadItWouldInterrupt::of(
                 Required::text($row, WireField::Name, $refused),
-                HowADownloadComes::tryFrom(Required::text($row, ConfigField::Protocol, $refused)) ?? throw $refused,
+                HowADownloadComes::named(Required::text($row, ConfigField::Protocol, $refused)),
                 $progress,
             );
         }

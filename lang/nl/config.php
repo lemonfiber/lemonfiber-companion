@@ -69,6 +69,7 @@ return [
         'interrupts' => [
             'usenet' => 'Het onderbreekt :name, voor :progress% binnen via Usenet.',
             'torrent' => 'Het onderbreekt :name, voor :progress% binnen als torrent.',
+            'another-way' => 'Het onderbreekt de download :name, voor :progress% binnen.',
         ],
         'nothing' => 'De stack vond niets anders op de machine dat dit zou verstoren.',
         'library_carried' => ':service houdt zijn bibliotheek op :path.',

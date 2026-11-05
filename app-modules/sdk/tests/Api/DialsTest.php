@@ -10,6 +10,7 @@ use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\AnEditFoundInTheFile;
+use Modules\Kernel\Api\HowADownloadComes;
 use Modules\Kernel\Api\WhatAChangeComesTo;
 use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Sdk\Api\Dials;
@@ -204,7 +205,7 @@ it('refuses findings, or a list of them, that are not what the contract says', f
     'a library that is not a table' => [everythingAReviewFinds(['library' => ['/media']]), 'position 0 of `library`'],
     'a library not said to be carried or not' => [everythingAReviewFinds(['library' => [['service' => 's', 'path' => '/m', 'because' => 'r']]]), 'position 0 of `library`'],
     'a download that is not a table' => [everythingAReviewFinds(['active' => ['A film']]), 'position 0 of `active`'],
-    'a download by a way this app has no word for' => [everythingAReviewFinds(['active' => [['protocol' => 'carrier-pigeon', 'name' => 'A film', 'progress' => 1]]]), 'position 0 of `active`'],
+    'a download with no way named' => [everythingAReviewFinds(['active' => [['protocol' => ' ', 'name' => 'A film', 'progress' => 1]]]), 'position 0 of `active`'],
     'a download past all of it' => [everythingAReviewFinds(['active' => [['protocol' => 'usenet', 'name' => 'A film', 'progress' => 101]]]), 'position 0 of `active`'],
     'a download below none' => [everythingAReviewFinds(['active' => [['protocol' => 'usenet', 'name' => 'A film', 'progress' => -1]]]), 'position 0 of `active`'],
     'an edit that is not a table' => [everythingAReviewFinds(['edited' => 'yes']), 'no `edited`'],
@@ -252,4 +253,13 @@ it('reads a download from none of it to all of it', function (): void {
     ]])]))->comesTo->interrupts;
 
     expect([$interrupts[0]->progress, $interrupts[1]->progress])->toBe([0, 100]);
+});
+
+it('reads a download coming a way this app has no word for as a download, and keeps the review', function (): void {
+    $stands = Dials::reviewIn(aChangeAnswered(['findings' => everythingAReviewFinds(['active' => [
+        ['protocol' => 'carrier-pigeon', 'name' => 'A film', 'progress' => 10],
+    ]])]));
+
+    expect($stands->comesTo->interrupts[0]->by)->toBe(HowADownloadComes::SomeOtherWay)
+        ->and($stands->comesTo->stops)->toBe(['qbittorrent', 'gluetun']);
 });

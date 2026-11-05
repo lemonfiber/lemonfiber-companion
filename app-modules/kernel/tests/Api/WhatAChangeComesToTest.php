@@ -161,7 +161,15 @@ it('refuses a download with no name, or progress outside none to all of it', fun
 
 it('names how a download comes as a catalogue key', function (): void {
     expect(HowADownloadComes::Usenet->saidOnTheScreen())->toBe('config.findings.interrupts.usenet')
-        ->and(HowADownloadComes::Torrent->saidOnTheScreen())->toBe('config.findings.interrupts.torrent');
+        ->and(HowADownloadComes::Torrent->saidOnTheScreen())->toBe('config.findings.interrupts.torrent')
+        ->and(HowADownloadComes::SomeOtherWay->saidOnTheScreen())->toBe('config.findings.interrupts.another-way');
+});
+
+it('knows the core\'s words usenet and torrent, and reads any other word as a download', function (): void {
+    expect(HowADownloadComes::named('usenet'))->toBe(HowADownloadComes::Usenet)
+        ->and(HowADownloadComes::named('torrent'))->toBe(HowADownloadComes::Torrent)
+        ->and(HowADownloadComes::named('carrier-pigeon'))->toBe(HowADownloadComes::SomeOtherWay)
+        ->and(HowADownloadComes::cases())->toBe([HowADownloadComes::Usenet, HowADownloadComes::Torrent, HowADownloadComes::SomeOtherWay]);
 });
 
 it('a download could be anywhere from none of it to all of it, and nowhere else', function (): void {

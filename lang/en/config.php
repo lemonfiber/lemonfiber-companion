@@ -82,6 +82,7 @@ return [
         'interrupts' => [
             'usenet' => 'It interrupts :name, :progress% down over Usenet.',
             'torrent' => 'It interrupts :name, :progress% down as a torrent.',
+            'another-way' => 'It interrupts the download :name, :progress% down.',
         ],
         'nothing' => 'The stack found nothing else on the machine this would disturb.',
         'library_carried' => ':service keeps its library at :path.',

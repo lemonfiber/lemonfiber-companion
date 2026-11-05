@@ -89,3 +89,8 @@ it('draws an empty side of an edit and a withheld one each in its own words', fu
             anAsideLine('config.findings.found_withheld'),
         ]);
 });
+
+it('draws a download coming a way this app has no word for as a download', function (): void {
+    expect(new HowWhatAChangeComesToReads()->in(WhatAChangeComesTo::found([], [], [], [], [ADownloadItWouldInterrupt::of('A film', HowADownloadComes::named('carrier-pigeon'), 10)]))->lines)
+        ->toEqual([aFindingLine('config.findings.interrupts.another-way', ['name' => 'A film', 'progress' => 10])]);
+});
