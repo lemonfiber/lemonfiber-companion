@@ -47,7 +47,8 @@ function saysNothingAtAll(WhatAChangeTurnedOutToBe $turned): void
         ->and($turned->holdsWhatWasAsked)->toBeFalse()
         ->and($turned->canBeAgreedTo)->toBeFalse()
         ->and($turned->wroteSomething)->toBeFalse()
-        ->and($turned->refusalSaid)->toBe('');
+        ->and($turned->refusalSaid)->toBe('')
+        ->and($turned->comesTo->lines)->toBe([]);
 }
 
 it('a session that has ended carries no proposal at all', function (): void {

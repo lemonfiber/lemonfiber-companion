@@ -74,5 +74,29 @@ return [
     // Where putting every edited file back is offered from.
     'put_it_all_back' => 'Put the configuration back',
 
+    'findings' => [
+        'in_its_words' => ':words',
+        'heading' => 'What this comes to on the machine',
+        'stops' => 'It stops :service.',
+        'keeps' => 'It leaves :service as it is.',
+        'interrupts' => [
+            'usenet' => 'It interrupts :name, :progress% down over Usenet.',
+            'torrent' => 'It interrupts :name, :progress% down as a torrent.',
+        ],
+        'nothing' => 'The stack found nothing else on the machine this would disturb.',
+        'library_carried' => ':service keeps its library at :path.',
+        'library_not_carried' => ':service does not keep its library at :path.',
+        'asks_for' => 'It asks you for :what.',
+        'kept_in' => 'Your answer is kept in :setting.',
+        'to_obtain' => 'This is an account you get yourself; no setting holds it.',
+        'edited' => 'This setting was changed outside lemonfiber since it last wrote it.',
+        'wrote' => 'lemonfiber last wrote :value.',
+        'wrote_empty' => 'lemonfiber last left it empty.',
+        'wrote_withheld' => 'lemonfiber last wrote a credential, which is not shown.',
+        'found' => 'The file holds :value now.',
+        'found_empty' => 'The file holds nothing there now.',
+        'found_withheld' => 'The file holds a credential now, which is not shown.',
+    ],
+
     'ask_again' => 'Ask again',
 ];

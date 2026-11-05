@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HandingOver;
+use Modules\Kernel\Api\HowADownloadComes;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowFarAHolderWasReached;
 use Modules\Kernel\Api\HowFarItGoesBack;
@@ -388,6 +389,10 @@ function everyDerivedKey(): array
         WhetherItHoldsASecret::class => aPairPerCase(
             WhetherItHoldsASecret::cases(),
             static fn(WhetherItHoldsASecret $secret): array => [$secret->saidOnTheScreen()],
+        ),
+        HowADownloadComes::class => aPairPerCase(
+            HowADownloadComes::cases(),
+            static fn(HowADownloadComes $case): array => [$case->saidOnTheScreen()],
         ),
         WhatItWouldNeed::class => aPairPerCase(
             WhatItWouldNeed::cases(),

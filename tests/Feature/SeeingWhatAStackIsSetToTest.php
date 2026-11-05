@@ -3,8 +3,12 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ADownloadItWouldInterrupt;
+use Modules\Kernel\Api\ALibraryAMoveReaches;
+use Modules\Kernel\Api\AnEditFoundInTheFile;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowADownloadComes;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -17,6 +21,8 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stance;
+use Modules\Kernel\Api\WhatAChangeAsksFor;
+use Modules\Kernel\Api\WhatAChangeComesTo;
 use Modules\Kernel\Api\WhatASettingHolds;
 use Modules\Kernel\Api\WhatItHoldsNow;
 use Modules\Kernel\Api\WhatItReplaced;
@@ -125,6 +131,7 @@ function aCheapChangeStaged(): WhereTheChangeStands
             Cost::Cheap,
         ),
         Stance::Pending,
+        WhatAChangeComesTo::nothing(),
     );
 }
 
@@ -308,10 +315,65 @@ it('draws a way to change each shown setting, named for it, and none beside a wi
         ->and($drawn->said())->toContain('set, not shown');
 });
 
+/** A move of the data location the stack has staged, with everything it found it would disturb. */
+function aMoveStagedWithWhatItDisturbs(): WhereTheChangeStands
+{
+    return WhereTheChangeStands::at(
+        ProposedChange::of('LIBRARY_PATH', '/data/films', WhatItHoldsNow::shown('/data/media'), Cost::Consequential),
+        Stance::Pending,
+        WhatAChangeComesTo::found(
+            [WhatAChangeAsksFor::keptIn('A Usenet login', 'Usenet needs one', 'USENET_USER'), WhatAChangeAsksFor::toObtain('A Usenet provider', 'Nothing downloads without one')],
+            ['qbittorrent'],
+            ['sabnzbd'],
+            [ALibraryAMoveReaches::of('jellyfin', '/media/films', 'It moves with the data', carried: true), ALibraryAMoveReaches::of('radarr', '/downloads', 'It is outside the data location', carried: false)],
+            [ADownloadItWouldInterrupt::of('A film', HowADownloadComes::Torrent, 40)],
+        )->withTheEdit(AnEditFoundInTheFile::shown('/data/media', '/srv/media'))->meaning('Every service restarts on the new location.'),
+    );
+}
+
+it('draws what a staged change would disturb before the yes, each in the stack\'s words', function (): void {
+    $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()), AStackToldToChangeSomething::saying(aMoveStagedWithWhatItDisturbs()));
+
+    $screen->change('LIBRARY_PATH');
+    typedIntoTheField($screen, '/data/films');
+    $screen->wouldBe('LIBRARY_PATH');
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($said)->toContain(__('config.findings.heading'))
+        ->and($said)->toContain('Every service restarts on the new location.')
+        ->and($said)->toContain(__('config.findings.stops', ['service' => 'qbittorrent']))
+        ->and($said)->toContain(__('config.findings.keeps', ['service' => 'sabnzbd']))
+        ->and($said)->toContain(__('config.findings.interrupts.torrent', ['name' => 'A film', 'progress' => 40]))
+        ->and($said)->toContain(__('config.findings.library_carried', ['service' => 'jellyfin', 'path' => '/media/films']))
+        ->and($said)->toContain('It moves with the data')
+        ->and($said)->toContain(__('config.findings.library_not_carried', ['service' => 'radarr', 'path' => '/downloads']))
+        ->and($said)->toContain('It is outside the data location')
+        ->and($said)->toContain(__('config.findings.asks_for', ['what' => 'A Usenet login']))
+        ->and($said)->toContain(__('config.findings.kept_in', ['setting' => 'USENET_USER']))
+        ->and($said)->toContain(__('config.findings.asks_for', ['what' => 'A Usenet provider']))
+        ->and($said)->toContain(__('config.findings.to_obtain'))
+        ->and($said)->toContain(__('config.findings.edited'))
+        ->and($said)->toContain(__('config.findings.wrote', ['value' => '/data/media']))
+        ->and($said)->toContain(__('config.findings.found', ['value' => '/srv/media']))
+        ->and(array_values(array_filter($said, static fn(string $line): bool => in_array($line, [__('config.findings.heading'), __('config.worth_reading_twice')], strict: true))))
+        ->toBe([__('config.findings.heading'), __('config.worth_reading_twice')]);
+});
+
+it('a staged change that comes to nothing beyond its value says the stack found nothing else', function (): void {
+    $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()), AStackToldToChangeSomething::saying(aCheapChangeStaged()));
+
+    $screen->change('LIBRARY_PATH');
+    typedIntoTheField($screen, '/data/films');
+    $screen->wouldBe('LIBRARY_PATH');
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('config.findings.nothing'));
+});
+
 it('draws both sides of a staged change, and offers to make it or to leave it', function (Cost $cost, bool $warned): void {
     $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()), AStackToldToChangeSomething::saying(WhereTheChangeStands::at(
         ProposedChange::of('LIBRARY_PATH', '/data/films', WhatItHoldsNow::shown('/data/media'), $cost),
         Stance::Pending,
+        WhatAChangeComesTo::nothing(),
     )));
 
     $screen->change('LIBRARY_PATH');
@@ -381,6 +443,7 @@ it('writes only when the operator agrees, and asks the stack again after', funct
     $adjusting = AStackToldToChangeSomething::saying(WhereTheChangeStands::at(
         ProposedChange::of('LIBRARY_PATH', '/data/films', WhatItHoldsNow::shown('/data/media'), Cost::Cheap),
         Stance::Applied,
+        WhatAChangeComesTo::nothing(),
     ));
     $screen = theSettingsScreen($arranging, $adjusting);
 
@@ -408,6 +471,7 @@ it('tells a setting that already held the value apart from one that was written'
     $unchanged = AStackToldToChangeSomething::saying(WhereTheChangeStands::at(
         ProposedChange::of('BIND', 'lan', WhatItHoldsNow::shown('lan'), Cost::Cheap),
         Stance::Unchanged,
+        WhatAChangeComesTo::nothing(),
     ));
     $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()), $unchanged);
 
@@ -422,6 +486,7 @@ it('carries the stack\'s own reason when a change was blocked', function (): voi
     $blocked = AStackToldToChangeSomething::saying(WhereTheChangeStands::blocked(
         ProposedChange::of('LIBRARY_PATH', '/nowhere', WhatItHoldsNow::shown('/data/media'), Cost::Consequential),
         'That path is not on a filesystem this machine can write to.',
+        WhatAChangeComesTo::nothing(),
     ));
     $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()), $blocked);
 
@@ -438,6 +503,7 @@ it('says a setting holds nothing yet rather than showing a blank', function (): 
     $fresh = AStackToldToChangeSomething::saying(WhereTheChangeStands::at(
         ProposedChange::of('BIND', 'lan', WhatItHoldsNow::nothingYet(), Cost::Cheap),
         Stance::Pending,
+        WhatAChangeComesTo::nothing(),
     ));
     $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()), $fresh);
 
@@ -683,6 +749,7 @@ it('draws a change refused because the operator declared the area unmanaged in t
     $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo()), AStackToldToChangeSomething::saying(WhereTheChangeStands::blocked(
         ProposedChange::of('LIBRARY_PATH', '/data/films', WhatItHoldsNow::shown('/data/media'), Cost::Cheap),
         $refusal,
+        WhatAChangeComesTo::nothing(),
     )));
 
     $screen->change('LIBRARY_PATH');

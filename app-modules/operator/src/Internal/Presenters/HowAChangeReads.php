@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\WhatAChangeComesTo;
 use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatAChangeTurnedOutToBe;
@@ -70,6 +71,7 @@ final readonly class HowAChangeReads
             canBeAgreedTo: $stands->stance->canBeAgreedTo(),
             wroteSomething: $stands->stance->wroteSomething(),
             refusalSaid: $stands->why(),
+            comesTo: new HowWhatAChangeComesToReads()->in($stands->comesTo),
         );
     }
 
@@ -88,6 +90,7 @@ final readonly class HowAChangeReads
             canBeAgreedTo: false,
             wroteSomething: false,
             refusalSaid: '',
+            comesTo: new HowWhatAChangeComesToReads()->in(WhatAChangeComesTo::nothing()),
         );
     }
 }

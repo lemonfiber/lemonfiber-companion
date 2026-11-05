@@ -88,4 +88,13 @@ enum Stance: string
             self::Unchanged, self::Pending, self::Blocked => false,
         };
     }
+
+    /** Whether the change differs from what is in force: staged or written, and not refused or already held. */
+    public function differs(): bool
+    {
+        return match ($this) {
+            self::Pending, self::Applied => true,
+            self::Unchanged, self::Blocked => false,
+        };
+    }
 }

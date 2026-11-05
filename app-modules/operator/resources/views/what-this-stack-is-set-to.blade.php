@@ -58,6 +58,17 @@
                     <x-design::note>{{ __($this->proposalFor($setting->key)->costSaid) }}</x-design::note>
                     <x-design::strong>{{ __($this->proposalFor($setting->key)->stanceSaid) }}</x-design::strong>
 
+                    <x-design::heading>{{ __('config.findings.heading') }}</x-design::heading>
+                    @forelse ($this->proposalFor($setting->key)->comesTo->lines as $line)
+                        @if ($line->aside)
+                            <x-design::note>{{ __($line->said, $line->with) }}</x-design::note>
+                        @else
+                            <x-design::body>{{ __($line->said, $line->with) }}</x-design::body>
+                        @endif
+                    @empty
+                        <x-design::note>{{ __('config.findings.nothing') }}</x-design::note>
+                    @endforelse
+
                     @if ($this->proposalFor($setting->key)->wroteSomething)
                         {{-- Said only where something was written. A setting
                              that already held the value reaches the stance

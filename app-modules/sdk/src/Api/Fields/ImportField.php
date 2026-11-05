@@ -17,9 +17,6 @@ enum ImportField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** What was carried across. */
-    case Carried = 'carried';
-
     /** What would be, where nothing has been yet. */
     case WouldCarry = 'would_carry';
 }

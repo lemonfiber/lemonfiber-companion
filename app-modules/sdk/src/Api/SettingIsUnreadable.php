@@ -59,6 +59,16 @@ final class SettingIsUnreadable extends InvalidArgumentException
         ));
     }
 
+    /** One entry of what a change would come to is not what the contract says, named by its list and position. */
+    public static function finding(NamesAWireField $field, int $position): self
+    {
+        return new self(sprintf(
+            'The config envelope\'s review has something at position %d of `%s` that is not what the contract says it is. This answer did not come from a lemonfiber of a version this app can read.',
+            $position,
+            $field->value,
+        ));
+    }
+
     /**
      * One setting could not say who put its value there.
      *

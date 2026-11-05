@@ -11,9 +11,6 @@ use function trim;
  */
 final readonly class SomethingStillComing
 {
-    /** The furthest a download can be along, which is finished. */
-    private const int ALL_OF_IT = 100;
-
     private function __construct(private string $name, private int $progress) {}
 
     /** That download, so far along; a blank name, or a share outside none to all of it, is refused. */
@@ -23,7 +20,7 @@ final readonly class SomethingStillComing
             throw UninstallSaysNothing::about('coming.name');
         }
 
-        if ($progress < 0 || $progress > self::ALL_OF_IT) {
+        if (! HowFarADownloadIs::couldBe($progress)) {
             throw UninstallSaysNothing::outside('coming.progress', $progress);
         }
 
