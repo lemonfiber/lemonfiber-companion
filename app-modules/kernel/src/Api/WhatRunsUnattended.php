@@ -44,6 +44,7 @@ final readonly class WhatRunsUnattended implements IteratorAggregate
         private WhatKeepsItRunning $keeper,
         private ?string $instruction,
         private array $commands,
+        private ?string $caveat,
     ) {}
 
     /**
@@ -54,7 +55,21 @@ final readonly class WhatRunsUnattended implements IteratorAggregate
      */
     public static function keptBy(WhatKeepsItRunning $keeper, Unattended ...$commands): self
     {
-        return new self($keeper, null, array_values($commands));
+        return new self($keeper, null, array_values($commands), null);
+    }
+
+    /**
+     * A listing from a machine whose manager comes with something worth knowing before it is relied on.
+     */
+    public static function keptWithACaveat(WhatKeepsItRunning $keeper, string $caveat, Unattended ...$commands): self
+    {
+        $said = trim($caveat);
+
+        if ($said === '') {
+            throw CaveatSaysNothing::aboutTheManager();
+        }
+
+        return new self($keeper, null, array_values($commands), $said);
     }
 
     /**
@@ -78,7 +93,7 @@ final readonly class WhatRunsUnattended implements IteratorAggregate
             throw InstructionSaysNothing::whereThereIsNoManager();
         }
 
-        return new self(WhatKeepsItRunning::Unsupported, $said, array_values($commands));
+        return new self(WhatKeepsItRunning::Unsupported, $said, array_values($commands), null);
     }
 
     /**
@@ -110,6 +125,21 @@ final readonly class WhatRunsUnattended implements IteratorAggregate
     public function whereItCannot(Closure $instead, Closure $itself): object
     {
         return $this->instruction === null ? $itself() : $instead($this->instruction);
+    }
+
+    /**
+     * Say what is worth knowing about the manager, or that the stack named nothing.
+     *
+     * @template TSaid of object
+     * @template TNothing of object
+     *
+     * @param  Closure(string): TSaid  $said
+     * @param  Closure(): TNothing  $nothing
+     * @return TSaid|TNothing
+     */
+    public function whatIsWorthKnowing(Closure $said, Closure $nothing): object
+    {
+        return $this->caveat === null ? $nothing() : $said($this->caveat);
     }
 
     /**

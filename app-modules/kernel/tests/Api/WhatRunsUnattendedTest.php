@@ -9,6 +9,7 @@ use function expect;
 use function it;
 use function iterator_to_array;
 
+use Modules\Kernel\Api\CaveatSaysNothing;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\InstructionSaysNothing;
 use Modules\Kernel\Api\Unattended;
@@ -66,6 +67,34 @@ it('a machine with a manager says the machine does this itself', function (): vo
 
     expect($running->whatKeepsThem())->toBe(WhatKeepsItRunning::Launchd)
         ->and(whatTheMachineSays($running))->toBe('the machine does this itself');
+});
+
+/** What the stack says is worth knowing about the manager, or the word for nothing. */
+function whatIsWorthKnowingAbout(WhatRunsUnattended $running): string
+{
+    return $running->whatIsWorthKnowing(
+        said: static fn(string $what): TheWordCarriedOut => new TheWordCarriedOut($what),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
+    )->said;
+}
+
+it('a manager with a caveat carries it, trimmed, beside its commands', function (): void {
+    $running = WhatRunsUnattended::keptWithACaveat(WhatKeepsItRunning::Systemd, '  Stops when you log out.  ', aCommandCalled('A', HowItIsHosted::Hosted));
+
+    expect(whatIsWorthKnowingAbout($running))->toBe('Stops when you log out.')
+        ->and($running->whatKeepsThem())->toBe(WhatKeepsItRunning::Systemd)
+        ->and(whatTheMachineSays($running))->toBe('the machine does this itself')
+        ->and($running->count())->toBe(1);
+});
+
+it('a listing given no caveat says nothing is worth knowing, on either arm', function (): void {
+    expect(whatIsWorthKnowingAbout(WhatRunsUnattended::keptBy(WhatKeepsItRunning::Launchd)))->toBe('nothing')
+        ->and(whatIsWorthKnowingAbout(WhatRunsUnattended::unsupported('Start it yourself.')))->toBe('nothing');
+});
+
+it('refuses a caveat that says nothing', function (): void {
+    expect(fn(): WhatRunsUnattended => WhatRunsUnattended::keptWithACaveat(WhatKeepsItRunning::Systemd, '   '))
+        ->toThrow(CaveatSaysNothing::class);
 });
 
 it('a machine with no manager carries what to do instead', function (): void {

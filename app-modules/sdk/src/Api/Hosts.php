@@ -54,8 +54,28 @@ final readonly class Hosts
         $commands = self::commands($data);
 
         return $keeper->configuresAnything()
-            ? WhatRunsUnattended::keptBy($keeper, ...$commands)
+            ? self::kept($data, $keeper, ...$commands)
             : WhatRunsUnattended::unsupported(self::instruction($data), ...$commands);
+    }
+
+    /**
+     * A listing from a machine with a manager, with what is worth knowing about it where the stack said.
+     *
+     * @param array<mixed> $data
+     */
+    private static function kept(array $data, WhatKeepsItRunning $keeper, Unattended ...$commands): WhatRunsUnattended
+    {
+        if (! array_key_exists(HostingField::Caveat->value, $data) || $data[HostingField::Caveat->value] === null) {
+            return WhatRunsUnattended::keptBy($keeper, ...$commands);
+        }
+
+        $said = $data[HostingField::Caveat->value];
+
+        if (! Required::isText($said)) {
+            throw HostingIsUnreadable::missing(HostingField::Caveat);
+        }
+
+        return WhatRunsUnattended::keptWithACaveat($keeper, $said, ...$commands);
     }
 
     /**

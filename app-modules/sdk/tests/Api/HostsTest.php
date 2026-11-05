@@ -97,6 +97,43 @@ it('a machine with no manager carries what to do instead', function (): void {
     )->said)->toBe('Add it to your own login items.');
 });
 
+/** What the stack says is worth knowing about the manager, or the word for nothing. */
+function whatIsWorthKnowingIn(WhatRunsUnattended $running): string
+{
+    return $running->whatIsWorthKnowing(
+        said: static fn(string $what): TheWordCarriedOut => new TheWordCarriedOut($what),
+        nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
+    )->said;
+}
+
+it('a manager carries what the stack says is worth knowing about it', function (): void {
+    $running = Hosts::in(hostingSaying([
+        'manager' => 'systemd',
+        'caveat' => 'A user service stops when you log out.',
+        'commands' => [aHostedRow('Watching', 'hosted')],
+    ]));
+
+    expect(whatIsWorthKnowingIn($running))->toBe('A user service stops when you log out.')
+        ->and(everyCommandIn($running))->toBe('Watching/hosted')
+        ->and($running->whatKeepsThem())->toBe(WhatKeepsItRunning::Systemd);
+});
+
+it('a manager the stack says nothing about carries nothing, absent or null', function (): void {
+    expect(whatIsWorthKnowingIn(Hosts::in(hostingSaying(['manager' => 'launchd', 'commands' => []]))))->toBe('nothing')
+        ->and(whatIsWorthKnowingIn(Hosts::in(hostingSaying(['manager' => 'launchd', 'caveat' => null, 'commands' => []]))))->toBe('nothing');
+});
+
+it('refuses a caveat that is not text, or is blank', function (mixed $caveat): void {
+    expect(fn(): WhatRunsUnattended => Hosts::in(hostingSaying([
+        'manager' => 'systemd',
+        'caveat' => $caveat,
+        'commands' => [],
+    ])))->toThrow(HostingIsUnreadable::class, 'no `caveat`');
+})->with([
+    'a number' => [3],
+    'blank' => ['   '],
+]);
+
 it('a machine that hosts nothing is an answer rather than a gap', function (): void {
     expect(Hosts::in(hostingSaying(['manager' => 'systemd', 'commands' => []]))->count())->toBe(0);
 });
@@ -242,8 +279,9 @@ it('stands in for a machine with a payload the contract would accept', function 
         'api_version' => 1,
         'kind' => 'hosting',
         'data' => [
-            'manager' => 'launchd',
+            'manager' => 'systemd',
             'rehearsed' => false,
+            'caveat' => 'A user service stops when you log out.',
             'commands' => [aHostedRow('Watching', 'hosted')],
         ],
     ]))->toBe([], "The payload this suite reads is not one a stack would send.\n");

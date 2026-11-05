@@ -134,6 +134,24 @@ it('a machine this product cannot configure says what to do instead', function (
         ->and($answer->went->cameBack())->toBeTrue();
 });
 
+it('a manager the stack says something about carries the stack\'s sentence', function (): void {
+    $running = WhatRunsUnattended::keptWithACaveat(
+        WhatKeepsItRunning::Systemd,
+        'A user service stops when you log out.',
+        Unattended::called('Watching the library', 'lemonfiber watch', 'New files are noticed', HowItIsHosted::Hosted),
+    );
+
+    $answer = theHostingScreen(AStackThatHosts::with($running))->answer();
+
+    expect($answer->caveat)->toBe('A user service stops when you log out.')
+        ->and($answer->instead)->toBe('')
+        ->and($answer->commands)->toHaveCount(1);
+});
+
+it('a manager the stack says nothing about draws no caveat', function (): void {
+    expect(theHostingScreen(AStackThatHosts::with(aMachineThatKeepsTwoThings()))->answer()->caveat)->toBe('');
+});
+
 it('counts what did not come back, and an orphan is in it', function (): void {
     // Two rows, one of them orphaned: installed against a program that is gone,
     // so it cannot run. A count of one would be the reboot looking better than
@@ -180,6 +198,7 @@ it('a stack that could not be asked is not a machine hosting nothing', function 
         ->and($answer->commands)->toBe([])
         ->and($answer->keptBySaid)->toBe('')
         ->and($answer->instead)->toBe('')
+        ->and($answer->caveat)->toBe('')
         ->and($answer->missing)->toBe(0);
 });
 
@@ -195,6 +214,7 @@ it('a device holding no session asks somebody to sign in', function (): void {
         ->and($answer->commands)->toBe([])
         ->and($answer->keptBySaid)->toBe('')
         ->and($answer->instead)->toBe('')
+        ->and($answer->caveat)->toBe('')
         ->and($answer->missing)->toBe(0);
 });
 

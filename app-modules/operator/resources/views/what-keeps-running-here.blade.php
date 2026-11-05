@@ -69,6 +69,12 @@
          themselves years ago. --}}
     <x-design::body>{{ __($this->answer()->keptBySaid) }}</x-design::body>
 
+    @if ($this->answer()->caveat !== '')
+        <x-design::notice tone="unknown">
+            <x-design::body>{{ $this->answer()->caveat }}</x-design::body>
+        </x-design::notice>
+    @endif
+
     @if ($this->answer()->instead !== '')
         {{-- The sentence that makes *not available here* read differently from
              *off*. Drawn instead of a control, never beside one: there is
