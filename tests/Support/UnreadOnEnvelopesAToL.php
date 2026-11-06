@@ -254,27 +254,27 @@ final readonly class UnreadOnEnvelopesAToL
         ],
         [
             'path' => 'ConfigEnvelope.changed',
-            'because' => 'Whether the proposal in `review` was written. Nothing here proposes one, so this is '
-                . 'always false on every answer this app asks for, and a screen reading it would be reporting on '
-                . 'an act it did not perform.',
+            'because' => 'Whether the proposal in `review` was written. The review\'s `stance` answers the same '
+                . 'question, `applied` or not, and is what the screen reads after the yes; a second answer about '
+                . 'the same write could only disagree with it.',
         ],
         [
             'path' => 'ConfigEnvelope.rehearsed',
-            'because' => 'Whether the proposal in `review` was a rehearsal rather than a write. The same '
-                . 'reason as `changed`: this app never asks for one.',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
             'path' => 'ConfigEnvelope.consequence',
-            'because' => 'What applying the proposal in `review` would mean, in the core\'s words. It belongs '
-                . 'to the confirmation that screen will show before a consequential change, and there is no '
-                . 'confirmation here because there is no change.',
+            'because' => 'What applying the proposal in `review` would mean, in the core\'s words. The '
+                . 'confirmation the settings screen shows before a consequential change says that it may move '
+                . 'data or take a service away, and not what; this sentence and `review.findings` are what would '
+                . 'say it.',
         ],
         [
             'path' => 'CredentialsEnvelope.held[].from',
             'because' => 'Whose line the credential is: the stack\'s own, or an installed plugin\'s. `N9-R3` asks '
-                . 'who produced it, which `origin` answers. `N25-R13` asks for a plugin\'s secrets on the plugin, '
-                . 'with whether each is held and where it came from, and that waits for the settings read the SDK '
-                . 'does not offer yet — `N1-R17`.',
+                . 'who produced it, which `origin` answers. A plugin\'s secrets are listed on the plugin from '
+                . 'the settings read, with whether each is held and where it came from (`N25-R13`), so the list of '
+                . 'credentials does not need to say whose line each is.',
         ],
         [
             'path' => 'CredentialsEnvelope.held[].location',
