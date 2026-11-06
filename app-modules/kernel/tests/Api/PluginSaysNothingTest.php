@@ -91,7 +91,7 @@ it('keeps what it was given, trimmed where it is said to be', function (): void 
         ->and(ACapabilityLeftContested::over('transcode', ' ', PluginLines::none())->by())->toBe('')
         ->and(AProof::of('answers', 'It answers', 'GET /', ' Sonarr is up ', WhatAProofCameTo::notAsked())->why())->toBe('Sonarr is up')
         ->and(ARecipe::of('link', 'Title', ' So it can transcode ', TheRecipeSteps::these(), TheValuesItCarries::these(), WhenARecipeRuns::Demand, TheInputsARecipeAsks::these())->why())->toBe('So it can transcode')
-        ->and(ARecipeStep::calling('ask', 'GET', 'sonarr', '/a', ' servarr ')->adapter())->toBe('servarr')
+        ->and(ARecipeStep::calling('ask', 'GET', 'sonarr', '/a', ' servarr ')->api())->toBe('servarr')
         ->and(WhatARecipeRunDid::reported(held: false, why: ' Sonarr refused ', steps: TheStepsThatRan::these())->why())->toBe('Sonarr refused');
     $pair = AValueItCarries::listed('key', ' credential-store ', 'tdarr', ' plex.token@tdarr ', ' 2.1.0 ', ' sonarr ');
 

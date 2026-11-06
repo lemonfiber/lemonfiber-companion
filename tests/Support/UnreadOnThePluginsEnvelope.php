@@ -223,10 +223,6 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'The proofs that run the image\'s own program, as the plugin declares them, kept so a proof again can run them without its source. What running one came to arrives in `proofs` beside the others, which is what is read and drawn.',
         ],
         [
-            'path' => 'PluginsEnvelope.install.would.recipes[].steps[].adapter.owner',
-            'because' => 'Whose adapter a step reaches through, which the contract fixes to lemonfiber. The screen says each adapter is lemonfiber\'s and not the plugin\'s (`N20-R6`), the one answer the field can give.',
-        ],
-        [
             'path' => 'PluginsEnvelope.installed[].contributions',
             'because' => 'The rows a plugin adds to registers lemonfiber already runs, such as its checks. No requirement asks the plugins screen to list them, and each is drawn where its register is.',
         ],
@@ -261,10 +257,6 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.installed[].run_proofs',
             'because' => 'As `PluginsEnvelope.install.would.run_proofs`: what a proof again runs is answered in that proof\'s own account, which is read and drawn (`N25-R15`).',
-        ],
-        [
-            'path' => 'PluginsEnvelope.installed[].recipes[].steps[].adapter.owner',
-            'because' => 'Whose adapter a step reaches through, which the contract fixes to lemonfiber. The screen says each adapter is lemonfiber\'s and not the plugin\'s (`N20-R6`), the one answer the field can give.',
         ],
         [
             'path' => 'PluginsEnvelope.rehearsed',
@@ -425,10 +417,6 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.update.install.would.run_proofs',
             'because' => 'As `PluginsEnvelope.install.would.run_proofs`: an update carries the new version\'s install account whole, and the one reader reads both.',
-        ],
-        [
-            'path' => 'PluginsEnvelope.update.install.would.recipes[].steps[].adapter.owner',
-            'because' => 'As `PluginsEnvelope.install.would.recipes[].steps[].adapter.owner`: an update carries the new version\'s install account whole, and the one reader reads both.',
         ],
         [
             'path' => 'PluginsEnvelope.installed[].services[].asks',
@@ -811,10 +799,6 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'Whether the value an input asks for is a secret. The app takes no value a recipe asks for, secret or not (`N25-R20`): it names what the input asks for and says the recipe is run at the web console or the terminal, which reads the same either way.',
         ],
         [
-            'path' => 'PluginsEnvelope.demand.recipe.steps[].adapter.owner',
-            'because' => 'As `PluginsEnvelope.installed[].recipes[].steps[].adapter.owner`: the run\'s recipe is read by the one recipe reader.',
-        ],
-        [
             'path' => 'PluginsEnvelope.install.would.recipes[].inputs[].secret',
             'because' => 'Whether the value an input asks for is a secret. The app takes no value a recipe asks for, secret or not (`N25-R20`): it names what the input asks for and says the recipe is run at the web console or the terminal, which reads the same either way.',
         ],
@@ -825,6 +809,30 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.update.install.would.recipes[].inputs[].secret',
             'because' => 'Whether the value an input asks for is a secret. The app takes no value a recipe asks for, secret or not (`N25-R20`): it names what the input asks for and says the recipe is run at the web console or the terminal, which reads the same either way.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.guards',
+            'because' => 'As `LifecycleEnvelope.guards`: a guard moved for good takes no yes of its own, and no requirement asks the phone to draw it (`N1-R17`).',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.changes[].placeholders',
+            'because' => 'Each placeholder a starting file names a secret by, never a value. Every change is drawn with its full path (`N25-R1`); no requirement asks for the secrets a starting file names (`N1-R17`).',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.changes[].placeholders',
+            'because' => 'As `PluginsEnvelope.install.changes[].placeholders`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.taking[].grouped',
+            'because' => 'Whether a service taking a privileged shape is added to the group owning its devices on the engine\'s host. `N25-R11` asks for the capabilities and devices, which are read; it does not ask for the group (`N1-R17`).',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.taking[].grouped',
+            'because' => 'As `PluginsEnvelope.install.taking[].grouped`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.reshipped',
+            'because' => 'Each starting file whose placeholders the new version changes. The file on the machine is left as it is, and no requirement asks the phone to draw it (`N1-R17`).',
         ],
     ];
 }

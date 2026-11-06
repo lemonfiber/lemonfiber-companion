@@ -8,8 +8,8 @@
     @endif
     @forelse ($recipe->steps as $step)
         <x-design::body>{{ __('plugins.step', ['method' => $step->method, 'to' => $step->to, 'path' => $step->path]) }}</x-design::body>
-        @if ($step->adapter !== '')
-            <x-operator::note>{{ __('plugins.adapter', ['adapter' => $step->adapter]) }}</x-operator::note>
+        @if ($step->api !== '')
+            <x-operator::note>{{ __('plugins.api', ['api' => $step->api]) }}</x-operator::note>
         @endif
     @empty
         <x-operator::note>{{ __('plugins.no_steps') }}</x-operator::note>

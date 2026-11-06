@@ -121,6 +121,7 @@ final readonly class HowTheWiringReads
             WhereAConnectionStands::Skipped => 'stacks.wiring.state.skipped',
             WhereAConnectionStands::Failed => 'stacks.wiring.state.failed',
             WhereAConnectionStands::Refused => 'stacks.wiring.state.refused',
+            WhereAConnectionStands::Kept => 'stacks.wiring.state.kept',
         };
     }
 }

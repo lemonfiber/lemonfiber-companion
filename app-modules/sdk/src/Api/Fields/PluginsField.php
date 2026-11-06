@@ -41,8 +41,11 @@ enum PluginsField: string implements NamesAWireField
     /** The method a recipe's call is made with. */
     case Method = 'method';
 
-    /** The adapter of lemonfiber's a call reaches its destination through. */
+    /** The adapter that writes the files of the service it fronts. */
     case Adapter = 'adapter';
+
+    /** The API a recipe's call reaches its destination in, as the plugin providing that service declares it. */
+    case Native = 'native';
 
     /** Why a value is released away from the service it was read from. */
     case Release = 'release';

@@ -119,6 +119,7 @@ return [
             'skipped' => 'Nog niet verbonden: iets wat nodig is ontbreekt, en een latere ronde maakt het af',
             'failed' => 'De service wees het af',
             'refused' => 'lemonfiber doet dit niet',
+            'kept' => 'De kwaliteitsconfiguratie is met de hand bewerkt en blijft zoals jij haar zette; geen ronde schrijft eroverheen',
         ],
         'yours' => 'De service heeft: :value',
         'ours' => 'lemonfiber zou schrijven: :value',

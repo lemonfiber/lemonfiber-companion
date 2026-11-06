@@ -331,7 +331,7 @@ final readonly class HowAPluginAccountReads
         $steps = [];
 
         foreach ($recipe->steps() as $step) {
-            $steps[] = new ARecipeStepAsShown(method: $step->method(), to: $step->to(), path: $step->path(), adapter: $step->adapter());
+            $steps[] = new ARecipeStepAsShown(method: $step->method(), to: $step->to(), path: $step->path(), api: $step->api());
         }
 
         $pairs = [];

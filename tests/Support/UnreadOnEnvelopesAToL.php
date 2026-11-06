@@ -801,5 +801,21 @@ final readonly class UnreadOnEnvelopesAToL
             'path' => 'LifecycleEnvelope.secured',
             'because' => 'What asking the egress guard to take up its control credential came to on a start. No `N` requirement asks what a verb came to to carry it: an install\'s account names it, and what `N16-R6` asks a start to name is what did not come back, which is read (`N1-R17`).',
         ],
+        [
+            'path' => 'LifecycleEnvelope.guards',
+            'because' => 'Each of lemonfiber\'s own guards the act moved onto its plugin for good, which takes no yes of its own. No requirement asks the phone to draw it (`N1-R17`).',
+        ],
+        [
+            'path' => 'LifecycleEnvelope.installing',
+            'because' => 'Each part a start offers to install from this build. The web API\'s `up` takes no offer to answer it with, so the phone cannot agree to it, and no requirement asks the phone to draw it (`N1-R17`).',
+        ],
+        [
+            'path' => 'LifecycleEnvelope.rendering',
+            'because' => 'Why the host\'s render group was not asked or not kept for a service taking `render`. No requirement asks the phone to draw it (`N1-R17`).',
+        ],
+        [
+            'path' => 'LifecycleEnvelope.unrendered',
+            'because' => 'Each service taking `render` that a start writes without the host\'s render devices. No requirement asks the phone to draw it (`N1-R17`).',
+        ],
     ];
 }

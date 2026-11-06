@@ -132,6 +132,7 @@ return [
             'skipped' => 'Not wired yet: something it needs is not there, and a later run finishes it',
             'failed' => 'The service rejected it',
             'refused' => 'lemonfiber will not do this',
+            'kept' => 'Its quality configuration was edited by hand and is kept as you set it; no run writes over it',
         ],
         'yours' => 'The service holds: :value',
         'ours' => 'lemonfiber would write: :value',

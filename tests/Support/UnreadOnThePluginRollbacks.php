@@ -402,5 +402,21 @@ final readonly class UnreadOnThePluginRollbacks
             'path' => 'PluginsEnvelope.update.install.reversed.reversed[].action.running',
             'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.running`: an update carries the new version\'s install account whole, and the one reader reads both.',
         ],
+        [
+            'path' => 'PluginsEnvelope.install.reversed.reversed[].action.secret',
+            'because' => 'For `UndoEnvelope.reversed[].action.secret`\'s reason: the same rollback report, carried inside a plugin install that did not hold.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.removal.went_back.reversed[].action.secret',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.secret`: what taking the plugin\'s changes off the machine came to is the same rollback report, read by the same reader.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.went_back.reversed[].action.secret',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.secret`: what putting the installed version\'s changes back came to is the same rollback report, read by the same reader.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.reversed.reversed[].action.secret',
+            'because' => 'As `PluginsEnvelope.install.reversed.reversed[].action.secret`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
     ];
 }

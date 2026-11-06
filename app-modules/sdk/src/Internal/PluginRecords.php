@@ -243,25 +243,11 @@ final readonly class PluginRecords
                 self::text($step, WireField::Steps, PluginsField::Method, $at),
                 self::text($step, WireField::Steps, WireField::To, $at),
                 self::text($step, WireField::Steps, WireField::Path, $at),
-                self::adapter($step),
+                self::optional($step, PluginsField::Native),
             );
         }
 
         return $found;
-    }
-
-    /**
-     * Which of lemonfiber's adapters a call reaches through, or empty where none does.
-     *
-     * @param array<mixed> $step
-     */
-    private static function adapter(array $step): string
-    {
-        if (! array_key_exists(PluginsField::Adapter->value, $step) || ! is_array($step[PluginsField::Adapter->value])) {
-            return '';
-        }
-
-        return self::optional($step[PluginsField::Adapter->value], WireField::Kind);
     }
 
     /**

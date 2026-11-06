@@ -258,7 +258,7 @@ function everythingThePluginsSay(ThePlugins $plugins): string
             $lines[] = sprintf('recipe %s/%s/%s', $recipe->id(), $recipe->title(), $recipe->why());
 
             foreach ($recipe->steps() as $step) {
-                $lines[] = sprintf('step %s/%s/%s/%s/%s', $step->id(), $step->method(), $step->to(), $step->path(), $step->adapter());
+                $lines[] = sprintf('step %s/%s/%s/%s/%s', $step->id(), $step->method(), $step->to(), $step->path(), $step->api());
             }
 
             foreach ($recipe->pairs() as $pair) {

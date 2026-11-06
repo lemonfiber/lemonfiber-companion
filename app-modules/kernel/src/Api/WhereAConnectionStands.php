@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 /**
  * How one connection turned out after a wiring run, in the stack's word for it.
  *
- * Thirteen answers, and they are the report: a run that turned them into one
+ * Every answer is the report: a run that turned them into one
  * tick would throw away the only thing an operator can act on. *Skipped* is a
  * prerequisite that was not there and a later run finishes, which is not
  * *failed*; *drifted* is the operator's own change, kept, which is neither
@@ -59,4 +59,7 @@ enum WhereAConnectionStands: string
 
     /** Refused by lemonfiber's own policy, for a reason a later run does not resolve. */
     case Refused = 'refused';
+
+    /** A hand edit to the configuration a quality preset is held through, left in place; no run writes over it. */
+    case Kept = 'kept';
 }

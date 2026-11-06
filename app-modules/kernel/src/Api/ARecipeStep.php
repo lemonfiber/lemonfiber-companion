@@ -10,8 +10,8 @@ use function trim;
  * One call a plugin's recipe makes, in the order it makes them.
  *
  * Where it calls is the manifest's own name for the destination, never an
- * address. An adapter is always lemonfiber's, and one is named only where the
- * destination is a service an adapter of lemonfiber's speaks to.
+ * address. Its API is named only where the destination is a service of the
+ * stack whose installed plugin declares the API it is reached in.
  */
 final readonly class ARecipeStep
 {
@@ -20,11 +20,11 @@ final readonly class ARecipeStep
         private string $method,
         private string $to,
         private string $path,
-        private string $adapter,
+        private string $api,
     ) {}
 
-    /** The call; `adapter` is empty where no adapter of lemonfiber's reaches the destination. A blank word otherwise is refused. */
-    public static function calling(string $id, string $method, string $to, string $path, string $adapter): self
+    /** The call; `api` is empty where no plugin declares the API its destination is reached in. A blank word otherwise is refused. */
+    public static function calling(string $id, string $method, string $to, string $path, string $api): self
     {
         foreach (['id' => $id, 'method' => $method, 'to' => $to, 'path' => $path] as $field => $said) {
             if (trim($said) === '') {
@@ -32,7 +32,7 @@ final readonly class ARecipeStep
             }
         }
 
-        return new self($id, $method, $to, $path, trim($adapter));
+        return new self($id, $method, $to, $path, trim($api));
     }
 
     /** The step's id within its recipe. */
@@ -59,9 +59,9 @@ final readonly class ARecipeStep
         return $this->path;
     }
 
-    /** Which of lemonfiber's adapters reaches the destination, or empty where none does. */
-    public function adapter(): string
+    /** The API the destination is reached in, as its plugin declares it, or empty where none is declared. */
+    public function api(): string
     {
-        return $this->adapter;
+        return $this->api;
     }
 }

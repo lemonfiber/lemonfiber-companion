@@ -149,7 +149,8 @@ final readonly class WhatTheWiringCameTo
             WhereAConnectionStands::Stale,
             WhereAConnectionStands::Adopted,
             WhereAConnectionStands::Unmanaged,
-            WhereAConnectionStands::WouldAdopt => HowAConnectionEnded::plainly($said),
+            WhereAConnectionStands::WouldAdopt,
+            WhereAConnectionStands::Kept => HowAConnectionEnded::plainly($said),
         };
     }
 
