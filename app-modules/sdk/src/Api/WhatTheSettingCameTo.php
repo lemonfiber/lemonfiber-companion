@@ -16,6 +16,7 @@ use Modules\Kernel\Api\WhatTheChangeReaches;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
 use Modules\Sdk\Api\Fields\SettingsField;
 use Modules\Sdk\Internal\APath;
+use Modules\Sdk\Internal\MovesInPlaceSent;
 use Modules\Sdk\Internal\Optional;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\SettingsRows;
@@ -58,7 +59,7 @@ final readonly class WhatTheSettingCameTo
             ),
             AnOffer::named(Required::text($change, WireField::Agreement, SettingsAreUnreadable::missing(APath::beneath($at, WireField::Agreement->value)))),
             TheSettingsListed::in($envelope),
-        );
+        )->guarding(MovesInPlaceSent::guards($data, SettingsAreUnreadable::missing(WireField::Guards->value)));
     }
 
     /**

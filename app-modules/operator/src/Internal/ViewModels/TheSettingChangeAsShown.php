@@ -17,6 +17,7 @@ final readonly class TheSettingChangeAsShown
      * @param string                       $starts      every service held back the change starts, listed, blank where none
      * @param list<AServiceWaitingAsShown> $waiting     each service held back once the change is made
      * @param string                       $unrestarted why the services it restarts were not restarted, blank where they were
+     * @param list<AMoveInPlaceAsShown>    $guards      each of lemonfiber's own guards it moved, would move or could not
      */
     public function __construct(
         public string $didSaid,
@@ -28,5 +29,6 @@ final readonly class TheSettingChangeAsShown
         public string $starts,
         public array $waiting,
         public string $unrestarted,
+        public array $guards = [],
     ) {}
 }

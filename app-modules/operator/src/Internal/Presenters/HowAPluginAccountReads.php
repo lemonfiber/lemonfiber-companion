@@ -103,7 +103,7 @@ final readonly class HowAPluginAccountReads
         $changes = [];
 
         foreach ($install->changes() as $change) {
-            $changes[] = new APluginChangeAsShown(path: $change->path(), putsSaid: $change->puts()->saidOnTheScreen());
+            $changes[] = new APluginChangeAsShown(path: $change->path(), putsSaid: $change->puts()->saidOnTheScreen(), placeholders: new HowAPlaceholderReads()->these($change->placeholders()));
         }
 
         $proofs = $this->proofs($install->proofs());
@@ -183,6 +183,7 @@ final readonly class HowAPluginAccountReads
                 default => 'plugins.restored.not_placed',
             },
             restoredVersion: $restored->version(),
+            reshipped: new HowAPlaceholderReads()->reshipped($update->reshipped()),
         );
     }
 
@@ -366,6 +367,7 @@ final readonly class HowAPluginAccountReads
             grants: $this->lines($taken->grants()),
             devices: $this->lines($taken->devices()),
             switch: $switch,
+            joinsTheDevicesGroup: $taken->joinsTheDevicesGroup(),
         );
     }
 

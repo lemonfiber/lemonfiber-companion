@@ -26,6 +26,15 @@ enum LifecycleField: string implements NamesAWireField
     /** What a switch moved: what it stopped, started and kept. */
     case Switched = 'switched';
 
+    /** Each part a start offers to install from this build. */
+    case Installing = 'installing';
+
+    /** Why the group owning the render devices was not asked or not kept. */
+    case Rendering = 'rendering';
+
+    /** Each service taking `render` a start wrote without the host's render devices, in words naming it. */
+    case Unrendered = 'unrendered';
+
     /** The command a switch stops what falls outside the new set with. */
     case StopCommand = 'stop_command';
 }

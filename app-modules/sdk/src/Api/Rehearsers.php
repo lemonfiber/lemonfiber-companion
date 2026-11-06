@@ -16,9 +16,9 @@ use Modules\Kernel\Api\Rehearsing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheRehearsalFound;
-use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Sdk\Internal\WhatTheFormsReadIsAsked;
 
 /** Asks a stack what starting a form would come to, through the forms read naming that form. */
 final readonly class Rehearsers implements Rehearsing
@@ -30,7 +30,7 @@ final readonly class Rehearsers implements Rehearsing
         $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
-            $envelope = $client->read(Api::FORMS_ENDPOINT, [PreviewField::Form->value => $form->named()]);
+            $envelope = $client->read(Api::FORMS_ENDPOINT, [WhatTheFormsReadIsAsked::Form->value => $form->named()]);
 
             // Inside the same `try` as the request, for the argument
             // {@see Recorders::recordedOn()} makes.

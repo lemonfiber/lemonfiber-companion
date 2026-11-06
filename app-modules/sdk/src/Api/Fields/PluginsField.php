@@ -122,6 +122,24 @@ enum PluginsField: string implements NamesAWireField
     /** Every service an install would have take a privileged shape. */
     case Taking = 'taking';
 
+    /** Whether a service taking a privileged shape is added to the group owning its devices on the engine's host. */
+    case Grouped = 'grouped';
+
+    /** Each placeholder a starting file names a secret by. */
+    case Placeholders = 'placeholders';
+
+    /** Each starting file whose placeholders an update changes. */
+    case Reshipped = 'reshipped';
+
+    /** The form a placeholder writes its secret's value in. */
+    case Form = 'form';
+
+    /** A starting file's placeholders as the version coming ships it. */
+    case Becomes = 'becomes';
+
+    /** Whether a recipe of the plugin's captures a secret's value. */
+    case Captured = 'captured';
+
     /** Every adapter an install would have write the files of the service it fronts. */
     case Sharing = 'sharing';
 

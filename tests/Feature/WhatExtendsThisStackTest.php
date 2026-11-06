@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AMoveInPlace;
 use Modules\Kernel\Api\APlugin;
+use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Fingerprint;
@@ -12,6 +14,7 @@ use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -21,6 +24,8 @@ use Modules\Kernel\Api\TheInstalledPlugins;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\ThePluginSources;
 use Modules\Kernel\Api\TheRecipes;
+use Modules\Kernel\Api\WhatBecameOfAMoveInPlace;
+use Modules\Kernel\Api\WhatBecameOfTheMovesInPlace;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatVouchesForAPlugin;
 use Modules\Kernel\Api\Whose;
@@ -819,3 +824,60 @@ it('is in the menu beside Connections, and opens on its own path', function (): 
 it('says in every language why a service takes each privileged shape', function (APrivilegedShape $shape, string $locale): void {
     expect(app('translator')->has($shape->neededFor(), $locale, fallback: false))->toBeTrue();
 })->with(APrivilegedShape::cases())->with(['en', 'nl']);
+
+it('names each placeholder a starting file names a secret by, never a value, and a service joining its devices\' group', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(tdarrRehearsed(aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theStartingFileReading()),
+    )));
+
+    expect($drawn->said())->toContain(
+        aPluginsLine('plugins.placeholder', ['secret' => 'api_key', 'form' => aPluginsLine('plugins.placeholder_form.pbkdf2')]),
+        aPluginsLine('plugins.joins_devices_group'),
+    );
+});
+
+it('says nothing of a group or a placeholder where the reading names neither', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(tdarrRehearsed(aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done(APluginAsItArrives::theReading()),
+    )));
+
+    expect($drawn->said())->not->toContain(aPluginsLine('plugins.joins_devices_group'));
+});
+
+it('names each starting file an update reshipped, as shipped and as coming, and says the file on the machine is left', function (): void {
+    $extending = aStackWithTdarr(HowExtendingItIsGoing::underway(Job::named('j-1')), HowExtendingItIsGoing::done(APluginAsItArrives::theReshippedUpdateReading()));
+    $screen = thePluginsListed($extending);
+    $screen->actOnTheRow('update', 0);
+    $screen->whileItRuns();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(
+        aPluginsLine('plugins.reshipped.heading'),
+        aPluginsLine('plugins.reshipped.left_as_it_is'),
+        '/srv/lemonfiber/config.xml',
+        aPluginsLine('plugins.reshipped.was'),
+        aPluginsLine('plugins.placeholder', ['secret' => 'api_key', 'form' => aPluginsLine('plugins.placeholder_form.plain')]),
+        aPluginsLine('plugins.reshipped.becomes'),
+        aPluginsLine('plugins.reshipped.no_placeholders'),
+    );
+});
+
+it('names no reshipped file where an update changes none', function (): void {
+    $extending = aStackWithTdarr(HowExtendingItIsGoing::underway(Job::named('j-1')), HowExtendingItIsGoing::done(APluginAsItArrives::theSharingUpdateReading()));
+    $screen = thePluginsListed($extending);
+    $screen->actOnTheRow('update', 0);
+    $screen->whileItRuns();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(aPluginsLine('plugins.reshipped.heading'));
+});
+
+it('names each guard a plugin act moved for good', function (): void {
+    $moved = APluginAsItArrives::theReading()->guarding(WhatBecameOfTheMovesInPlace::these(WhatBecameOfAMoveInPlace::taken(AMoveInPlace::of(ServiceId::called('decline'), APluginId::called('plugin-decline')))));
+    $drawn = WhatTheDeviceWouldDraw::by(tdarrRehearsed(aStackWithTdarr(
+        HowExtendingItIsGoing::underway(Job::named('j-1')),
+        HowExtendingItIsGoing::done($moved),
+    )));
+
+    expect($drawn->said())->toContain(__('updates.guards.heading'), __('updates.guards.moved', ['plugin' => 'plugin-decline', 'service' => 'decline']));
+});

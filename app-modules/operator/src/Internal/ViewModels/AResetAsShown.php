@@ -24,6 +24,7 @@ final readonly class AResetAsShown
      * @param AResetAsWorded      $words          the catalogue keys each sentence is drawn from
      * @param list<AnEditAsShown> $edits          the files whose edits go, or went
      * @param list<string>        $connections    the connections that go, or went, with them
+     * @param list<AMoveInPlaceAsShown> $guards   each of lemonfiber's own guards it moved, would move or could not
      */
     public function __construct(
         public WhereTheWorkStands $stands,
@@ -34,5 +35,6 @@ final readonly class AResetAsShown
         public AResetAsWorded $words,
         public array $edits,
         public array $connections,
+        public array $guards = [],
     ) {}
 }

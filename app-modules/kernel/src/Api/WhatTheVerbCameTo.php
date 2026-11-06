@@ -36,6 +36,7 @@ final readonly class WhatTheVerbCameTo
         private ?HowTheStackIsRunning $condition = null,
         private ?AnOffer $offer = null,
         private ?TheMovesInPlace $moves = null,
+        private ?WhatElseAVerbSaid $else = null,
     ) {}
 
     /** What the stack reported of a verb it ran, with the command it ran it with. */
@@ -66,22 +67,40 @@ final readonly class WhatTheVerbCameTo
         return new self($was, $services, $leftOut, $portsHeld, $edits, $why);
     }
 
+    /** A start that wrote and started nothing, for want of a yes to the parts it offers to install: it ran no command and gave no reason. */
+    public static function unstarted(WhetherItWasRehearsed $was, WhereTheServicesEndedUp $services, TheServicesLeftOut $leftOut, ThePortsHeld $portsHeld, TheStackEdits $edits): self
+    {
+        return new self($was, $services, $leftOut, $portsHeld, $edits, '');
+    }
+
+    /** The same report, with what else it says beside the verb. */
+    public function saying(WhatElseAVerbSaid $else): self
+    {
+        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $this->condition, $this->offer, $this->moves, $else);
+    }
+
+    /** What else it says beside the verb. */
+    public function besides(): WhatElseAVerbSaid
+    {
+        return $this->else ?? WhatElseAVerbSaid::nothing();
+    }
+
     /** The same report, with what the stack says those services amount to. */
     public function amountingTo(HowTheStackIsRunning $condition): self
     {
-        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $condition, $this->offer, $this->moves);
+        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $condition, $this->offer, $this->moves, $this->else);
     }
 
     /** The same report, under the name the stack gave what a rehearsal of it offers, which a yes carries back. */
     public function offering(AnOffer $offer): self
     {
-        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $this->condition, $offer, $this->moves);
+        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $this->condition, $offer, $this->moves, $this->else);
     }
 
     /** The same report, naming the moves in place on offer, which a start names and an update takes. */
     public function naming(TheMovesInPlace $moves): self
     {
-        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $this->condition, $this->offer, $moves);
+        return new self($this->was, $this->services, $this->leftOut, $this->portsHeld, $this->edits, $this->ranOrWhyNot, $this->condition, $this->offer, $moves, $this->else);
     }
 
     /** The moves in place on offer, which this verb did not take. */
@@ -156,7 +175,9 @@ final readonly class WhatTheVerbCameTo
      * Whether the stack ran what it was asked, with the command it ran, or declined and said why.
      *
      * The command is only there for a verb that ran: a start the stack
-     * declined ran nothing, so there is no command to show for it.
+     * declined ran nothing, so there is no command to show for it. One that
+     * waits on a yes to the installs it offers gave no reason, so its reason
+     * is blank.
      *
      * @template T of object
      *

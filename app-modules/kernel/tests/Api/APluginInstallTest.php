@@ -92,7 +92,7 @@ it('is a reading only where nothing was recorded and nothing put back', function
 
 it('quotes the stack\'s name for a reading as it reads, and none for a run that wrote', function (): void {
     $nothingBroke = WhatTheChecksMade::of(PluginLines::none(), PluginLines::none());
-    $about = static fn(bool $recorded): ThePlugins => ThePlugins::aboutAnInstall(TheInstalledPlugins::these(), ThePluginSources::these(), ' install-tdarr-2.1.0 ', anInstallRecorded(WhatAProofCameTo::passed(), $nothingBroke, recorded: $recorded));
+    $about = static fn(bool $recorded): ThePlugins => ThePlugins::about(TheInstalledPlugins::these(), ThePluginSources::these(), ' install-tdarr-2.1.0 ', anInstallRecorded(WhatAProofCameTo::passed(), $nothingBroke, recorded: $recorded));
 
     expect($about(recorded: false)->agreement())->toBe('install-tdarr-2.1.0')
         ->and($about(recorded: true)->agreement())->toBe('');
@@ -106,7 +106,7 @@ it('says the checks were not asked apart from asked and finding nothing', functi
 
 it('asks for each shape a service takes apart from the offer, after its recipes\' values, for an install and for an update', function (): void {
     $guarded = APluginAsItArrives::theGuardedInstall();
-    $update = ThePlugins::aboutAnUpdate(
+    $update = ThePlugins::about(
         TheInstalledPlugins::these(APluginAsItArrives::held()),
         ThePluginSources::these(),
         APluginAsItArrives::AGREEMENT,

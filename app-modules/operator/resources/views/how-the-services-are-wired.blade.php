@@ -35,6 +35,7 @@
                          or what stood in the way of keeping it. --}}
                     <x-design::note>{{ $this->choice->meaning }}</x-design::note>
                 @endif
+                <x-operator::guards-moved :guards="$this->choice->guards" />
                 @if ($this->choice->reading !== null)
                     {{-- Everything the choice comes to, before the yes: what
                          answers now and what would after, what asks for it,

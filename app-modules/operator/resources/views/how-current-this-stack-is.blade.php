@@ -31,7 +31,9 @@
         @endforelse
     </x-design::section>
 
-    <x-operator::moves-in-place :moves="$this->wouldMove()" />
+    <x-operator::moves-in-place :moves="$this->wouldMove()->moves" />
+
+    <x-operator::guards-moved :guards="$this->wouldMove()->guards" />
 
     @if ($this->asking()->cannotBeWhollyUndone())
         {{-- Between the list and the buttons, which is where it has to be:
@@ -251,6 +253,8 @@
         @endif
 
         <x-operator::moves-in-place :moves="$this->lastUpdate()->took->moved" />
+
+        <x-operator::guards-moved :guards="$this->lastUpdate()->took->guards" />
 
         @forelse ($this->lastUpdate()->took->applied as $took)
             <x-design::card>

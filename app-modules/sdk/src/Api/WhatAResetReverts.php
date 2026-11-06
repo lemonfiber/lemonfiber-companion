@@ -15,6 +15,7 @@ use Lemonfiber\Sdk\Generated\ResetEnvelope;
 use Modules\Kernel\Api\ConnectionsReverted;
 use Modules\Kernel\Api\TheReset;
 use Modules\Sdk\Api\Fields\ResetField;
+use Modules\Sdk\Internal\MovesInPlaceSent;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\StackEditsSent;
 use Modules\Sdk\Internal\Wire;
@@ -52,9 +53,11 @@ final readonly class WhatAResetReverts
         $edits = StackEditsSent::in($data, ResetField::Reverted);
         $connections = ConnectionsReverted::these(...self::connections($data));
 
-        return self::confirmed($data)
+        $reset = self::confirmed($data)
             ? TheReset::carriedOut($edits, $connections)
             : TheReset::previewed($edits, $connections, Required::text($data, WireField::Offer, ResetIsUnreadable::missing(WireField::Offer)));
+
+        return $reset->guarding(MovesInPlaceSent::guards($data, ResetIsUnreadable::missing(WireField::Guards)));
     }
 
     /**

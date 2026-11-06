@@ -17,8 +17,6 @@ enum SettingsField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** Every secret a service's environment names, never with its value. */
-    case Secrets = 'secrets';
 
     /** Each service that reads a setting or a secret. */
     case Readers = 'readers';

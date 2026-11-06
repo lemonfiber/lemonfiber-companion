@@ -63,7 +63,8 @@ final readonly class Standings
             ->moving(
                 MovesInPlaceSent::offered($data, UpkeepIsUnreadable::missing(WireField::Moves)),
                 MovesInPlaceSent::tried($data, UpkeepIsUnreadable::missing(WireField::Moved)),
-            );
+            )
+            ->guarding(MovesInPlaceSent::guards($data, UpkeepIsUnreadable::missing(WireField::Guards)));
 
         return $inUse instanceof Release ? $upkeep->runningOn($inUse) : $upkeep;
     }

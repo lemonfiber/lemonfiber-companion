@@ -17,8 +17,6 @@ enum PreviewField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** The form a rehearsal is asked about, as the forms read's query names it. */
-    case Form = 'form';
 
     /** What the stack estimates starting the forms named would take. */
     case Footprint = 'footprint';

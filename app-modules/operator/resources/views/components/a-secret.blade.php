@@ -6,6 +6,9 @@
     @endif
     <x-design::body>{{ __($secret->heldSaid) }}</x-design::body>
     <x-design::note>{{ __($secret->fromSaid) }}</x-design::note>
+    @if ($secret->captured)
+        <x-design::note>{{ __('plugins.settings.captured') }}</x-design::note>
+    @endif
     @forelse ($secret->readers as $reader)
         <x-design::note>{{ __('plugins.settings.read_by', ['service' => $reader->service, 'variable' => $reader->variable]) }}</x-design::note>
     @empty
