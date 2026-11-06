@@ -1,9 +1,119 @@
 {
     "format": 1,
-    "commit": "71d46d237e424da5b9f830c9dd560c3caacd92a1",
-    "time": "2026-11-06T19:51:33Z",
+    "commit": "2ace75d4f5dbdcf3735d6322ba4b0a02e3f82b3a",
+    "time": "2026-11-06T20:26:15Z",
     "verdict": "passed",
-    "trees": [],
+    "score": 100.0,
+    "trees": [
+        {
+            "path": "bootstrap/Composition",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/backups/src",
+            "floor": 100.0
+        },
+        {
+            "path": "app-modules/codes/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/connection/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/design/src"
+        },
+        {
+            "path": "app-modules/device/src"
+        },
+        {
+            "path": "app-modules/dx/src"
+        },
+        {
+            "path": "app-modules/health/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/household/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/kernel/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/news/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/operator/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/requests/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/sdk/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/seal/src",
+            "floor": 100.0
+        },
+        {
+            "path": "app-modules/services/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/stacks/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/store-kit/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/updates/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/vault/src"
+        },
+        {
+            "path": "app-modules/watching/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/wayfinding/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "bridge/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "bootstrap/Composition/NativePHP/TheRunloop.php"
+        }
+    ],
     "newCode": {
         "floor": 100.0
     }
