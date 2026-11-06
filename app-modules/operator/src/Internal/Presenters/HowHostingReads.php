@@ -8,7 +8,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatRunsUnattended;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatKeepsRunningTurnedOutToBe;
-use Modules\Operator\Internal\WhatTheMachineSaysInstead;
+use Modules\Operator\Internal\WhatTheMachineSays;
 
 /**
  * What asking a machine what it keeps running produces, as the fields a screen draws.
@@ -33,6 +33,7 @@ final readonly class HowHostingReads
             commands: [],
             keptBySaid: '',
             instead: '',
+            caveat: '',
             missing: 0,
             handsOver: false,
         );
@@ -59,6 +60,7 @@ final readonly class HowHostingReads
             commands: $rows,
             keptBySaid: $running->whatKeepsThem()->saidOnTheScreen(),
             instead: $this->whatToDoInstead($running),
+            caveat: $this->whatIsWorthKnowing($running),
             missing: $running->didNotComeBack()->count(),
             handsOver: $running->whatKeepsThem()->configuresAnything(),
         );
@@ -78,6 +80,7 @@ final readonly class HowHostingReads
             commands: [],
             keptBySaid: '',
             instead: '',
+            caveat: '',
             missing: 0,
             handsOver: false,
         );
@@ -94,10 +97,23 @@ final readonly class HowHostingReads
     private function whatToDoInstead(WhatRunsUnattended $running): string
     {
         return $running->whereItCannot(
-            instead: static fn(string $what): WhatTheMachineSaysInstead
-                => new WhatTheMachineSaysInstead($what),
-            itself: static fn(): WhatTheMachineSaysInstead
-                => new WhatTheMachineSaysInstead(''),
+            instead: static fn(string $what): WhatTheMachineSays
+                => new WhatTheMachineSays($what),
+            itself: static fn(): WhatTheMachineSays
+                => new WhatTheMachineSays(''),
+        )->said;
+    }
+
+    /**
+     * What the stack says is worth knowing about the manager, or nothing.
+     */
+    private function whatIsWorthKnowing(WhatRunsUnattended $running): string
+    {
+        return $running->whatIsWorthKnowing(
+            said: static fn(string $what): WhatTheMachineSays
+                => new WhatTheMachineSays($what),
+            nothing: static fn(): WhatTheMachineSays
+                => new WhatTheMachineSays(''),
         )->said;
     }
 }

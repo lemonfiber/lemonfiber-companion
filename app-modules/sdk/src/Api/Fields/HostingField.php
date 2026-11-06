@@ -32,6 +32,9 @@ enum HostingField: string implements NamesAWireField
      */
     case Instruction = 'instruction';
 
+    /** What is true of the manager and worth knowing before it is relied on. */
+    case Caveat = 'caveat';
+
     /** What a long-running command does for as long as it runs, in one sentence. */
     case Guarantees = 'guarantees';
 

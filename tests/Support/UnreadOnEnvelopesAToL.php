@@ -214,15 +214,6 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'happened.',
         ],
         [
-            'path' => 'HostingEnvelope.caveat',
-            'because' => 'What is true of this machine\'s service manager and worth knowing before it is '
-                . 'relied on — a launch agent runs in a login session, so a Mac that is never signed in keeps '
-                . 'nothing running. It belongs on this surface and the sentence is the core\'s to write, so '
-                . 'reading it is the next thing here rather than a decision against it. Unread today because '
-                . 'the screen says what each command stands at and does not yet say what the manager as a '
-                . 'whole is worth trusting for.',
-        ],
-        [
             'path' => 'HostingEnvelope.commands[].definition',
             'because' => 'The service definition installed for a command — the plist or unit file. Technical '
                 . 'detail, which is available and does not lead: it is what somebody opens a terminal for '

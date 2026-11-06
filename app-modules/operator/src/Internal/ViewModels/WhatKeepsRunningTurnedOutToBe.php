@@ -36,6 +36,7 @@ final readonly class WhatKeepsRunningTurnedOutToBe
      * @param list<WhatOneUnattendedCommandSays> $commands  every command, in the machine's order
      * @param string $keptBySaid the key for what keeps them running
      * @param string $instead    what to do where this product configures nothing, or empty
+     * @param string $caveat     what the stack says is worth knowing about the manager, or empty
      * @param int    $missing    how many are installed and not running
      * @param bool   $handsOver  whether installing and removing are offered
      */
@@ -44,6 +45,7 @@ final readonly class WhatKeepsRunningTurnedOutToBe
         public array $commands,
         public string $keptBySaid,
         public string $instead,
+        public string $caveat,
         public int $missing,
         public bool $handsOver,
     ) {}
