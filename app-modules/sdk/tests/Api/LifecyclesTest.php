@@ -315,7 +315,11 @@ it('reads a start that wrote and started nothing for want of a yes, with the ins
             ran: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ran'),
             declined: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('nothing:%s', $why)),
         )->said)->toBe('nothing:')
-        ->and($report->offer())->toEqual(AnOffer::named('an-offer'));
+        ->and($report->offer())->toEqual(AnOffer::named('an-offer'))
+        ->and(Lifecycles::in(lifecycleSaying([...aRestartInFull(), 'command' => [], 'installing' => [['plugin' => 'plugin-jellyfin']]]))->whetherItRan(
+            ran: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ran'),
+            declined: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('nothing:%s', $why)),
+        )->said)->toBe('nothing:');
 });
 
 it('still refuses a report with no command that names no install', function (): void {

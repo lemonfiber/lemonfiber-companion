@@ -78,6 +78,17 @@ it('says what a start came to where it wrote and started nothing for want of a y
     )->and($drawn)->not->toContain(__('health.came_to.everything_back'));
 });
 
+it('says a start with one install on offer came to nothing started, and one that ran beside an install came to what it ran', function (): void {
+    $installs = WhatElseAVerbSaid::these(WhatBecameOfTheMovesInPlace::none(), TheInstallsAStartOffers::these(AnInstallAStartOffers::of('plugin-jellyfin', '')), PluginLines::none(), '');
+    $drawn = static fn(WhatTheVerbCameTo $report): array => TheThingScreenOfTheShed::whatStartingSonarrDrew(TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done($report->saying($installs)))));
+    $unstarted = $drawn(WhatTheVerbCameTo::unstarted(WhetherItWasRehearsed::CarriedOut, WhereTheServicesEndedUp::of(), TheServicesLeftOut::of(), ThePortsHeld::of(), TheStackEdits::these()));
+    $ran = $drawn(TheThingScreenOfTheShed::aVerbThatRan(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Healthy)));
+
+    expect($unstarted)->toContain(__('health.came_to.unstarted'), __('health.installs.would_install', ['plugin' => 'plugin-jellyfin']))
+        ->and($ran)->toContain(__('health.installs.would_install', ['plugin' => 'plugin-jellyfin']))
+        ->and($ran)->not->toContain(__('health.came_to.unstarted'));
+});
+
 it('says which services a start wrote without the render devices, and the stack\'s reason', function (): void {
     $ran = TheThingScreenOfTheShed::aVerbThatRan(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Healthy))
         ->saying(WhatElseAVerbSaid::these(WhatBecameOfTheMovesInPlace::none(), TheInstallsAStartOffers::these(), PluginLines::under('unrendered', 'jellyfin runs without hardware transcoding'), 'The host answers no group'));

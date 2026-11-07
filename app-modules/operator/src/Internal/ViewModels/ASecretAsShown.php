@@ -21,6 +21,6 @@ final readonly class ASecretAsShown
         public string $heldSaid,
         public string $fromSaid,
         public array $readers,
-        public bool $captured = false,
+        public bool $captured,
     ) {}
 }

@@ -25,6 +25,6 @@ final readonly class AShapeTakenAsShown
         public array $grants,
         public array $devices,
         public ?ASwitchAsShown $switch,
-        public bool $joinsTheDevicesGroup = false,
+        public bool $joinsTheDevicesGroup,
     ) {}
 }
