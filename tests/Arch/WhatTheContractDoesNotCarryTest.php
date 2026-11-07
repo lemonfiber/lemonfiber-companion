@@ -386,7 +386,7 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
         // there, under any name, change the shape recorded here.
         'envelope' => 'AlertsEnvelope',
         'field' => null,
-        'shape' => 'array{changed: bool, exceptions: list<array{kind: string, wanted: bool}>, means: string, preset: string, rehearsed: bool}',
+        'shape' => 'array{changed: bool, exceptions: list<array{kind: string, wanted: bool}>, kinds: list<\'problem\'|\'completion\'|\'update\'|\'backup\'|\'request\'|\'member\'>, means: string, preset: string, rehearsed: bool}',
         'raised' => 'As under `N17-R3`, no envelope carries a back-end or a delivery. With no back-end or '
             . 'delivery carried, there is neither a list to read nor one to fail to read; the app draws '
             . 'no list of either, empty or otherwise.',

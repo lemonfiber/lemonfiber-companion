@@ -82,6 +82,9 @@ enum WhatGoingBackDoes: string
     /** The operator's own overlay is left as it stands, beyond what lemonfiber puts back. */
     case Leave = 'leave';
 
+    /** A phone's push endpoint is left as it stands, because only the phone holds what a registration is made from. */
+    case PushEndpoint = 'push-endpoint';
+
     /** The catalogue key for this, as an operator reads it. */
     public function saidOnTheScreen(): string
     {

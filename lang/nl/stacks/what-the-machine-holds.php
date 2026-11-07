@@ -37,6 +37,7 @@ return [
             'plugin-source' => 'Een plugin ophalen bij de bron',
             'catalogue' => 'Een plugin opzoeken in de catalogus',
             'posters' => 'Posters ophalen voor wat een huisgenoot zocht',
+            'waking' => 'Een telefoon wekken die vroeg om gewekt te worden',
         ],
         'allowed' => [
             'allowed' => 'Toegestaan door de instellingen van deze machine',

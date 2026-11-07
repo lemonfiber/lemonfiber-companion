@@ -38,7 +38,7 @@ function alertsSaying(array $data): Envelope
  */
 function aQuietSetting(array $exceptions = []): array
 {
-    return ['preset' => 'quiet', 'means' => 'Only what needs you today', 'exceptions' => $exceptions, 'changed' => false, 'rehearsed' => false];
+    return ['preset' => 'quiet', 'means' => 'Only what needs you today', 'exceptions' => $exceptions, 'kinds' => ['problem', 'update'], 'changed' => false, 'rehearsed' => false];
 }
 
 /** Everything a setting says, as one line. */

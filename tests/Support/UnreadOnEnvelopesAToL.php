@@ -195,9 +195,20 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'severity of a standing condition is read from the health summary.',
         ],
         [
+            'path' => 'AlertEnvelope.notification',
+            'because' => 'Which of the stack\'s notification kinds an alert is. It files an alert under the switch '
+                . 'the notification page offers for that kind (`N27-R17`), and that page offers no switch per '
+                . 'kind yet, so every alert that reaches this app is told the same way (`N4-R11`).',
+        ],
+        [
             'path' => 'AlertEnvelope.exit',
             'because' => 'The exit code the check ended with. A detail of the check, for `check`\'s reason, and '
                 . 'read from the health summary\'s affected item.',
+        ],
+        [
+            'path' => 'AlertsEnvelope.kinds',
+            'because' => 'The notification kinds the stack raises as it is configured. The notification page offers '
+                . 'a switch for each of them (`N27-R17`), and that page offers no switch per kind yet.',
         ],
         [
             'path' => 'AlertsEnvelope.changed',

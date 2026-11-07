@@ -61,6 +61,7 @@ return [
             'plugin-source' => 'Fetching a plugin from its source',
             'catalogue' => 'Looking up a plugin in the catalogue',
             'posters' => 'Fetching posters for what a member searched for',
+            'waking' => 'Waking a phone that asked to be woken',
         ],
         'allowed' => [
             'allowed' => 'Allowed by this machine\'s settings',

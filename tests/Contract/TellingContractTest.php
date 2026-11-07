@@ -66,6 +66,7 @@ function whatAStackSaysItTells(string $meansOfIt = 'Only what needs you today'):
             'preset' => 'quiet',
             'means' => $meansOfIt,
             'exceptions' => [['kind' => 'update-available', 'wanted' => false], ['kind' => 'disk-low', 'wanted' => true]],
+            'kinds' => ['problem', 'update'],
             'changed' => false,
             'rehearsed' => false,
         ],
