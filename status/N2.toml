@@ -41,6 +41,6 @@ requirement = [
   { id = "N2-R33", state = "done", evidence = ["app-modules/kernel/src/Api/WhatTheVerbCameTo.php", "app-modules/sdk/src/Api/Lifecycles.php", "app-modules/operator/src/Internal/Presenters/HowAVerbEndedReads.php", "tests/Feature/SeeingWhatMovesInPlaceTest.php"] },
   { id = "N2-R34", state = "done", evidence = ["app-modules/sdk/src/Internal/MovesInPlaceSent.php", "app-modules/operator/resources/views/components/guards-moved.blade.php", "tests/Feature/WhatAnActSaysBesideItselfTest.php"] },
   { id = "N2-R35", state = "done", evidence = ["app-modules/kernel/src/Api/WhatElseAVerbSaid.php", "app-modules/sdk/src/Api/Lifecycles.php", "tests/Feature/WhatAnActSaysBesideItselfTest.php"] },
-  { id = "N2-R36", state = "partial", evidence = ["app-modules/operator/resources/views/what-to-do-with-this.blade.php", "tests/Feature/WhatAnActSaysBesideItselfTest.php"] },
+  { id = "N2-R36", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatToDoWithThis.php", "app-modules/sdk/src/Api/Supervisors.php", "tests/Feature/AStartsYesToItsInstallsTest.php", "tests/Feature/WhatAnActSaysBesideItselfTest.php"] },
   { id = "N2-R37", state = "done", evidence = ["app-modules/sdk/src/Api/Lifecycles.php", "app-modules/operator/resources/views/what-to-do-with-this.blade.php", "tests/Feature/WhatAnActSaysBesideItselfTest.php"] },
 ]

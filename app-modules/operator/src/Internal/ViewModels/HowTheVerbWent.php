@@ -27,6 +27,7 @@ final readonly class HowTheVerbWent
      * @param list<AMoveInPlaceAsShown>    $movesOnOffer            the moves in place on offer, which the verb did not take
      * @param list<AMoveInPlaceAsShown>    $guards                  each of lemonfiber's own guards it moved, would move or could not
      * @param list<AnInstallOfferedAsShown> $installs               each part a start offers to install, which nobody has said yes to
+     * @param string                       $installOffer            the name the stack gave those installs, which a yes carries back, or empty where it answered none
      * @param list<string>                 $withoutRender           each service it wrote without the host's render devices, in the stack's words
      * @param string                       $whyNoRender             why the group owning those devices was not asked or not kept, or empty
      * @param ?string                      $commandSaid             the catalogue key for the command, in the tense the report allows, or null where nothing ran
@@ -47,6 +48,7 @@ final readonly class HowTheVerbWent
         public array $movesOnOffer,
         public array $guards,
         public array $installs,
+        public string $installOffer,
         public array $withoutRender,
         public string $whyNoRender,
         public ?string $commandSaid,

@@ -424,7 +424,10 @@ return [
     // genoemd.
     'installs' => [
         'heading' => 'Wat een start zou installeren',
-        'at_the_terminal' => 'Een start die iets installeert wordt in de terminal bevestigd.',
+        'by_its_form' => 'Een start van één service installeert niets. Start de form om hiermee in te stemmen, of start hem in de terminal.',
+        'unreadable' => 'Er kan niets worden geïnstalleerd zolang een van deze niet te lezen was. Bij elk staat waarom.',
+        'offline' => 'Elk wordt offline vanuit deze build geïnstalleerd, en daarna start de form.',
+        'install_and_start' => 'Installeren en starten',
         'would_install' => 'Hij zou :plugin installeren vanuit deze build',
     ],
     'render' => [

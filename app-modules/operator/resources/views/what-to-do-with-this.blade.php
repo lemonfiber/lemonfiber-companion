@@ -222,12 +222,15 @@
         <x-operator::guards-moved :guards="$this->whatItCameTo()->guards" />
 
         {{-- Each part a start offers to install: it wrote and started nothing
-             for want of a yes, and the web API's `up` takes no offer to answer it. --}}
+             for want of a yes, which a start of the form carries back. --}}
         @forelse ($this->whatItCameTo()->installs as $install)
             <x-operator::entry>
                 @if ($loop->first)
                     <x-design::heading>{{ __('health.installs.heading') }}</x-design::heading>
-                    <x-operator::note>{{ __('health.installs.at_the_terminal') }}</x-operator::note>
+                    <x-operator::note>{{ __($this->howTheInstallsAreAgreed()) }}</x-operator::note>
+                    @if ($this->mayInstallAndStart())
+                        <x-design::action :label="__('health.installs.install_and_start')" tap="installAndStart()" :disabled="$this->answer()->waitsForTheStack" />
+                    @endif
                 @endif
                 <x-design::body>{{ __('health.installs.would_install', ['plugin' => $install->plugin]) }}</x-design::body>
                 @if ($install->why !== '')

@@ -46,3 +46,9 @@ it('reads the name the same way whichever it was agreed about', function (): voi
     expect(AgreedTo::theService(WhatToDoWithIt::Start, ServiceId::called('same'))->named())
         ->toBe(AgreedTo::theForm(WhatToDoWithIt::Start, Form::called('same'))->named());
 });
+
+it('starts a form only where it is a start, and about a form', function (): void {
+    expect(AgreedTo::theForm(WhatToDoWithIt::Start, Form::called('library'))->startsAForm())->toBeTrue()
+        ->and(AgreedTo::theService(WhatToDoWithIt::Start, ServiceId::called('sonarr'))->startsAForm())->toBeFalse()
+        ->and(AgreedTo::theForm(WhatToDoWithIt::Restart, Form::called('library'))->startsAForm())->toBeFalse();
+});
