@@ -228,9 +228,6 @@
                 @if ($loop->first)
                     <x-design::heading>{{ __('health.installs.heading') }}</x-design::heading>
                     <x-operator::note>{{ __($this->howTheInstallsAreAgreed()) }}</x-operator::note>
-                    @if ($this->mayInstallAndStart())
-                        <x-design::action :label="__('health.installs.install_and_start')" tap="installAndStart()" :disabled="$this->answer()->waitsForTheStack" />
-                    @endif
                 @endif
                 <x-design::body>{{ __('health.installs.would_install', ['plugin' => $install->plugin]) }}</x-design::body>
                 @if ($install->why !== '')
@@ -240,6 +237,10 @@
         @empty
             {{-- It offered to install nothing, which is the ordinary case. --}}
         @endforelse
+
+        @if ($this->mayInstallAndStart())
+            <x-design::action :label="__('health.installs.install_and_start')" tap="installAndStart()" :disabled="$this->answer()->waitsForTheStack" />
+        @endif
 
         {{-- Each service written without the host's render devices, in the
              stack's words, and why the group owning them was not asked or kept. --}}
