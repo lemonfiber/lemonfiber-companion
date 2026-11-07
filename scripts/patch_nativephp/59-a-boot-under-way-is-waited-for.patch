@@ -1,0 +1,29 @@
+A boot of the persistent runtime asked for while another is under way waits
+for that one rather than failing.
+
+Two things boot it on iOS: the splash, when the app is opened, and a wake for
+background refresh that finds the app launched with no window. When the
+operator opens the app while a wake is still booting, the second call found
+the worker thread alive and returned -3, and the app fell back to its classic
+mode for the rest of that launch. The call now claims the boot under the gate's
+own lock, so only one caller ever starts the worker, and a caller that finds a
+boot under way waits for it on the gate and returns what it came to.
+
+--- a/vendor/nativephp/mobile/resources/xcode/Include/Bridge/PHP.c
++++ b/vendor/nativephp/mobile/resources/xcode/Include/Bridge/PHP.c
+@@ -622,2 +622,15 @@
+ int persistent_php_boot(const char *bootstrapPath) {
++    pthread_mutex_lock(&g_persistent_boot_mutex);
++    int under_way = g_persistent_boot_state == PERSISTENT_BOOT_IN_PROGRESS;
++    if (!under_way && !persistent_initialized && !worker_thread_alive) {
++        g_persistent_boot_state = PERSISTENT_BOOT_IN_PROGRESS;
++    }
++    pthread_mutex_unlock(&g_persistent_boot_mutex);
++
++    if (under_way) {
++        fprintf(stderr, "persistent_php_boot: a boot is under way, waiting for it\n");
++        fflush(stderr);
++        return wait_for_persistent_boot(60) == 0 ? 0 : -3;
++    }
++
+     if (persistent_initialized) {

@@ -112,6 +112,11 @@ let package = Package(
             path: "ios/Tests/WakeRuleTests"
         ),
         .testTarget(
+            name: "ColdWakeTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/ColdWakeTests"
+        ),
+        .testTarget(
             name: "LocalNetworkRuleTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/LocalNetworkRuleTests"
