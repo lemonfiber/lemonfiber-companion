@@ -20,9 +20,11 @@ private func ephemeralShutdown()
 /// over the app's own pinned connection and tells it locally. No push service is
 /// involved.
 ///
-/// The short-lived runtime stands on the app's own, so a wake reaches PHP only
-/// while the app is held in the background; a wake after the system ended the
-/// app finds no runtime and completes having told nothing.
+/// The short-lived runtime stands on the app's own, which NativePHP boots only
+/// from the splash. A wake after the system ended the app is a launch with no
+/// window, so it puts the app in place and boots that runtime first
+/// (`ColdWake`), and an operator opening the app meanwhile waits for that boot
+/// rather than starting a second.
 ///
 /// Whether it was asked is kept beside the app's other preferences, so the
 /// request is made again at launch and after every wake until `Stop`.
@@ -90,6 +92,19 @@ enum WakeFunctions {
         task.expirationHandler = { complete(false) }
 
         DispatchQueue.global(qos: .utility).async {
+            if ColdWake.on(runtimeIsUp: PersistentPHPRuntime.shared.isBooted) == .bootsTheRuntimeFirst {
+                AppUpdateManager.shared.ensureAppExists()
+
+                guard PersistentPHPRuntime.shared.boot() else {
+                    NSLog("%@ wakes: the runtime did not boot", tag)
+                    complete(true)
+
+                    return
+                }
+
+                NSLog("%@ wakes: booted the runtime", tag)
+            }
+
             let path = AppUpdateManager.shared.getAppPath() + bootstrap
 
             guard path.withCString({ ephemeralBoot($0) }) == 0 else {

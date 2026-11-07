@@ -1,0 +1,18 @@
+The app is extracted and updated by one caller at a time.
+
+Opening the app and a wake for background refresh that finds the app launched
+with no window both make sure the app is in place before booting PHP. Run side
+by side, both could copy the bundle into the same directory at once. The second
+caller now waits for the first, then finds the app in place and copies nothing.
+
+--- a/vendor/nativephp/mobile/resources/xcode/NativePHP/AppUpdateManager.swift
++++ b/vendor/nativephp/mobile/resources/xcode/NativePHP/AppUpdateManager.swift
+@@ -12,1 +12,2 @@
+     private var appReady = false
++    private let ensuring = NSLock()
+@@ -31,2 +32,5 @@
+     func ensureAppExists() -> Bool {
+         print("📦 AppUpdateManager.ensureAppExists() starting")
++
++        ensuring.lock()
++        defer { ensuring.unlock() }
