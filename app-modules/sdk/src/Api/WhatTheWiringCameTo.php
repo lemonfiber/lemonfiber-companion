@@ -29,7 +29,7 @@ use Modules\Sdk\Internal\Wire;
  * Every connection keeps the stack's order.
  *
  * **Each state is read with what it carries**, and a word outside the
- * fourteen is refused rather than read as the nearest: a failure read as wired
+ * states is refused rather than read as the nearest: a failure read as wired
  * is the one mistake a wiring report exists to prevent.
  */
 final readonly class WhatTheWiringCameTo
