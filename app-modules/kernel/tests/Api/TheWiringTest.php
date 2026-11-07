@@ -77,7 +77,7 @@ it('carries nothing beside a state that says nothing more', function (WhereAConn
     expect([$ended->state(), $ended->said(), $ended->ours(), $ended->yours()])->toBe([$state, '', '', '']);
 })->with([
     WhereAConnectionStands::Wired, WhereAConnectionStands::Restarted, WhereAConnectionStands::AlreadyWired, WhereAConnectionStands::Drifted, WhereAConnectionStands::Stale,
-    WhereAConnectionStands::Adopted, WhereAConnectionStands::Unmanaged, WhereAConnectionStands::WouldAdopt,
+    WhereAConnectionStands::Adopted, WhereAConnectionStands::Unmanaged, WhereAConnectionStands::WouldAdopt, WhereAConnectionStands::Kept,
 ]);
 
 it('carries the reason for a connection observed, unmatched, skipped or refused, and refuses a blank one', function (WhereAConnectionStands $state): void {
