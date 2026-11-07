@@ -11,6 +11,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ProposedChange;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SettingIsUnnamed;
 use Modules\Kernel\Api\Stack;
@@ -18,6 +19,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\WhatAChangeComesTo;
+use Modules\Kernel\Api\WhatAChangeLeavesAlone;
 use Modules\Kernel\Api\WhatItHoldsNow;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhereTheChangeStands;
@@ -492,8 +494,8 @@ function whatAPutChangeWouldDisturb(Adjusting $adjusting): string
     return $adjusting->wouldBe(theMachineBeingChanged(), theSessionBehindAChange(), WhatToSet::to('LIBRARY_PATH', '/data/films'))->either(
         said: static fn(WhereTheChangeStands $stands): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
             'stops %s; keeps %s; %s',
-            implode(',', $stands->comesTo->stops),
-            implode(',', $stands->comesTo->keeps),
+            implode(',', array_map(static fn(ServiceId $service): string => $service->named(), $stands->comesTo->stops)),
+            implode(',', array_map(static fn(WhatAChangeLeavesAlone $left): string => $left->shown(), $stands->comesTo->keeps)),
             $stands->comesTo->whatItMeans(
                 said: static fn(string $said): TheWordCarriedOut => new TheWordCarriedOut($said),
                 nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'),
@@ -524,7 +526,7 @@ it('the fake and the adapter both carry what a change would disturb', function (
     $fake = AStackToldToChangeSomething::saying(WhereTheChangeStands::at(
         ProposedChange::of('LIBRARY_PATH', '/data/films', WhatItHoldsNow::shown('/data/media'), Cost::Cheap),
         Stance::Pending,
-        WhatAChangeComesTo::found([], ['qbittorrent'], ['sabnzbd'], [], [])->meaning('Every service restarts.'),
+        WhatAChangeComesTo::meaning('Every service restarts.')->stopping(ServiceId::called('qbittorrent'))->leaving(WhatAChangeLeavesAlone::said('sabnzbd')),
     ));
 
     expect(whatAPutChangeWouldDisturb(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))

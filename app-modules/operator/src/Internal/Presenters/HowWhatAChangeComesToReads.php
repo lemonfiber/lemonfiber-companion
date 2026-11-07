@@ -29,7 +29,7 @@ final readonly class HowWhatAChangeComesToReads
         }
 
         foreach ($comesTo->stops as $service) {
-            $lines[] = $this->line('config.findings.stops', ['service' => $service], aside: false);
+            $lines[] = $this->line('config.findings.stops', ['service' => $service->named()], aside: false);
         }
 
         foreach ($comesTo->interrupts as $download) {
@@ -55,8 +55,8 @@ final readonly class HowWhatAChangeComesToReads
         );
         array_push($lines, ...$edited->lines);
 
-        foreach ($comesTo->keeps as $service) {
-            $lines[] = $this->line('config.findings.keeps', ['service' => $service], aside: true);
+        foreach ($comesTo->keeps as $left) {
+            $lines[] = $this->line('config.findings.keeps', ['what' => $left->shown()], aside: true);
         }
 
         return new WhatAChangeComesToAsShown($lines);

@@ -13,6 +13,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ProposedChange;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Setting;
 use Modules\Kernel\Api\Settings;
@@ -23,6 +24,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\WhatAChangeAsksFor;
 use Modules\Kernel\Api\WhatAChangeComesTo;
+use Modules\Kernel\Api\WhatAChangeLeavesAlone;
 use Modules\Kernel\Api\WhatASettingHolds;
 use Modules\Kernel\Api\WhatItHoldsNow;
 use Modules\Kernel\Api\WhatItReplaced;
@@ -321,13 +323,15 @@ function aMoveStagedWithWhatItDisturbs(): WhereTheChangeStands
     return WhereTheChangeStands::at(
         ProposedChange::of('LIBRARY_PATH', '/data/films', WhatItHoldsNow::shown('/data/media'), Cost::Consequential),
         Stance::Pending,
-        WhatAChangeComesTo::found(
-            [WhatAChangeAsksFor::keptIn('A Usenet login', 'Usenet needs one', 'USENET_USER'), WhatAChangeAsksFor::toObtain('A Usenet provider', 'Nothing downloads without one')],
-            ['qbittorrent'],
-            ['sabnzbd'],
-            [ALibraryAMoveReaches::of('jellyfin', '/media/films', 'It moves with the data', carried: true), ALibraryAMoveReaches::of('radarr', '/downloads', 'It is outside the data location', carried: false)],
-            [ADownloadItWouldInterrupt::of('A film', HowADownloadComes::Torrent, 40)],
-        )->withTheEdit(AnEditFoundInTheFile::shown('/data/media', '/srv/media'))->meaning('Every service restarts on the new location.'),
+        WhatAChangeComesTo::meaning('Every service restarts on the new location.')
+            ->asking(WhatAChangeAsksFor::keptIn('A Usenet login', 'Usenet needs one', 'USENET_USER'))
+            ->asking(WhatAChangeAsksFor::toObtain('A Usenet provider', 'Nothing downloads without one'))
+            ->stopping(ServiceId::called('qbittorrent'))
+            ->leaving(WhatAChangeLeavesAlone::said('everything already downloaded'))
+            ->reaching(ALibraryAMoveReaches::of('jellyfin', '/media/films', 'It moves with the data', carried: true))
+            ->reaching(ALibraryAMoveReaches::of('radarr', '/downloads', 'It is outside the data location', carried: false))
+            ->interrupting(ADownloadItWouldInterrupt::of('A film', HowADownloadComes::Torrent, 40))
+            ->withTheEdit(AnEditFoundInTheFile::shown('/data/media', '/srv/media')),
     );
 }
 
@@ -342,7 +346,7 @@ it('draws what a staged change would disturb before the yes, each in the stack\'
     expect($said)->toContain(__('config.findings.heading'))
         ->and($said)->toContain('Every service restarts on the new location.')
         ->and($said)->toContain(__('config.findings.stops', ['service' => 'qbittorrent']))
-        ->and($said)->toContain(__('config.findings.keeps', ['service' => 'sabnzbd']))
+        ->and($said)->toContain(__('config.findings.keeps', ['what' => 'everything already downloaded']))
         ->and($said)->toContain(__('config.findings.interrupts.torrent', ['name' => 'A film', 'progress' => 40]))
         ->and($said)->toContain(__('config.findings.library_carried', ['service' => 'jellyfin', 'path' => '/media/films']))
         ->and($said)->toContain('It moves with the data')

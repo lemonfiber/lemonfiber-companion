@@ -11,8 +11,10 @@ use Modules\Kernel\Api\ADownloadItWouldInterrupt;
 use Modules\Kernel\Api\ALibraryAMoveReaches;
 use Modules\Kernel\Api\AnEditFoundInTheFile;
 use Modules\Kernel\Api\HowADownloadComes;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatAChangeAsksFor;
 use Modules\Kernel\Api\WhatAChangeComesTo;
+use Modules\Kernel\Api\WhatAChangeLeavesAlone;
 use Modules\Operator\Internal\Presenters\HowWhatAChangeComesToReads;
 use Modules\Operator\Internal\ViewModels\ALineOfWhatAChangeComesTo;
 
@@ -41,13 +43,17 @@ it('a change that comes to nothing draws no line', function (): void {
 });
 
 it('draws every finding in order: what it means, what stops, what is interrupted, the libraries, the asks, the edit, and what is kept', function (): void {
-    $comesTo = WhatAChangeComesTo::found(
-        [WhatAChangeAsksFor::keptIn('A login', 'Usenet needs one', 'USENET_USER'), WhatAChangeAsksFor::toObtain('A provider', 'Nothing downloads without one')],
-        ['qbittorrent', 'gluetun'],
-        ['sabnzbd'],
-        [ALibraryAMoveReaches::of('jellyfin', '/media/films', 'It moves with the data', carried: true), ALibraryAMoveReaches::of('radarr', '/downloads', 'It stays behind', carried: false)],
-        [ADownloadItWouldInterrupt::of('A film', HowADownloadComes::Usenet, 40), ADownloadItWouldInterrupt::of('A show', HowADownloadComes::Torrent, 0)],
-    )->withTheEdit(AnEditFoundInTheFile::shown('/data', '/srv'))->meaning('Every service restarts.');
+    $comesTo = WhatAChangeComesTo::meaning('Every service restarts.')
+        ->withTheEdit(AnEditFoundInTheFile::shown('/data', '/srv'))
+        ->leaving(WhatAChangeLeavesAlone::said('everything already downloaded'))
+        ->asking(WhatAChangeAsksFor::keptIn('A login', 'Usenet needs one', 'USENET_USER'))
+        ->interrupting(ADownloadItWouldInterrupt::of('A film', HowADownloadComes::Usenet, 40))
+        ->reaching(ALibraryAMoveReaches::of('jellyfin', '/media/films', 'It moves with the data', carried: true))
+        ->stopping(ServiceId::called('qbittorrent'))
+        ->asking(WhatAChangeAsksFor::toObtain('A provider', 'Nothing downloads without one'))
+        ->interrupting(ADownloadItWouldInterrupt::of('A show', HowADownloadComes::Torrent, 0))
+        ->reaching(ALibraryAMoveReaches::of('radarr', '/downloads', 'It stays behind', carried: false))
+        ->stopping(ServiceId::called('gluetun'));
 
     expect(new HowWhatAChangeComesToReads()->in($comesTo)->lines)->toEqual([
         aFindingLine('config.findings.in_its_words', ['words' => 'Every service restarts.']),
@@ -68,7 +74,7 @@ it('draws every finding in order: what it means, what stops, what is interrupted
         aFindingLine('config.findings.edited'),
         anAsideLine('config.findings.wrote', ['value' => '/data']),
         anAsideLine('config.findings.found', ['value' => '/srv']),
-        anAsideLine('config.findings.keeps', ['service' => 'sabnzbd']),
+        anAsideLine('config.findings.keeps', ['what' => 'everything already downloaded']),
     ]);
 });
 
@@ -91,6 +97,6 @@ it('draws an empty side of an edit and a withheld one each in its own words', fu
 });
 
 it('draws a download coming a way this app has no word for as a download', function (): void {
-    expect(new HowWhatAChangeComesToReads()->in(WhatAChangeComesTo::found([], [], [], [], [ADownloadItWouldInterrupt::of('A film', HowADownloadComes::named('carrier-pigeon'), 10)]))->lines)
+    expect(new HowWhatAChangeComesToReads()->in(WhatAChangeComesTo::nothing()->interrupting(ADownloadItWouldInterrupt::of('A film', HowADownloadComes::named('carrier-pigeon'), 10)))->lines)
         ->toEqual([aFindingLine('config.findings.interrupts.another-way', ['name' => 'A film', 'progress' => 10])]);
 });

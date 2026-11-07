@@ -20,11 +20,7 @@ final readonly class SomethingStillComing
             throw UninstallSaysNothing::about('coming.name');
         }
 
-        if (! HowFarADownloadIs::couldBe($progress)) {
-            throw UninstallSaysNothing::outside('coming.progress', $progress);
-        }
-
-        return new self($name, $progress);
+        return new self($name, HowFarADownloadIs::at($progress, UninstallSaysNothing::outside('coming.progress', $progress))->share);
     }
 
     /** What it is, as the client names it. */

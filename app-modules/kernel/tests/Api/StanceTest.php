@@ -49,10 +49,3 @@ it('is the four words the wire has and no others', function (): void {
     expect(array_map(static fn(Stance $stance): string => $stance->value, Stance::cases()))
         ->toBe(['unchanged', 'pending', 'blocked', 'applied']);
 });
-
-it('says which stances differ from what is in force', function (): void {
-    expect(Stance::Pending->differs())->toBeTrue()
-        ->and(Stance::Applied->differs())->toBeTrue()
-        ->and(Stance::Unchanged->differs())->toBeFalse()
-        ->and(Stance::Blocked->differs())->toBeFalse();
-});

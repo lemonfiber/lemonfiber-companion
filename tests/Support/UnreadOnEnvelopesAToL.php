@@ -241,6 +241,12 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'becomes readable the day that changes, and not before.',
         ],
         [
+            'path' => 'ConfigEnvelope.changed',
+            'because' => 'Whether the proposal in `review` was written. The review\'s `stance` answers the same '
+                . 'question, `applied` or not, and is what the screen reads after the yes; a second answer about '
+                . 'the same write could only disagree with it.',
+        ],
+        [
             'path' => 'ConfigEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],

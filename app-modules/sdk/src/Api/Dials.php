@@ -41,9 +41,8 @@ use Modules\Sdk\Internal\Wire;
  * second payload, and {@see Offers} is written the same way for the same
  * reason.
  *
- * `reviewIn()` reads what the change comes to through {@see WhatTheReviewFound},
- * and refuses a `changed` that disagrees with the stance. `proof` is read by
- * neither: this app offers to change no credential.
+ * `reviewIn()` reads what the change comes to through {@see WhatTheReviewFound}.
+ * `proof` is read by neither: this app offers to change no credential.
  *
  * **`value` and `secret` go in together and come out as one thing.** The
  * contract's row is *one setting, as it is safe to show*: a withheld value is
@@ -88,10 +87,6 @@ final readonly class Dials
         $change = self::proposed(self::table($review, WireField::Change));
         $stance = self::stance($review);
 
-        if (self::differs($data) !== $stance->differs()) {
-            throw SettingIsUnreadable::missing(WireField::Changed);
-        }
-
         $comesTo = WhatTheReviewFound::in($data, $review);
 
         // Read off the stance rather than off the presence of a refusal. A
@@ -103,19 +98,6 @@ final readonly class Dials
             : WhereTheChangeStands::at($change, $stance, $comesTo);
     }
 
-    /**
-     * Whether the stack says the change differs from what is in force.
-     *
-     * @param array<mixed> $data
-     */
-    private static function differs(array $data): bool
-    {
-        if (! array_key_exists(WireField::Changed->value, $data) || ! is_bool($data[WireField::Changed->value])) {
-            throw SettingIsUnreadable::missing(WireField::Changed);
-        }
-
-        return $data[WireField::Changed->value];
-    }
 
     /**
      * The difference, as it would be applied.

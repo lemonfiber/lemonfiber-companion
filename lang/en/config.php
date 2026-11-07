@@ -78,7 +78,7 @@ return [
         'in_its_words' => ':words',
         'heading' => 'What this comes to on the machine',
         'stops' => 'It stops :service.',
-        'keeps' => 'It leaves :service as it is.',
+        'keeps' => 'It leaves this as it is: :what.',
         'interrupts' => [
             'usenet' => 'It interrupts :name, :progress% down over Usenet.',
             'torrent' => 'It interrupts :name, :progress% down as a torrent.',

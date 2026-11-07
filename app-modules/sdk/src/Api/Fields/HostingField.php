@@ -49,4 +49,7 @@ enum HostingField: string implements NamesAWireField
 
     /** Every file an install wrote or a removal took back. */
     case Touched = 'touched';
+
+    /** What one install or removal did to the machine. */
+    case Changed = 'changed';
 }

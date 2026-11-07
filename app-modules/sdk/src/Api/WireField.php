@@ -966,7 +966,4 @@ enum WireField: string implements NamesAWireField
 
     /** What was carried across; and whether a library survives moving the data location. */
     case Carried = 'carried';
-
-    /** What one install or removal did to the machine; and whether a configuration change differs from what is in force. */
-    case Changed = 'changed';
 }

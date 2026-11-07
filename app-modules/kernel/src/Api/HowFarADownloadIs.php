@@ -4,17 +4,25 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use Throwable;
+
 /**
- * How far along a download can be, from none of it to all of it.
+ * How far along a download is, from none of it to all of it.
  */
 final readonly class HowFarADownloadIs
 {
     /** The furthest a download can be along, which is finished. */
     public const int ALL_OF_IT = 100;
 
-    /** Whether a share is between none of a download and all of it. */
-    public static function couldBe(int $progress): bool
+    private function __construct(public int $share) {}
+
+    /** That share of a download; one outside none of it to all of it is refused with what the caller says of it. */
+    public static function at(int $share, Throwable $refused): self
     {
-        return $progress >= 0 && $progress <= self::ALL_OF_IT;
+        if ($share < 0 || $share > self::ALL_OF_IT) {
+            throw $refused;
+        }
+
+        return new self($share);
     }
 }

@@ -13,8 +13,11 @@ use Modules\Kernel\Api\ALibraryAMoveReaches;
 use Modules\Kernel\Api\AnEditFoundInTheFile;
 use Modules\Kernel\Api\HowADownloadComes;
 use Modules\Kernel\Api\HowFarADownloadIs;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatAChangeAsksFor;
 use Modules\Kernel\Api\WhatAChangeComesTo;
+use Modules\Kernel\Api\WhatAChangeLeavesAlone;
+use RuntimeException;
 
 use function sprintf;
 
@@ -70,11 +73,21 @@ it('carries everything the stack found, in the order it found it', function (): 
     $library = ALibraryAMoveReaches::of('Jellyfin', '/media/films', 'It moves with the data', carried: true);
     $download = ADownloadItWouldInterrupt::of('A film', HowADownloadComes::Torrent, 40);
 
-    $found = WhatAChangeComesTo::found([$ask], ['qbittorrent', 'gluetun'], ['sabnzbd'], [$library], [$download]);
+    $qbittorrent = ServiceId::called('qbittorrent');
+    $gluetun = ServiceId::called('gluetun');
+    $left = WhatAChangeLeavesAlone::said('everything already downloaded');
+
+    $found = WhatAChangeComesTo::nothing()
+        ->stopping($qbittorrent)
+        ->interrupting($download)
+        ->asking($ask)
+        ->leaving($left)
+        ->reaching($library)
+        ->stopping($gluetun);
 
     expect($found->asks)->toBe([$ask])
-        ->and($found->stops)->toBe(['qbittorrent', 'gluetun'])
-        ->and($found->keeps)->toBe(['sabnzbd'])
+        ->and($found->stops)->toBe([$qbittorrent, $gluetun])
+        ->and($found->keeps)->toBe([$left])
         ->and($found->libraries)->toBe([$library])
         ->and($found->interrupts)->toBe([$download])
         ->and(whatTheChangeMeans($found))->toBe('nothing')
@@ -82,27 +95,38 @@ it('carries everything the stack found, in the order it found it', function (): 
 });
 
 it('carries the edit found in the file and the sentence on what it means, each beside the other', function (): void {
-    $found = WhatAChangeComesTo::nothing()
-        ->withTheEdit(AnEditFoundInTheFile::shown('/data', '/srv'))
-        ->meaning('  Every paired phone refuses this machine until paired again.  ');
+    $found = WhatAChangeComesTo::meaning('  Every paired phone refuses this machine until paired again.  ')
+        ->withTheEdit(AnEditFoundInTheFile::shown('/data', '/srv'));
 
     expect(theEditFound($found))->toBe('wrote /data, found /srv')
         ->and(whatTheChangeMeans($found))->toBe('Every paired phone refuses this machine until paired again.')
-        ->and(theEditFound(WhatAChangeComesTo::nothing()->meaning('It means this.')->withTheEdit(AnEditFoundInTheFile::withheld('(set)', '(set)'))))
+        ->and(theEditFound(WhatAChangeComesTo::meaning('It means this.')->withTheEdit(AnEditFoundInTheFile::withheld('(set)', '(set)'))))
         ->toBe('wrote withheld (set), found withheld (set)');
 });
 
-it('keeps what it found when an edit or a sentence is added', function (): void {
-    $found = WhatAChangeComesTo::found([], ['qbittorrent'], ['sabnzbd'], [], [])
-        ->withTheEdit(AnEditFoundInTheFile::shown('a', 'b'))
-        ->meaning('It means this.');
+it('keeps what it found and what it means as each finding is added', function (): void {
+    $qbittorrent = ServiceId::called('qbittorrent');
+    $edit = AnEditFoundInTheFile::shown('a', 'b');
+    $ask = WhatAChangeAsksFor::toObtain('A provider', 'Usenet needs one');
+    $left = WhatAChangeLeavesAlone::said('the library');
+    $library = ALibraryAMoveReaches::of('Jellyfin', '/m', 'r', carried: true);
+    $download = ADownloadItWouldInterrupt::of('A film', HowADownloadComes::Usenet, 1);
 
-    expect($found->stops)->toBe(['qbittorrent'])
-        ->and($found->keeps)->toBe(['sabnzbd']);
+    $found = WhatAChangeComesTo::meaning('It means this.')
+        ->withTheEdit($edit)
+        ->stopping($qbittorrent)
+        ->asking($ask)
+        ->leaving($left)
+        ->reaching($library)
+        ->interrupting($download);
+
+    expect([$found->asks, $found->stops, $found->keeps, $found->libraries, $found->interrupts])->toBe([[$ask], [$qbittorrent], [$left], [$library], [$download]])
+        ->and(whatTheChangeMeans($found))->toBe('It means this.')
+        ->and(theEditFound($found))->toBe('wrote a, found b');
 });
 
 it('refuses a sentence on what it means that says nothing', function (): void {
-    expect(fn(): WhatAChangeComesTo => WhatAChangeComesTo::nothing()->meaning('   '))
+    expect(fn(): WhatAChangeComesTo => WhatAChangeComesTo::meaning('   '))
         ->toThrow(AFindingSaysNothing::class, '`consequence`');
 });
 
@@ -173,8 +197,15 @@ it('knows the core\'s words usenet and torrent, and reads any other word as a do
 });
 
 it('a download could be anywhere from none of it to all of it, and nowhere else', function (): void {
-    expect(HowFarADownloadIs::couldBe(0))->toBeTrue()
-        ->and(HowFarADownloadIs::couldBe(HowFarADownloadIs::ALL_OF_IT))->toBeTrue()
-        ->and(HowFarADownloadIs::couldBe(-1))->toBeFalse()
-        ->and(HowFarADownloadIs::couldBe(101))->toBeFalse();
+    $refused = new RuntimeException('not that far');
+
+    expect(HowFarADownloadIs::at(0, $refused)->share)->toBe(0)
+        ->and(HowFarADownloadIs::at(HowFarADownloadIs::ALL_OF_IT, $refused)->share)->toBe(100)
+        ->and(fn(): HowFarADownloadIs => HowFarADownloadIs::at(-1, $refused))->toThrow($refused)
+        ->and(fn(): HowFarADownloadIs => HowFarADownloadIs::at(101, $refused))->toThrow($refused);
+});
+
+it('a thing left as it is is said trimmed, and one that says nothing is refused', function (): void {
+    expect(WhatAChangeLeavesAlone::said('  the library  ')->shown())->toBe('the library')
+        ->and(fn(): WhatAChangeLeavesAlone => WhatAChangeLeavesAlone::said('  '))->toThrow(AFindingSaysNothing::class, '`keeps`');
 });

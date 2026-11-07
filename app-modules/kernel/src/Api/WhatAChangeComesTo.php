@@ -15,8 +15,8 @@ final readonly class WhatAChangeComesTo
 {
     /**
      * @param list<WhatAChangeAsksFor>        $asks
-     * @param list<string>                    $stops
-     * @param list<string>                    $keeps
+     * @param list<ServiceId>                 $stops
+     * @param list<WhatAChangeLeavesAlone>    $keeps
      * @param list<ALibraryAMoveReaches>      $libraries
      * @param list<ADownloadItWouldInterrupt> $interrupts
      */
@@ -30,34 +30,14 @@ final readonly class WhatAChangeComesTo
         private ?string $means,
     ) {}
 
-    /**
-     * Everything the stack found, with no edit in the file and no sentence on what it means.
-     *
-     * @param list<WhatAChangeAsksFor>        $asks
-     * @param list<string>                    $stops
-     * @param list<string>                    $keeps
-     * @param list<ALibraryAMoveReaches>      $libraries
-     * @param list<ADownloadItWouldInterrupt> $interrupts
-     */
-    public static function found(array $asks, array $stops, array $keeps, array $libraries, array $interrupts): self
-    {
-        return new self($asks, $stops, $keeps, $libraries, $interrupts, null, null);
-    }
-
-    /** A change the stack found nothing about beyond its value. */
+    /** A change the stack found nothing about beyond its value, and said nothing of. */
     public static function nothing(): self
     {
-        return self::found([], [], [], [], []);
+        return new self([], [], [], [], [], null, null);
     }
 
-    /** The same findings, with the edit the stack found in the file. */
-    public function withTheEdit(AnEditFoundInTheFile $edit): self
-    {
-        return new self($this->asks, $this->stops, $this->keeps, $this->libraries, $this->interrupts, $edit, $this->means);
-    }
-
-    /** The same findings, with the stack's sentence on what applying the change means. */
-    public function meaning(string $means): self
+    /** A change the stack says this of applying, with nothing found about it yet. */
+    public static function meaning(string $means): self
     {
         $said = trim($means);
 
@@ -65,7 +45,43 @@ final readonly class WhatAChangeComesTo
             throw AFindingSaysNothing::about('consequence');
         }
 
-        return new self($this->asks, $this->stops, $this->keeps, $this->libraries, $this->interrupts, $this->edit, $said);
+        return new self([], [], [], [], [], null, $said);
+    }
+
+    /** The same, and one more thing it newly asks for. */
+    public function asking(WhatAChangeAsksFor $ask): self
+    {
+        return new self([...$this->asks, $ask], $this->stops, $this->keeps, $this->libraries, $this->interrupts, $this->edit, $this->means);
+    }
+
+    /** The same, and one more service it stops. */
+    public function stopping(ServiceId $service): self
+    {
+        return new self($this->asks, [...$this->stops, $service], $this->keeps, $this->libraries, $this->interrupts, $this->edit, $this->means);
+    }
+
+    /** The same, and one more thing it leaves as it is. */
+    public function leaving(WhatAChangeLeavesAlone $left): self
+    {
+        return new self($this->asks, $this->stops, [...$this->keeps, $left], $this->libraries, $this->interrupts, $this->edit, $this->means);
+    }
+
+    /** The same, and one more library path a move reaches. */
+    public function reaching(ALibraryAMoveReaches $library): self
+    {
+        return new self($this->asks, $this->stops, $this->keeps, [...$this->libraries, $library], $this->interrupts, $this->edit, $this->means);
+    }
+
+    /** The same, and one more download it interrupts. */
+    public function interrupting(ADownloadItWouldInterrupt $download): self
+    {
+        return new self($this->asks, $this->stops, $this->keeps, $this->libraries, [...$this->interrupts, $download], $this->edit, $this->means);
+    }
+
+    /** The same, with the edit the stack found in the file. */
+    public function withTheEdit(AnEditFoundInTheFile $edit): self
+    {
+        return new self($this->asks, $this->stops, $this->keeps, $this->libraries, $this->interrupts, $edit, $this->means);
     }
 
     /**

@@ -23,10 +23,6 @@ final readonly class ADownloadItWouldInterrupt
             throw AFindingSaysNothing::about('name');
         }
 
-        if (! HowFarADownloadIs::couldBe($progress)) {
-            throw AFindingSaysNothing::progress($progress);
-        }
-
-        return new self($name, $by, $progress);
+        return new self($name, $by, HowFarADownloadIs::at($progress, AFindingSaysNothing::progress($progress))->share);
     }
 }

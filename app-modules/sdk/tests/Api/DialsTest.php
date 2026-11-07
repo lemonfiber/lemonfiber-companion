@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Tests\Api;
 
+use function array_map;
 use function expect;
 use function implode;
 use function it;
@@ -11,7 +12,9 @@ use function it;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\AnEditFoundInTheFile;
 use Modules\Kernel\Api\HowADownloadComes;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\WhatAChangeComesTo;
+use Modules\Kernel\Api\WhatAChangeLeavesAlone;
 use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Sdk\Api\Dials;
 use Modules\Sdk\Api\SettingIsUnreadable;
@@ -96,8 +99,8 @@ function everyFindingIn(WhereTheChangeStands $stands): string
 
     return implode(' | ', [
         implode(', ', $asks),
-        implode(', ', $comesTo->stops),
-        implode(', ', $comesTo->keeps),
+        implode(', ', array_map(static fn(ServiceId $service): string => $service->named(), $comesTo->stops)),
+        implode(', ', array_map(static fn(WhatAChangeLeavesAlone $left): string => $left->shown(), $comesTo->keeps)),
         implode(', ', $libraries),
         implode(', ', $interrupts),
         whatAReadingSaysWasEdited($comesTo),
@@ -171,21 +174,8 @@ it('carries what it found on a refused change as well as a staged one', function
     ));
 
     expect($stands->why())->toBe('Something is still downloading.')
-        ->and($stands->comesTo->stops)->toBe(['qbittorrent', 'gluetun']);
+        ->and(array_map(static fn(ServiceId $service): string => $service->named(), $stands->comesTo->stops))->toBe(['qbittorrent', 'gluetun']);
 });
-
-it('refuses a `changed` that disagrees with the stance, or is not a yes or a no', function (string $stance, mixed $changed): void {
-    expect(fn(): WhereTheChangeStands => Dials::reviewIn(aChangeAnswered(
-        ['stance' => $stance, 'refusal' => 'Refused.'],
-        ['changed' => $changed],
-    )))->toThrow(SettingIsUnreadable::class, 'no `changed`');
-})->with([
-    'staged and unchanged' => ['pending', false],
-    'written and unchanged' => ['applied', false],
-    'already held and changed' => ['unchanged', true],
-    'refused and changed' => ['blocked', true],
-    'not a yes or a no' => ['pending', 'yes'],
-]);
 
 it('refuses findings, or a list of them, that are not what the contract says', function (array $findings, string $said): void {
     expect(fn(): WhereTheChangeStands => Dials::reviewIn(aChangeAnswered(['findings' => $findings])))
@@ -261,5 +251,5 @@ it('reads a download coming a way this app has no word for as a download, and ke
     ]])]));
 
     expect($stands->comesTo->interrupts[0]->by)->toBe(HowADownloadComes::SomeOtherWay)
-        ->and($stands->comesTo->stops)->toBe(['qbittorrent', 'gluetun']);
+        ->and(array_map(static fn(ServiceId $service): string => $service->named(), $stands->comesTo->stops))->toBe(['qbittorrent', 'gluetun']);
 });

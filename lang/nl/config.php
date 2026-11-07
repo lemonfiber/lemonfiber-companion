@@ -65,7 +65,7 @@ return [
         'in_its_words' => ':words',
         'heading' => 'Wat dit op de machine betekent',
         'stops' => 'Het stopt :service.',
-        'keeps' => 'Het laat :service zoals het is.',
+        'keeps' => 'Dit laat het zoals het is: :what.',
         'interrupts' => [
             'usenet' => 'Het onderbreekt :name, voor :progress% binnen via Usenet.',
             'torrent' => 'Het onderbreekt :name, voor :progress% binnen als torrent.',
