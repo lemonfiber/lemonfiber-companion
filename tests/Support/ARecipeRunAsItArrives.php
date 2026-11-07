@@ -50,7 +50,7 @@ final readonly class ARecipeRunAsItArrives
             'title' => 'Ask Plex to look again',
             'why' => 'So what Tdarr finished shows up',
             'on' => 'demand',
-            'steps' => [['id' => 'nudge', 'method' => 'POST', 'to' => 'plex.tv', 'path' => '/refresh', 'adapter' => null]],
+            'steps' => [['id' => 'nudge', 'method' => 'POST', 'to' => 'plex.tv', 'path' => '/refresh', 'native' => null]],
             'pairs' => [['value' => 'token', 'origin' => 'credential-store', 'to' => 'plex.tv', 'approval' => self::APPROVAL]],
         ];
     }

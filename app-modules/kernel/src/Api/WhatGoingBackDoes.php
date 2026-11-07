@@ -64,11 +64,17 @@ enum WhatGoingBackDoes: string
     /** Put a secret in the secret store back to the value it held. */
     case Rehold = 'rehold';
 
+    /** A minted secret's value is written back into a starting file, where the file as shipped puts its placeholder. */
+    case Reseed = 'reseed';
+
     /** A grant of a credential to a plugin is given back, or the one the change gave is ended. */
     case Regrant = 'regrant';
 
     /** The media server's internal certificate is left as it is; only replacing it again puts it back. */
     case Unreplaced = 'unreplaced';
+
+    /** One of lemonfiber's own guards is left on its plugin; the release that moved it moved it for good. */
+    case Unmoved = 'unmoved';
 
     /** A service is started again, or stopped again. */
     case Run = 'run';

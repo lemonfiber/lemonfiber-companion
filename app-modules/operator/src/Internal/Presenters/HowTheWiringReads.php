@@ -20,8 +20,8 @@ use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
  * `F2`: data in, view model out. One method per state, each saying only its
  * own.
  *
- * **Each connection is drawn in its own state.** Fourteen sentences for
- * fourteen answers, so *skipped* never reads as failed, and a value the
+ * **Each connection is drawn in its own state.** One sentence for each
+ * answer, so *skipped* never reads as failed, and a value the
  * operator changed reads as kept rather than as wired or as something to put
  * back. The stack's words — a reason, or a service's rejection — are carried
  * beside the sentence as they came.
@@ -121,6 +121,7 @@ final readonly class HowTheWiringReads
             WhereAConnectionStands::Skipped => 'stacks.wiring.state.skipped',
             WhereAConnectionStands::Failed => 'stacks.wiring.state.failed',
             WhereAConnectionStands::Refused => 'stacks.wiring.state.refused',
+            WhereAConnectionStands::Kept => 'stacks.wiring.state.kept',
         };
     }
 }

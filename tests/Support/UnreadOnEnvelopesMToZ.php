@@ -722,5 +722,41 @@ final readonly class UnreadOnEnvelopesMToZ
             'path' => 'SubstitutionEnvelope.unran',
             'because' => 'Each part a choice of filler was to stop or start and could not, with why. Whether the choice was written is `applied`, which is read, and what runs afterwards is what the services listing shows; no requirement asks a choice to name each part (`N1-R17`).',
         ],
+        [
+            'path' => 'ResetEnvelope.guards',
+            'because' => 'As `LifecycleEnvelope.guards`: a guard moved for good takes no yes of its own, and no requirement asks the phone to draw it (`N1-R17`).',
+        ],
+        [
+            'path' => 'SettingsEnvelope.guards',
+            'because' => 'As `LifecycleEnvelope.guards`: a guard moved for good takes no yes of its own, and no requirement asks the phone to draw it (`N1-R17`).',
+        ],
+        [
+            'path' => 'SubstitutionEnvelope.guards',
+            'because' => 'As `LifecycleEnvelope.guards`: a guard moved for good takes no yes of its own, and no requirement asks the phone to draw it (`N1-R17`).',
+        ],
+        [
+            'path' => 'UpdateEnvelope.guards',
+            'because' => 'As `LifecycleEnvelope.guards`: a guard moved for good takes no yes of its own, and no requirement asks the phone to draw it (`N1-R17`).',
+        ],
+        [
+            'path' => 'SeedEnvelope.wirings[].state.path',
+            'because' => 'The file a wiring\'s state names on the machine. The wiring is drawn by what it is and where it stands; the path is on a machine the operator has no filesystem in front of.',
+        ],
+        [
+            'path' => 'SubstitutionEnvelope.substitution.leaves_unfilled[].files',
+            'because' => 'As `WiringEnvelope.unfilled[].files`: a capability the substitution leaves unanswered is drawn as lost, which it is, and no requirement asks which medium its ask files.',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.secret',
+            'because' => 'The minted secret a reseed writes back into a starting file, by its id and never a value. The reversal is drawn by what it does and its target, and no requirement asks for the secret apart from it.',
+        ],
+        [
+            'path' => 'WiringEnvelope.unfilled[].files',
+            'because' => 'The medium an unanswered ask asked a filler of. The ask is drawn as answered by nothing, which it is, and no requirement asks which medium it files.',
+        ],
+        [
+            'path' => 'WiringEnvelope.wired[].reaches.files',
+            'because' => 'The medium the filler an ask reaches files, where the ask is narrowed to one. The screen names the service the ask reaches, and no requirement asks which medium it files.',
+        ],
     ];
 }

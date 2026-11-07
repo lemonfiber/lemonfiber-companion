@@ -196,6 +196,9 @@ final readonly class WhatARefusalMeant
         RefusalCode::ProjectEdited,
         RefusalCode::RootRefused,
         RefusalCode::MountLinked,
+        RefusalCode::OfflineInstallUnanswered,
+        RefusalCode::OfflineInstallUnheld,
+        RefusalCode::MovedForGood,
         RefusalCode::ServiceUnfenced,
         // Minting, collecting and revoking a key for an app, refused for
         // what was asked: a claim that collects nothing is one of them, and
@@ -233,6 +236,7 @@ final readonly class WhatARefusalMeant
         RefusalCode::SettingsMoved,
         RefusalCode::AlreadyHolds,
         RefusalCode::OutsideItsChoices,
+        RefusalCode::OwnerSetUp,
         // An answer given for an offer or a listing that has since moved.
         // The stack's words say what moved, and the adapter following the
         // work it ended decides whether there is a fresh offer to read.
@@ -242,6 +246,7 @@ final readonly class WhatARefusalMeant
         RefusalCode::AnotherOffer,
         RefusalCode::PluginOfferMoved,
         RefusalCode::RestartMoved,
+        RefusalCode::OfflineInstallMoved,
         RefusalCode::ReplacementMoved,
         RefusalCode::UpdateMoved,
         RefusalCode::PausingMoved,
@@ -266,7 +271,6 @@ final readonly class WhatARefusalMeant
         // account that may not ask: a known code ends no session.
         RefusalCode::StackUnreadable,
         RefusalCode::StackUnusable,
-        RefusalCode::StackNotEmbedded,
         RefusalCode::StackNotSetUp,
         RefusalCode::StackNotWritten,
         RefusalCode::StackInvalid,
@@ -299,6 +303,8 @@ final readonly class WhatARefusalMeant
         RefusalCode::SpelledAlike,
         RefusalCode::Unapproved,
         RefusalCode::AnotherPlugin,
+        RefusalCode::AnotherSource,
+        RefusalCode::Unconforming,
         RefusalCode::Occupied,
         RefusalCode::SchemeRefused,
         RefusalCode::AddressRefused,

@@ -109,8 +109,8 @@ final readonly class APluginAsItArrives
                 'title' => 'Point Tdarr at the library',
                 'why' => 'So it can transcode what arrives',
                 'steps' => [
-                    ['id' => 'ask', 'method' => 'POST', 'to' => 'sonarr', 'path' => '/api/v3/notification', 'adapter' => ['kind' => 'servarr', 'owner' => 'lemonfiber']],
-                    ['id' => 'tell', 'method' => 'POST', 'to' => 'hooks.example.com', 'path' => '/hook', 'adapter' => null],
+                    ['id' => 'ask', 'method' => 'POST', 'to' => 'sonarr', 'path' => '/api/v3/notification', 'native' => 'servarr'],
+                    ['id' => 'tell', 'method' => 'POST', 'to' => 'hooks.example.com', 'path' => '/hook', 'native' => null],
                 ],
                 'pairs' => [
                     ['value' => 'api_key', 'origin' => 'credential-store', 'to' => 'tdarr'],
@@ -181,7 +181,7 @@ final readonly class APluginAsItArrives
         return [
             'would' => self::onTheWire(),
             'recorded' => false,
-            'changes' => [['path' => '/srv/lemonfiber/plugins/tdarr/plugin.toml', 'puts' => 'document']],
+            'changes' => [['path' => '/srv/lemonfiber/plugins/tdarr/plugin.toml', 'puts' => 'document', 'placeholders' => []]],
             'proofs' => [['proof' => 'answers', 'establishes' => 'It answers on its port', 'asks' => 'GET /api/status', 'why' => 'A service that does not answer is not running', 'of' => 'tdarr']],
             'contests' => [['capability' => 'transcode', 'by' => 'sonarr', 'claimants' => ['tdarr', 'unmanic']]],
             'overrides' => [['setting' => 'sonarr.rename', 'why' => 'Tdarr renames what it transcodes']],
@@ -203,7 +203,7 @@ final readonly class APluginAsItArrives
     {
         return [
             ...self::aReadingOnTheWire(),
-            'taking' => [['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => self::SHAPE_APPROVAL]],
+            'taking' => [['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'grouped' => false, 'approval' => self::SHAPE_APPROVAL]],
         ];
     }
 
@@ -301,6 +301,7 @@ final readonly class APluginAsItArrives
             'from' => '2.1.0',
             'to' => '2.2.0',
             'interrupts' => ['tdarr'],
+            'reshipped' => [],
             'install' => self::aReadingOnTheWire(),
             'went_back' => self::wentBackOnTheWire(rehearsed: true),
         ];

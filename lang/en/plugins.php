@@ -90,7 +90,7 @@ return [
     'recipes' => 'Recipes',
     'no_recipes' => 'It has no recipes',
     'step' => ':method :to :path',
-    'adapter' => 'Through lemonfiber\'s own :adapter adapter, not the plugin\'s',
+    'api' => 'In its :api API',
     'pair' => 'Would send :value to :to',
     'origin' => 'Comes from: :origin',
     'release' => 'Read from :from and released: :why',

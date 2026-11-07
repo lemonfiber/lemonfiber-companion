@@ -374,6 +374,7 @@ function everyPluginsAnswerThatCannotBeRead(): array
         'a recipe that is not a table' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'recipes' => ['link']])), $unreadable],
         'a recipe with no steps' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'recipes' => [['id' => 'a', 'title' => 'b', 'pairs' => []]]])), $unreadable],
         'a step that is not a table' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'recipes' => [['id' => 'a', 'title' => 'b', 'steps' => ['ask'], 'pairs' => []]]])), $unreadable],
+        'a step whose API is not a word' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'recipes' => [['id' => 'a', 'title' => 'b', 'steps' => [['id' => 's', 'method' => 'GET', 'to' => 'x', 'path' => '/', 'native' => ['servarr']]], 'pairs' => []]]])), $unreadable],
         'a pair that is not a table' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'recipes' => [['id' => 'a', 'title' => 'b', 'steps' => [], 'pairs' => ['key']]]])), $unreadable],
         'a name that is not text' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'name' => 3])), $unreadable],
         'a review that is neither yes nor no' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'declared' => ['reviewed' => 'yes']])), $unreadable],
@@ -408,28 +409,6 @@ it('reads each service an installed plugin placed, by its id, in the record\'s o
     }
 
     expect($placed)->toBe(['tdarr', 'tdarr-node']);
-});
-
-it('reads an adapter that is not a table as no adapter', function (): void {
-    $plugins = PluginInstalls::in(anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'recipes' => [['id' => 'a', 'title' => 'b', 'steps' => [['id' => 's', 'method' => 'GET', 'to' => 'x', 'path' => '/', 'adapter' => 'servarr']], 'pairs' => []]]])));
-    $adapters = $plugins->either(
-        listed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'),
-        install: static function (APluginInstall $install): TheWordCarriedOut {
-            foreach ($install->would()->recipes() as $recipe) {
-                foreach ($recipe->steps() as $step) {
-                    return new TheWordCarriedOut(sprintf('[%s]', $step->adapter()));
-                }
-            }
-
-            return new TheWordCarriedOut('no step');
-        },
-        update: static fn(): TheWordCarriedOut => new TheWordCarriedOut('an update'),
-        removal: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a removal'),
-        proof: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a proof'),
-        run: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a run'),
-    )->said;
-
-    expect($adapters)->toBe('[]');
 });
 
 it('reads every check an install broke or left unsettled by its title, an agreement sent as null as none, and a record that declared nothing as unreviewed', function (): void {
