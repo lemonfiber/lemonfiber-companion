@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Presenters;
 use Modules\Kernel\Api\ASecret;
 use Modules\Kernel\Api\AServiceReadingIt;
 use Modules\Kernel\Api\ASetting;
+use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\TheChoices;
 use Modules\Kernel\Api\TheSecretsRead;
 use Modules\Kernel\Api\TheServicesReadingIt;
@@ -75,12 +76,12 @@ final readonly class HowASettingIsShown
      *
      * @return list<ASecretAsShown>
      */
-    public function secrets(TheSecretsRead $secrets): array
+    public function secrets(TheSecretsRead $secrets, ?PluginLines $captured = null): array
     {
         $shown = [];
 
         foreach ($secrets as $secret) {
-            $shown[] = $this->secret($secret);
+            $shown[] = $this->secret($secret, $captured ?? PluginLines::none());
         }
 
         return $shown;
@@ -122,7 +123,7 @@ final readonly class HowASettingIsShown
         return $shown;
     }
 
-    private function secret(ASecret $secret): ASecretAsShown
+    private function secret(ASecret $secret, PluginLines $captured): ASecretAsShown
     {
         return new ASecretAsShown(
             name: $secret->name(),
@@ -130,6 +131,7 @@ final readonly class HowASettingIsShown
             heldSaid: $secret->isHeld() ? self::HELD : self::UNSET,
             fromSaid: $secret->from()->saidOnTheScreen(),
             readers: $this->readers($secret->readers()),
+            captured: ! $captured->alsoIn(PluginLines::under('name', $secret->name()))->isEmpty(),
         );
     }
 

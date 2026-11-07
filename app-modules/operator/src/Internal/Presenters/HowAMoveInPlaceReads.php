@@ -24,6 +24,15 @@ final readonly class HowAMoveInPlaceReads
     /** A move an update tried and did not take. */
     public const string DID_NOT_TAKE = 'updates.moves.did_not_take';
 
+    /** One of lemonfiber's own guards an act moved onto its plugin. */
+    public const string GUARD_MOVED = 'updates.guards.moved';
+
+    /** One of lemonfiber's own guards an act's rehearsal says it would move. */
+    public const string GUARD_WOULD_MOVE = 'updates.guards.would_move';
+
+    /** One of lemonfiber's own guards an act could not move, still on offer. */
+    public const string GUARD_ON_OFFER = 'updates.guards.on_offer';
+
     /**
      * Each move on offer, said with `$said`.
      *
@@ -53,6 +62,26 @@ final readonly class HowAMoveInPlaceReads
             $shown[] = $went->wasTaken()
                 ? $this->row($went->move(), self::TOOK, owesAReason: false, because: '')
                 : $this->row($went->move(), self::DID_NOT_TAKE, owesAReason: true, because: $went->why());
+        }
+
+        return $shown;
+    }
+
+    /**
+     * Each of lemonfiber's own guards an act moved for good, would move, or could not.
+     *
+     * @return list<AMoveInPlaceAsShown>
+     */
+    public function guards(WhatBecameOfTheMovesInPlace $guards): array
+    {
+        $shown = [];
+
+        foreach ($guards as $went) {
+            $shown[] = match (true) {
+                $went->wasTaken() => $this->row($went->move(), self::GUARD_MOVED, owesAReason: false, because: ''),
+                $went->why() === '' => $this->row($went->move(), self::GUARD_WOULD_MOVE, owesAReason: false, because: ''),
+                default => $this->row($went->move(), self::GUARD_ON_OFFER, owesAReason: true, because: $went->why()),
+            };
         }
 
         return $shown;

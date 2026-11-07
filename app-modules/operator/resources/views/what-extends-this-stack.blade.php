@@ -5,6 +5,8 @@
 <x-operator::content>
     <x-operator::heading>{{ __('plugins.heading') }}</x-operator::heading>
 
+    <x-operator::guards-moved :guards="$this->answer()->guards" />
+
 @if ($this->answer()->stands->isWorking())
     <x-design::body>{{ __($this->answer()->working) }}</x-design::body>
 @elseif ($this->answer()->refused !== null)
@@ -95,6 +97,8 @@
 
     <x-operator::heading>{{ __('plugins.new_version') }}</x-operator::heading>
     <x-operator::the-plugins-account :install="$this->answer()->update->install" />
+
+    <x-operator::the-files-reshipped :files="$this->answer()->update->reshipped" />
 
     @if ($this->answer()->update->install->agreeable)
         <x-operator::note>{{ __('plugins.approvals_apart') }}</x-operator::note>

@@ -7,6 +7,7 @@ use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\WhereTheCodeGot;
 use Modules\Household\Internal\Month;
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\APlaceholderForm;
 use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Category;
@@ -189,6 +190,10 @@ function everyDerivedKey(): array
         WhatAChangePuts::class => aPairPerCase(
             WhatAChangePuts::cases(),
             static fn(WhatAChangePuts $puts): array => [$puts->saidOnTheScreen()],
+        ),
+        APlaceholderForm::class => aPairPerCase(
+            APlaceholderForm::cases(),
+            static fn(APlaceholderForm $form): array => [$form->saidOnTheScreen()],
         ),
         APrivilegedShape::class => aPairPerCase(
             APrivilegedShape::cases(),

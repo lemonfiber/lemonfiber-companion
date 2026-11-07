@@ -80,6 +80,7 @@ final readonly class HowAResetReads
             words: $this->words($reset->wasCarriedOut()),
             edits: new HowAStackEditReads()->these($reset->edits()),
             connections: [...$reset->connections()],
+            guards: new HowAMoveInPlaceReads()->guards($reset->guards()),
         );
     }
 

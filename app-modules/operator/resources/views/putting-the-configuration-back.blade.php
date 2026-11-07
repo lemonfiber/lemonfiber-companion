@@ -30,6 +30,8 @@
          only a report the stack says it carried out in the past. --}}
     <x-operator::emphasis>{{ __($this->answer()->words->heading) }}</x-operator::emphasis>
 
+    <x-operator::guards-moved :guards="$this->answer()->guards" />
+
     <x-design::body>{{ __($this->answer()->words->files) }}</x-design::body>
     @forelse ($this->answer()->edits as $edit)
         <x-operator::entry>

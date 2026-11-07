@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Dx\Internal\WhatTheContractDeclares;
+use Modules\Kernel\Api\APlaceholderForm;
 use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\Availability;
 use Modules\Kernel\Api\Category;
@@ -406,6 +407,12 @@ it('everything putting one change back can do has a case', function (): void {
 
     expect($does)->not->toBe([], 'no reversal arm was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhatGoingBackDoes::cases()))->toBe($does);
+});
+
+it('every form a starting file\'s placeholder writes a value in has a case', function (): void {
+    $forms = array_map(static fn(APlaceholderForm $form): string => sprintf("'%s'", $form->value), APlaceholderForm::cases());
+
+    expect(TheGeneratedEnvelopes::theGeneratedEnvelope('PluginsEnvelope'))->toContain(sprintf('form: %s', implode('|', $forms)));
 });
 
 it('everything a plugin install puts at a path has a case', function (): void {

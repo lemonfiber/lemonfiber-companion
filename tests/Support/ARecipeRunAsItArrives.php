@@ -165,7 +165,7 @@ final readonly class ARecipeRunAsItArrives
             ))
             : ARecipeRun::rehearsed(APluginId::called('tdarr'), self::theRecipe());
 
-        return ThePlugins::aboutARecipeRun(
+        return ThePlugins::about(
             TheInstalledPlugins::these(self::thePlugin()),
             ThePluginSources::these(),
             $agreement ?? ($ran ? '' : APluginAsItArrives::AGREEMENT),

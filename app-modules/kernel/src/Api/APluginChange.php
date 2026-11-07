@@ -9,7 +9,7 @@ use function trim;
 /** One change an install makes to the machine: the full path, and what it puts there. */
 final readonly class APluginChange
 {
-    private function __construct(private string $path, private WhatAChangePuts $puts) {}
+    private function __construct(private string $path, private WhatAChangePuts $puts, private ThePlaceholders $placeholders) {}
 
     /** The change; a blank path is refused. */
     public static function at(string $path, WhatAChangePuts $puts): self
@@ -18,7 +18,13 @@ final readonly class APluginChange
             throw PluginSaysNothing::about('path');
         }
 
-        return new self($path, $puts);
+        return new self($path, $puts, ThePlaceholders::these());
+    }
+
+    /** The same change, whose starting file names secrets by these placeholders. */
+    public function naming(ThePlaceholders $placeholders): self
+    {
+        return new self($this->path, $this->puts, $placeholders);
     }
 
     /** Where, in full. */
@@ -31,5 +37,11 @@ final readonly class APluginChange
     public function puts(): WhatAChangePuts
     {
         return $this->puts;
+    }
+
+    /** Each placeholder its starting file names a secret by, none for anything else. */
+    public function placeholders(): ThePlaceholders
+    {
+        return $this->placeholders;
     }
 }

@@ -73,6 +73,7 @@
             <x-design::notice>
                 <x-design::strong>{{ __($going->change->didSaid) }}</x-design::strong>
             </x-design::notice>
+            <x-operator::guards-moved :guards="$going->change->guards" />
             @forelse ($going->change->moves as $move)
                 <x-design::body>{{ $move->toDefault ? __('plugins.settings.moves_to_default', ['setting' => $move->setting]) : __('plugins.settings.moves_to', ['setting' => $move->setting, 'value' => $move->value]) }}</x-design::body>
                 <x-design::note>{{ $move->wasSet ? __('plugins.settings.was', ['was' => $move->was]) : __('plugins.settings.was_default') }}</x-design::note>

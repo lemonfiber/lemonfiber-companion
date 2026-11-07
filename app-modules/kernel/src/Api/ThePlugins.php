@@ -28,45 +28,34 @@ final readonly class ThePlugins
         private string $agreement,
         private APluginInstall|AnUpdate|APluginRemoval|APluginReproof|ARecipeRun|null $about,
         private TheAnswersOutOfContract $outOfContract,
+        private WhatBecameOfTheMovesInPlace $guards,
     ) {}
 
     /** The listing alone, with the answers its plugins gave outside their contracts. */
     public static function listed(TheInstalledPlugins $installed, ThePluginSources $sources, TheAnswersOutOfContract $outOfContract): self
     {
-        return new self($installed, $sources, '', null, $outOfContract);
+        return new self($installed, $sources, '', null, $outOfContract, WhatBecameOfTheMovesInPlace::none());
     }
 
-    /** An answer about an install, beside what the record holds; `agreement` is empty where the stack named none. */
-    public static function aboutAnInstall(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, APluginInstall $install): self
+    /** An answer about one run of the record, beside what the record holds, which quotes the stack's name for it only where it is a reading; `agreement` is empty where the stack named none. */
+    public static function about(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, APluginInstall|AnUpdate|APluginRemoval|APluginReproof|ARecipeRun $about): self
     {
-        return self::answering($installed, $sources, $agreement, $install);
-    }
-
-    /** An answer about an update, beside what the record holds. */
-    public static function aboutAnUpdate(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, AnUpdate $update): self
-    {
-        return self::answering($installed, $sources, $agreement, $update);
-    }
-
-    /** An answer about a removal, beside what the record holds. */
-    public static function aboutAPluginRemoval(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, APluginRemoval $removal): self
-    {
-        return self::answering($installed, $sources, $agreement, $removal);
-    }
-
-    /** An answer about proving a plugin again, beside what the record holds. */
-    public static function aboutAReproof(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, APluginReproof $proof): self
-    {
-        return self::answering($installed, $sources, $agreement, $proof);
-    }
-
-    /** An answer about running one of a plugin's demand recipes, beside what the record holds. */
-    public static function aboutARecipeRun(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, ARecipeRun $run): self
-    {
-        return self::answering($installed, $sources, $agreement, $run);
+        return new self($installed, $sources, $about->isAReading() ? trim($agreement) : '', $about, TheAnswersOutOfContract::these(), WhatBecameOfTheMovesInPlace::none());
     }
 
     /** The answers that plugin's adapters gave outside their contracts, which it fills nothing for until it is proved again. */
+    public function guarding(WhatBecameOfTheMovesInPlace $guards): self
+    {
+        return new self($this->installed, $this->sources, $this->agreement, $this->about, $this->outOfContract, $guards);
+    }
+
+    /** Each of lemonfiber's own guards it moved, or would move, or could not. */
+    public function guards(): WhatBecameOfTheMovesInPlace
+    {
+        return $this->guards;
+    }
+
+    /** What each plugin answered outside its contract. */
     public function answersOutOfContractOf(APlugin $plugin): TheAnswersOutOfContract
     {
         return $this->outOfContract->of($plugin);
@@ -170,11 +159,5 @@ final readonly class ThePlugins
             $this->about instanceof ARecipeRun => $run($this->about),
             default => $listed(),
         };
-    }
-
-    /** An answer about one run of the record, which quotes the stack's name for it only where it is a reading. */
-    private static function answering(TheInstalledPlugins $installed, ThePluginSources $sources, string $agreement, APluginInstall|AnUpdate|APluginRemoval|APluginReproof|ARecipeRun $about): self
-    {
-        return new self($installed, $sources, $about->isAReading() ? trim($agreement) : '', $about, TheAnswersOutOfContract::these());
     }
 }

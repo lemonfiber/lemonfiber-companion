@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use function count;
+
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheCommandLine;
+use Modules\Kernel\Api\TheInstallsAStartOffers;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhereTheServicesEndedUp;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Operator\Internal\AsText;
+use Modules\Operator\Internal\ViewModels\AnInstallOfferedAsShown;
 use Modules\Operator\Internal\ViewModels\APortHeldAsShown;
 use Modules\Operator\Internal\ViewModels\AServiceNotBackAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheVerbWent;
@@ -75,7 +79,8 @@ final readonly class HowAVerbEndedReads
             ran: static fn(): AsText => AsText::nothing(),
             declined: static fn(string $why): AsText => AsText::of($why),
         )->said;
-        $ran = $because === '';
+        $unstarted = $this->isUnstarted($report);
+        $ran = $because === '' && ! $unstarted;
         $command = $report->whetherItRan(
             ran: static fn(TheCommandLine $command): AsText => AsText::of($command->asTyped()),
             declined: static fn(): AsText => AsText::nothing(),
@@ -84,7 +89,11 @@ final readonly class HowAVerbEndedReads
         return new HowTheVerbWent(
             stands: WhereTheWorkStands::answered(),
             wasRehearsed: $rehearsed,
-            cameToSaid: $ran ? $this->cameTo($report, $verb, $rehearsed) : 'health.came_to.declined',
+            cameToSaid: match (true) {
+                $unstarted => 'health.came_to.unstarted',
+                $ran => $this->cameTo($report, $verb, $rehearsed),
+                default => 'health.came_to.declined',
+            },
             because: $because,
             amountsToSaid: $report->amountsTo(
                 said: static fn(HowTheStackIsRunning $condition): AsText => AsText::of($condition->saidOnTheScreen()),
@@ -97,9 +106,38 @@ final readonly class HowAVerbEndedReads
             portsHeld: $this->portsHeld($report->portsHeld()),
             editsKept: new HowAStackEditReads()->these($report->editsKept()),
             movesOnOffer: new HowAMoveInPlaceReads()->offered($report->movesInPlace(), HowAMoveInPlaceReads::ON_OFFER),
+            guards: new HowAMoveInPlaceReads()->guards($report->besides()->guards()),
+            installs: $this->installs($report->besides()->installs()),
+            withoutRender: [...$report->besides()->withoutRender()],
+            whyNoRender: $report->besides()->whyNoRender(),
             commandSaid: $this->commandSaid($ran, $rehearsed),
             command: $command,
         );
+    }
+
+    /** Whether it wrote and started nothing for want of a yes: it names installs, and ran no command. */
+    private function isUnstarted(WhatTheVerbCameTo $report): bool
+    {
+        return count($report->besides()->installs()) > 0 && $report->whetherItRan(
+            ran: static fn(): AsText => AsText::of('ran'),
+            declined: static fn(string $why): AsText => AsText::of($why),
+        )->said === '';
+    }
+
+    /**
+     * Each part it offers to install.
+     *
+     * @return list<AnInstallOfferedAsShown>
+     */
+    private function installs(TheInstallsAStartOffers $installs): array
+    {
+        $shown = [];
+
+        foreach ($installs as $install) {
+            $shown[] = new AnInstallOfferedAsShown($install->plugin(), $install->why());
+        }
+
+        return $shown;
     }
 
     /** The heading over the command, in the tense the report allows, or none where nothing ran. */
@@ -165,6 +203,10 @@ final readonly class HowAVerbEndedReads
             portsHeld: [],
             editsKept: [],
             movesOnOffer: [],
+            guards: [],
+            installs: [],
+            withoutRender: [],
+            whyNoRender: '',
             commandSaid: null,
             command: '',
         );

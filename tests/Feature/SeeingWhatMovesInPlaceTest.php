@@ -86,11 +86,11 @@ it('names each move in place on the update\'s confirmation, apart from the servi
 
 it('names no move on a confirmation where the stack offered none', function (): void {
     $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen(AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending()));
-    $unasked = $screen->wouldMove();
+    $unasked = $screen->wouldMove()->moves;
     $screen->wouldYouLike();
 
     expect($unasked)->toBe([])
-        ->and($screen->wouldMove())->toBe([])
+        ->and($screen->wouldMove()->moves)->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('updates.moves.heading'));
 });
 

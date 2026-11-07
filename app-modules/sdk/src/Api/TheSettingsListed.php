@@ -53,8 +53,8 @@ final readonly class TheSettingsListed
             $settings[] = self::setting($setting, APath::beneath(WireField::Settings->value, $position));
         }
 
-        foreach (SettingsRows::listed(Required::rows($data, SettingsField::Secrets, SettingsAreUnreadable::missing(SettingsField::Secrets->value)), SettingsField::Secrets->value) as $position => $secret) {
-            $secrets[] = self::secret($secret, APath::beneath(SettingsField::Secrets->value, $position));
+        foreach (SettingsRows::listed(Required::rows($data, WireField::Secrets, SettingsAreUnreadable::missing(WireField::Secrets->value)), WireField::Secrets->value) as $position => $secret) {
+            $secrets[] = self::secret($secret, APath::beneath(WireField::Secrets->value, $position));
         }
 
         return TheServicesSettings::of(TheSettingsRead::these(...$settings), TheSecretsRead::these(...$secrets))

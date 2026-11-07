@@ -218,6 +218,41 @@
         <x-operator::edits-kept :edits="$this->whatItCameTo()->editsKept" />
 
         <x-operator::moves-in-place :moves="$this->whatItCameTo()->movesOnOffer" :after="__('updates.moves.an_update_takes_it')" />
+
+        <x-operator::guards-moved :guards="$this->whatItCameTo()->guards" />
+
+        {{-- Each part a start offers to install: it wrote and started nothing
+             for want of a yes, and the web API's `up` takes no offer to answer it. --}}
+        @forelse ($this->whatItCameTo()->installs as $install)
+            <x-operator::entry>
+                @if ($loop->first)
+                    <x-design::heading>{{ __('health.installs.heading') }}</x-design::heading>
+                    <x-operator::note>{{ __('health.installs.at_the_terminal') }}</x-operator::note>
+                @endif
+                <x-design::body>{{ __('health.installs.would_install', ['plugin' => $install->plugin]) }}</x-design::body>
+                @if ($install->why !== '')
+                    <x-operator::note>{{ $install->why }}</x-operator::note>
+                @endif
+            </x-operator::entry>
+        @empty
+            {{-- It offered to install nothing, which is the ordinary case. --}}
+        @endforelse
+
+        {{-- Each service written without the host's render devices, in the
+             stack's words, and why the group owning them was not asked or kept. --}}
+        @forelse ($this->whatItCameTo()->withoutRender as $service)
+            <x-operator::entry>
+                @if ($loop->first)
+                    <x-design::heading>{{ __('health.render.heading') }}</x-design::heading>
+                    @if ($this->whatItCameTo()->whyNoRender !== '')
+                        <x-operator::note>{{ $this->whatItCameTo()->whyNoRender }}</x-operator::note>
+                    @endif
+                @endif
+                <x-design::body>{{ $service }}</x-design::body>
+            </x-operator::entry>
+        @empty
+            {{-- Every service taking `render` has the devices, which is the ordinary case. --}}
+        @endforelse
     @endif
 
     @if ($this->thing()->isAForm)

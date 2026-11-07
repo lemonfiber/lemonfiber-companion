@@ -18,6 +18,7 @@ final readonly class TheChoiceTurnedOutToBe
      * @param ?ALineToSay       $said    the notice on what became of the choice, where there is one
      * @param ?string           $meaning the stack's account of a refusal beside this app's words, where it gave one that adds to them
      * @param ?ARefusalAsShown  $refused a refusal of another kind, in the stack's words
+     * @param list<AMoveInPlaceAsShown> $guards each of lemonfiber's own guards it moved, would move or could not
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -25,5 +26,6 @@ final readonly class TheChoiceTurnedOutToBe
         public ?ALineToSay $said = null,
         public ?string $meaning = null,
         public ?ARefusalAsShown $refused = null,
+        public array $guards = [],
     ) {}
 }

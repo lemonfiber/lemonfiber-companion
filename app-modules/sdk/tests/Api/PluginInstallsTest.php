@@ -210,7 +210,7 @@ it('reads an update\'s new version writing the files of the service it fronts', 
 });
 
 it('reads every privileged shape the contract names', function (APrivilegedShape $shape): void {
-    $read = PluginInstalls::in(anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [['service' => 'jellyfin', 'shape' => $shape->value, 'grants' => [], 'devices' => ['/dev/dri'], 'approval' => sprintf('%s@jellyfin', $shape->value)]]])));
+    $read = PluginInstalls::in(anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [['service' => 'jellyfin', 'shape' => $shape->value, 'grants' => [], 'devices' => ['/dev/dri'], 'grouped' => false, 'approval' => sprintf('%s@jellyfin', $shape->value)]]])));
     $taken = iterator_to_array($read->shapesTaken(), preserve_keys: false);
 
     expect($taken)->toHaveCount(1)
@@ -342,10 +342,10 @@ function everyPluginsAnswerThatCannotBeRead(): array
         'a blank claimant' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'contests' => [['capability' => 'transcode', 'by' => 'sonarr', 'claimants' => [' ']]]])), $unreadable],
         'shapes taken that are not a list' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => 'gluetun'])), $unreadable],
         'a shape taken that is not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => ['gluetun']])), $unreadable],
-        'a shape taken by no service' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'service' => ' ']]])), $unreadable],
-        'a shape nobody reads' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'shape' => 'host-network']]])), $unreadable],
-        'a blank device' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'devices' => ['']]]])), $unreadable],
-        'a shape taken with no approval to give' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'approval' => 'egress-guard@gluetun'], 'approval' => '']]])), $unreadable],
+        'a shape taken by no service' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'grouped' => false, 'approval' => 'egress-guard@gluetun'], 'service' => ' ']]])), $unreadable],
+        'a shape nobody reads' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'grouped' => false, 'approval' => 'egress-guard@gluetun'], 'shape' => 'host-network']]])), $unreadable],
+        'a blank device' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'grouped' => false, 'approval' => 'egress-guard@gluetun'], 'devices' => ['']]]])), $unreadable],
+        'a shape taken with no approval to give' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...['service' => 'gluetun', 'shape' => 'egress-guard', 'grants' => ['NET_ADMIN'], 'devices' => ['/dev/net/tun'], 'grouped' => false, 'approval' => 'egress-guard@gluetun'], 'approval' => '']]])), $unreadable],
         'sharing that is not a list' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => 'tdarr-adapter'])), $unreadable],
         'a sharing that is not a table' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => ['tdarr-adapter']])), $unreadable],
         'a sharing by no adapter' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'sharing' => [['adapter' => ' ', 'upstream' => 'tdarr', 'at' => '/upstream']]])), $unreadable],
@@ -539,4 +539,95 @@ it('reads a reading that names no agreement, sent as null or left out, as naming
 
     expect($sentAsNull->agreement())->toBe('')
         ->and($leftOut->agreement())->toBe('');
+});
+
+it('reads whether a shape adds its service to its devices\' group, and refuses a word that is not yes or no', function (): void {
+    $row = ['service' => 'jellyfin', 'shape' => 'render', 'grants' => [], 'devices' => ['/dev/dri'], 'approval' => 'render@jellyfin'];
+    $taken = static fn(mixed $grouped): array => iterator_to_array(PluginInstalls::in(anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'taking' => [[...$row, 'grouped' => $grouped]]])))->shapesTaken(), preserve_keys: false);
+
+    expect($taken(grouped: true)[0]->joinsTheDevicesGroup())->toBeTrue()
+        ->and($taken(grouped: false)[0]->joinsTheDevicesGroup())->toBeFalse()
+        ->and(static fn(): array => $taken('yes'))->toThrow(PluginsAreUnreadable::class, '`grouped`');
+});
+
+it('reads a starting file\'s placeholders by secret and form, and refuses one it cannot read', function (mixed $placeholders): void {
+    expect(static fn(): ThePlugins => PluginInstalls::in(anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'changes' => [['path' => '/a', 'puts' => 'starting', 'placeholders' => $placeholders]]]))))
+        ->toThrow(PluginsAreUnreadable::class, '`placeholders`');
+})->with([
+    'not a list' => ['api_key'],
+    'not a table' => [['api_key']],
+    'no secret' => [[['form' => 'plain']]],
+    'no form' => [[['secret' => 'api_key']]],
+    'a form nobody reads' => [[['secret' => 'api_key', 'form' => 'rot13']]],
+]);
+
+it('reads each starting file an update reshipped, none where the update says nothing of them, and refuses one it cannot read', function (): void {
+    $answer = static fn(array $update): Envelope => pluginsSaying(APluginAsItArrives::theAnswerAbout('update', $update)['data']);
+    $said = static fn(array $update): string => PluginInstalls::in($answer($update))->either(
+        listed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'),
+        install: static fn(): TheWordCarriedOut => new TheWordCarriedOut('an install'),
+        update: static function (AnUpdate $update): TheWordCarriedOut {
+            $said = [];
+
+            foreach ($update->reshipped() as $file) {
+                foreach ($file->was() as $placeholder) {
+                    $said[] = sprintf('%s was %s %s', $file->path(), $placeholder->secret(), $placeholder->form()->value);
+                }
+
+                foreach ($file->becomes() as $placeholder) {
+                    $said[] = sprintf('%s becomes %s %s', $file->path(), $placeholder->secret(), $placeholder->form()->value);
+                }
+            }
+
+            return new TheWordCarriedOut(implode('; ', $said));
+        },
+        removal: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a removal'),
+        proof: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a proof'),
+        run: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a run'),
+    )->said;
+    $read = static fn(mixed $reshipped): string => $said([...APluginAsItArrives::anUpdateReadingOnTheWire(), 'reshipped' => $reshipped]);
+
+    expect($read([['path' => '/c.xml', 'was' => [['secret' => 'key', 'form' => 'plain']], 'becomes' => [['secret' => 'key', 'form' => 'pbkdf2']]]]))
+        ->toBe('/c.xml was key plain; /c.xml becomes key pbkdf2')
+        ->and($said(array_diff_key(APluginAsItArrives::anUpdateReadingOnTheWire(), ['reshipped' => true])))->toBe('')
+        ->and(static fn(): string => $read('c.xml'))->toThrow(PluginsAreUnreadable::class, '`reshipped`')
+        ->and(static fn(): string => $read(['c.xml']))->toThrow(PluginsAreUnreadable::class, '`reshipped`')
+        ->and(static fn(): string => $read([['was' => [], 'becomes' => []]]))->toThrow(PluginsAreUnreadable::class, '`reshipped`')
+        ->and(static fn(): string => $read([['path' => '/c.xml', 'becomes' => []]]))->toThrow(PluginsAreUnreadable::class, '`was`')
+        ->and(static fn(): string => $read([['path' => '/c.xml', 'was' => []]]))->toThrow(PluginsAreUnreadable::class, '`becomes`');
+});
+
+it('names each secret a plugin\'s recipes capture in the plugin\'s namespace, and none where nothing says so', function (): void {
+    $captured = static function (array $declared): array {
+        $answer = APluginAsItArrives::theAnswer(null);
+        $data = $answer['data'];
+        $data = is_array($data) ? $data : [];
+        $data['installed'] = [['plugin' => 'tdarr', 'version' => '2.1.0', 'services' => [], 'declared' => $declared]];
+        $lines = [];
+
+        foreach (PluginInstalls::in(pluginsSaying($data))->installed() as $plugin) {
+            $lines = [...$lines, ...$plugin->captures()];
+        }
+
+        return $lines;
+    };
+
+    expect($captured(['secrets' => [
+        ['id' => 'token', 'captured' => true],
+        ['id' => 'left', 'captured' => false],
+        ['id' => 'unsaid'],
+        ['captured' => true],
+        ['id' => 'odd', 'captured' => 'yes'],
+        'not a table',
+    ]]))->toBe(['tdarr:token'])
+        ->and($captured([]))->toBe([])
+        ->and($captured(['secrets' => 'none']))->toBe([]);
+});
+
+it('reads each guard a plugin act moved, and none where the stack sent none', function (): void {
+    $moved = PluginInstalls::in(anInstallAnswerWith(static fn(array $data): array => [...$data, 'guards' => [['service' => 'decline', 'plugin' => 'plugin-decline', 'taken' => true]]]));
+
+    expect($moved->guards())->toHaveCount(1)
+        ->and(PluginInstalls::in(anInstallAnswerWith(static fn(array $data): array => $data))->guards())->toHaveCount(0)
+        ->and(static fn(): ThePlugins => PluginInstalls::in(anInstallAnswerWith(static fn(array $data): array => [...$data, 'guards' => 'decline'])))->toThrow(PluginsAreUnreadable::class, '`guards`');
 });

@@ -26,7 +26,20 @@ final readonly class TheReset
         private ConnectionsReverted $connections,
         private bool $carriedOut,
         private string $offer,
+        private WhatBecameOfTheMovesInPlace $guards,
     ) {}
+
+    /** The same report, naming each of lemonfiber's own guards it moved, or would move, or could not. */
+    public function guarding(WhatBecameOfTheMovesInPlace $guards): self
+    {
+        return new self($this->edits, $this->connections, $this->carriedOut, $this->offer, $guards);
+    }
+
+    /** Each of lemonfiber's own guards it moved, or would move, or could not. */
+    public function guards(): WhatBecameOfTheMovesInPlace
+    {
+        return $this->guards;
+    }
 
     /** What putting the configuration back would revert, under the name the stack gave the preview; nothing was written. */
     public static function previewed(TheStackEdits $edits, ConnectionsReverted $connections, string $offer): self
@@ -35,13 +48,13 @@ final readonly class TheReset
             throw ThereIsNothingToAgreeTo::unnamed();
         }
 
-        return new self($edits, $connections, carriedOut: false, offer: trim($offer));
+        return new self($edits, $connections, carriedOut: false, offer: trim($offer), guards: WhatBecameOfTheMovesInPlace::none());
     }
 
     /** What putting the configuration back reverted, the operator having said yes. */
     public static function carriedOut(TheStackEdits $edits, ConnectionsReverted $connections): self
     {
-        return new self($edits, $connections, carriedOut: true, offer: '');
+        return new self($edits, $connections, carriedOut: true, offer: '', guards: WhatBecameOfTheMovesInPlace::none());
     }
 
     /** Whether it was carried out rather than only previewed. */

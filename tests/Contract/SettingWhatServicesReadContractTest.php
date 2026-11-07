@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\AChoice;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnOffer;
@@ -43,6 +44,7 @@ use Modules\Kernel\Api\WhereASecretCameFrom;
 use Modules\Kernel\Api\WhoseASettingIs;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Tuners;
+use Modules\Sdk\Api\WhatTheSettingCameTo;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\Response;
@@ -675,4 +677,12 @@ it('stands in for a stack with payloads the contract would accept', function ():
         ->toBe([], "The change this suite stands in for a stack with is not one a stack would send.\n")
         ->and(WhatTheContractAccepts::complaintsAbout('ErrorEnvelope', aSettingThatMoved()))
         ->toBe([], "The refusal this suite stands in for a stack with is not one a stack would send.\n");
+});
+
+it('reads each guard a change to a setting moved, and none where the stack sent none', function (): void {
+    $guarded = whatAStackSaysOfAChangeToASetting(changed: ['guards' => [['service' => 'decline', 'plugin' => 'plugin-decline', 'taken' => true]]]);
+    $plain = whatAStackSaysOfAChangeToASetting();
+
+    expect(WhatTheSettingCameTo::in(new Envelope(1, 'settings', $guarded['data']))->guards())->toHaveCount(1)
+        ->and(WhatTheSettingCameTo::in(new Envelope(1, 'settings', $plain['data']))->guards())->toHaveCount(0);
 });

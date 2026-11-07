@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhatStaysBehind;
 use Modules\Kernel\Api\WhatTheChoiceLeaves;
 use Modules\Sdk\Api\Fields\SubstitutionField;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\MovesInPlaceSent;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
@@ -62,7 +63,7 @@ final readonly class Substitutions
             WhatTheChoiceLeaves::of(WhatNothingFills::these(...self::unfilled($choice)), WhatStaysBehind::these(...self::behind($choice))),
             self::optional($choice, WireField::Why),
             self::text($data, WireField::Agreement),
-        );
+        )->guarding(MovesInPlaceSent::guards($data, SubstitutionIsUnreadable::missing(WireField::Guards)));
     }
 
     /**

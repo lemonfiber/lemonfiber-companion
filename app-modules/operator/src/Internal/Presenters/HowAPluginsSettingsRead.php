@@ -31,7 +31,7 @@ final readonly class HowAPluginsSettingsRead
 
         return new WhatAPluginsSettingsShow(
             HowTheReadingWent::itCameBack(),
-            new ThePluginsSettingsAsRead($plugin->shown(), $rows->settings($its->settings()), $rows->secrets($its->secrets()), $grants),
+            new ThePluginsSettingsAsRead($plugin->shown(), $rows->settings($its->settings()), $rows->secrets($its->secrets(), $plugin->captures()), $grants),
         );
     }
 

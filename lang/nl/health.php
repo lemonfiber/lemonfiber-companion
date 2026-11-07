@@ -422,6 +422,14 @@ return [
     // opleverde, uit het eigen verslag van de stack. Een start of herstart die
     // niet alles terugbracht heet nooit klaar, en wat niet terugkwam wordt
     // genoemd.
+    'installs' => [
+        'heading' => 'Wat een start zou installeren',
+        'at_the_terminal' => 'Een start die iets installeert wordt in de terminal bevestigd.',
+        'would_install' => 'Hij zou :plugin installeren vanuit deze build',
+    ],
+    'render' => [
+        'heading' => 'Draait zonder hardwaretranscodering',
+    ],
     'came_to' => [
         'heading' => 'Wat het laatste verzoek hier opleverde',
         'running' => 'De stack voert het uit.',
@@ -429,6 +437,7 @@ return [
         'a_rehearsal' => 'Een generale repetitie: er is niets gestart of gestopt',
         'rehearsed' => 'Dit is wat de stack zegt dat hij gedaan zou hebben.',
         'declined' => 'De stack heeft niets gestart: :why',
+        'unstarted' => 'Er is niets geschreven of gestart: dit starten installeert wat hier staat, en niemand heeft daarmee ingestemd.',
         'everything_back' => 'Alles wat het moest opstarten draait.',
         'not_everything_back' => 'Het heeft niet alles teruggebracht.',
         'stopped' => 'De stack heeft de stop uitgevoerd.',

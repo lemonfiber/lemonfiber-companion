@@ -28,6 +28,7 @@ final readonly class AnUpdate
         private ARunPutBack $wentBack,
         private string $stopped,
         private WhatPuttingTheOldVersionBackCameTo $restored,
+        private TheFilesReshipped $reshipped,
     ) {}
 
     /**
@@ -48,7 +49,7 @@ final readonly class AnUpdate
             throw PluginSaysNothing::about('plugin');
         }
 
-        return new self($plugin, $versions, $interrupts, $install, $wentBack, trim($stopped), $restored);
+        return new self($plugin, $versions, $interrupts, $install, $wentBack, trim($stopped), $restored, TheFilesReshipped::these());
     }
 
     /** The plugin it is about, by its id. */
@@ -85,6 +86,18 @@ final readonly class AnUpdate
     public function stopped(): string
     {
         return $this->stopped;
+    }
+
+    /** The same account, naming each starting file whose placeholders the new version changes. */
+    public function reshipping(TheFilesReshipped $files): self
+    {
+        return new self($this->plugin, $this->versions, $this->interrupts, $this->install, $this->wentBack, $this->stopped, $this->restored, $files);
+    }
+
+    /** Each starting file whose placeholders the new version changes; the file on the machine is left as it is. */
+    public function reshipped(): TheFilesReshipped
+    {
+        return $this->reshipped;
     }
 
     /** What putting the version it replaced back came to, where it did not hold. */

@@ -56,6 +56,13 @@ return [
     // release the stack has nothing to say about.
     'delivers_unsaid' => 'The stack did not say what this one changes',
 
+    'guards' => [
+        'heading' => 'lemonfiber\'s own guards',
+        'no_yes' => 'Moving one takes no yes of its own and is not undone.',
+        'moved' => ':plugin now runs in place of :service, for good',
+        'would_move' => ':plugin would take the place of :service, for good',
+        'on_offer' => ':plugin could not take the place of :service, which stays on offer',
+    ],
     'moves' => [
         'heading' => 'Moving in place',
         'would_take' => ':plugin will take the place of :service, keeping its data and settings',

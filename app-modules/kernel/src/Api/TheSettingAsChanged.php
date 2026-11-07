@@ -15,15 +15,28 @@ final readonly class TheSettingAsChanged
         private WhatTheSettingRunDid $did,
         private AnOffer $offer,
         private TheServicesSettings $settings,
+        private WhatBecameOfTheMovesInPlace $guards,
     ) {}
 
     /** The report, as the stack wrote it. */
     public static function said(TheSettingMoves $moves, WhatTheChangeReaches $reaches, WhatTheSettingRunDid $did, AnOffer $offer, TheServicesSettings $settings): self
     {
-        return new self($moves, $reaches, $did, $offer, $settings);
+        return new self($moves, $reaches, $did, $offer, $settings, WhatBecameOfTheMovesInPlace::none());
     }
 
     /** Each setting the change moves. */
+    public function guarding(WhatBecameOfTheMovesInPlace $guards): self
+    {
+        return new self($this->moves, $this->reaches, $this->did, $this->offer, $this->settings, $guards);
+    }
+
+    /** Each of lemonfiber's own guards it moved, or would move, or could not. */
+    public function guards(): WhatBecameOfTheMovesInPlace
+    {
+        return $this->guards;
+    }
+
+    /** Each setting it moves. */
     public function moves(): TheSettingMoves
     {
         return $this->moves;

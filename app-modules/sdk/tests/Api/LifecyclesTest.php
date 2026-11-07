@@ -11,6 +11,7 @@ use function implode;
 use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
+use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
@@ -296,4 +297,77 @@ it('refuses a list of moves in place it cannot read', function (mixed $moves): v
     'a move that is not a table' => [['jellyfin']],
     'a move with no plugin' => [[['service' => 'jellyfin']]],
     'a move with a blank service' => [[['service' => ' ', 'plugin' => 'plugin-jellyfin']]],
+]);
+
+it('reads a start that wrote and started nothing for want of a yes, with the installs it offers and no command', function (): void {
+    $report = Lifecycles::in(lifecycleSaying([...aRestartInFull(), 'action' => 'up', 'command' => [], 'services' => [], 'port_conflicts' => [], 'condition' => null, 'offer' => 'an-offer', 'installing' => [
+        ['plugin' => 'plugin-jellyfin', 'offer' => 'its-offer'],
+        ['plugin' => 'plugin-sonarr', 'why' => 'It could not be read'],
+    ]]));
+    $read = [];
+
+    foreach ($report->besides()->installs() as $install) {
+        $read[] = sprintf('%s:%s', $install->plugin(), $install->why());
+    }
+
+    expect($read)->toBe(['plugin-jellyfin:', 'plugin-sonarr:It could not be read'])
+        ->and($report->whetherItRan(
+            ran: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ran'),
+            declined: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('nothing:%s', $why)),
+        )->said)->toBe('nothing:')
+        ->and($report->offer())->toEqual(AnOffer::named('an-offer'));
+});
+
+it('still refuses a report with no command that names no install', function (): void {
+    expect(static fn(): WhatTheVerbCameTo => Lifecycles::in(lifecycleSaying([...aRestartInFull(), 'command' => []])))
+        ->toThrow(LifecycleIsUnreadable::class, '`command`');
+});
+
+it('reads a command beside installs as a verb that ran', function (): void {
+    $report = Lifecycles::in(lifecycleSaying([...aRestartInFull(), 'installing' => [['plugin' => 'plugin-jellyfin']]]));
+
+    expect($report->whetherItRan(
+        ran: static fn(TheCommandLine $command): TheWordCarriedOut => new TheWordCarriedOut($command->asTyped()),
+        declined: static fn(): TheWordCarriedOut => new TheWordCarriedOut('declined'),
+    )->said)->toBe('docker compose restart');
+});
+
+it('reads each guard an act moved, each service without the render devices, and why', function (): void {
+    $else = Lifecycles::in(lifecycleSaying([...aRestartInFull(),
+        'guards' => [['service' => 'decline', 'plugin' => 'plugin-decline', 'taken' => true], ['service' => 'gate', 'plugin' => 'plugin-gate', 'taken' => false, 'why' => 'It would not install']],
+        'unrendered' => ['jellyfin runs without hardware transcoding'],
+        'rendering' => 'The host answers no group',
+    ]))->besides();
+    $guards = [];
+
+    foreach ($else->guards() as $went) {
+        $guards[] = sprintf('%s:%s:%s', $went->move()->service()->named(), $went->wasTaken() ? 'taken' : 'not', $went->why());
+    }
+
+    expect($guards)->toBe(['decline:taken:', 'gate:not:It would not install'])
+        ->and([...$else->withoutRender()])->toBe(['jellyfin runs without hardware transcoding'])
+        ->and($else->whyNoRender())->toBe('The host answers no group');
+});
+
+it('reads nothing beside the verb where the stack sent nothing', function (): void {
+    $else = Lifecycles::in(lifecycleSaying(aRestartInFull()))->besides();
+
+    expect($else->guards())->toHaveCount(0)
+        ->and($else->installs())->toHaveCount(0)
+        ->and($else->withoutRender()->isEmpty())->toBeTrue()
+        ->and($else->whyNoRender())->toBe('');
+});
+
+it('refuses what it cannot read of what a report says beside the verb', function (string $field, mixed $said, string $named): void {
+    expect(static fn(): WhatTheVerbCameTo => Lifecycles::in(lifecycleSaying([...aRestartInFull(), $field => $said])))
+        ->toThrow(LifecycleIsUnreadable::class, $named);
+})->with([
+    'installs that are not a list' => ['installing', 'plugin-jellyfin', '`installing`'],
+    'an install that is not a table' => ['installing', ['plugin-jellyfin'], '`installing`'],
+    'an install with no plugin' => ['installing', [['why' => 'x']], '`installing`'],
+    'unrendered that are not a list' => ['unrendered', 'jellyfin', '`unrendered`'],
+    'an unrendered service that is not text' => ['unrendered', [3], '`unrendered`'],
+    'a blank unrendered service' => ['unrendered', [' '], '`unrendered`'],
+    'a reason that is not text' => ['rendering', 3, '`rendering`'],
+    'guards that are not a list' => ['guards', 'decline', '`guards`'],
 ]);
