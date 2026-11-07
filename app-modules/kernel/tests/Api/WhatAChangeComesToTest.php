@@ -76,6 +76,7 @@ it('carries everything the stack found, in the order it found it', function (): 
     $qbittorrent = ServiceId::called('qbittorrent');
     $gluetun = ServiceId::called('gluetun');
     $left = WhatAChangeLeavesAlone::said('everything already downloaded');
+    $alsoLeft = WhatAChangeLeavesAlone::said('each service\'s own record of what it holds');
 
     $found = WhatAChangeComesTo::nothing()
         ->stopping($qbittorrent)
@@ -83,11 +84,12 @@ it('carries everything the stack found, in the order it found it', function (): 
         ->asking($ask)
         ->leaving($left)
         ->reaching($library)
+        ->leaving($alsoLeft)
         ->stopping($gluetun);
 
     expect($found->asks)->toBe([$ask])
         ->and($found->stops)->toBe([$qbittorrent, $gluetun])
-        ->and($found->keeps)->toBe([$left])
+        ->and($found->keeps)->toBe([$left, $alsoLeft])
         ->and($found->libraries)->toBe([$library])
         ->and($found->interrupts)->toBe([$download])
         ->and(whatTheChangeMeans($found))->toBe('nothing')
