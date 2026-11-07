@@ -561,9 +561,9 @@ it('reads a starting file\'s placeholders by secret and form, and refuses one it
     'a form nobody reads' => [[['secret' => 'api_key', 'form' => 'rot13']]],
 ]);
 
-it('reads each starting file an update reshipped, and refuses one it cannot read', function (): void {
-    $answer = static fn(mixed $reshipped): Envelope => pluginsSaying(APluginAsItArrives::theAnswerAbout('update', [...APluginAsItArrives::anUpdateReadingOnTheWire(), 'reshipped' => $reshipped])['data']);
-    $read = static fn(mixed $reshipped): string => PluginInstalls::in($answer($reshipped))->either(
+it('reads each starting file an update reshipped, none where the update says nothing of them, and refuses one it cannot read', function (): void {
+    $answer = static fn(array $update): Envelope => pluginsSaying(APluginAsItArrives::theAnswerAbout('update', $update)['data']);
+    $said = static fn(array $update): string => PluginInstalls::in($answer($update))->either(
         listed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'),
         install: static fn(): TheWordCarriedOut => new TheWordCarriedOut('an install'),
         update: static function (AnUpdate $update): TheWordCarriedOut {
@@ -585,9 +585,11 @@ it('reads each starting file an update reshipped, and refuses one it cannot read
         proof: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a proof'),
         run: static fn(): TheWordCarriedOut => new TheWordCarriedOut('a run'),
     )->said;
+    $read = static fn(mixed $reshipped): string => $said([...APluginAsItArrives::anUpdateReadingOnTheWire(), 'reshipped' => $reshipped]);
 
     expect($read([['path' => '/c.xml', 'was' => [['secret' => 'key', 'form' => 'plain']], 'becomes' => [['secret' => 'key', 'form' => 'pbkdf2']]]]))
         ->toBe('/c.xml was key plain; /c.xml becomes key pbkdf2')
+        ->and($said(array_diff_key(APluginAsItArrives::anUpdateReadingOnTheWire(), ['reshipped' => true])))->toBe('')
         ->and(static fn(): string => $read('c.xml'))->toThrow(PluginsAreUnreadable::class, '`reshipped`')
         ->and(static fn(): string => $read(['c.xml']))->toThrow(PluginsAreUnreadable::class, '`reshipped`')
         ->and(static fn(): string => $read([['was' => [], 'becomes' => []]]))->toThrow(PluginsAreUnreadable::class, '`reshipped`')
