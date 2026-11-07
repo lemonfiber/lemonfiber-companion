@@ -51,7 +51,7 @@ final readonly class PluginUpdatesAndRemovals
             TheReversal::from(self::table($update, PluginsField::WentBack)),
             self::optional($update, WireField::Stopped),
             self::restored($update),
-        );
+        )->reshipping(PlaceholderRows::reshippedBy($update));
     }
 
     /**

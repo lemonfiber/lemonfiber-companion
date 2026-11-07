@@ -17,6 +17,7 @@ final readonly class AShapeTakenAsShown
      * @param list<string> $grants    the kernel capabilities it is granted
      * @param list<string> $devices   the devices it is given
      * @param ASwitchAsShown|null     $switch its switch, or null where the screen offers none for it
+     * @param bool         $joinsTheDevicesGroup whether it is added to the group owning those devices on the engine's host
      */
     public function __construct(
         public string $service,
@@ -24,5 +25,6 @@ final readonly class AShapeTakenAsShown
         public array $grants,
         public array $devices,
         public ?ASwitchAsShown $switch,
+        public bool $joinsTheDevicesGroup,
     ) {}
 }

@@ -110,7 +110,7 @@ final readonly class PluginInstallReports
             $found[] = APluginChange::at(
                 self::text($row, WireField::Changes, WireField::Path, $position),
                 WhatAChangePuts::tryFrom($puts) ?? throw PluginsAreUnreadable::said(PluginsField::Puts, $puts),
-            );
+            )->naming(PlaceholderRows::ofAChange($row, $position));
         }
 
         return $found;
@@ -186,13 +186,17 @@ final readonly class PluginInstallReports
 
             $shape = self::text($row, PluginsField::Taking, WireField::Shape, $position);
 
-            $found[] = AShapeTaken::by(
+            $taken = AShapeTaken::by(
                 self::text($row, PluginsField::Taking, WireField::Service, $position),
                 APrivilegedShape::tryFrom($shape) ?? throw PluginsAreUnreadable::said(WireField::Shape, $shape),
                 PluginLines::under(WireField::Grants->value, ...self::words($row, PluginsField::Taking, WireField::Grants, $position)),
                 PluginLines::under(WireField::Devices->value, ...self::words($row, PluginsField::Taking, WireField::Devices, $position)),
                 self::text($row, PluginsField::Taking, WireField::Approval, $position),
             );
+
+            $found[] = Required::flag($row, PluginsField::Grouped, PluginsAreUnreadable::entry(PluginsField::Taking, PluginsField::Grouped, $position))
+                ? $taken->joiningTheDevicesGroup()
+                : $taken;
         }
 
         return $found;

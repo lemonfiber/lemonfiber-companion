@@ -34,6 +34,7 @@ final readonly class AFill
         private string $why,
         private string $agreement,
         private bool $made,
+        private WhatBecameOfTheMovesInPlace $guards,
     ) {}
 
     /**
@@ -44,16 +45,28 @@ final readonly class AFill
      */
     public static function read(Capability $capability, ServiceId $now, Services $was, Services $askedBy, WhatTheChoiceLeaves $leaves, string $why, string $agreement): self
     {
-        return new self($capability, $now, $was, $askedBy, $leaves, $why, self::named($agreement), made: false);
+        return new self($capability, $now, $was, $askedBy, $leaves, $why, self::named($agreement), made: false, guards: WhatBecameOfTheMovesInPlace::none());
     }
 
     /** A choice the stack worked out and made, with the reason it recorded. */
     public static function made(Capability $capability, ServiceId $now, Services $was, Services $askedBy, WhatTheChoiceLeaves $leaves, string $why, string $agreement): self
     {
-        return new self($capability, $now, $was, $askedBy, $leaves, $why, self::named($agreement), made: true);
+        return new self($capability, $now, $was, $askedBy, $leaves, $why, self::named($agreement), made: true, guards: WhatBecameOfTheMovesInPlace::none());
     }
 
     /** The capability being filled. */
+    public function guarding(WhatBecameOfTheMovesInPlace $guards): self
+    {
+        return new self($this->capability, $this->now, $this->was, $this->askedBy, $this->leaves, $this->why, $this->agreement, $this->made, $guards);
+    }
+
+    /** Each of lemonfiber's own guards it moved, or would move, or could not. */
+    public function guards(): WhatBecameOfTheMovesInPlace
+    {
+        return $this->guards;
+    }
+
+    /** The capability it is about. */
     public function capability(): Capability
     {
         return $this->capability;

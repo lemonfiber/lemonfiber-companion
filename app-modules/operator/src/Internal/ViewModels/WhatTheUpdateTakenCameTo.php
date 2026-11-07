@@ -12,11 +12,13 @@ final readonly class WhatTheUpdateTakenCameTo
      * @param int                            $didNotArrive       how many of those are not where the operator wanted them
      * @param bool                           $anythingUnanswered whether the stack cannot say what some are doing
      * @param list<AMoveInPlaceAsShown>      $moved              what became of each move in place it tried
+     * @param list<AMoveInPlaceAsShown>      $guards             each of lemonfiber's own guards it moved or could not
      */
     public function __construct(
         public array $applied,
         public int $didNotArrive,
         public bool $anythingUnanswered,
         public array $moved,
+        public array $guards = [],
     ) {}
 }

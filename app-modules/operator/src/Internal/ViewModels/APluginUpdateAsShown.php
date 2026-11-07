@@ -20,6 +20,7 @@ final readonly class APluginUpdateAsShown
      * @param string                  $stopped        what stopped the new version before its proofs were asked, or empty
      * @param ?string                  $restoredSaid   the catalogue key for what putting the old version back came to, or empty where nothing was
      * @param string                  $restoredVersion the version put back, or empty
+     * @param list<AFileReshippedAsShown> $reshipped  each starting file whose placeholders the new version changes
      */
     public function __construct(
         public bool $isAReading,
@@ -32,5 +33,6 @@ final readonly class APluginUpdateAsShown
         public string $stopped,
         public ?string $restoredSaid,
         public string $restoredVersion,
+        public array $reshipped = [],
     ) {}
 }

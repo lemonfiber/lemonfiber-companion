@@ -71,6 +71,7 @@ final readonly class HowTheLastUpdateReads
                 didNotArrive: $report->howItWent()->thatDidNotArrive()->count(),
                 anythingUnanswered: $report->howItWent()->anythingUnanswered(),
                 moved: new HowAMoveInPlaceReads()->tried($report->whatBecameOfTheMoves()),
+                guards: new HowAMoveInPlaceReads()->guards($report->guards()),
             ),
         );
     }

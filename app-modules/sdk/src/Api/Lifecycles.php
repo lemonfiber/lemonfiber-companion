@@ -5,18 +5,23 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use function array_key_exists;
+use function count;
 use function is_array;
 use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\LifecycleEnvelope;
+use Modules\Kernel\Api\AnInstallAStartOffers;
 use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\APortHeld;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowTheStackIsRunning;
+use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\TheCommandLine;
+use Modules\Kernel\Api\TheInstallsAStartOffers;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
+use Modules\Kernel\Api\WhatElseAVerbSaid;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
 use Modules\Kernel\Api\WhereAServiceEndedUp;
 use Modules\Kernel\Api\WhereTheServicesEndedUp;
@@ -66,13 +71,83 @@ final readonly class Lifecycles
         $portsHeld = ThePortsHeld::of(...self::portsHeld($data));
         $edits = StackEditsSent::in($data, WireField::StackEdits);
 
-        $report = self::carries($data, WireField::Held)
-            ? WhatTheVerbCameTo::declined($was, $services, $leftOut, $portsHeld, Required::text($data, WireField::Held, LifecycleIsUnreadable::missing(WireField::Held)), $edits)
-            : WhatTheVerbCameTo::reported($was, $services, $leftOut, $portsHeld, $edits, self::command($data));
+        $else = self::elseSaid($data);
+
+        $report = match (true) {
+            self::carries($data, WireField::Held) => WhatTheVerbCameTo::declined($was, $services, $leftOut, $portsHeld, Required::text($data, WireField::Held, LifecycleIsUnreadable::missing(WireField::Held)), $edits),
+            count($else->installs()) > 0 && self::ranNothing($data) => WhatTheVerbCameTo::unstarted($was, $services, $leftOut, $portsHeld, $edits),
+            default => WhatTheVerbCameTo::reported($was, $services, $leftOut, $portsHeld, $edits, self::command($data)),
+        };
 
         return self::condition($data, $report)
             ->offering(AnOffer::named(Optional::text($data, WireField::Offer, LifecycleIsUnreadable::missing(WireField::Offer))))
-            ->naming(MovesInPlaceSent::offered($data, LifecycleIsUnreadable::missing(WireField::Moves)));
+            ->naming(MovesInPlaceSent::offered($data, LifecycleIsUnreadable::missing(WireField::Moves)))
+            ->saying($else);
+    }
+
+    /**
+     * What the report says beside the verb.
+     *
+     * @param array<mixed> $data
+     */
+    private static function elseSaid(array $data): WhatElseAVerbSaid
+    {
+        $unrendered = [];
+
+        foreach (self::listedOrNone($data, LifecycleField::Unrendered) as $position => $service) {
+            $unrendered[] = is_string($service) && Required::isText($service) ? $service : throw LifecycleIsUnreadable::entry(LifecycleField::Unrendered, $position);
+        }
+
+        return WhatElseAVerbSaid::these(
+            MovesInPlaceSent::guards($data, LifecycleIsUnreadable::missing(WireField::Guards)),
+            TheInstallsAStartOffers::these(...self::installs($data)),
+            PluginLines::under(LifecycleField::Unrendered->value, ...$unrendered),
+            Optional::text($data, LifecycleField::Rendering, LifecycleIsUnreadable::missing(LifecycleField::Rendering)),
+        );
+    }
+
+    /**
+     * Each part a start offers to install.
+     *
+     * @param  array<mixed>                $data
+     * @return list<AnInstallAStartOffers>
+     */
+    private static function installs(array $data): array
+    {
+        $found = [];
+
+        foreach (self::listedOrNone($data, LifecycleField::Installing) as $position => $row) {
+            $refused = LifecycleIsUnreadable::entry(LifecycleField::Installing, $position);
+
+            if (! is_array($row)) {
+                throw $refused;
+            }
+
+            $found[] = AnInstallAStartOffers::of(Required::text($row, WireField::Plugin, $refused), Optional::text($row, WireField::Why, $refused));
+        }
+
+        return $found;
+    }
+
+    /**
+     * A list the stack may leave out, which is none.
+     *
+     * @param  array<mixed> $data
+     * @return list<mixed>
+     */
+    private static function listedOrNone(array $data, NamesAWireField $list): array
+    {
+        return self::carries($data, $list) ? InTheOrderSent::rows(Required::rows($data, $list, LifecycleIsUnreadable::missing($list))) : [];
+    }
+
+    /**
+     * Whether the report names no command, which only a start that wrote and started nothing does.
+     *
+     * @param array<mixed> $data
+     */
+    private static function ranNothing(array $data): bool
+    {
+        return Required::rows($data, WireField::Command, LifecycleIsUnreadable::missing(WireField::Command)) === [];
     }
 
     /**

@@ -48,6 +48,13 @@ return [
     'no_history' => 'De stack noemde geen releases.',
     'delivers_unsaid' => 'De stack heeft niet gezegd wat deze verandert',
 
+    'guards' => [
+        'heading' => 'De eigen bewakers van lemonfiber',
+        'no_yes' => 'Zo\'n verplaatsing vraagt geen eigen ja en wordt niet ongedaan gemaakt.',
+        'moved' => ':plugin draait nu voorgoed in plaats van :service',
+        'would_move' => ':plugin zou voorgoed de plaats van :service innemen',
+        'on_offer' => ':plugin kon de plaats van :service niet innemen; dat blijft aangeboden',
+    ],
     'moves' => [
         'heading' => 'Op zijn plaats overzetten',
         'would_take' => ':plugin neemt de plaats in van :service, met behoud van de gegevens en instellingen',

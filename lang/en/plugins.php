@@ -81,6 +81,19 @@ return [
     ],
     'granted' => 'Granted :grant',
     'given' => 'Given :device',
+    'joins_devices_group' => 'Added to the group that owns those devices on the machine running the stack',
+    'placeholder' => 'Names the secret :secret, written :form, never its value here',
+    'placeholder_form' => [
+        'plain' => 'as it is',
+        'pbkdf2' => 'as a hash, so the value cannot be read back from it',
+    ],
+    'reshipped' => [
+        'heading' => 'Starting files the new version changes',
+        'left_as_it_is' => 'The file on the machine is left as it is. This is what it was seeded from, set against what the new version would seed it from.',
+        'was' => 'As the installed version shipped it',
+        'becomes' => 'As the new version ships it',
+        'no_placeholders' => 'It names no secret',
+    ],
     'approve_shape' => 'Allow :service to take this',
     'shape_unapproved' => ':service was not allowed to take what it needs',
     'shape' => [
@@ -215,6 +228,7 @@ return [
         'read_by' => ':service reads it as :variable',
         'read_by_default' => ':service reads it as :variable, :default by default',
         'read_by_none' => 'No service reads it',
+        'captured' => 'One of this plugin\'s recipes captures its value',
         'own_of' => 'Every setting and secret no installed plugin reads: lemonfiber\'s own, and those of what no plugin brought',
         'own_no_settings' => 'It holds no setting here',
         'own_no_secrets' => 'It holds no secret here',

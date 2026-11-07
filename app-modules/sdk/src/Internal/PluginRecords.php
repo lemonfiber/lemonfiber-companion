@@ -65,7 +65,9 @@ final readonly class PluginRecords
             ...self::services($row),
         );
 
-        return $plugin->holding(TheCredentialGrants::of(...GrantRows::onTheRecord($row, APluginId::called($plugin->id()))));
+        return $plugin
+            ->holding(TheCredentialGrants::of(...GrantRows::onTheRecord($row, APluginId::called($plugin->id()))))
+            ->capturing(SecretsCaptured::by($row, $plugin->id()));
     }
 
     /**

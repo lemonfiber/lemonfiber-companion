@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Sdk\Tests\Api;
 
 use function expect;
+use function is_array;
 use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
@@ -65,4 +66,14 @@ it('reads what stays behind with the part a choice stops, in the stack\'s order 
 
     expect($read)->toBe(['media-server|the accounts Jellyfin holds', 'media-server|what each member watched'])
         ->and(Substitutions::fillIn(aChoiceSaying([]))->behind()->count())->toBe(0);
+});
+
+it('reads each guard a choice moved, beside the choice', function (): void {
+    $envelope = aChoiceSaying([]);
+    $data = $envelope->data;
+    $data = is_array($data) ? $data : [];
+    $moved = new Envelope(1, 'substitution', [...$data, 'guards' => [['service' => 'decline', 'plugin' => 'plugin-decline', 'taken' => true]]]);
+
+    expect(Substitutions::fillIn($moved)->guards())->toHaveCount(1)
+        ->and(Substitutions::fillIn($envelope)->guards())->toHaveCount(0);
 });

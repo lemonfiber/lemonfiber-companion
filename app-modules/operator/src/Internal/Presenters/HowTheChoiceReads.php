@@ -31,7 +31,7 @@ final readonly class HowTheChoiceReads
     /** The stack worked the choice out, and nothing is written until the operator agrees. */
     public function read(AFill $fill): TheChoiceTurnedOutToBe
     {
-        return new TheChoiceTurnedOutToBe(HowTheReadingWent::itCameBack(), reading: $this->reading($fill));
+        return new TheChoiceTurnedOutToBe(HowTheReadingWent::itCameBack(), reading: $this->reading($fill), guards: new HowAMoveInPlaceReads()->guards($fill->guards()));
     }
 
     /** The stack made the choice. */
@@ -40,6 +40,7 @@ final readonly class HowTheChoiceReads
         return new TheChoiceTurnedOutToBe(
             HowTheReadingWent::itCameBack(),
             said: new ALineToSay('stacks.wiring.fills.made', ['service' => $fill->now()->named(), 'capability' => $fill->capability()->named()]),
+            guards: new HowAMoveInPlaceReads()->guards($fill->guards()),
         );
     }
 

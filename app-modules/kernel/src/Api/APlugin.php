@@ -24,6 +24,7 @@ final readonly class APlugin
         private TheRecipes $recipes,
         private Services $services,
         private TheCredentialGrants $grants,
+        private PluginLines $captured,
     ) {}
 
     /** The plugin, with each service it placed; a blank id or version is refused. */
@@ -35,7 +36,7 @@ final readonly class APlugin
             }
         }
 
-        return new self($id, $version, trim($name), $vouched, $recipes, Services::these(...$services), TheCredentialGrants::of());
+        return new self($id, $version, trim($name), $vouched, $recipes, Services::these(...$services), TheCredentialGrants::of(), PluginLines::none());
     }
 
     /** The name it is installed under. */
@@ -77,7 +78,19 @@ final readonly class APlugin
     /** The same plugin, holding these grants of credentials of other services. */
     public function holding(TheCredentialGrants $grants): self
     {
-        return new self($this->id, $this->version, $this->name, $this->vouched, $this->recipes, $this->services, $grants);
+        return new self($this->id, $this->version, $this->name, $this->vouched, $this->recipes, $this->services, $grants, $this->captured);
+    }
+
+    /** The same plugin, one of whose recipes captures each of these secrets, by the name the stack's store keeps it under. */
+    public function capturing(PluginLines $secrets): self
+    {
+        return new self($this->id, $this->version, $this->name, $this->vouched, $this->recipes, $this->services, $this->grants, $secrets);
+    }
+
+    /** Each secret one of its recipes captures, by the name the stack's store keeps it under. */
+    public function captures(): PluginLines
+    {
+        return $this->captured;
     }
 
     /** Every credential of another service the operator granted it, as a third-party plugin. */

@@ -511,3 +511,8 @@ it('refuses a list of moves in place it cannot read', function (string $field, m
     'moved, a move that does not say whether it was taken' => ['moved', [['service' => 'jellyfin', 'plugin' => 'plugin-jellyfin']]],
     'moved, a reason that is not text' => ['moved', [['service' => 'jellyfin', 'plugin' => 'plugin-jellyfin', 'taken' => false, 'why' => 7]]],
 ]);
+
+it('reads each guard an update moved, and none where the stack sent none', function (): void {
+    expect(Standings::in(anUpkeepSaying(whatAStackSaysAboutItsUpkeep(differently: ['guards' => [['service' => 'decline', 'plugin' => 'plugin-decline', 'taken' => true]]])))->guards())->toHaveCount(1)
+        ->and(Standings::in(anUpkeepSaying(whatAStackSaysAboutItsUpkeep()))->guards())->toHaveCount(0);
+});

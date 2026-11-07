@@ -25,6 +25,7 @@ final readonly class WhatExtendsItTurnedOutToBe
      * @param APluginRemovalAsShown|null $removal   a removal's account, where the answer is about one
      * @param APluginReproofAsShown|null $proof     what proving a plugin again would ask or came to, where the answer is about that
      * @param ARecipeRunAsShown|null     $run       what running a demand recipe would do or came to, where the answer is about that
+     * @param list<AMoveInPlaceAsShown>  $guards    each of lemonfiber's own guards the act moved, would move or could not
      */
     public function __construct(
         public WhereTheWorkStands $stands,
@@ -36,5 +37,6 @@ final readonly class WhatExtendsItTurnedOutToBe
         public ?APluginRemovalAsShown $removal = null,
         public ?APluginReproofAsShown $proof = null,
         public ?ARecipeRunAsShown $run = null,
+        public array $guards = [],
     ) {}
 }

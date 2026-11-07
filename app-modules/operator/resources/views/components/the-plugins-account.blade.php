@@ -11,6 +11,11 @@
         <x-operator::entry>
             <x-design::body>{{ $change->path }}</x-design::body>
             <x-operator::note>{{ __($change->putsSaid) }}</x-operator::note>
+            @forelse ($change->placeholders as $placeholder)
+                <x-operator::note>{{ __('plugins.placeholder', ['secret' => $placeholder->secret, 'form' => __($placeholder->formSaid)]) }}</x-operator::note>
+            @empty
+                {{-- Only a starting file names a secret. --}}
+            @endforelse
         </x-operator::entry>
     @empty
         <x-operator::note>{{ __('plugins.no_changes') }}</x-operator::note>
@@ -64,6 +69,9 @@
             @empty
                 {{-- Given no device beyond every plugin's entry. --}}
             @endforelse
+            @if ($shape->joinsTheDevicesGroup)
+                <x-operator::note>{{ __('plugins.joins_devices_group') }}</x-operator::note>
+            @endif
             @if ($shape->switch !== null && $install->agreeable)
                 <x-design::toggle :label="__('plugins.approve_shape', ['service' => $shape->service])" :on="$shape->switch->on" :tap="$tapping('approve', $shape->switch->place)" />
             @endif

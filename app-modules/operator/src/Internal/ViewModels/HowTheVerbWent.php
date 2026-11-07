@@ -25,6 +25,10 @@ final readonly class HowTheVerbWent
      * @param list<APortHeldAsShown>       $portsHeld               the ports it wanted that something else holds, each naming what holds it
      * @param list<AnEditAsShown>          $editsKept               the stack files the operator edited, which it left as they set them
      * @param list<AMoveInPlaceAsShown>    $movesOnOffer            the moves in place on offer, which the verb did not take
+     * @param list<AMoveInPlaceAsShown>    $guards                  each of lemonfiber's own guards it moved, would move or could not
+     * @param list<AnInstallOfferedAsShown> $installs               each part a start offers to install, which nobody has said yes to
+     * @param list<string>                 $withoutRender           each service it wrote without the host's render devices, in the stack's words
+     * @param string                       $whyNoRender             why the group owning those devices was not asked or not kept, or empty
      * @param ?string                      $commandSaid             the catalogue key for the command, in the tense the report allows, or null where nothing ran
      * @param string                       $command                 the command line the stack ran, or would run, as somebody would type it
      */
@@ -41,6 +45,10 @@ final readonly class HowTheVerbWent
         public array $portsHeld,
         public array $editsKept,
         public array $movesOnOffer,
+        public array $guards,
+        public array $installs,
+        public array $withoutRender,
+        public string $whyNoRender,
         public ?string $commandSaid,
         public string $command,
     ) {}

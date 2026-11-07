@@ -203,10 +203,6 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'Every destination outside the plugin\'s own services a recipe could reach. Each recipe\'s steps and pairs are read and drawn with their destinations (`N20-R1`, `N20-R5`), which say the same with what goes there.',
         ],
         [
-            'path' => 'PluginsEnvelope.install.would.declared.secrets',
-            'because' => 'Every credential the plugin says it will hold, with no value. No requirement asks an install\'s rehearsal to list them, and once the plugin is installed its screen lists each from the settings read with whether a value is held and where it came from (`N25-R13`).',
-        ],
-        [
             'path' => 'PluginsEnvelope.install.would.description',
             'because' => 'What the plugin does, in its author\'s words. No requirement asks for it here, and its name and version say which plugin it is.',
         ],
@@ -237,10 +233,6 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.installed[].declared.reaches',
             'because' => 'Every destination outside the plugin\'s own services a recipe could reach. Each recipe\'s steps and pairs are read and drawn with their destinations (`N20-R1`, `N20-R5`), which say the same with what goes there.',
-        ],
-        [
-            'path' => 'PluginsEnvelope.installed[].declared.secrets',
-            'because' => 'Every credential the installed plugin says it holds, with no value. `N25-R13` asks for each secret on the plugin with whether a value is held and where it came from, which this list does not carry; the plugin\'s screen lists them from the settings read, which does.',
         ],
         [
             'path' => 'PluginsEnvelope.installed[].description',
@@ -397,10 +389,6 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.update.install.would.declared.reaches',
             'because' => 'As `PluginsEnvelope.install.would.declared.reaches`: an update carries the new version\'s install account whole, and the one reader reads both.',
-        ],
-        [
-            'path' => 'PluginsEnvelope.update.install.would.declared.secrets',
-            'because' => 'As `PluginsEnvelope.install.would.declared.secrets`: an update carries the new version\'s install account whole, and the one reader reads both.',
         ],
         [
             'path' => 'PluginsEnvelope.update.install.would.description',
@@ -811,28 +799,100 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'Whether the value an input asks for is a secret. The app takes no value a recipe asks for, secret or not (`N25-R20`): it names what the input asks for and says the recipe is run at the web console or the terminal, which reads the same either way.',
         ],
         [
-            'path' => 'PluginsEnvelope.guards',
-            'because' => 'As `LifecycleEnvelope.guards`: a guard moved for good takes no yes of its own, and no requirement asks the phone to draw it (`N1-R17`).',
+            'path' => 'PluginsEnvelope.installed[].declared.secrets[].for',
+            'because' => 'The capability a crossing secret is needed to fill. `N25-R35` reads `captured` here; `N25-R13` lists each secret from the settings read, and no requirement asks for this (`N1-R17`).',
         ],
         [
-            'path' => 'PluginsEnvelope.install.changes[].placeholders',
-            'because' => 'Each placeholder a starting file names a secret by, never a value. Every change is drawn with its full path (`N25-R1`); no requirement asks for the secrets a starting file names (`N1-R17`).',
+            'path' => 'PluginsEnvelope.installed[].declared.secrets[].lapses_s',
+            'because' => 'How long a claim code holds. `N25-R35` reads `captured` here; `N25-R13` lists each secret from the settings read, and no requirement asks for this (`N1-R17`).',
         ],
         [
-            'path' => 'PluginsEnvelope.update.install.changes[].placeholders',
-            'because' => 'As `PluginsEnvelope.install.changes[].placeholders`: an update carries the new version\'s install account whole, and the one reader reads both.',
+            'path' => 'PluginsEnvelope.installed[].declared.secrets[].minted',
+            'because' => 'Whether lemonfiber made the value. `N25-R35` reads `captured` here; `N25-R13` lists each secret from the settings read, and no requirement asks for this (`N1-R17`).',
         ],
         [
-            'path' => 'PluginsEnvelope.install.taking[].grouped',
-            'because' => 'Whether a service taking a privileged shape is added to the group owning its devices on the engine\'s host. `N25-R11` asks for the capabilities and devices, which are read; it does not ask for the group (`N1-R17`).',
+            'path' => 'PluginsEnvelope.installed[].declared.secrets[].needed_to_start',
+            'because' => 'Whether only the operator holds it. `N25-R35` reads `captured` here; `N25-R13` lists each secret from the settings read, and no requirement asks for this (`N1-R17`).',
         ],
         [
-            'path' => 'PluginsEnvelope.update.install.taking[].grouped',
-            'because' => 'As `PluginsEnvelope.install.taking[].grouped`: an update carries the new version\'s install account whole, and the one reader reads both.',
+            'path' => 'PluginsEnvelope.installed[].declared.secrets[].needs',
+            'because' => 'The settings under which it is asked for. `N25-R35` reads `captured` here; `N25-R13` lists each secret from the settings read, and no requirement asks for this (`N1-R17`).',
         ],
         [
-            'path' => 'PluginsEnvelope.update.reshipped',
-            'because' => 'Each starting file whose placeholders the new version changes. The file on the machine is left as it is, and no requirement asks the phone to draw it (`N1-R17`).',
+            'path' => 'PluginsEnvelope.installed[].declared.secrets[].of',
+            'because' => 'Whose credential it is. `N25-R35` reads `captured` here; `N25-R13` lists each secret from the settings read, and no requirement asks for this (`N1-R17`).',
+        ],
+        [
+            'path' => 'PluginsEnvelope.installed[].declared.secrets[].was',
+            'because' => 'The variable an earlier release kept it under. `N25-R35` reads `captured` here; `N25-R13` lists each secret from the settings read, and no requirement asks for this (`N1-R17`).',
+        ],
+        [
+            'path' => 'PluginsEnvelope.installed[].declared.secrets[].why',
+            'because' => 'What holding it is for. `N25-R35` reads `captured` here; `N25-R13` lists each secret from the settings read, and no requirement asks for this (`N1-R17`).',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.would.declared.secrets[].for',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].for`: an install\'s rehearsal lists no secret from here.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.would.declared.secrets[].lapses_s',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].lapses_s`: an install\'s rehearsal lists no secret from here.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.would.declared.secrets[].minted',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].minted`: an install\'s rehearsal lists no secret from here.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.would.declared.secrets[].needed_to_start',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].needed_to_start`: an install\'s rehearsal lists no secret from here.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.would.declared.secrets[].needs',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].needs`: an install\'s rehearsal lists no secret from here.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.would.declared.secrets[].of',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].of`: an install\'s rehearsal lists no secret from here.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.would.declared.secrets[].was',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].was`: an install\'s rehearsal lists no secret from here.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.would.declared.secrets[].why',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].why`: an install\'s rehearsal lists no secret from here.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.declared.secrets[].for',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].for`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.declared.secrets[].lapses_s',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].lapses_s`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.declared.secrets[].minted',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].minted`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.declared.secrets[].needed_to_start',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].needed_to_start`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.declared.secrets[].needs',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].needs`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.declared.secrets[].of',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].of`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.declared.secrets[].was',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].was`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.declared.secrets[].why',
+            'because' => 'As `PluginsEnvelope.installed[].declared.secrets[].why`: an update carries the new version\'s install account whole, and the one reader reads both.',
         ],
     ];
 }

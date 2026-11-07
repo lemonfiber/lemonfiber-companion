@@ -426,6 +426,14 @@ return [
     // came to, from the stack's own report of it. A start or a restart that
     // did not bring everything back is never said as done, and what did not
     // come back is named.
+    'installs' => [
+        'heading' => 'What a start would install',
+        'at_the_terminal' => 'A start that installs something is agreed at the terminal.',
+        'would_install' => 'It would install :plugin from this build',
+    ],
+    'render' => [
+        'heading' => 'Running without hardware transcoding',
+    ],
     'came_to' => [
         'heading' => 'What the last request here came to',
         'running' => 'The stack is carrying it out.',
@@ -433,6 +441,7 @@ return [
         'a_rehearsal' => 'A rehearsal: nothing has been started or stopped',
         'rehearsed' => 'This is what the stack says it would have done.',
         'declined' => 'The stack declined to start anything: :why',
+        'unstarted' => 'Nothing was written or started: starting this installs what is listed here, and nobody has agreed to it.',
         'everything_back' => 'Everything it was to bring up is running.',
         'not_everything_back' => 'It did not bring everything back.',
         'stopped' => 'The stack carried out the stop.',

@@ -728,6 +728,12 @@ enum WireField: string implements NamesAWireField
     /** The moves in place on offer, named by a start and taken by a confirmed update. */
     case Moves = 'moves';
 
+    /** Every secret a service's environment names, never with its value; and every secret a plugin declares. */
+    case Secrets = 'secrets';
+
+    /** Each of lemonfiber's own guards an act moved onto its plugin, or on a rehearsal would move. */
+    case Guards = 'guards';
+
     /** A plugin's id: the name it is installed under, and the plugin a move in place puts in a service's place. */
     case Plugin = 'plugin';
 

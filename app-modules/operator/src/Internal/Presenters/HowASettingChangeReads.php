@@ -78,6 +78,7 @@ final readonly class HowASettingChangeReads
                 starts: $this->listed($report->reaches()->starts()),
                 waiting: new HowAServiceWaitingReads()->these($report->reaches()->leavesWaiting()),
                 unrestarted: $report->reaches()->unrestarted(),
+                guards: new HowAMoveInPlaceReads()->guards($report->guards()),
             ),
         );
     }

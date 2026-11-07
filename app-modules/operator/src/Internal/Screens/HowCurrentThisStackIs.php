@@ -25,8 +25,8 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\AgoAsShown;
 use Modules\Operator\Internal\Presenters\HowAMoveInPlaceReads;
 use Modules\Operator\Internal\Presenters\HowUpkeepReads;
-use Modules\Operator\Internal\ViewModels\AMoveInPlaceAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
+use Modules\Operator\Internal\ViewModels\WhatTheUpdateWouldMove;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
@@ -227,15 +227,16 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     }
 
     /**
-     * The moves in place the pending question would take.
-     *
-     * @return list<AMoveInPlaceAsShown>
+     * The moves in place, and lemonfiber's own guards, the pending question would move.
      */
-    public function wouldMove(): array
+    public function wouldMove(): WhatTheUpdateWouldMove
     {
         return $this->asking instanceof TakingAnUpdate
-            ? new HowAMoveInPlaceReads()->offered($this->asking->movesInPlace(), HowAMoveInPlaceReads::WOULD_TAKE)
-            : [];
+            ? new WhatTheUpdateWouldMove(
+                new HowAMoveInPlaceReads()->offered($this->asking->movesInPlace(), HowAMoveInPlaceReads::WOULD_TAKE),
+                new HowAMoveInPlaceReads()->guards($this->asking->guards()),
+            )
+            : new WhatTheUpdateWouldMove();
     }
 
     /** How many of those the stack said nothing will put back. */

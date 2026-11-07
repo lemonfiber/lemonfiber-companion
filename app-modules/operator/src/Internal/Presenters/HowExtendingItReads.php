@@ -113,6 +113,7 @@ final readonly class HowExtendingItReads
             removal: $account instanceof APluginRemovalAsShown ? $account : null,
             proof: $account instanceof APluginReproofAsShown ? $account : null,
             run: $account instanceof ARecipeRunAsShown ? $account : null,
+            guards: new HowAMoveInPlaceReads()->guards($plugins->guards()),
         );
     }
 

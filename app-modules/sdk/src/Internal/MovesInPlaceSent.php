@@ -65,11 +65,31 @@ final readonly class MovesInPlaceSent
      */
     public static function tried(array $data, InvalidArgumentException $refused): WhatBecameOfTheMovesInPlace
     {
-        if (! self::carries($data, WireField::Moved)) {
+        return self::under($data, WireField::Moved, $refused);
+    }
+
+    /**
+     * What became of each of lemonfiber's own guards an act moved, or on a rehearsal would move, in the stack's order.
+     *
+     * @param array<array-key, mixed> $data
+     */
+    public static function guards(array $data, InvalidArgumentException $refused): WhatBecameOfTheMovesInPlace
+    {
+        return self::under($data, WireField::Guards, $refused);
+    }
+
+    /**
+     * Each move listed under `$field`, as a list of what became of it.
+     *
+     * @param array<array-key, mixed> $data
+     */
+    private static function under(array $data, NamesAWireField $field, InvalidArgumentException $refused): WhatBecameOfTheMovesInPlace
+    {
+        if (! self::carries($data, $field)) {
             return WhatBecameOfTheMovesInPlace::none();
         }
 
-        $listed = $data[WireField::Moved->value];
+        $listed = $data[$field->value];
 
         if (! is_array($listed) || ! array_is_list($listed)) {
             throw $refused;

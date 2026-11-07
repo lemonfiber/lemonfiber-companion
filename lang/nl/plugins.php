@@ -81,6 +81,19 @@ return [
     ],
     'granted' => 'Krijgt :grant',
     'given' => 'Krijgt :device',
+    'joins_devices_group' => 'Wordt toegevoegd aan de groep die eigenaar is van die apparaten op de machine waarop de stack draait',
+    'placeholder' => 'Noemt het geheim :secret, geschreven :form, de waarde nooit hier',
+    'placeholder_form' => [
+        'plain' => 'zoals het is',
+        'pbkdf2' => 'als hash, zodat de waarde er niet uit terug te lezen is',
+    ],
+    'reshipped' => [
+        'heading' => 'Startbestanden die de nieuwe versie verandert',
+        'left_as_it_is' => 'Het bestand op de machine blijft zoals het is. Dit is waaruit het is aangemaakt, naast waaruit de nieuwe versie het zou aanmaken.',
+        'was' => 'Zoals de geïnstalleerde versie het meeleverde',
+        'becomes' => 'Zoals de nieuwe versie het meelevert',
+        'no_placeholders' => 'Het noemt geen geheim',
+    ],
     'approve_shape' => ':service dit laten nemen',
     'shape_unapproved' => ':service mocht niet nemen wat hij nodig heeft',
     'shape' => [
@@ -215,6 +228,7 @@ return [
         'read_by' => ':service leest het als :variable',
         'read_by_default' => ':service leest het als :variable, standaard :default',
         'read_by_none' => 'Geen dienst leest het',
+        'captured' => 'Een recept van deze plug-in vangt de waarde op',
         'own_of' => 'Elke instelling en elk geheim dat geen geïnstalleerde plug-in leest: van lemonfiber zelf, en van wat geen plug-in meebracht',
         'own_no_settings' => 'Het heeft hier geen instelling',
         'own_no_secrets' => 'Het heeft hier geen geheim',

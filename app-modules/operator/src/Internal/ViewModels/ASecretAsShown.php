@@ -13,6 +13,7 @@ final readonly class ASecretAsShown
      * @param string                         $heldSaid  the catalogue key saying whether a value is held
      * @param string                         $fromSaid  the catalogue key saying where its value came from
      * @param list<AServiceReadingItAsShown> $readers   each service that reads it
+     * @param bool                           $captured  whether a recipe of the plugin's captures its value
      */
     public function __construct(
         public string $name,
@@ -20,5 +21,6 @@ final readonly class ASecretAsShown
         public string $heldSaid,
         public string $fromSaid,
         public array $readers,
+        public bool $captured,
     ) {}
 }

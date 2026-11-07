@@ -27,6 +27,7 @@ final readonly class TakingAnUpdate implements AnAction
         private Services $cannotBePutBack,
         private AnOffer $offer,
         private TheMovesInPlace $moves,
+        private WhatBecameOfTheMovesInPlace $guards,
     ) {}
 
     /**
@@ -42,7 +43,7 @@ final readonly class TakingAnUpdate implements AnAction
             throw NothingToTake::from($upkeep->againstThePins());
         }
 
-        return new self($upkeep->changing(), $upkeep->cannotBePutBack(), $upkeep->offer(), $upkeep->movesInPlace());
+        return new self($upkeep->changing(), $upkeep->cannotBePutBack(), $upkeep->offer(), $upkeep->movesInPlace(), $upkeep->guards());
     }
 
     /**
@@ -103,6 +104,12 @@ final readonly class TakingAnUpdate implements AnAction
     public function cannotBePutBack(): Services
     {
         return $this->cannotBePutBack;
+    }
+
+    /** Each of lemonfiber's own guards it would move, carried for the reason {@see changing()} is. */
+    public function guards(): WhatBecameOfTheMovesInPlace
+    {
+        return $this->guards;
     }
 
     /** The moves in place it would take, carried for the reason {@see changing()} is. */

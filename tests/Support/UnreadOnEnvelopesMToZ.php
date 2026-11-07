@@ -723,22 +723,6 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'Each part a choice of filler was to stop or start and could not, with why. Whether the choice was written is `applied`, which is read, and what runs afterwards is what the services listing shows; no requirement asks a choice to name each part (`N1-R17`).',
         ],
         [
-            'path' => 'ResetEnvelope.guards',
-            'because' => 'As `LifecycleEnvelope.guards`: a guard moved for good takes no yes of its own, and no requirement asks the phone to draw it (`N1-R17`).',
-        ],
-        [
-            'path' => 'SettingsEnvelope.guards',
-            'because' => 'As `LifecycleEnvelope.guards`: a guard moved for good takes no yes of its own, and no requirement asks the phone to draw it (`N1-R17`).',
-        ],
-        [
-            'path' => 'SubstitutionEnvelope.guards',
-            'because' => 'As `LifecycleEnvelope.guards`: a guard moved for good takes no yes of its own, and no requirement asks the phone to draw it (`N1-R17`).',
-        ],
-        [
-            'path' => 'UpdateEnvelope.guards',
-            'because' => 'As `LifecycleEnvelope.guards`: a guard moved for good takes no yes of its own, and no requirement asks the phone to draw it (`N1-R17`).',
-        ],
-        [
             'path' => 'SeedEnvelope.wirings[].state.path',
             'because' => 'The file a wiring\'s state names on the machine. The wiring is drawn by what it is and where it stands; the path is on a machine the operator has no filesystem in front of.',
         ],

@@ -20,6 +20,7 @@ final readonly class AShapeTaken
         private PluginLines $grants,
         private PluginLines $devices,
         private string $approval,
+        private bool $joinsTheDevicesGroup = false,
     ) {}
 
     /** The service taking it, the shape, what it is granted and given, and what approving it is written as; a blank service or approval is refused. */
@@ -32,6 +33,18 @@ final readonly class AShapeTaken
         }
 
         return new self($service, $shape, $grants, $devices, $approval);
+    }
+
+    /** The same shape, whose service is added to the group owning its devices on the engine's host. */
+    public function joiningTheDevicesGroup(): self
+    {
+        return new self($this->service, $this->shape, $this->grants, $this->devices, $this->approval, joinsTheDevicesGroup: true);
+    }
+
+    /** Whether its service is added to the group owning its devices on the engine's host. */
+    public function joinsTheDevicesGroup(): bool
+    {
+        return $this->joinsTheDevicesGroup;
     }
 
     /** The service taking it. */

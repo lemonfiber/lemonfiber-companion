@@ -11,11 +11,14 @@ use Modules\Kernel\Api\ACapabilityLeftUnfilled;
 use Modules\Kernel\Api\AChangeAndWhy;
 use Modules\Kernel\Api\AChangePutBack;
 use Modules\Kernel\Api\ACredentialGrant;
+use Modules\Kernel\Api\AFileReshipped;
 use Modules\Kernel\Api\AGrantAsked;
 use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AnAdapterWritingItsUpstream;
 use Modules\Kernel\Api\AnAnswerOutOfContract;
 use Modules\Kernel\Api\AnUpdate;
+use Modules\Kernel\Api\APlaceholder;
+use Modules\Kernel\Api\APlaceholderForm;
 use Modules\Kernel\Api\APlugin;
 use Modules\Kernel\Api\APluginChange;
 use Modules\Kernel\Api\APluginId;
@@ -39,9 +42,11 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\TheAnswersOutOfContract;
 use Modules\Kernel\Api\TheCapabilitiesLeftUnfilled;
 use Modules\Kernel\Api\TheContestsLeft;
+use Modules\Kernel\Api\TheFilesReshipped;
 use Modules\Kernel\Api\TheGrantsAsked;
 use Modules\Kernel\Api\TheInputsARecipeAsks;
 use Modules\Kernel\Api\TheInstalledPlugins;
+use Modules\Kernel\Api\ThePlaceholders;
 use Modules\Kernel\Api\ThePluginChanges;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\ThePluginSources;
@@ -380,7 +385,7 @@ final readonly class APluginAsItArrives
     /** Proving Tdarr again, as this app holds it. */
     public static function theProof(bool $asked = false, bool $cleared = false, ?string $agreement = null): ThePlugins
     {
-        return ThePlugins::aboutAReproof(
+        return ThePlugins::about(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
             $agreement ?? ($asked ? '' : self::AGREEMENT),
@@ -446,7 +451,7 @@ final readonly class APluginAsItArrives
     /** The reading, as this app holds it. */
     public static function theReading(string $agreement = self::AGREEMENT): ThePlugins
     {
-        return ThePlugins::aboutAnInstall(
+        return ThePlugins::about(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
             $agreement,
@@ -457,7 +462,7 @@ final readonly class APluginAsItArrives
     /** The reading asking to hand Tdarr Plex's token, as this app holds it. */
     public static function theGrantingReading(): ThePlugins
     {
-        return ThePlugins::aboutAnInstall(
+        return ThePlugins::about(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
             self::AGREEMENT,
@@ -489,7 +494,7 @@ final readonly class APluginAsItArrives
     /** The reading with Tdarr's adapter writing Tdarr's own files, as this app holds it. */
     public static function theSharingReading(): ThePlugins
     {
-        return ThePlugins::aboutAnInstall(TheInstalledPlugins::these(self::held()), ThePluginSources::these(), self::AGREEMENT, self::theSharingInstall());
+        return ThePlugins::about(TheInstalledPlugins::these(self::held()), ThePluginSources::these(), self::AGREEMENT, self::theSharingInstall());
     }
 
     /** The update's reading, its new version's adapter writing Tdarr's own files, as this app holds it. */
@@ -498,10 +503,51 @@ final readonly class APluginAsItArrives
         return self::anUpdate(self::theSharingInstall(), self::wentBack(WhetherItWasRehearsed::Rehearsed), '', WhatPuttingTheOldVersionBackCameTo::notNeeded());
     }
 
+    /** The reading whose starting file names a secret, its service joining its devices' group, as this app holds it. */
+    public static function theStartingFileReading(): ThePlugins
+    {
+        return ThePlugins::about(
+            TheInstalledPlugins::these(self::held()),
+            ThePluginSources::these(),
+            self::AGREEMENT,
+            APluginInstall::reported(
+                self::held(),
+                recorded: false,
+                changing: WhatAnInstallChanges::these(
+                    ThePluginChanges::these(APluginChange::at('/srv/lemonfiber/config.xml', WhatAChangePuts::Starting)->naming(ThePlaceholders::these(APlaceholder::naming('api_key', APlaceholderForm::Pbkdf2)))),
+                    self::contests(),
+                    self::overrides(),
+                    TheShapesTaken::these(AShapeTaken::by('tdarr', APrivilegedShape::Render, PluginLines::none(), PluginLines::under('devices', '/dev/dri'), 'render@tdarr')->joiningTheDevicesGroup()),
+                    TheGrantsAsked::these(),
+                    TheUpstreamsWritten::these(),
+                    TheServicesWaiting::none(),
+                ),
+                proofs: TheProofs::these(self::proof(WhatAProofCameTo::notAsked())),
+                checks: WhatTheChecksMade::notAsked(),
+            ),
+        );
+    }
+
+    /** The update's reading, naming a starting file whose placeholders the new version changes, as this app holds it. */
+    public static function theReshippedUpdateReading(): ThePlugins
+    {
+        return ThePlugins::about(
+            TheInstalledPlugins::these(self::held()),
+            ThePluginSources::these(),
+            self::AGREEMENT,
+            AnUpdate::reported('tdarr', TheVersionsItMovesBetween::of('2.1.0', '2.2.0'), PluginLines::under('interrupts', 'tdarr'), self::theSharingInstall(), self::wentBack(WhetherItWasRehearsed::Rehearsed), '', WhatPuttingTheOldVersionBackCameTo::notNeeded())
+                ->reshipping(TheFilesReshipped::these(AFileReshipped::at(
+                    '/srv/lemonfiber/config.xml',
+                    ThePlaceholders::these(APlaceholder::naming('api_key', APlaceholderForm::Plain)),
+                    ThePlaceholders::these(),
+                ))),
+        );
+    }
+
     /** The reading with one service taking the egress guard's shape, as this app holds it. */
     public static function theGuardedReading(): ThePlugins
     {
-        return ThePlugins::aboutAnInstall(
+        return ThePlugins::about(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
             self::AGREEMENT,
@@ -536,7 +582,7 @@ final readonly class APluginAsItArrives
     /** The install that went back, as this app holds it. */
     public static function thePutBack(): ThePlugins
     {
-        return ThePlugins::aboutAnInstall(
+        return ThePlugins::about(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
             self::AGREEMENT,
@@ -560,7 +606,7 @@ final readonly class APluginAsItArrives
     /** The reading with Tdarr held back, as this app holds it. */
     public static function theWaitingReading(): ThePlugins
     {
-        return ThePlugins::aboutAnInstall(
+        return ThePlugins::about(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
             self::AGREEMENT,
@@ -593,7 +639,7 @@ final readonly class APluginAsItArrives
     /** The install that held, its egress guard restarted to take up its credential, as this app holds it. */
     public static function theSecuredInstall(): ThePlugins
     {
-        return ThePlugins::aboutAnInstall(
+        return ThePlugins::about(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
             self::AGREEMENT,
@@ -611,7 +657,7 @@ final readonly class APluginAsItArrives
     /** The install that held, as this app holds it. */
     public static function theInstall(): ThePlugins
     {
-        return ThePlugins::aboutAnInstall(
+        return ThePlugins::about(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
             self::AGREEMENT,
@@ -639,7 +685,7 @@ final readonly class APluginAsItArrives
 
     private static function anUpdate(APluginInstall $install, ARunPutBack $wentBack, string $stopped, WhatPuttingTheOldVersionBackCameTo $restored, string $agreement = self::AGREEMENT): ThePlugins
     {
-        return ThePlugins::aboutAnUpdate(
+        return ThePlugins::about(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
             $agreement,
@@ -649,7 +695,7 @@ final readonly class APluginAsItArrives
 
     private static function aRemoval(ARunPutBack $wentBack, bool $removed, string $agreement = self::AGREEMENT): ThePlugins
     {
-        return ThePlugins::aboutAPluginRemoval(
+        return ThePlugins::about(
             TheInstalledPlugins::these(self::held()),
             ThePluginSources::these(),
             $agreement,
