@@ -111,4 +111,10 @@ final readonly class AgreedTo
     {
         return $this->about instanceof Form;
     }
+
+    /** Whether this is a start of a whole form, the one start a yes to the installs it names can carry. */
+    public function startsAForm(): bool
+    {
+        return $this->doing === WhatToDoWithIt::Start && $this->isAboutAForm();
+    }
 }

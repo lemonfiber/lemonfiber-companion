@@ -199,7 +199,9 @@ final readonly class Supervisors implements Supervising
      *
      * A form travels under `forms` and a service under `services`: a form's
      * name sent as a service's would stop nothing and report that it had. A
-     * fetch is only ever about a form, which {@see AgreedTo} holds to.
+     * fetch is only ever about a form, which {@see AgreedTo} holds to. A start
+     * carries back the offer of the installs it named only about a form: the
+     * stack refuses an offer beside named services.
      */
     private function action(AgreedTo $agreed): UpAction|DownAction|RestartAction|PullAction
     {
@@ -207,7 +209,7 @@ final readonly class Supervisors implements Supervising
         $services = $agreed->isAboutAForm() ? [] : [$agreed->named()];
 
         return match ($agreed->doing()) {
-            WhatToDoWithIt::Start => new UpAction(forms: $forms, services: $services),
+            WhatToDoWithIt::Start => new UpAction(forms: $forms, services: $services, offer: $agreed->isAboutAForm() ? Quoted::offer($agreed->offer()) : null),
             WhatToDoWithIt::Stop => new DownAction(forms: $forms, services: $services),
             WhatToDoWithIt::Restart => new RestartAction(forms: $forms, services: $services, offer: Quoted::offer($agreed->offer())),
             WhatToDoWithIt::Pull => new PullAction(forms: $forms),

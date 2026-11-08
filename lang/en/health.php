@@ -428,7 +428,10 @@ return [
     // come back is named.
     'installs' => [
         'heading' => 'What a start would install',
-        'at_the_terminal' => 'A start that installs something is agreed at the terminal.',
+        'by_its_form' => 'A start of one service installs nothing. Start its form to agree to these, or start it at the terminal.',
+        'unreadable' => 'Nothing can be installed while one of these could not be read. Each says why.',
+        'offline' => 'Each is installed from this build, offline, and then the form starts.',
+        'install_and_start' => 'Install and start',
         'would_install' => 'It would install :plugin from this build',
     ],
     'render' => [
