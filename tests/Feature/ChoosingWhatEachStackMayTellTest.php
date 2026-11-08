@@ -81,6 +81,7 @@ function theNotificationPage(
     ?ChoosingWhatReachesThePhone $choosing = null,
     bool $notifying = true,
     ?Stack $signedOut = null,
+    ?AStackThatOffers $offering = null,
 ): WhatEachStackMayTellThisPhone {
     $keychain = AKeychainInMemory::working();
 
@@ -101,7 +102,7 @@ function theNotificationPage(
         $keychain,
         $telling,
         $choosing ?? theChoicesForEachStack(),
-        AStackThatOffers::everything(),
+        $offering ?? AStackThatOffers::everything(),
         $switch,
         new AppsSettingsThatOpen(),
     ));
@@ -133,6 +134,15 @@ function theSwitchesOf(WhatEachStackMayTellThisPhone $page, int $section): array
 
     return $switches;
 }
+
+it('asks each stack again what it offers when the page opens', function (): void {
+    $offering = AStackThatOffers::everything();
+    $page = theNotificationPage([aStackThatMayTell('a', 'Home')], AStackThatSaysWhatItTells::eachAs(static fn(): WhatTheAlertsWere => aStackRaising(KindOfNotification::Problem)), offering: $offering);
+
+    $page->mount();
+
+    expect($offering->screensOpened())->toBe(1);
+});
 
 it('is served at its own path, and opened from App settings', function (): void {
     expect(data_get(NativeRouter::resolve(AScreenWithoutAStack::Notifications->value), 'class'))->toBe(WhatEachStackMayTellThisPhone::class)
