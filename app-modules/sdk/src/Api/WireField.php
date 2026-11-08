@@ -954,4 +954,16 @@ enum WireField: string implements NamesAWireField
 
     /** Which of lemonfiber's own requests a row is, and how far a replacement reached one holder. */
     case Reach = 'reach';
+
+    /** What a removal leaves alone; and what a configuration change leaves exactly as it is. */
+    case Keeps = 'keeps';
+
+    /** How far along one download is, from none to a hundred. */
+    case Progress = 'progress';
+
+    /** Whether this machine was found to have something lemonfiber cannot remove; and what a hand-edited file holds now. */
+    case Found = 'found';
+
+    /** What was carried across; and whether a library survives moving the data location. */
+    case Carried = 'carried';
 }

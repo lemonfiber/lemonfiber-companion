@@ -101,7 +101,7 @@ final readonly class WhatMovingInCameTo
 
         return WhatAMoveCarries::came($data, $kind, TheImport::of(
             WhatAMoveCarries::optional($data, WireField::Project, $kind),
-            TheRecords::of(...self::records($data, ImportField::Carried)),
+            TheRecords::of(...self::records($data, WireField::Carried)),
             TheRecords::of(...self::records($data, ImportField::WouldCarry)),
             WhatIsUnsupported::these(...self::notCarried($data)),
         ));

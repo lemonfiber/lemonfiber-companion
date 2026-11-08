@@ -23,6 +23,7 @@ use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\Fields\ConfigField;
 use Modules\Sdk\Internal\Attributions;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\WhatTheReviewFound;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -40,9 +41,8 @@ use Modules\Sdk\Internal\Wire;
  * second payload, and {@see Offers} is written the same way for the same
  * reason.
  *
- * `findings` and `proof` are read by neither. What a change would disturb and
- * what proving a replacement credential came to are a third reading, for the
- * confirmation screen that does not exist yet.
+ * `reviewIn()` reads what the change comes to through {@see WhatTheReviewFound}.
+ * `proof` is read by neither: this app offers to change no credential.
  *
  * **`value` and `secret` go in together and come out as one thing.** The
  * contract's row is *one setting, as it is safe to show*: a withheld value is
@@ -87,14 +87,17 @@ final readonly class Dials
         $change = self::proposed(self::table($review, WireField::Change));
         $stance = self::stance($review);
 
+        $comesTo = WhatTheReviewFound::in($data, $review);
+
         // Read off the stance rather than off the presence of a refusal. A
         // stack that sent a sentence beside `applied` has contradicted itself,
         // and taking the sentence would show an operator a reason a change did
         // not happen underneath the word saying it did.
         return $stance === Stance::Blocked
-            ? WhereTheChangeStands::blocked($change, self::text($review, WireField::Refusal))
-            : WhereTheChangeStands::at($change, $stance);
+            ? WhereTheChangeStands::blocked($change, self::text($review, WireField::Refusal), $comesTo)
+            : WhereTheChangeStands::at($change, $stance, $comesTo);
     }
+
 
     /**
      * The difference, as it would be applied.

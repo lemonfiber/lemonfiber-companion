@@ -22,8 +22,8 @@ use Modules\Household\Internal\Presenters\HowAShelfReads;
 use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\ARatio;
 use Modules\Kernel\Api\AtAGlance;
+use Modules\Kernel\Api\HowFarADownloadIs;
 use Modules\Kernel\Api\Nonce;
-use Modules\Kernel\Api\SomethingStillComing;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 use Modules\Vault\Internal\KeptInAShape;
@@ -69,7 +69,7 @@ final readonly class Coincidences
         ],
         ARatio::class => ['HUNDREDTHS' => 'the hundredths in a ratio of one'],
         HowAShelfReads::class => ['NEW_IN_THE_HOUSE' => 'the newest holdings the first row of a member\'s shelf shows'],
-        SomethingStillComing::class => ['ALL_OF_IT' => 'the percentage a finished download has reached'],
+        HowFarADownloadIs::class => ['ALL_OF_IT' => 'the percentage a finished download has reached'],
         NotifyingWithinACap::class => ['AT_MOST' => 'how many notifications one stack may raise within a minute'],
         AtAGlance::class => ['MIXED_BY' => 'the hash a fingerprint is mixed by before it is read at a glance'],
         PlatformWorkLeftRunning::class => ['JOB_UNDER' => 'the field of a kept record that holds the handle'],

@@ -61,5 +61,30 @@ return [
     // Waar het terugzetten van elk bewerkt bestand wordt aangeboden.
     'put_it_all_back' => 'Zet de configuratie terug',
 
+    'findings' => [
+        'in_its_words' => ':words',
+        'heading' => 'Wat dit op de machine betekent',
+        'stops' => 'Het stopt :service.',
+        'keeps' => 'Dit laat het zoals het is: :what.',
+        'interrupts' => [
+            'usenet' => 'Het onderbreekt :name, voor :progress% binnen via Usenet.',
+            'torrent' => 'Het onderbreekt :name, voor :progress% binnen als torrent.',
+            'another-way' => 'Het onderbreekt de download :name, voor :progress% binnen.',
+        ],
+        'nothing' => 'De stack vond niets anders op de machine dat dit zou verstoren.',
+        'library_carried' => 'De bibliotheek die :service op :path bewaart, overleeft de verhuizing.',
+        'library_not_carried' => 'De bibliotheek die :service op :path bewaart, overleeft de verhuizing niet.',
+        'asks_for' => 'Het vraagt je om :what.',
+        'kept_in' => 'Je antwoord wordt bewaard in :setting.',
+        'to_obtain' => 'Dit is een account dat je zelf regelt; geen instelling bewaart het.',
+        'edited' => 'Deze instelling is buiten lemonfiber gewijzigd sinds lemonfiber hem het laatst schreef.',
+        'wrote' => 'lemonfiber schreef het laatst :value.',
+        'wrote_empty' => 'lemonfiber liet hem het laatst leeg.',
+        'wrote_withheld' => 'lemonfiber schreef het laatst een geheim, dat niet wordt getoond.',
+        'found' => 'In het bestand staat nu :value.',
+        'found_empty' => 'In het bestand staat daar nu niets.',
+        'found_withheld' => 'In het bestand staat nu een geheim, dat niet wordt getoond.',
+    ],
+
     'ask_again' => 'Opnieuw vragen',
 ];

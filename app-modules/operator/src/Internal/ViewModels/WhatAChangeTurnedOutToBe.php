@@ -18,6 +18,8 @@ namespace Modules\Operator\Internal\ViewModels;
  *
  * `canBeAgreedTo` is a third: a blocked change neither holds what was asked
  * nor waits on a yes, and the yes is drawn only where one could write it.
+ *
+ * `comesTo` is what the change would disturb, drawn before the yes.
  */
 final readonly class WhatAChangeTurnedOutToBe
 {
@@ -34,5 +36,6 @@ final readonly class WhatAChangeTurnedOutToBe
         public bool $canBeAgreedTo,
         public bool $wroteSomething,
         public string $refusalSaid,
+        public WhatAChangeComesToAsShown $comesTo,
     ) {}
 }

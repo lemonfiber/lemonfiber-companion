@@ -228,13 +228,10 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'it becomes readable on the same day.',
         ],
         [
-            'path' => 'ConfigEnvelope.review.findings',
-            'because' => 'What a change comes to on this machine beyond the value it changes — the services it '
-                . 'would stop, the library paths it would invalidate, the clients mid-transfer. Read by nothing '
-                . 'yet, and it is the next thing this screen needs: a consequential change is agreed to on the '
-                . 'strength of what it would disturb, and today the screen says the cost and not the extent. '
-                . 'Named as one path rather than six because the whole branch is unread and a row per leaf would '
-                . 'be six rows going green on the same day.',
+            'path' => 'ConfigEnvelope.review.findings.library[].host',
+            'because' => 'The host directory a library path would resolve to after moving the data location. '
+                . 'Each library is drawn with its service, the path the service holds it under, the stack\'s '
+                . 'reason and whether it is carried over, which is what the operator weighs before the yes.',
         ],
         [
             'path' => 'ConfigEnvelope.review.proof',
@@ -252,13 +249,6 @@ final readonly class UnreadOnEnvelopesAToL
         [
             'path' => 'ConfigEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
-        ],
-        [
-            'path' => 'ConfigEnvelope.consequence',
-            'because' => 'What applying the proposal in `review` would mean, in the core\'s words. The '
-                . 'confirmation the settings screen shows before a consequential change says that it may move '
-                . 'data or take a service away, and not what; this sentence and `review.findings` are what would '
-                . 'say it.',
         ],
         [
             'path' => 'CredentialsEnvelope.held[].from',

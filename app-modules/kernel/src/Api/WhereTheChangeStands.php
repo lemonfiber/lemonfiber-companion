@@ -13,28 +13,26 @@ namespace Modules\Kernel\Api;
  * stance alone can say a change did not happen and not why, which is the
  * shape of message an operator retries three times.
  *
- * **Findings and proof are not here.** The contract carries what a change
- * would disturb — the services it stops, the library paths it invalidates, the
- * clients mid-transfer — and what proving a replacement credential came to.
- * Neither is read yet, and this type says so by not carrying them rather than
- * by carrying them empty: a field that is always empty is one every reader has
- * to know to ignore, and one a screen will eventually render as *nothing would
- * be disturbed*, which is a different sentence from *nobody asked*.
+ * **What it comes to travels with it.** What the change would disturb is
+ * carried on a staged proposal as well as an applied one, so the yes is given to
+ * something stated. What proving a replacement credential came to is not read:
+ * this app offers to change no credential.
  */
 final readonly class WhereTheChangeStands
 {
     private function __construct(
         public ProposedChange $change,
         public Stance $stance,
+        public WhatAChangeComesTo $comesTo,
         private string $why,
     ) {}
 
     /**
      * Where the stack says it stands, with nothing standing in the way.
      */
-    public static function at(ProposedChange $change, Stance $stance): self
+    public static function at(ProposedChange $change, Stance $stance, WhatAChangeComesTo $comesTo): self
     {
-        return new self(change: $change, stance: $stance, why: '');
+        return new self(change: $change, stance: $stance, comesTo: $comesTo, why: '');
     }
 
     /**
@@ -45,9 +43,9 @@ final readonly class WhereTheChangeStands
      * accepting one here would let a screen show a reason beside the word
      * `applied`.
      */
-    public static function blocked(ProposedChange $change, string $why): self
+    public static function blocked(ProposedChange $change, string $why, WhatAChangeComesTo $comesTo): self
     {
-        return new self(change: $change, stance: Stance::Blocked, why: $why);
+        return new self(change: $change, stance: Stance::Blocked, comesTo: $comesTo, why: $why);
     }
 
     /**

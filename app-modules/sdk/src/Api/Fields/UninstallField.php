@@ -24,9 +24,6 @@ enum UninstallField: string implements NamesAWireField
     /** What a removal takes, in the operator's words. */
     case Removes = 'removes';
 
-    /** What a removal leaves alone, in the operator's words. */
-    case Keeps = 'keeps';
-
     /** What beneath the data location the stack did not put there. */
     case Foreign = 'foreign';
 
@@ -36,17 +33,11 @@ enum UninstallField: string implements NamesAWireField
     /** What is still coming down, which stopping would interrupt. */
     case Coming = 'coming';
 
-    /** How far along one download is, from none to a hundred. */
-    case Progress = 'progress';
-
     /** What lemonfiber cannot remove, each with how to remove it by hand. */
     case Outside = 'outside';
 
     /** How to remove something by hand on this platform. */
     case ByHand = 'by_hand';
-
-    /** Whether this machine was found to have something lemonfiber cannot remove. */
-    case Found = 'found';
 
     /** Whether every source a removal needed answered. */
     case Complete = 'complete';

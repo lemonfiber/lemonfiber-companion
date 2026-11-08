@@ -112,7 +112,7 @@ final readonly class Uninstalls
                 ?? throw UninstallIsUnreadable::word(UninstallField::Tier, $tier, ...array_map(static fn(WhichRemoval $case): string => $case->value, WhichRemoval::cases())),
             WhatGoesAndWhatStays::said(
                 self::text($manifest, UninstallField::Removes),
-                self::text($manifest, UninstallField::Keeps),
+                self::text($manifest, WireField::Keeps),
             ),
             WhatItReaches::of(...self::items($manifest)),
             self::number($manifest, WireField::Bytes),
@@ -207,7 +207,7 @@ final readonly class Uninstalls
             $download = self::row($entry, UninstallField::Coming);
             $coming[] = SomethingStillComing::named(
                 self::text($download, WireField::Name),
-                self::number($download, UninstallField::Progress),
+                self::number($download, WireField::Progress),
             );
         }
 
@@ -232,7 +232,7 @@ final readonly class Uninstalls
                 self::text($thing, UninstallField::ByHand),
             ];
 
-            $outside[] = self::flag($thing, UninstallField::Found)
+            $outside[] = self::flag($thing, WireField::Found)
                 ? SomethingItCannotTake::found(...$said)
                 : SomethingItCannotTake::notFound(...$said);
         }

@@ -23,4 +23,24 @@ enum ConfigField: string implements NamesAWireField
     /** A proposed change, read against what is in force, and where it stands. */
     case Review = 'review';
 
+    /** What a change newly asks the operator for. */
+    case Opens = 'opens';
+
+    /** What a change stops running, by service name. */
+    case Stops = 'stops';
+
+    /** The library paths the services hold, and what moving the data location does to each. */
+    case Library = 'library';
+
+    /** The hand-edit found in the configuration file. */
+    case Edited = 'edited';
+
+    /** What lemonfiber last wrote where a hand-edit was found. */
+    case Wrote = 'wrote';
+
+    /** What is still coming down, where a change would interrupt it. */
+    case Active = 'active';
+
+    /** Which way one download is coming down. */
+    case Protocol = 'protocol';
 }

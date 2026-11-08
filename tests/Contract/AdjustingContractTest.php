@@ -11,12 +11,15 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ProposedChange;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SettingIsUnnamed;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stance;
+use Modules\Kernel\Api\WhatAChangeComesTo;
+use Modules\Kernel\Api\WhatAChangeLeavesAlone;
 use Modules\Kernel\Api\WhatItHoldsNow;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhereTheChangeStands;
@@ -70,7 +73,7 @@ function whatAStackSendsAboutAChange(
         'api_version' => 1,
         'kind' => 'config',
         'data' => [
-            'changed' => false,
+            'changed' => in_array($stance, ['pending', 'applied'], strict: true),
             'rehearsed' => true,
             'settings' => [],
             'review' => [
@@ -92,7 +95,7 @@ function aChangeAnsweredWithNothingHeldYet(): array
         'api_version' => 1,
         'kind' => 'config',
         'data' => [
-            'changed' => false,
+            'changed' => true,
             'rehearsed' => true,
             'settings' => [],
             'review' => [
@@ -158,6 +161,7 @@ function everyWayOfPuttingAChange(array $body, ?Obstacle $why = null): array
                     Cost::Cheap,
                 ),
                 Stance::Pending,
+                WhatAChangeComesTo::nothing(),
             )),
         'the adapter' => static function () use ($body): Adjusting {
             MockClient::destroyGlobal();
@@ -225,6 +229,7 @@ it('the fake keeps asking apart from agreeing', function (): void {
     $fake = AStackToldToChangeSomething::saying(WhereTheChangeStands::at(
         ProposedChange::of('BIND', 'lan', WhatItHoldsNow::nothingYet(), Cost::Cheap),
         Stance::Pending,
+        WhatAChangeComesTo::nothing(),
     ));
 
     howAChangeReadsAsText($fake);
@@ -281,10 +286,12 @@ it('a blocked change carries the reason and an applied one carries none', functi
     $blocked = WhereTheChangeStands::blocked(
         ProposedChange::of('LIBRARY_PATH', '/nowhere', WhatItHoldsNow::shown('/data/media'), Cost::Consequential),
         'That path is not on a filesystem this machine can write to.',
+        WhatAChangeComesTo::nothing(),
     );
     $applied = WhereTheChangeStands::at(
         ProposedChange::of('LIBRARY_PATH', '/data/films', WhatItHoldsNow::shown('/data/media'), Cost::Cheap),
         Stance::Applied,
+        WhatAChangeComesTo::nothing(),
     );
 
     expect($blocked->stance)->toBe(Stance::Blocked)
@@ -340,7 +347,7 @@ it('a `from` that is not text is refused rather than printed', function (): void
         'api_version' => 1,
         'kind' => 'config',
         'data' => [
-            'changed' => false,
+            'changed' => true,
             'rehearsed' => true,
             'settings' => [],
             'review' => [
@@ -362,7 +369,7 @@ it('a `from` that is explicitly null is a setting holding nothing yet', function
         'api_version' => 1,
         'kind' => 'config',
         'data' => [
-            'changed' => false,
+            'changed' => true,
             'rehearsed' => true,
             'settings' => [],
             'review' => [
@@ -382,7 +389,7 @@ it('a change that is not a table is refused', function (): void {
         'api_version' => 1,
         'kind' => 'config',
         'data' => [
-            'changed' => false,
+            'changed' => true,
             'rehearsed' => true,
             'settings' => [],
             'review' => ['change' => 'LIBRARY_PATH to /data/films', 'stance' => 'pending'],
@@ -479,4 +486,50 @@ it('agrees to exactly what it was shown', function (): void {
             'value' => '/data/films',
             'confirm' => true,
         ]);
+});
+
+/** What a change would disturb, as one string, whichever way of putting it answered. */
+function whatAPutChangeWouldDisturb(Adjusting $adjusting): string
+{
+    return $adjusting->wouldBe(theMachineBeingChanged(), theSessionBehindAChange(), WhatToSet::to('LIBRARY_PATH', '/data/films'))->either(
+        said: static fn(WhereTheChangeStands $stands): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
+            'stops %s; keeps %s; %s',
+            implode(',', array_map(static fn(ServiceId $service): string => $service->named(), $stands->comesTo->stops)),
+            implode(',', array_map(static fn(WhatAChangeLeavesAlone $left): string => $left->shown(), $stands->comesTo->keeps)),
+            $stands->comesTo->whatItMeans(
+                said: static fn(string $said): TheWordCarriedOut => new TheWordCarriedOut($said),
+                nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'),
+            )->said,
+        )),
+        refused: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused:%s', $why->kind()->value)),
+    )->said;
+}
+
+it('the fake and the adapter both carry what a change would disturb', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make([
+        'api_version' => 1,
+        'kind' => 'config',
+        'data' => [
+            'changed' => true,
+            'rehearsed' => false,
+            'settings' => [],
+            'consequence' => 'Every service restarts.',
+            'review' => [
+                'change' => ['key' => 'LIBRARY_PATH', 'from' => '/data/media', 'to' => '/data/films', 'cost' => 'cheap'],
+                'stance' => 'pending',
+                'findings' => ['opens' => [], 'stops' => ['qbittorrent'], 'keeps' => ['sabnzbd'], 'library' => [], 'active' => []],
+            ],
+        ],
+    ])]);
+
+    $fake = AStackToldToChangeSomething::saying(WhereTheChangeStands::at(
+        ProposedChange::of('LIBRARY_PATH', '/data/films', WhatItHoldsNow::shown('/data/media'), Cost::Cheap),
+        Stance::Pending,
+        WhatAChangeComesTo::meaning('Every service restarts.')->stopping(ServiceId::called('qbittorrent'))->leaving(WhatAChangeLeavesAlone::said('sabnzbd')),
+    ));
+
+    expect(whatAPutChangeWouldDisturb(new Adjustments(new PinnedClients(), SequencedEntropy::counting())))
+        ->toBe('stops qbittorrent; keeps sabnzbd; Every service restarts.')
+        ->and(whatAPutChangeWouldDisturb($fake))->toBe('stops qbittorrent; keeps sabnzbd; Every service restarts.');
 });
