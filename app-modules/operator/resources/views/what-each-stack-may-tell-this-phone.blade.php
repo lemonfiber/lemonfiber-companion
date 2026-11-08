@@ -65,6 +65,12 @@
 
         @if (! $this->notificationsAreOn())
             <x-design::note>{{ __('notifications.page.turn_on_above') }}</x-design::note>
+        @elseif ($this->wokenThrough($section->stack) !== '')
+            <x-design::note>{{ __('waking.woken_through', ['distributor' => $this->wokenThrough($section->stack)]) }}</x-design::note>
+        @else
+            {{-- While the app is closed the phone decides when it hears this
+                 stack, said for each stack no distributor wakes it for. --}}
+            <x-design::note>{{ __('waking.may_be_late') }}</x-design::note>
         @endif
     @empty
         @unless ($this->waitsForTheNextFrame())

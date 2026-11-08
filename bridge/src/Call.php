@@ -250,6 +250,21 @@ enum Call: string
     /** Stop asking, and take back any wake the platform still holds. */
     case WakesStop = 'Lemonfiber.Wakes.Stop';
 
+    /** The UnifiedPush distributors installed, or that this phone cannot be woken through one. */
+    case WakingDistributors = 'Lemonfiber.Waking.Distributors';
+
+    /** Make a stack's WebPush key pair and ask a distributor for its endpoint, and answer both or why not. */
+    case WakingRegister = 'Lemonfiber.Waking.Register';
+
+    /** The endpoint a distributor gives a stack now, with its public key, or why there is none. */
+    case WakingEndpoint = 'Lemonfiber.Waking.Endpoint';
+
+    /** Drop a stack's registration with the distributor and delete its key pair. */
+    case WakingLetGo = 'Lemonfiber.Waking.LetGo';
+
+    /** Drop every registration with a distributor and delete every key pair made for waking. */
+    case WakingLetGoOfEvery = 'Lemonfiber.Waking.LetGoOfEvery';
+
     /**
      * The payload of a call that carries nothing.
      *

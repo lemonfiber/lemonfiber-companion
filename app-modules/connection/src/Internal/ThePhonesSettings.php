@@ -17,7 +17,8 @@ use Modules\Kernel\Api\ThisDevice;
  */
 final readonly class ThePhonesSettings
 {
-    public function __construct(public LockAfter $lockAfter, public HowLongReadingsAreKept $readingsKept, public Notifying $notifying, public ?ThisDevice $device) {}
+    /** @param string $wakeThrough the package of the distributor the operator chose to be woken through, or empty where they chose none */
+    public function __construct(public LockAfter $lockAfter, public HowLongReadingsAreKept $readingsKept, public Notifying $notifying, public ?ThisDevice $device, public string $wakeThrough = '') {}
 
     /** Every setting at its standard, which is the phone before the operator chooses anything. */
     public static function standard(): self
@@ -28,24 +29,30 @@ final readonly class ThePhonesSettings
     /** These settings, with the lock's time away changed. */
     public function lockingAfter(LockAfter $after): self
     {
-        return new self($after, $this->readingsKept, $this->notifying, $this->device);
+        return new self($after, $this->readingsKept, $this->notifying, $this->device, $this->wakeThrough);
     }
 
     /** These settings, with how long readings are kept changed. */
     public function keepingReadingsFor(HowLongReadingsAreKept $kept): self
     {
-        return new self($this->lockAfter, $kept, $this->notifying, $this->device);
+        return new self($this->lockAfter, $kept, $this->notifying, $this->device, $this->wakeThrough);
     }
 
     /** These settings, with notifications turned on or off. */
     public function notifying(Notifying $notifying): self
     {
-        return new self($this->lockAfter, $this->readingsKept, $notifying, $this->device);
+        return new self($this->lockAfter, $this->readingsKept, $notifying, $this->device, $this->wakeThrough);
     }
 
     /** These settings, with the id this install plays under. */
     public function playingAs(ThisDevice $device): self
     {
-        return new self($this->lockAfter, $this->readingsKept, $this->notifying, $device);
+        return new self($this->lockAfter, $this->readingsKept, $this->notifying, $device, $this->wakeThrough);
+    }
+
+    /** These settings, with the distributor the operator chose to be woken through. */
+    public function wakingThrough(string $package): self
+    {
+        return new self($this->lockAfter, $this->readingsKept, $this->notifying, $this->device, $package);
     }
 }

@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\Whose;
 use Modules\Wayfinding\Internal\HowFarItGot;
@@ -71,15 +72,43 @@ final readonly class HearingWhileAway
     /** Hear each stack the operator is signed in to until it has said what it raised meanwhile, let go, and say how far it got. */
     public function hear(): HowTheWakeWent
     {
+        return $this->whyNotNow() ?? $this->heardOut($this->theOperatorsStacks());
+    }
+
+    /**
+     * Hear the one stack a push woke the app for, and say how far it got.
+     *
+     * The stack is kept up with the distributor first, whether or not it is
+     * heard: the push may be the distributor saying it changed the endpoint.
+     * Then only where that stack wakes this phone is it heard; a push for a
+     * stack whose waking is off, or that is no longer on the phone, is dropped.
+     */
+    public function hearOnly(StackId $woke): HowTheWakeWent
+    {
+        $toHear = TheStacksToHear::none();
+
+        foreach ($this->theOperatorsStacks() as [$stack, $session]) {
+            if ($stack->id()->is($woke) && $this->with->waking->followTheDistributor($stack, $session)->isOn()) {
+                $toHear = $toHear->with($stack, $session);
+            }
+        }
+
+        return $this->whyNotNow() ?? ($toHear->isEmpty() ? HowTheWakeWent::NotWokenFor : $this->heardOut($toHear));
+    }
+
+    /** Why this wake reaches no stack at all, or nothing where it may. */
+    private function whyNotNow(): ?HowTheWakeWent
+    {
         if ($this->notifications->current() !== Notifying::On) {
             return HowTheWakeWent::NothingToTell;
         }
 
-        if ($this->with->capture->isInFront()) {
-            return HowTheWakeWent::TheAppIsOpen;
-        }
+        return $this->with->capture->isInFront() ? HowTheWakeWent::TheAppIsOpen : null;
+    }
 
-        $pending = $this->theOperatorsStacks();
+    /** Ask these stacks in turn until each has said its first summary or the reads run out, let go, and say how far it got. */
+    private function heardOut(TheStacksToHear $pending): HowTheWakeWent
+    {
         $left = self::AT_MOST_READS;
 
         while (! $pending->isEmpty() && $left > 0) {
@@ -117,7 +146,7 @@ final readonly class HearingWhileAway
         $still = TheStacksToHear::none();
 
         foreach ($stacks as $position => [$stack, $session]) {
-            if ($position >= $asking || ! $this->heardOut($stack, $session)) {
+            if ($position >= $asking || ! $this->saidAll($stack, $session)) {
                 $still = $still->with($stack, $session);
             }
         }
@@ -126,9 +155,9 @@ final readonly class HearingWhileAway
     }
 
     /** Ask one stack what it has sent, tell and keep it, and answer whether that ends this wake's listening to it. */
-    private function heardOut(Stack $stack, Session $session): bool
+    private function saidAll(Stack $stack, Session $session): bool
     {
-        $heard = $this->with->kept($this->hearing->howItIs($stack, $session), $stack, $this->with->clock->now());
+        $heard = $this->with->kept($this->hearing->howItIs($stack, $session), $stack, $session, $this->with->clock->now());
 
         return $heard->either(
             nothing: static fn(): HowFarItGot => HowFarItGot::StillSpeaking,

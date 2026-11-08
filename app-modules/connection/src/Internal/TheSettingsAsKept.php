@@ -45,6 +45,9 @@ final readonly class TheSettingsAsKept
     /** Where the id this install plays under is written. */
     private const string DEVICE = 'plays_as';
 
+    /** Where the distributor the operator chose to be woken through is written. */
+    private const string WAKE_THROUGH = 'wake_through';
+
     public static function written(ThePhonesSettings $settings): Unsealed
     {
         return Unsealed::of((string) json_encode([
@@ -55,6 +58,7 @@ final readonly class TheSettingsAsKept
             )->value,
             self::NOTIFYING => $settings->notifying->name,
             self::DEVICE => $settings->device instanceof ThisDevice ? $settings->device->shown() : null,
+            self::WAKE_THROUGH => $settings->wakeThrough,
         ]));
     }
 
@@ -76,6 +80,7 @@ final readonly class TheSettingsAsKept
             self::readingsKeptIn(self::fieldIn($written, self::KEEP_READINGS)),
             self::notifyingIn(self::fieldIn($written, self::NOTIFYING)),
             self::deviceIn(self::fieldIn($written, self::DEVICE)),
+            self::wakeThroughIn(self::fieldIn($written, self::WAKE_THROUGH)),
         );
     }
 
@@ -115,6 +120,11 @@ final readonly class TheSettingsAsKept
         } catch (DeviceIdIsUnfit) {
             return null;
         }
+    }
+
+    private static function wakeThroughIn(mixed $written): string
+    {
+        return is_string($written) ? $written : '';
     }
 
     private static function readingsKeptIn(mixed $written): HowLongReadingsAreKept

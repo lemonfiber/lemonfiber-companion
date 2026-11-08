@@ -103,6 +103,7 @@ sourceSets {
             "ArtworkFunctions.kt",
             "PhoneKeyFunctions.kt",
             "WakeFunctions.kt",
+            "WakingFunctions.kt",
         )
     }
     test {

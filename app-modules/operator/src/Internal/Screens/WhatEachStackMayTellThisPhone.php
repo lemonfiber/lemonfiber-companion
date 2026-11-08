@@ -11,6 +11,7 @@ use Illuminate\View\View;
 use Modules\Connection\Api\ChoosingWhatReachesThePhone;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Connection\Api\TurningNotificationsOn;
+use Modules\Connection\Api\WakingThisPhone;
 use Modules\Design\Api\TakesTheThemeItOpensOver;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\Concealed;
@@ -99,6 +100,7 @@ final class WhatEachStackMayTellThisPhone extends NativeComponent implements Tak
         private readonly KnowingWhatAStackOffers $offering,
         protected readonly TurningNotificationsOn $notifications,
         protected readonly TheAppsSettings $settings,
+        private readonly WakingThisPhone $woken,
     ) {}
 
     /** The page opens, and what each stack offers is asked again where it was asked long ago. */
@@ -167,6 +169,21 @@ final class WhatEachStackMayTellThisPhone extends NativeComponent implements Tak
         $this->shown = null;
 
         return view('operator::what-each-stack-may-tell-this-phone');
+    }
+
+    /**
+     * What the distributor that wakes this phone for the stack is called, or empty where none does.
+     *
+     * Where one does, the stack's section says so in place of the phone
+     * deciding when the closed app may listen.
+     */
+    public function wokenThrough(string $stack): string
+    {
+        foreach ($this->woken->forTheStack(StackId::rememberedAs($stack))->through() as $through) {
+            return $through->called();
+        }
+
+        return '';
     }
 
     /**

@@ -31,6 +31,22 @@
         <x-operator::the-notifications-switch :on="$this->notificationsAreOn()" :asking="$this->askingForNotifications" :settings-would-not-open="$this->theSettingsWouldNotOpen">
             <x-design::row :headline="__('settings.notifications_from_each_stack')" :goes="$this->notificationPageIsAt()" />
         </x-operator::the-notifications-switch>
+
+        {{-- Which UnifiedPush distributor wakes this phone, where more than
+             one is installed: chosen once, and changeable here. --}}
+        @if ($this->wakeThroughChoice()->offered !== [])
+            <x-design::section :label="__('waking.through')">
+                <x-design::row :headline="__('waking.through')" :trailing="$this->wakeThroughChoice()->said" />
+            </x-design::section>
+            <x-design::chips>
+                @forelse ($this->wakeThroughChoice()->offered as $choice)
+                    <x-design::chip :label="$choice->said" :tap="$this->tapping('wakeThroughChosen', $choice->word)" :chosen="$choice->chosen" />
+                @empty
+                    {{-- Unreachable: a choice is offered only among two or more. --}}
+                @endforelse
+            </x-design::chips>
+            <x-design::note>{{ __('waking.through_explained') }}</x-design::note>
+        @endif
     @endif
 
     {{-- How long readings are kept. A count of days is said as that count;

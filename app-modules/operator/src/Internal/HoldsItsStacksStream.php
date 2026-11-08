@@ -256,6 +256,7 @@ trait HoldsItsStacksStream
             held: fn(Session $session): WhatWasHeard => $this->listening->kept(
                 $this->listening->hearing->howItIs($stack, $session),
                 $stack,
+                $session,
                 $now,
             ),
             notHeld: static fn(): WhatWasHeard => WhatWasHeard::closed(),

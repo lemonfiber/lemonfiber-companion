@@ -230,6 +230,9 @@ final readonly class WhatARefusalMeant
         RefusalCode::SignatureWrong,
         RefusalCode::NoChallenge,
         RefusalCode::AttestationRevoked,
+        // Registering and removing a push endpoint, refused for what was
+        // asked: each is said in the stack's words, and an endpoint the
+        // stack holds no longer is read as removed where it is removed.
         RefusalCode::NotAPushName,
         RefusalCode::PushNameTaken,
         RefusalCode::PushNotHttps,

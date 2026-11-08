@@ -54,6 +54,9 @@ public object WakeFunctions {
             "Lemonfiber.Telling.Show" to { context -> TellingFunctions.Show(context) },
             "Lemonfiber.Resolve" to { context -> ResolveFunctions.Resolve(context) },
             "Lemonfiber.LocalNetwork.Probe" to { context -> LocalNetworkFunctions.Probe(context) },
+            "Lemonfiber.Waking.Distributors" to { context -> WakingFunctions.Distributors(context) },
+            "Lemonfiber.Waking.Endpoint" to { context -> WakingFunctions.Endpoint(context) },
+            "Lemonfiber.Waking.LetGo" to { context -> WakingFunctions.LetGo(context) },
         )
 
     /** `Lemonfiber.Wakes.Ask` — ask to be woken as often as the platform runs periodic work. */
@@ -90,6 +93,9 @@ public object WakeFunctions {
     /**
      * One wake: a PHP runtime of its own, the command, and the runtime let go of.
      *
+     * Queued by the platform's schedule for every stack, or by a push for the
+     * one stack it came for.
+     *
      * Always answers success. A wake that found no runtime or nothing to tell
      * is not one to retry sooner than the next; the platform's own schedule is
      * the retry.
@@ -98,6 +104,10 @@ public object WakeFunctions {
         context: Context,
         parameters: WorkerParameters,
     ) : Worker(context, parameters) {
+        /** The command this wake runs: every stack's, or one stack's where a push queued it. */
+        private fun command(): String =
+            inputData.getString(WakingFunctions.STACK)?.let { WakingRule.commandFor(it) } ?: WakeRule.COMMAND
+
         override fun doWork(): Result {
             LaravelEnvironment(applicationContext).initializeForBackground()
 
@@ -116,7 +126,7 @@ public object WakeFunctions {
             }
 
             try {
-                php.nativeEphemeralArtisan(WakeRule.COMMAND)
+                php.nativeEphemeralArtisan(command())
             } finally {
                 php.nativeEphemeralShutdown()
             }

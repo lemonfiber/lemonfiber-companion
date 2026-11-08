@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use Bootstrap\Composition\EveryKeeperOfAStack;
+use Modules\Connection\Api\ChoosingWhoWakesThisPhone;
 use Modules\Connection\Api\RemovingAStack;
+use Modules\Connection\Api\WakingThisPhone;
+use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -16,6 +19,7 @@ use Modules\News\Internal\WhatEachStackLastNamed;
 use Modules\Operator\Internal\Screens\ThisStackOnThisPhone;
 use Modules\Vault\Api\PlatformKeychain;
 use Modules\Vault\Api\PlatformStacks;
+use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ASealInMemory;
@@ -48,16 +52,25 @@ final readonly class APhoneOnItsStackSettings
         }
     }
 
-    /** The Stack settings page of this stack, removing through a journal that writes, or one that will not. */
-    public function pageOf(Stack $stack, bool $journalWrites = true): ThisStackOnThisPhone
+    /**
+     * The Stack settings page of this stack, removing through a journal that writes, or one that will not.
+     *
+     * Where the test names how the phone is woken, the page reads the
+     * operator's session this phone keeps, and forgets waking with the stack.
+     */
+    public function pageOf(Stack $stack, bool $journalWrites = true, ?WakingThisPhone $woken = null, ?ChoosingWhoWakesThisPhone $wakers = null, ?Encoding $encoding = null): ThisStackOnThisPhone
     {
         $journal = $journalWrites ? new PlatformStacks($this->store) : RemovalsUnderWayInMemory::refusing();
+        $keepers = $woken instanceof WakingThisPhone ? [$this->stacks, $this->keychain, $woken] : [$this->stacks, $this->keychain];
         $screen = new ThisStackOnThisPhone(
             AroundThePhone::holding($this->stacks, storage: $this->keychain),
-            new RemovingAStack($journal, new EveryKeeperOfAStack($this->stacks, $this->keychain)),
+            new RemovingAStack($journal, new EveryKeeperOfAStack(...$keepers)),
             $this->marking,
-            AKeychainInMemory::working(),
+            $woken instanceof WakingThisPhone ? $this->keychain : AKeychainInMemory::working(),
             AroundThePhone::listening(),
+            $woken ?? AWakingPhone::waking(),
+            $wakers ?? AWakingPhone::choosing(),
+            $encoding ?? ACodeOfWhatItWasGiven::working(),
         );
         $screen->setParams(['stack' => $stack->id()->stored()]);
 

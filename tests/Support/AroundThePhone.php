@@ -7,6 +7,7 @@ namespace Tests\Support;
 use function app;
 
 use Illuminate\Contracts\Translation\Translator;
+use Modules\Connection\Api\WakingThisPhone;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
@@ -101,6 +102,7 @@ final readonly class AroundThePhone
         ?KeepingTheLastReading $keeping = null,
         ?Noticing $noticing = null,
         ?Notifier $notifier = null,
+        ?WakingThisPhone $waking = null,
     ): WhatItListensWith {
         return new WhatItListensWith(
             $hearing ?? AStackThatSpeaksUp::holdingOpen(),
@@ -110,6 +112,7 @@ final readonly class AroundThePhone
             $keeping ?? WhatThePhoneKeeps::nothingYet(),
             $noticing ?? NoticingWhatIsNew::fromNothing(),
             $notifier ?? ANotifierInMemory::allowed(),
+            $waking ?? AWakingPhone::waking(),
         );
     }
 }

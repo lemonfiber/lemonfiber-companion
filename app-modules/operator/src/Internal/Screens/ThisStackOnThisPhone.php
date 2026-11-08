@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
+use Modules\Connection\Api\ChoosingWhoWakesThisPhone;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Connection\Api\RemovingAStack;
+use Modules\Connection\Api\WakingThisPhone;
 use Modules\Connection\Api\WhatBecameOfRemoving;
 use Modules\Design\Api\WritesItsTaps;
+use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Stack;
@@ -15,6 +18,7 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\News\Api\KindOfNews;
 use Modules\News\Api\MarkingAsNew;
 use Modules\Operator\Internal\ViewModels\AKindOfNewsAsShown;
+use Modules\Operator\Internal\WakesThisPhoneForTheStack;
 use Modules\Operator\Internal\WhereRemovingTheStackStands;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
@@ -23,13 +27,15 @@ use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
- * Stack settings: what this phone keeps of one stack, and Remove from phone.
+ * Stack settings: what this phone keeps of one stack, whether the stack wakes it, and Remove from phone.
  *
  * Removing asks on this page, saying what goes and what stays, and then
  * takes the stack's pairing, session, readings, settings and markers off the
  * phone as one act. The app then starts over on the next stack in the
  * operator's order, or on a first run where there is none: every screen of a
- * stack that is gone is gone with it.
+ * stack that is gone is gone with it. A stack that wakes this phone is told
+ * to forget its endpoint first; where it cannot be reached, the operator is
+ * told it still holds it before the stack goes.
  */
 #[Lazy]
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
@@ -39,6 +45,7 @@ final class ThisStackOnThisPhone extends NativeComponent
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
+    use WakesThisPhoneForTheStack;
 
     public const string TEMPLATE = 'operator::this-stack-on-this-phone';
 
@@ -59,6 +66,9 @@ final class ThisStackOnThisPhone extends NativeComponent
         private readonly MarkingAsNew $marking,
         protected readonly SecureStorage $storage,
         protected readonly WhatItListensWith $listening,
+        protected readonly WakingThisPhone $woken,
+        protected readonly ChoosingWhoWakesThisPhone $wakers,
+        protected readonly Encoding $encoding,
     ) {}
 
     public function stack(): Stack
@@ -66,7 +76,6 @@ final class ThisStackOnThisPhone extends NativeComponent
         return $this->held ??= $this->around->stackOn($this);
     }
 
-    /** The operator asked to remove the stack; they are asked whether they mean it, on this page. */
     /**
      * Each kind the stack can mark as new, and whether it does.
      *
@@ -110,6 +119,7 @@ final class ThisStackOnThisPhone extends NativeComponent
         $this->marking->markNoLonger($this->stack()->id(), $chosen);
     }
 
+    /** The operator asked to remove the stack; they are asked whether they mean it, on this page. */
     public function askToRemove(): void
     {
         $this->removal = WhereRemovingTheStackStands::Asked;
@@ -121,15 +131,27 @@ final class ThisStackOnThisPhone extends NativeComponent
         $this->removal = null;
     }
 
+    /** The operator removed the stack from the phone; a stack that wakes it is told first to forget its endpoint. */
+    public function removeTheStack(): void
+    {
+        if ($this->removingTellsTheStack() && $this->stillHeldOnceTold()) {
+            $this->removal = WhereRemovingTheStackStands::StillHoldsTheAddress;
+
+            return;
+        }
+
+        $this->removeAnyway();
+    }
+
     /**
-     * The operator removed the stack from the phone.
+     * The stack goes from the phone, whatever it still holds of it.
      *
      * Where it lands is asked first, while the stack is still in the order.
      * A removal that began is as good as done to the operator, finished or
      * not: the stack is in no list from that moment, and what is left of it
      * is let go of when the app next opens.
      */
-    public function removeTheStack(): void
+    public function removeAnyway(): void
     {
         $landing = $this->around->afterRemoving($this->stack());
 

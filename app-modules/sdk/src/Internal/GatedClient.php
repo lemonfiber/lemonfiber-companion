@@ -20,6 +20,7 @@ use Lemonfiber\Sdk\Keys;
 use Lemonfiber\Sdk\Logs;
 use Lemonfiber\Sdk\LogWindow;
 use Lemonfiber\Sdk\Picture;
+use Lemonfiber\Sdk\PushEndpoints;
 use Lemonfiber\Sdk\Repair;
 use Modules\Kernel\Api\Ability;
 use Modules\Kernel\Api\Session;
@@ -192,6 +193,15 @@ final readonly class GatedClient
     public function keyring(): Keys
     {
         return $this->clients->client($this->stack, $this->session)->keys();
+    }
+
+    /**
+     * What the client does with this phone's push endpoints, asked of it directly, for {@see self::keys()}'s
+     * reason: registering one, answered with it as registered, and removing one, answered with the listing after.
+     */
+    public function pushEndpoints(): PushEndpoints
+    {
+        return $this->clients->client($this->stack, $this->session)->pushEndpoints();
     }
 
     /**

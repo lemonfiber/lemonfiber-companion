@@ -72,6 +72,12 @@ final class MustNotLeaveThisProcess extends LogicException
         return new self('A seal key may not be serialised. It opens everything the phone keeps, and it is kept in the platform\'s secure storage and nowhere else.');
     }
 
+    /** The secret a stack's pushes to this phone are encrypted with. */
+    public static function aWakingSecret(): self
+    {
+        return new self('A WebPush secret may not be serialised. It is sealed with the stack\'s settings and sent to that stack alone.');
+    }
+
     /** A value on its way into the seal or out of it, in the clear. */
     public static function somethingUnsealed(): self
     {

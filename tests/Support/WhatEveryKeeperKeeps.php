@@ -18,6 +18,7 @@ use function json_encode;
 use Lemonfiber\Native\Keeps;
 use LogicException;
 use Modules\Connection\Api\ChoosingWhatReachesThePhone;
+use Modules\Connection\Api\WakingThisPhone;
 use Modules\Device\Api\PlatformPhoneKeys;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Address;
@@ -34,7 +35,9 @@ use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\KindOfWork;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Noted;
+use Modules\Kernel\Api\ReachingADistributor;
 use Modules\Kernel\Api\ReadIn;
+use Modules\Kernel\Api\RegisteringAWake;
 use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -77,6 +80,8 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\APhoneKeyInMemory;
 use Tests\Support\Fakes\APhoneKeyOnAHandset;
 use Tests\Support\Fakes\APlatformStore;
+use Tests\Support\Fakes\AStackThatKeepsWakes;
+use Tests\Support\Fakes\DistributorsOnAPhone;
 use Tests\Support\Fakes\GrantsKeptInMemory;
 use Tests\Support\Fakes\PhoneKeysNamesKeptInMemory;
 use Tests\Support\Fakes\StacksInMemory;
@@ -96,6 +101,8 @@ final readonly class WhatEveryKeeperKeeps
         app()->instance(Keeps::class, APlatformStore::working());
         AKeptDatabase::migrated();
         APhoneKeyOnAHandset::onAnAndroidPhone()->theAdapterOverIt();
+        app()->instance(ReachingADistributor::class, DistributorsOnAPhone::with());
+        app()->instance(RegisteringAWake::class, AStackThatKeepsWakes::reachable());
     }
 
     /**
@@ -220,6 +227,7 @@ final readonly class WhatEveryKeeperKeeps
             $keeper instanceof PlatformGrants, $keeper instanceof GrantsKeptInMemory => $keeper->keepTheGrant($kept, TheGrantIsFor::of(Whose::member('ada'), ThisDevice::named('this-device')), AGrant::of(str_repeat('0', 32), Instant::atEpochSeconds(1))),
             $keeper instanceof PlatformPhoneKeysNames, $keeper instanceof PhoneKeysNamesKeptInMemory => $keeper->keepTheName($kept, APhoneKeysName::of('Galaxy A51 · 7f3a')),
             $keeper instanceof PlatformPhoneKeys, $keeper instanceof APhoneKeyInMemory => $keeper->madeFor($kept),
+            $keeper instanceof WakingThisPhone => $keeper->turnOn($stack, Session::of('a-session'), DistributorsOnAPhone::ntfy()),
             default => null,
         };
 

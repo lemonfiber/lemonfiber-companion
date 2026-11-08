@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use Modules\Connection\Api\TurningNotificationsOn;
+use Modules\Connection\Api\WakingThisPhone;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -81,11 +82,11 @@ final readonly class AWakeOnThePhone
         return clone($this, ['capture' => ACaptureInMemory::inFront()]);
     }
 
-    /** What a wake on this phone hears with. */
-    public function hearing(): HearingWhileAway
+    /** What a wake on this phone hears with, woken through a distributor as `$waking` says, or as an iPhone. */
+    public function hearing(?WakingThisPhone $waking = null): HearingWhileAway
     {
         return new HearingWhileAway(
-            AroundThePhone::listening($this->hearing, $this->clock, $this->capture, standings: $this->standings, notifier: $this->notifier),
+            AroundThePhone::listening($this->hearing, $this->clock, $this->capture, standings: $this->standings, notifier: $this->notifier, waking: $waking),
             $this->keychain,
             $this->stacks,
             $this->switch,

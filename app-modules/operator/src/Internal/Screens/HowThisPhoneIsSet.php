@@ -11,10 +11,13 @@ use InvalidArgumentException;
 use function is_string;
 
 use Lemonfiber\Native\Reorderable;
+use Modules\Connection\Api\ChoosingWhoWakesThisPhone;
 use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
+use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Connection\Api\LettingGoOfOldReadings;
 use Modules\Connection\Api\LockingAfter;
 use Modules\Connection\Api\TurningNotificationsOn;
+use Modules\Connection\Api\WakingThisPhone;
 use Modules\Design\Api\TakesTheThemeItOpensOver;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\DaysAsked;
@@ -28,6 +31,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\ChoosesNotifications;
+use Modules\Operator\Internal\ChoosesWhoWakesThisPhone;
 use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\NotACountOfDays;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -57,6 +61,8 @@ final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeIt
     use ChoosesNotifications;
     use OffersTheAppsSettings;
     use OpensTheNotificationPage;
+    use ChoosesWhoWakesThisPhone;
+    use LetsGoOfARefusedSession;
 
     public const string TEMPLATE = 'operator::how-this-phone-is-set';
     /** How long the app may be away before the lock asks again, once read. */
@@ -99,6 +105,8 @@ final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeIt
         private readonly Stacks $stacks,
         protected readonly TurningNotificationsOn $notifications,
         protected readonly TheAppsSettings $settings,
+        protected readonly ChoosingWhoWakesThisPhone $wakers,
+        protected readonly WakingThisPhone $woken,
     ) {}
 
     /** Speak in the words the screen it was opened from asked for: a member's Profile asks for household words. */

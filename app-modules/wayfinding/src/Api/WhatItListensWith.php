@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Wayfinding\Api;
 
+use Modules\Connection\Api\WakingThisPhone;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
@@ -11,6 +12,7 @@ use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
+use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Standings;
 use Modules\Kernel\Api\TheHealthSummary;
@@ -23,8 +25,9 @@ use Modules\Stacks\Api\AStacksScreen;
  * The ports a screen holding the stream reaches for, handed to it together.
  *
  * What hears the stream, the clock and whether anybody can see the screen,
- * where what was heard is kept, what answers how much is new by it, and where
- * the alerts it carried are told to the operator.
+ * where what was heard is kept, what answers how much is new by it, where
+ * the alerts it carried are told to the operator, and whether the stack is
+ * owed the removal of this phone's endpoint.
  *
  * The traits that hold a stream are where they are used, and a screen is where
  * they arrive, so the screen is handed them in one value and a trait holding a
@@ -41,10 +44,14 @@ final readonly class WhatItListensWith
         public KeepingTheLastReading $keeping,
         public Noticing $noticing,
         public Notifier $notifier,
+        public WakingThisPhone $waking,
     ) {}
 
     /**
      * Tell the operator each alert the stack raised, keep what a summary said, and hand back what was heard.
+     *
+     * A summary is a read of the stack that came back, so a removal of this
+     * phone's endpoint owed to it is sent then.
      *
      * Each alert goes to the notifier as it arrived, filed under its name, so
      * a resolution replaces the onset it ends, and a tap on it opens the
@@ -56,7 +63,7 @@ final readonly class WhatItListensWith
      * the next opening its first frame, and the screen that heard it has it
      * either way.
      */
-    public function kept(WhatWasHeard $heard, Stack $stack, Instant $now): WhatWasHeard
+    public function kept(WhatWasHeard $heard, Stack $stack, Session $session, Instant $now): WhatWasHeard
     {
         foreach ($heard->theAlerts() as $alert) {
             $this->notifier->show(Notification::ofAnAlert($stack, $alert, WhereATapLeads::to(AStacksScreen::Health->forTheStack($stack->id()))));
@@ -64,13 +71,15 @@ final readonly class WhatItListensWith
 
         $standings = $this->standings;
         $keeping = $this->keeping;
+        $waking = $this->waking;
 
         return $heard->either(
             nothing: static fn(): WhatWasHeard => $heard,
             alive: static fn(): WhatWasHeard => $heard,
-            said: static function (TheHealthSummary $summary) use ($standings, $keeping, $heard, $stack, $now): WhatWasHeard {
+            said: static function (TheHealthSummary $summary) use ($standings, $keeping, $waking, $heard, $stack, $session, $now): WhatWasHeard {
                 $standings->remember($stack->id(), $summary->standing(), $now);
                 $keeping->keep($stack->id(), $summary, $now);
+                $waking->sendWhatIsOwed($stack, $session);
 
                 return $heard;
             },

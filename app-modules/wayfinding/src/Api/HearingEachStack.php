@@ -92,7 +92,7 @@ final readonly class HearingEachStack
         }
 
         $hearing = $this->with->hearing;
-        $held = $held->after($this->with->kept($hearing->howItIs($stack, $session), $stack, $now), $now);
+        $held = $held->after($this->with->kept($hearing->howItIs($stack, $session), $stack, $session, $now), $now);
 
         if ($held->hasGoneQuiet($now)) {
             $held = $held->after($hearing->letGo(), $now);

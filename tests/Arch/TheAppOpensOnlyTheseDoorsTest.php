@@ -129,6 +129,7 @@ const DOORS_THE_APP_OPENS = [
     // it lets it go when it is left, rather than leaving it to lapse.
     'letGoOf' => 'ends a guard this app started, when the screen holding it is left',
 
+    'pushEndpoints' => 'reaches this phone\'s push endpoint, to register it with the stack and remove it there as waking is turned on and off (`N4-R26`, `N4-R30`)',
     'keys' => 'reaches the integration keys, to revoke one by its name once the operator confirmed it stops working at once and cannot be undone (`N29-R6`)',
 
     // The verbs below, and nothing else can reach it: it takes an action the

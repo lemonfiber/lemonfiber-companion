@@ -36,6 +36,7 @@ use Modules\Kernel\Api\AMoveAgreed;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AnAllowanceChange;
 use Modules\Kernel\Api\AnAttestation;
+use Modules\Kernel\Api\AnEndpoint;
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationAgreed;
 use Modules\Kernel\Api\AnInvitationAskedFor;
@@ -54,6 +55,7 @@ use Modules\Kernel\Api\APluginSource;
 use Modules\Kernel\Api\APluginUpdateAgreed;
 use Modules\Kernel\Api\APresetToChoose;
 use Modules\Kernel\Api\AProofOfThisPhone;
+use Modules\Kernel\Api\APushName;
 use Modules\Kernel\Api\ARecipeRunAgreed;
 use Modules\Kernel\Api\ARemoval;
 use Modules\Kernel\Api\ARemovalAgreed;
@@ -64,6 +66,9 @@ use Modules\Kernel\Api\ASettingChange;
 use Modules\Kernel\Api\ASettingChangeAgreed;
 use Modules\Kernel\Api\ASettingValue;
 use Modules\Kernel\Api\ATextToSign;
+use Modules\Kernel\Api\AWakeToRegister;
+use Modules\Kernel\Api\AWakingKey;
+use Modules\Kernel\Api\AWakingSecret;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Capability;
@@ -91,6 +96,7 @@ use Modules\Kernel\Api\HowTheHouseholdAsks;
 use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KeyMaterial;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\Nonce;
@@ -235,6 +241,7 @@ use Modules\Sdk\Api\Pictures;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\PlaceKeepers;
 use Modules\Sdk\Api\Players;
+use Modules\Sdk\Api\PushEndpointKeepers;
 use Modules\Sdk\Api\Quartermasters;
 use Modules\Sdk\Api\Questions;
 use Modules\Sdk\Api\Recorders;
@@ -265,6 +272,7 @@ use Modules\Sdk\Api\WaysOfBeingTold;
 use Modules\Sdk\Api\Wirers;
 use Psr\Log\NullLogger;
 
+use function sprintf;
 use function str_repeat;
 
 use Tests\Support\Fakes\SequencedEntropy;
@@ -304,6 +312,13 @@ final readonly class EveryAdapterCallThatReads
             'KeyKeepers::revokedOn' => static fn(): object => new KeyKeepers($clients)->revokedOn($stack, $session, AKeysName::of('den')),
             'PhoneKeyKeepers::listedOn' => static fn(): object => new PhoneKeyKeepers($clients)->listedOn($stack, $session),
             'PhoneKeyKeepers::revokedOn' => static fn(): object => new PhoneKeyKeepers($clients)->revokedOn($stack, $session, APhoneKeysName::of('Galaxy A51 · 7f3a')),
+            'PushEndpointKeepers::registeredOn' => static fn(): object => new PushEndpointKeepers($clients)->registeredOn($stack, $session, new AWakeToRegister(
+                APushName::of('galaxy-a51-7f3a'),
+                AnEndpoint::of('https://ntfy.sh/upAbC?up=1'),
+                AWakingKey::of(sprintf("\x04%s", str_repeat("\x01", AWakingKey::BYTES - 1))),
+                AWakingSecret::from(KeyMaterial::of(str_repeat('s', KeyMaterial::BYTES))),
+            )),
+            'PushEndpointKeepers::removedFrom' => static fn(): object => new PushEndpointKeepers($clients)->removedFrom($stack, $session, APushName::of('galaxy-a51-7f3a')),
             'KeyMinters::registeredOn' => static fn(): object => new KeyMinters($clients)->registeredOn($stack, $session, APhoneKeyToRegister::of(APhoneKeysName::of('Galaxy A51 · 7f3a'), 'a public half', AnAttestation::fromAndroid('the leaf', 'the root')), Credential::of('the operator password')),
             'KeyMinters::challengedOn' => static fn(): object => new KeyMinters($clients)->challengedOn($stack, $session, APhoneKeysName::of('Galaxy A51 · 7f3a'), AKeyToMint::of(AKeysName::of('den'), WhatAKeyAdmits::reading(), WhatAKeyIsFor::HomeAssistant)),
             'KeyMinters::claimedOn' => static fn(): object => new KeyMinters($clients)->claimedOn($stack, $session, AKeyToMint::of(AKeysName::of('den'), WhatAKeyAdmits::reading(), WhatAKeyIsFor::HomeAssistant), AProofOfThisPhone::of(APhoneKeysName::of('Galaxy A51 · 7f3a'), AChallengeToSign::of('a-challenge', ATextToSign::saying('a text')), 'a signature')),

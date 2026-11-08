@@ -99,4 +99,19 @@ enum WhatAnAnswerHolds: string
 
     /** What this phone is called. */
     case Model = 'model';
+
+    /** The UnifiedPush distributors installed, each with its package and its name. */
+    case Distributors = 'distributors';
+
+    /** The package Android knows a distributor by. */
+    case Package = 'package';
+
+    /** What a distributor is called. */
+    case Called = 'called';
+
+    /** The endpoint a distributor gave. */
+    case Endpoint = 'endpoint';
+
+    /** A WebPush public key, an uncompressed P-256 point in base64. */
+    case P256dh = 'p256dh';
 }
