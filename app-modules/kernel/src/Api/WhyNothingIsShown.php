@@ -65,6 +65,9 @@ enum WhyNothingIsShown
     /** The operator turned notifications off in the app's own settings, which is an answer and not a fault. */
     case TheOperatorTurnedThemOff;
 
+    /** The operator chose not to be told this kind of thing, or a problem this slight, from that stack. */
+    case TheOperatorLeftItOut;
+
     /**
      * Whether asking the operator could change this answer.
      *

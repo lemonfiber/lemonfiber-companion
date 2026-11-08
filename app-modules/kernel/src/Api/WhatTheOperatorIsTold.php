@@ -8,7 +8,7 @@ use function trim;
 
 /**
  * What the operator will be told about: the preset in force, what it means,
- * and every event set apart from it.
+ * every event set apart from it, and the kinds of notification the stack raises.
  *
  * The preset and its meaning are the stack's words, and both are required: a
  * preset named without what it means is a word somebody has to look up before
@@ -25,10 +25,11 @@ final readonly class WhatTheOperatorIsTold
         private string $preset,
         private string $means,
         private SetApart $exceptions,
+        private KindsOfNotification $kinds,
     ) {}
 
-    /** The preset in force, what it means, and what is set apart from it. */
-    public static function byPreset(string $preset, string $means, SetApart $exceptions): self
+    /** The preset in force, what it means, what is set apart from it, and the kinds the stack raises. */
+    public static function byPreset(string $preset, string $means, SetApart $exceptions, KindsOfNotification $kinds): self
     {
         if (trim($preset) === '') {
             throw AlertSaysNothing::about('preset');
@@ -38,7 +39,7 @@ final readonly class WhatTheOperatorIsTold
             throw AlertSaysNothing::about('means');
         }
 
-        return new self($preset, $means, $exceptions);
+        return new self($preset, $means, $exceptions, $kinds);
     }
 
     /** The preset in force for events with no exception of their own. */
@@ -57,5 +58,11 @@ final readonly class WhatTheOperatorIsTold
     public function exceptions(): SetApart
     {
         return $this->exceptions;
+    }
+
+    /** The kinds of notification the stack raises as it is configured. */
+    public function kinds(): KindsOfNotification
+    {
+        return $this->kinds;
     }
 }

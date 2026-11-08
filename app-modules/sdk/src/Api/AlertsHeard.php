@@ -15,9 +15,12 @@ use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\AlertEnvelope;
 use Modules\Kernel\Api\AnAlert;
 use Modules\Kernel\Api\AnAlertsName;
+use Modules\Kernel\Api\AnAlertsSort;
 use Modules\Kernel\Api\CodeIsBlank;
 use Modules\Kernel\Api\CodeIsMisshapen;
 use Modules\Kernel\Api\EnvelopeIsNotRead;
+use Modules\Kernel\Api\KindOfNotification;
+use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\TheAlerts;
 use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhichWayItWent;
@@ -33,9 +36,10 @@ use function trim;
 /**
  * The `alert` events one wake of a stream carried, as the alerts the stack raised.
  *
- * Only what a notification is filed and worded by is read: the kind, which way
- * it went, and the name an onset and its resolution share. What happened and
- * what to do are the stack's to say on its own screens.
+ * Only what a notification is filed, worded and let through by is read: the
+ * kind, which way it went, the name an onset and its resolution share, and its
+ * sort, which the operator's choices for the stack are weighed against. What
+ * happened and what to do are the stack's to say on its own screens.
  *
  * **An alert it cannot read is skipped and noted, and the rest still arrive.**
  * One misshapen alert is no reason to stop hearing a stack, so unlike every
@@ -74,7 +78,38 @@ final readonly class AlertsHeard
         $way = WhichWayItWent::tryFrom($moment)
             ?? throw AlertIsUnreadable::word(AlertField::Moment->value, $moment, ...array_map(static fn(WhichWayItWent $way): string => $way->value, WhichWayItWent::cases()));
         $named = trim(Optional::text($data, WireField::Id, AlertIsUnreadable::missing(WireField::Id->value)));
+        $sort = AnAlertsSort::of(self::notification($data), self::severity($data));
 
-        return $named === '' ? AnAlert::unnamed($kind, $way) : AnAlert::raised($kind, $way, AnAlertsName::of($named));
+        return $named === '' ? AnAlert::unnamed($kind, $way, $sort) : AnAlert::raised($kind, $way, AnAlertsName::of($named), $sort);
+    }
+
+    /**
+     * The kind of notification it is, a problem where the core recorded it before alerts carried one.
+     *
+     * @param array<mixed> $data
+     */
+    private static function notification(array $data): KindOfNotification
+    {
+        $said = Optional::text($data, AlertField::Notification, AlertIsUnreadable::missing(AlertField::Notification->value));
+
+        if ($said === '') {
+            return KindOfNotification::Problem;
+        }
+
+        return KindOfNotification::tryFrom($said)
+            ?? throw AlertIsUnreadable::sorted(AlertField::Notification->value, $said, ...array_map(static fn(KindOfNotification $kind): string => $kind->value, KindOfNotification::cases()));
+    }
+
+    /**
+     * How much it matters.
+     *
+     * @param array<mixed> $data
+     */
+    private static function severity(array $data): Severity
+    {
+        $said = Required::text($data, WireField::Severity, AlertIsUnreadable::missing(WireField::Severity->value));
+
+        return Severity::tryFrom($said)
+            ?? throw AlertIsUnreadable::sorted(WireField::Severity->value, $said, ...array_map(static fn(Severity $severity): string => $severity->value, Severity::cases()));
     }
 }

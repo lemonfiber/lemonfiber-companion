@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
+use function array_map;
+
 use InvalidArgumentException;
+use Modules\Kernel\Api\KindOfNotification;
+use Modules\Sdk\Internal\TheWordsItReads;
 
 use function sprintf;
 
@@ -52,6 +56,17 @@ final class AlertsAreUnreadable extends InvalidArgumentException
             'Exception %d in the alerts envelope sets `%s` apart again. One event with two answers about whether it is heard is a question with two answers.',
             $position,
             $kind,
+        ));
+    }
+
+    /** A kind of notification at this position that this app has no case for, refused so no switch is offered for something else. */
+    public static function kind(string $said, int $position): self
+    {
+        return new self(sprintf(
+            'Kind %d in the alerts envelope is `%s`, and this app reads %s. A switch offered under the nearest word would hold back, or let through, something the operator did not choose.',
+            $position,
+            $said,
+            TheWordsItReads::quoted(...array_map(static fn(KindOfNotification $kind): string => $kind->value, KindOfNotification::cases())),
         ));
     }
 }

@@ -56,19 +56,8 @@ final readonly class Notification
         private HowItIsWorded $worded,
         private AnAlertsName $filedUnder,
         private WhereATapLeads $leadsTo,
+        private AnAlertsSort $sort,
     ) {}
-
-    /**
-     * A notification the core decided on, for one stack.
-     *
-     * It takes no text. An adapter turning the core's decision into one of
-     * these has that decision, a stack and the screen a tap opens, and nothing
-     * else to hand over, which is that rule expressed as a signature.
-     */
-    public static function fromTheCore(Stack $about, WhatTheCoreDecided $says, WhereATapLeads $leadsTo): self
-    {
-        return new self($about->id(), $about->name(), $says, guarded: false, worded: HowItIsWorded::Onset, filedUnder: AnAlertsName::byItsKind($says), leadsTo: $leadsTo);
-    }
 
     /**
      * A notification of one alert the core raised about one stack, filed under the alert's name.
@@ -78,7 +67,7 @@ final readonly class Notification
      */
     public static function ofAnAlert(Stack $about, AnAlert $alert, WhereATapLeads $leadsTo): self
     {
-        return new self($about->id(), $about->name(), $alert->kind(), guarded: false, worded: HowItIsWorded::forAnAlert($alert->way()), filedUnder: $alert->filedUnder(), leadsTo: $leadsTo);
+        return new self($about->id(), $about->name(), $alert->kind(), guarded: false, worded: HowItIsWorded::forAnAlert($alert->way()), filedUnder: $alert->filedUnder(), leadsTo: $leadsTo, sort: $alert->sort());
     }
 
     /**
@@ -89,7 +78,7 @@ final readonly class Notification
      */
     public function beyondTheCap(): self
     {
-        return new self($this->about, $this->called, $this->says, guarded: $this->guarded, worded: HowItIsWorded::MoreToTell, filedUnder: AnAlertsName::beyondTheCap(), leadsTo: $this->leadsTo);
+        return new self($this->about, $this->called, $this->says, guarded: $this->guarded, worded: HowItIsWorded::MoreToTell, filedUnder: AnAlertsName::beyondTheCap(), leadsTo: $this->leadsTo, sort: $this->sort);
     }
 
     /**
@@ -118,7 +107,19 @@ final readonly class Notification
      */
     public function whileLocked(): self
     {
-        return new self($this->about, $this->called, $this->says, guarded: true, worded: $this->worded, filedUnder: $this->filedUnder, leadsTo: $this->leadsTo);
+        return new self($this->about, $this->called, $this->says, guarded: true, worded: $this->worded, filedUnder: $this->filedUnder, leadsTo: $this->leadsTo, sort: $this->sort);
+    }
+
+    /** Whether the operator lets it reach the phone, by what they chose for its stack. */
+    public function isLetThroughBy(WhatMayReachThePhone $chosen): bool
+    {
+        return $chosen->lets($this->sort);
+    }
+
+    /** The stack it is about. */
+    public function about(): StackId
+    {
+        return $this->about;
     }
 
     /** Which words it is shown in. */

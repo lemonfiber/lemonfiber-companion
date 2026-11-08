@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Bootstrap\Composition\ArtworkGoesWithTheSession;
 use Bootstrap\Composition\EveryKeeperOfAStack;
 use Bootstrap\Composition\NothingToAsk;
+use Modules\Connection\Api\ChoosingWhatReachesThePhone;
 use Modules\Device\Api\PlatformPhoneKeys;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\ForgetsAStack;
@@ -42,6 +43,7 @@ use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\GrantsKeptInMemory;
 use Tests\Support\Fakes\NewsKeptInMemory;
+use Tests\Support\Fakes\NotifyingKeptInMemory;
 use Tests\Support\Fakes\PhoneKeysNamesKeptInMemory;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\StacksInMemory;
@@ -86,6 +88,7 @@ function everyKeeperHoldingTwoStacks(): array
         'what the household asked for' => WhatThePhoneKeeps::noRequestsYet(),
         'the languages members chose' => WhatThePhoneKeeps::noLanguagesYet(),
         'what is new' => whatNoticesNewsOver(ASealInMemory::working()),
+        'what reaches the phone' => new ChoosingWhatReachesThePhone(ASealInMemory::working(), NotifyingKeptInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0))),
         'the platform words' => new PlatformStandings(APlatformStore::working()),
         'the fake words' => StandingsInMemory::working(),
         'the platform work' => new PlatformWorkLeftRunning($store, new PlatformStacks($store)),

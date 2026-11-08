@@ -18,7 +18,7 @@ use function trim;
  * rest of them, on this side, about a server that did not answer; and
  * {@see Problem::code()} carries what a stack said when it refused a request
  * the operator made. Both are `Code`, so both could be handed to
- * {@see Notification::fromTheCore()} and become an alert nobody in the core
+ * {@see AnAlert::raised()} and become an alert nobody in the core
  * decided to raise.
  *
  * Two types that cannot be substituted is what turns that from a sentence in a

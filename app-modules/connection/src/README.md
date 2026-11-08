@@ -13,6 +13,7 @@ in to it.
 | `TheLock` | Whether the lock stands, waived where the store holds nothing it guards |
 | `ClearingWhatCannotBeRead`, `WhatWasKeptAtOpening` | Everything the phone kept, cleared on opening where the key that sealed it had gone |
 | `LettingGoOfOldReadings` | How long readings are kept, and every reading older than that let go of on opening and when the choice changes |
+| `ChoosingWhatReachesThePhone`, `NotifyingOnlyWhatEachStackLets` | What the operator lets reach the phone from each stack, kept sealed one row a stack, and every notification held to it |
 | `ThisDeviceKept` | The id this install plays under, drawn once and kept with the phone's settings |
 | `TheGrantForThisDevice` | The grant this device plays with on a stack: the one kept while it stands, a new one where it lapsed or the door refused it |
 

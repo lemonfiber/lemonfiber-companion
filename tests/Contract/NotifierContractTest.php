@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use Lemonfiber\Native\Telling;
 use Lemonfiber\Native\WhyNothingWasTold;
+use Modules\Connection\Api\ChoosingWhatReachesThePhone;
+use Modules\Connection\Api\NotifyingOnlyWhatEachStackLets;
 use Modules\Connection\Api\NotifyingOnlyWhenTurnedOn;
 use Modules\Connection\Api\TurningNotificationsOn;
 use Modules\Device\Api\NotifyingWithinACap;
@@ -12,19 +14,23 @@ use Modules\Device\Internal\WhatWasToldLately;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAlert;
 use Modules\Kernel\Api\AnAlertsName;
+use Modules\Kernel\Api\AnAlertsSort;
 use Modules\Kernel\Api\Asked;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\DeviceAuth;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifier;
 use Modules\Kernel\Api\Notifying;
 use Modules\Kernel\Api\SecondsIn;
+use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Shown;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhatMayReachThePhone;
 use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhereATapLeads;
 use Modules\Kernel\Api\WhichWayItWent;
@@ -37,6 +43,7 @@ use Tests\Support\Fakes\ANotifierInMemory;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\ConnectionSettingsInMemory;
 use Tests\Support\Fakes\FrozenClock;
+use Tests\Support\Fakes\NotifyingKeptInMemory;
 use Tests\Support\Fakes\WakesInMemory;
 
 // The Notifier contract, run against the adapter and against the fake.
@@ -75,7 +82,7 @@ function whatBecameOfIt(Shown $shown): string
 
 function somethingWorthSaying(): Notification
 {
-    return Notification::fromTheCore(aStackToldAbout('the-loft', 'The loft'), WhatTheCoreDecided::toSay('backup.finished'), WhereATapLeads::to('/stacks/the-loft'));
+    return Notification::ofAnAlert(aStackToldAbout('the-loft', 'The loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('backup.finished'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Backup, Severity::Advisory)), WhereATapLeads::to('/stacks/the-loft'));
 }
 
 /**
@@ -121,15 +128,60 @@ function keptToTheSwitch(Notifier $within, Notifying $notifying): NotifyingOnlyW
     return new NotifyingOnlyWhenTurnedOn($within, $seal, $kept, $clock);
 }
 
+/** The notifier kept to what the operator lets reach the phone from each stack, having chosen what `$choose` does. */
+function keptToWhatEachStackLets(Notifier $within, ?Closure $choose = null): NotifyingOnlyWhatEachStackLets
+{
+    $choosing = new ChoosingWhatReachesThePhone(ASealInMemory::working(), NotifyingKeptInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(NOTIFYING_AT)));
+
+    if ($choose instanceof Closure) {
+        $choose($choosing);
+    }
+
+    return new NotifyingOnlyWhatEachStackLets($within, $choosing);
+}
+
+/** A problem on the loft at this severity, going this way. */
+function aProblemOnTheLoft(Severity $severity, WhichWayItWent $way = WhichWayItWent::Onset): Notification
+{
+    return Notification::ofAnAlert(aStackToldAbout('the-loft', 'The loft'), AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), $way, AnAlertsName::of('disk.full#9'), AnAlertsSort::of(KindOfNotification::Problem, $severity)), WhereATapLeads::to('/stacks/the-loft'));
+}
+
 /** One alert of a stack's, named by its recurrence. */
 function anAlertOf(string $stack, int $recurrence): Notification
 {
     return Notification::ofAnAlert(
         aStackToldAbout($stack, $stack),
-        AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of(sprintf('disk.full#%d', $recurrence))),
+        AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of(sprintf('disk.full#%d', $recurrence)), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)),
         WhereATapLeads::to(sprintf('/stacks/%s', $stack)),
     );
 }
+
+it('shows nothing of a kind the operator switched off for its stack, and says that is why', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+    $notifier = keptToWhatEachStackLets(overAHandset($centre), static fn(ChoosingWhatReachesThePhone $choosing): WhatMayReachThePhone => $choosing->switchOff(StackId::rememberedAs('the-loft'), KindOfNotification::Backup));
+
+    expect(whatBecameOfIt($notifier->show(somethingWorthSaying())))->toBe(WhyNothingIsShown::TheOperatorLeftItOut->name)
+        ->and(whatBecameOfIt($notifier->show(aProblemOnTheLoft(Severity::Advisory))))->toBe('delivered')
+        ->and($centre->shown())->toHaveCount(1);
+});
+
+it('shows a kind switched off on another stack', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+    $notifier = keptToWhatEachStackLets(overAHandset($centre), static fn(ChoosingWhatReachesThePhone $choosing): WhatMayReachThePhone => $choosing->switchOff(StackId::rememberedAs('the-shed'), KindOfNotification::Backup));
+
+    expect(whatBecameOfIt($notifier->show(somethingWorthSaying())))->toBe('delivered');
+});
+
+it('shows a problem at the floor or worse, and nothing of one below it, its resolution following its onset', function (): void {
+    $centre = ANotificationCentreOnAHandset::allowed();
+    $notifier = keptToWhatEachStackLets(overAHandset($centre), static fn(ChoosingWhatReachesThePhone $choosing): WhatMayReachThePhone => $choosing->tellProblemsFrom(StackId::rememberedAs('the-loft'), Severity::Error));
+
+    expect(whatBecameOfIt($notifier->show(aProblemOnTheLoft(Severity::Warning))))->toBe(WhyNothingIsShown::TheOperatorLeftItOut->name)
+        ->and(whatBecameOfIt($notifier->show(aProblemOnTheLoft(Severity::Warning, WhichWayItWent::Resolved))))->toBe(WhyNothingIsShown::TheOperatorLeftItOut->name)
+        ->and(whatBecameOfIt($notifier->show(aProblemOnTheLoft(Severity::Error))))->toBe('delivered')
+        ->and(whatBecameOfIt($notifier->show(aProblemOnTheLoft(Severity::Critical, WhichWayItWent::Resolved))))->toBe('delivered')
+        ->and($centre->shown())->toHaveCount(2);
+});
 
 /**
  * Every implementation of the port, in each of the three standings.
@@ -169,6 +221,11 @@ function everyNotifier(Asked $standing): array
             Asked::Declined => ANotificationCentreOnAHandset::refused(),
             Asked::NotYet => ANotificationCentreOnAHandset::unasked(),
         }), Notifying::On),
+        'the adapter, kept to what each stack lets through' => fn(): Notifier => keptToWhatEachStackLets(overAHandset(match ($standing) {
+            Asked::Granted => ANotificationCentreOnAHandset::allowed(),
+            Asked::Declined => ANotificationCentreOnAHandset::refused(),
+            Asked::NotYet => ANotificationCentreOnAHandset::unasked(),
+        })),
     ];
 }
 
@@ -364,9 +421,9 @@ it('files an alert under its name, so its resolution replaces its onset in the r
     $words = Catalogue::words();
     $about = aStackToldAbout('the-loft', 'The loft');
 
-    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#3')), WhereATapLeads::to('/stacks/the-loft')));
-    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, AnAlertsName::of('disk.full#3')), WhereATapLeads::to('/stacks/the-loft')));
-    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#4')), WhereATapLeads::to('/stacks/the-loft')));
+    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#3'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), WhereATapLeads::to('/stacks/the-loft')));
+    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, AnAlertsName::of('disk.full#3'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), WhereATapLeads::to('/stacks/the-loft')));
+    $notifier->show(Notification::ofAnAlert($about, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#4'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), WhereATapLeads::to('/stacks/the-loft')));
 
     $shown = $centre->shown();
 
@@ -381,10 +438,10 @@ it('files an alert under its name, so its resolution replaces its onset in the r
 it('files an alert the core gave no name under its kind, and keeps the resolution\'s words while locked', function (): void {
     $centre = ANotificationCentreOnAHandset::allowed();
     $words = Catalogue::words();
-    $resolved = Notification::ofAnAlert(aStackToldAbout('the-loft', 'The loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved), WhereATapLeads::to('/stacks/the-loft'));
+    $resolved = Notification::ofAnAlert(aStackToldAbout('the-loft', 'The loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), WhereATapLeads::to('/stacks/the-loft'));
 
     overAHandset($centre)->show($resolved->whileLocked());
-    overAHandset($centre)->show(Notification::fromTheCore(aStackToldAbout('the-loft', 'The loft'), WhatTheCoreDecided::toSay('disk.full'), WhereATapLeads::to('/stacks/the-loft')));
+    overAHandset($centre)->show(Notification::ofAnAlert(aStackToldAbout('the-loft', 'The loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), WhereATapLeads::to('/stacks/the-loft')));
 
     $shown = $centre->shown();
 
@@ -398,10 +455,10 @@ it('files the same alert name from two stacks apart, so one stack\'s resolution 
     $loft = aStackToldAbout('the-loft', 'The loft');
     $shed = aStackToldAbout('the-shed', 'The shed');
 
-    $notifier->show(Notification::ofAnAlert($loft, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#3')), WhereATapLeads::to('/stacks/the-loft')));
-    $notifier->show(Notification::ofAnAlert($shed, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, AnAlertsName::of('disk.full#3')), WhereATapLeads::to('/stacks/the-loft')));
-    $notifier->show(Notification::ofAnAlert($shed, AnAlert::unnamed(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset), WhereATapLeads::to('/stacks/the-loft'))->whileLocked());
-    $notifier->show(Notification::fromTheCore($loft, WhatTheCoreDecided::toSay('disk.full'), WhereATapLeads::to('/stacks/the-loft')));
+    $notifier->show(Notification::ofAnAlert($loft, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#3'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), WhereATapLeads::to('/stacks/the-loft')));
+    $notifier->show(Notification::ofAnAlert($shed, AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, AnAlertsName::of('disk.full#3'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), WhereATapLeads::to('/stacks/the-loft')));
+    $notifier->show(Notification::ofAnAlert($shed, AnAlert::unnamed(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), WhereATapLeads::to('/stacks/the-loft'))->whileLocked());
+    $notifier->show(Notification::ofAnAlert($loft, AnAlert::unnamed(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), WhereATapLeads::to('/stacks/the-loft')));
 
     $ids = array_column($centre->shown(), 'id');
 
@@ -412,7 +469,7 @@ it('files the same alert name from two stacks apart, so one stack\'s resolution 
 it('files a notification under a key that names neither its stack nor its alert', function (): void {
     $centre = ANotificationCentreOnAHandset::allowed();
 
-    overAHandset($centre)->show(Notification::ofAnAlert(aStackToldAbout('the-loft', 'The loft'), AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#3')), WhereATapLeads::to('/stacks/the-loft')));
+    overAHandset($centre)->show(Notification::ofAnAlert(aStackToldAbout('the-loft', 'The loft'), AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#3'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), WhereATapLeads::to('/stacks/the-loft')));
 
     $id = $centre->shown()[0]['id'];
 

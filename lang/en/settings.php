@@ -52,6 +52,7 @@ return [
     ],
     'notifications' => 'Notifications',
     'notifications_on' => 'Tell me when a stack needs attention',
+    'notifications_from_each_stack' => 'What each stack may tell you',
     'notifications_allow' => 'Allow notifications',
     'notifications_not_now' => 'Not now',
     'notifications_declined' => 'Notifications are turned off for lemonfiber in your phone\'s settings. Turn them on there, then come back.',

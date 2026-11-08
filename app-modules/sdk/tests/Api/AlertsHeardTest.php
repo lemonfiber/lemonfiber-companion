@@ -32,7 +32,7 @@ it('skips an alert whose payload is not one, and notes only why', function (): v
 // `alert` is stood in for and not judged: the case is a name that is only spaces, which a stack holding to the contract does not send.
 it('files an alert named only in spaces under its kind, as one the core gave no name', function (): void {
     $notes = new NotesKeptInMemory();
-    $event = new ServerEvent('alert', (string) json_encode(['api_version' => 1, 'kind' => 'alert', 'data' => ['kind' => 'vpn.down', 'moment' => 'onset', 'id' => '  ']]));
+    $event = new ServerEvent('alert', (string) json_encode(['api_version' => 1, 'kind' => 'alert', 'data' => ['kind' => 'vpn.down', 'moment' => 'onset', 'severity' => 'warning', 'id' => '  ']]));
     $stack = StackId::of(Nonce::of(str_repeat('a', Nonce::SHORTEST)));
     $filed = [];
 

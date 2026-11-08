@@ -111,7 +111,7 @@ function typesThatMustNotMeet(): array
             . 'half of that, because the app has codes: Obstacle::code() mints '
             . 'COMPANION-NO-ANSWER about a server that did not answer, and Problem::code() '
             . 'carries what a stack said when it refused a request the operator made. '
-            . 'Either one handed to fromTheCore() is an alert nobody in the core decided '
+            . 'Either one handed to AnAlert::raised() is an alert nobody in the core decided '
             . 'to raise, so the identifier is a WhatTheCoreDecided and a Code cannot '
             . 'become one.',
         ],

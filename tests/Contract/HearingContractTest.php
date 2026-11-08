@@ -9,6 +9,7 @@ use Modules\Kernel\Api\ALink;
 use Modules\Kernel\Api\AnAffectedItem;
 use Modules\Kernel\Api\AnAlert;
 use Modules\Kernel\Api\AnAlertsName;
+use Modules\Kernel\Api\AnAlertsSort;
 use Modules\Kernel\Api\AnEventHeard;
 use Modules\Kernel\Api\AProblemNamed;
 use Modules\Kernel\Api\AReleaseNamed;
@@ -22,6 +23,7 @@ use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\HowLongEachReadWaits;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -490,7 +492,7 @@ it('opens after where an earlier launch left off, and hears the alerts the stack
     $alerts = theAlertsAWakeHeard(new Listeners(new PinnedClients(), new NullLogger(), $leftOff));
 
     expect(WhereEachOpenResumed::in($stack))->toBe(['run-0'])
-        ->and($alerts)->toEqual([AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2'))])
+        ->and($alerts)->toEqual([AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Critical))])
         ->and(WhereItResumes::said($leftOff->leftOffAt(TheStreamListenedTo::aStack()->id())))->toBe('after:run-1');
 });
 
@@ -908,6 +910,7 @@ function anAlertEnvelope(array $changed = []): array
             'kind' => 'vpn.down',
             'moment' => 'onset',
             'severity' => 'critical',
+            'notification' => 'problem',
             'summary' => 'The tunnel dropped',
             'meaning' => 'Downloads have stopped rather than leak',
             'remedies' => ['Restart the gateway'],
@@ -940,8 +943,8 @@ function theAlertsAWakeHeard(Hearing $hearing): array
 
 it('hears every alert a wake carried, in order, beside whatever else it said', function (): void {
     $raised = [
-        AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2')),
-        AnAlert::unnamed(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Resolved),
+        AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Critical)),
+        AnAlert::unnamed(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Resolved, AnAlertsSort::of(KindOfNotification::Problem, Severity::Critical)),
     ];
 
     foreach (TheStreamListenedTo::everyWay(
@@ -967,7 +970,7 @@ it('skips an alert it cannot read, notes why without what the stack sent, and st
 
     expect(whatWasHeardAsAWord($heard))->toBe('alive')
         ->and(iterator_to_array($heard->theAlerts(), preserve_keys: false))
-        ->toEqual([AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2'))])
+        ->toEqual([AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Critical))])
         ->and($notes->noted())->toHaveCount(1)
         ->and($notes->noted()[0])->toStartWith('alert: skipped one this app cannot read')
         ->and($notes->noted()[0])->not->toContain('Click here')
@@ -980,7 +983,20 @@ it('skips an alert it cannot read, notes why without what the stack sent, and st
     'a way this app does not read' => [['moment' => 'sideways']],
     'a name that is not words' => [['id' => 7]],
     'no payload' => [['kind' => null, 'moment' => null]],
+    'a kind of notification this app does not read' => [['notification' => 'sideways']],
+    'no severity' => [['severity' => null]],
+    'a severity this app does not read' => [['severity' => 'sideways']],
 ]);
+
+it('hears the kind of notification and the severity each alert carried, and a problem where it carried no kind', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(sprintf('%s%s', anAlertEvent(['notification' => 'backup', 'severity' => 'advisory']), anAlertEvent(['notification' => null, 'severity' => 'error'])))]);
+
+    $heard = new Listeners(new PinnedClients(), new NotesKeptInMemory(), WhereHearingLeftOffInMemory::nowhere())->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession());
+
+    expect(array_map(static fn(AnAlert $alert): AnAlertsSort => $alert->sort(), iterator_to_array($heard->theAlerts(), preserve_keys: false)))
+        ->toEqual([AnAlertsSort::of(KindOfNotification::Backup, Severity::Advisory), AnAlertsSort::of(KindOfNotification::Problem, Severity::Error)]);
+});
 
 it('stands in for a stack with an alert the contract would accept', function (): void {
     expect(WhatTheContractAccepts::complaintsAbout('AlertEnvelope', anAlertEnvelope()))->toBe([]);

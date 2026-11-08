@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 /**
- * One alert the core raised: what kind of event it is, which way it went, and the name that is the same on its onset and its resolution.
+ * One alert the core raised: what kind of event it is, which way it went, the name that is the same on its onset and its resolution, and its sort.
  *
  * It carries no sentence. What happened, what it means and what to do are
  * read in the app; a notification says only that the stack has something to
@@ -13,18 +13,18 @@ namespace Modules\Kernel\Api;
  */
 final readonly class AnAlert
 {
-    private function __construct(private WhatTheCoreDecided $kind, private WhichWayItWent $way, private AnAlertsName $filedUnder) {}
+    private function __construct(private WhatTheCoreDecided $kind, private WhichWayItWent $way, private AnAlertsName $filedUnder, private AnAlertsSort $sort) {}
 
     /** The alert, filed under the name the core gave it. */
-    public static function raised(WhatTheCoreDecided $kind, WhichWayItWent $way, AnAlertsName $named): self
+    public static function raised(WhatTheCoreDecided $kind, WhichWayItWent $way, AnAlertsName $named, AnAlertsSort $sort): self
     {
-        return new self($kind, $way, $named);
+        return new self($kind, $way, $named, $sort);
     }
 
     /** The alert, filed under its kind, as it is where the core recorded it before alerts carried a name. */
-    public static function unnamed(WhatTheCoreDecided $kind, WhichWayItWent $way): self
+    public static function unnamed(WhatTheCoreDecided $kind, WhichWayItWent $way, AnAlertsSort $sort): self
     {
-        return new self($kind, $way, AnAlertsName::byItsKind($kind));
+        return new self($kind, $way, AnAlertsName::byItsKind($kind), $sort);
     }
 
     /** What kind of event it is. */
@@ -37,6 +37,12 @@ final readonly class AnAlert
     public function way(): WhichWayItWent
     {
         return $this->way;
+    }
+
+    /** What sort of alert it is: its kind of notification and how much it matters. */
+    public function sort(): AnAlertsSort
+    {
+        return $this->sort;
     }
 
     /** What a notification about it is filed under: its name, so a resolution replaces its onset, or its kind where it has no name. */

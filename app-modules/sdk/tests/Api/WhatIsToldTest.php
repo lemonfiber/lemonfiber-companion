@@ -7,8 +7,10 @@ namespace Modules\Sdk\Tests\Api;
 use function expect;
 use function implode;
 use function it;
+use function iterator_to_array;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
+use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\WhatTheOperatorIsTold;
 use Modules\Sdk\Api\AlertsAreUnreadable;
 use Modules\Sdk\Api\WhatIsTold;
@@ -76,7 +78,26 @@ it('refuses a setting missing its preset, what it means, or its exceptions', fun
     unset($setting[$field]);
 
     expect(fn(): WhatTheOperatorIsTold => WhatIsTold::in(alertsSaying($setting)))->toThrow(AlertsAreUnreadable::class, sprintf('`%s`', $field));
-})->with(['preset', 'means', 'exceptions']);
+})->with(['preset', 'means', 'exceptions', 'kinds']);
+
+it('reads the kinds of notification the stack raises, in the order the kinds are declared', function (): void {
+    $told = WhatIsTold::in(alertsSaying([...aQuietSetting(), 'kinds' => ['member', 'problem', 'backup']]));
+
+    expect(iterator_to_array($told->kinds(), preserve_keys: false))->toBe([KindOfNotification::Problem, KindOfNotification::Backup, KindOfNotification::Member]);
+});
+
+it('reads a stack that raises no kind of notification', function (): void {
+    expect(iterator_to_array(WhatIsTold::in(alertsSaying([...aQuietSetting(), 'kinds' => []]))->kinds(), preserve_keys: false))->toBe([]);
+});
+
+// `alerts` is stood in for and not judged: each case is a kind the contract does not describe, which no stack sends.
+it('refuses a kind of notification it has no case for, naming where it stood', function (mixed $kind, string $said): void {
+    expect(fn(): WhatTheOperatorIsTold => WhatIsTold::in(alertsSaying([...aQuietSetting(), 'kinds' => ['problem', $kind]])))
+        ->toThrow(AlertsAreUnreadable::class, sprintf('Kind 1 in the alerts envelope is `%s`', $said));
+})->with([
+    'a word it does not read' => ['gossip', 'gossip'],
+    'not a word' => [7, ''],
+]);
 
 it('refuses a preset or meaning that is blank or not text', function (mixed $said): void {
     expect(fn(): WhatTheOperatorIsTold => WhatIsTold::in(alertsSaying([...aQuietSetting(), 'means' => $said])))->toThrow(AlertsAreUnreadable::class, '`means`');

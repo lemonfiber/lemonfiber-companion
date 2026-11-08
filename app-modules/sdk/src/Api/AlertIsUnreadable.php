@@ -36,4 +36,15 @@ final class AlertIsUnreadable extends InvalidArgumentException
             TheWordsItReads::quoted(...$accepted),
         ));
     }
+
+    /** A word for its sort that it has no case for. */
+    public static function sorted(string $where, string $said, string ...$accepted): self
+    {
+        return new self(sprintf(
+            'An alert on the stream says `%s` is `%s`, and this app reads %s. Reading it as the nearest one would let it through, or hold it back, against what the operator chose.',
+            $where,
+            $said,
+            TheWordsItReads::quoted(...$accepted),
+        ));
+    }
 }

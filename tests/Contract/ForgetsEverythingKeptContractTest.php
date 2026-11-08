@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Bootstrap\Composition\EveryStoreThePhoneKeeps;
 use Bootstrap\Composition\NothingToAsk;
+use Modules\Connection\Internal\Store\NotifyingInTheDatabase;
 use Modules\Connection\Internal\Store\SettingsInTheDatabase;
 use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
@@ -48,6 +49,7 @@ use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\ConnectionSettingsInMemory;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\NewsKeptInMemory;
+use Tests\Support\Fakes\NotifyingKeptInMemory;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\Fakes\WhereHearingLeftOffInMemory;
@@ -158,6 +160,8 @@ it('forgets nothing where nothing is kept, and says so', function (): void {
         'the settings fake' => ConnectionSettingsInMemory::empty(),
         'the news adapter' => new NewsInTheDatabase(AKeptDatabase::migrated()),
         'the news fake' => NewsKeptInMemory::empty(),
+        'the notifying adapter' => new NotifyingInTheDatabase(AKeptDatabase::migrated()),
+        'the notifying fake' => NotifyingKeptInMemory::empty(),
         'the updates adapter' => new UpkeepReadingsInTheDatabase(AKeptDatabase::migrated()),
         'the services adapter' => new ListingsInTheDatabase(AKeptDatabase::migrated()),
         'the requests adapter' => new RequestsInTheDatabase(AKeptDatabase::migrated()),

@@ -19,4 +19,7 @@ enum AlertField: string implements NamesAWireField
 
     /** Which way the condition went. */
     case Moment = 'moment';
+
+    /** Which kind of notification the alert is. */
+    case Notification = 'notification';
 }

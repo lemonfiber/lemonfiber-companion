@@ -8,10 +8,13 @@ use function array_key_exists;
 use function in_array;
 use function is_array;
 use function is_bool;
+use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\AlertsEnvelope;
 use Modules\Kernel\Api\AnEventSetApart;
+use Modules\Kernel\Api\KindOfNotification;
+use Modules\Kernel\Api\KindsOfNotification;
 use Modules\Kernel\Api\SetApart;
 use Modules\Kernel\Api\WhatTheOperatorIsTold;
 use Modules\Kernel\Api\WhetherItIsHeard;
@@ -49,7 +52,26 @@ final readonly class WhatIsTold
             self::word($data, WireField::Preset),
             self::word($data, WireField::Means),
             SetApart::of(...self::exceptions($data)),
+            KindsOfNotification::these(...self::kinds($data)),
         );
+    }
+
+    /**
+     * Every kind of notification the stack raises, refusing any this app has no case for.
+     *
+     * @param  array<mixed>           $data
+     * @return list<KindOfNotification>
+     */
+    private static function kinds(array $data): array
+    {
+        $kinds = [];
+
+        foreach (InTheOrderSent::rows(Required::rows($data, AlertsField::Kinds, AlertsAreUnreadable::missing(AlertsField::Kinds))) as $position => $said) {
+            $kinds[] = (is_string($said) ? KindOfNotification::tryFrom($said) : null)
+                ?? throw AlertsAreUnreadable::kind(is_string($said) ? $said : '', $position);
+        }
+
+        return $kinds;
     }
 
     /**
