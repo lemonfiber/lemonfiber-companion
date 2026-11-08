@@ -89,7 +89,7 @@ it('says what a port came to, each answer apart', function (ThePortAfterAStart $
     'moved to itself' => [fn(): ThePortAfterAStart => ThePortAfterAStart::moved(51413, 51413, everyClientTakesIt: true), 'same 51413', true],
     'named only after' => [fn(): ThePortAfterAStart => ThePortAfterAStart::cameUpOn(51999, everyClientTakesIt: true), 'now 51999', true],
     'not named' => [fn(): ThePortAfterAStart => ThePortAfterAStart::unsaid(everyClientTakesIt: false), 'unsaid', false],
-    'none forwarded' => [fn(): ThePortAfterAStart => ThePortAfterAStart::notForwarded(), 'none', true],
+    'none forwarded' => [ThePortAfterAStart::notForwarded(), 'none', true],
 ]);
 
 it('names a moment or says it named none', function (): void {
