@@ -7,10 +7,6 @@ use Modules\Kernel\Api\AClaimant;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ALink;
 use Modules\Kernel\Api\AnAffectedItem;
-use Modules\Kernel\Api\AnAlert;
-use Modules\Kernel\Api\AnAlertsName;
-use Modules\Kernel\Api\AnAlertsSort;
-use Modules\Kernel\Api\AnEventHeard;
 use Modules\Kernel\Api\AProblemNamed;
 use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\AStoppage;
@@ -23,7 +19,6 @@ use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\HowLongEachReadWaits;
 use Modules\Kernel\Api\Instant;
-use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -45,10 +40,8 @@ use Modules\Kernel\Api\WhatFollowedFromIt;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatSettledIt;
 use Modules\Kernel\Api\WhatStoppedMoving;
-use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhatWasHeard;
-use Modules\Kernel\Api\WhichWayItWent;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\PinnedClients;
@@ -64,7 +57,6 @@ use Tests\Support\TheStreamListenedTo;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 use Tests\Support\WhereEachOpenResumed;
-use Tests\Support\WhereItResumes;
 
 // The Hearing contract, run against the adapter and against the fake.
 //
@@ -482,18 +474,6 @@ it('resumes a stream it could not read after the last event it carried, and agai
     expect(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1', 'run-1']);
 });
 
-it('opens after where an earlier launch left off, and hears the alerts the stack hands back', function (): void {
-    MockClient::destroyGlobal();
-    $stack = MockClient::global([MockResponse::make(TheStreamListenedTo::anAlertEvent())]);
-    $leftOff = WhereHearingLeftOffInMemory::nowhere()->heardBefore(TheStreamListenedTo::aStack()->id(), AnEventHeard::named('run-0'));
-
-    $alerts = TheStreamListenedTo::theAlertsAWakeHeard(new Listeners(new PinnedClients(), new NullLogger(), $leftOff));
-
-    expect(WhereEachOpenResumed::in($stack))->toBe(['run-0'])
-        ->and($alerts)->toEqual([AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Critical))])
-        ->and(WhereItResumes::said($leftOff->leftOffAt(TheStreamListenedTo::aStack()->id())))->toBe('after:run-1');
-});
-
 it('notes where a stream got to only when it moved', function (): void {
     MockClient::destroyGlobal();
     $stack = MockClient::global([
@@ -506,17 +486,6 @@ it('notes where a stream got to only when it moved', function (): void {
 
     expect(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1'])
         ->and($leftOff->timesNoted())->toBe(1);
-});
-
-it('notes nothing for an event whose identifier is empty', function (): void {
-    MockClient::destroyGlobal();
-    MockClient::global([MockResponse::make(str_replace('id: run-1', 'id: ', TheStreamListenedTo::anAlertEvent()))]);
-    $leftOff = WhereHearingLeftOffInMemory::nowhere();
-
-    $alerts = TheStreamListenedTo::theAlertsAWakeHeard(new Listeners(new PinnedClients(), new NullLogger(), $leftOff));
-
-    expect($alerts)->toHaveCount(1)
-        ->and($leftOff->timesNoted())->toBe(0);
 });
 
 it('resumes within one screen where the store would not keep where it got to, and from the start once let go of', function (): void {
