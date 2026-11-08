@@ -84,12 +84,12 @@ it('says what a port came to, each answer apart', function (ThePortAfterAStart $
     expect(whatThePortCameTo($port))->toBe($said)
         ->and($port->everyClientTakesIt())->toBe($taken);
 })->with([
-    'the same' => [ThePortAfterAStart::same(51413, everyClientTakesIt: true), 'same 51413', true],
-    'moved' => [ThePortAfterAStart::moved(51413, 51999, everyClientTakesIt: false), 'moved 51413 51999', false],
-    'moved to itself' => [ThePortAfterAStart::moved(51413, 51413, everyClientTakesIt: true), 'same 51413', true],
-    'named only after' => [ThePortAfterAStart::cameUpOn(51999, everyClientTakesIt: true), 'now 51999', true],
-    'not named' => [ThePortAfterAStart::unsaid(everyClientTakesIt: false), 'unsaid', false],
-    'none forwarded' => [ThePortAfterAStart::notForwarded(), 'none', true],
+    'the same' => [fn(): ThePortAfterAStart => ThePortAfterAStart::same(51413, everyClientTakesIt: true), 'same 51413', true],
+    'moved' => [fn(): ThePortAfterAStart => ThePortAfterAStart::moved(51413, 51999, everyClientTakesIt: false), 'moved 51413 51999', false],
+    'moved to itself' => [fn(): ThePortAfterAStart => ThePortAfterAStart::moved(51413, 51413, everyClientTakesIt: true), 'same 51413', true],
+    'named only after' => [fn(): ThePortAfterAStart => ThePortAfterAStart::cameUpOn(51999, everyClientTakesIt: true), 'now 51999', true],
+    'not named' => [fn(): ThePortAfterAStart => ThePortAfterAStart::unsaid(everyClientTakesIt: false), 'unsaid', false],
+    'none forwarded' => [fn(): ThePortAfterAStart => ThePortAfterAStart::notForwarded(), 'none', true],
 ]);
 
 it('names a moment or says it named none', function (): void {

@@ -221,6 +221,17 @@ it('reads a check whose tunnel held and whose port and services were not named',
         ->and($said)->toEndWith('declined "Autostart is off"; not failing');
 });
 
+it('reads a port the stack named only after the start, one it could not name after it, and one that stayed', function (array $port, string $said): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make((string) json_encode(whatAStackSaysOfItsLastStart(['verified' => ['at' => WHEN_IT_LAST_STARTED + 60, 'outcome' => 'passed', 'port' => $port, 'tunnel' => ['state' => 'held']]])))]);
+
+    expect(everythingTheRestartSays(new Restarts(new PinnedClients())))->toContain(sprintf('since it at %d: passed, not back [], tunnel held (), %s, said ""', WHEN_IT_LAST_STARTED + 60, $said));
+})->with([
+    'named only after' => [['now' => 51999, 'pushed' => true], 'port now 51999 taken by all yes'],
+    'not named after' => [['was' => 51413, 'now' => null, 'pushed' => false], 'port unsaid taken by all no'],
+    'the same' => [['was' => 51413, 'now' => 51413, 'pushed' => true], 'port same 51413 taken by all yes'],
+]);
+
 // `boot` is stood in for and not judged: each case is a payload the contract does not describe, which no stack sends.
 it('refuses what it cannot read, rather than drawing a check that did not pass as one that did', function (array $changed): void {
     MockClient::destroyGlobal();
