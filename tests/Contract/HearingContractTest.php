@@ -484,10 +484,10 @@ it('resumes a stream it could not read after the last event it carried, and agai
 
 it('opens after where an earlier launch left off, and hears the alerts the stack hands back', function (): void {
     MockClient::destroyGlobal();
-    $stack = MockClient::global([MockResponse::make(anAlertEvent())]);
+    $stack = MockClient::global([MockResponse::make(TheStreamListenedTo::anAlertEvent())]);
     $leftOff = WhereHearingLeftOffInMemory::nowhere()->heardBefore(TheStreamListenedTo::aStack()->id(), AnEventHeard::named('run-0'));
 
-    $alerts = theAlertsAWakeHeard(new Listeners(new PinnedClients(), new NullLogger(), $leftOff));
+    $alerts = TheStreamListenedTo::theAlertsAWakeHeard(new Listeners(new PinnedClients(), new NullLogger(), $leftOff));
 
     expect(WhereEachOpenResumed::in($stack))->toBe(['run-0'])
         ->and($alerts)->toEqual([AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Critical))])
@@ -510,10 +510,10 @@ it('notes where a stream got to only when it moved', function (): void {
 
 it('notes nothing for an event whose identifier is empty', function (): void {
     MockClient::destroyGlobal();
-    MockClient::global([MockResponse::make(str_replace('id: run-1', 'id: ', anAlertEvent()))]);
+    MockClient::global([MockResponse::make(str_replace('id: run-1', 'id: ', TheStreamListenedTo::anAlertEvent()))]);
     $leftOff = WhereHearingLeftOffInMemory::nowhere();
 
-    $alerts = theAlertsAWakeHeard(new Listeners(new PinnedClients(), new NullLogger(), $leftOff));
+    $alerts = TheStreamListenedTo::theAlertsAWakeHeard(new Listeners(new PinnedClients(), new NullLogger(), $leftOff));
 
     expect($alerts)->toHaveCount(1)
         ->and($leftOff->timesNoted())->toBe(0);
@@ -894,6 +894,6 @@ it('stands in for a stack with the wiring it says as the contract would accept',
 
 it('hears no alert where a wake carried none', function (): void {
     foreach (TheStreamListenedTo::everyWay([MockResponse::make(aDashboardEvent(whatAHealthyStackSaysOfItsHealth()))], AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::said(theHealthySummary())])) as $which => $make) {
-        expect(iterator_to_array($make()->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession())->theAlerts(), preserve_keys: false))->toBe([], $which);
+        expect(TheStreamListenedTo::theAlertsAWakeHeard($make()))->toBe([], $which);
     }
 });

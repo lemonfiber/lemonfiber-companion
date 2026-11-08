@@ -5,7 +5,6 @@ declare(strict_types=1);
 use Modules\Kernel\Api\AnAlert;
 use Modules\Kernel\Api\AnAlertsName;
 use Modules\Kernel\Api\AnAlertsSort;
-use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Severity;
@@ -46,53 +45,6 @@ function theArmAWakeTook(WhatWasHeard $heard): string
     )->said;
 }
 
-/**
- * One `alert` envelope as the core writes it, changed where a case says.
- *
- * @param  array<mixed> $changed
- * @return array<string, mixed>
- */
-function anAlertEnvelope(array $changed = []): array
-{
-    return [
-        'api_version' => 1,
-        'kind' => 'alert',
-        'data' => [
-            'check' => 'vpn.tunnel',
-            'kind' => 'vpn.down',
-            'moment' => 'onset',
-            'severity' => 'critical',
-            'notification' => 'problem',
-            'summary' => 'The tunnel dropped',
-            'meaning' => 'Downloads have stopped rather than leak',
-            'remedies' => ['Restart the gateway'],
-            'affected' => ['vpn.tunnel'],
-            'id' => 'vpn.tunnel#2',
-            ...$changed,
-        ],
-    ];
-}
-
-/**
- * One `alert` event as the core frames it, changed where a case says.
- *
- * @param array<mixed> $changed
- */
-function anAlertEvent(array $changed = []): string
-{
-    return TheStreamListenedTo::anEvent('alert', json_encode(anAlertEnvelope($changed), JSON_THROW_ON_ERROR));
-}
-
-/**
- * Every alert one wake heard, in order.
- *
- * @return list<AnAlert>
- */
-function theAlertsAWakeHeard(Hearing $hearing): array
-{
-    return iterator_to_array($hearing->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession())->theAlerts(), preserve_keys: false);
-}
-
 it('hears every alert a wake carried, in order, beside whatever else it said', function (): void {
     $raised = [
         AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Critical)),
@@ -100,16 +52,16 @@ it('hears every alert a wake carried, in order, beside whatever else it said', f
     ];
 
     foreach (TheStreamListenedTo::everyWay(
-        [MockResponse::make(sprintf('%s%s', anAlertEvent(), anAlertEvent(['moment' => 'resolved', 'id' => null])))],
+        [MockResponse::make(sprintf('%s%s', TheStreamListenedTo::anAlertEvent(), TheStreamListenedTo::anAlertEvent(['moment' => 'resolved', 'id' => null])))],
         AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::aSignOfLife()->alerting(TheAlerts::of(...$raised))]),
     ) as $which => $make) {
-        expect(theAlertsAWakeHeard($make()))->toEqual($raised, $which);
+        expect(TheStreamListenedTo::theAlertsAWakeHeard($make()))->toEqual($raised, $which);
     }
 });
 
 it('skips an alert it cannot read, notes why without what the stack sent, and still hears the rest and the stream', function (array $changed): void {
     MockClient::destroyGlobal();
-    MockClient::global([MockResponse::make(sprintf('%s%s', anAlertEvent($changed), anAlertEvent()))]);
+    MockClient::global([MockResponse::make(sprintf('%s%s', TheStreamListenedTo::anAlertEvent($changed), TheStreamListenedTo::anAlertEvent()))]);
     $notes = new NotesKeptInMemory();
 
     $heard = new Listeners(new PinnedClients(), $notes, WhereHearingLeftOffInMemory::nowhere())->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession());
@@ -136,7 +88,7 @@ it('skips an alert it cannot read, notes why without what the stack sent, and st
 
 it('hears the kind of notification and the severity each alert carried, and a problem where it carried no kind', function (): void {
     MockClient::destroyGlobal();
-    MockClient::global([MockResponse::make(sprintf('%s%s', anAlertEvent(['notification' => 'backup', 'severity' => 'advisory']), anAlertEvent(['notification' => null, 'severity' => 'error'])))]);
+    MockClient::global([MockResponse::make(sprintf('%s%s', TheStreamListenedTo::anAlertEvent(['notification' => 'backup', 'severity' => 'advisory']), TheStreamListenedTo::anAlertEvent(['notification' => null, 'severity' => 'error'])))]);
 
     $heard = new Listeners(new PinnedClients(), new NotesKeptInMemory(), WhereHearingLeftOffInMemory::nowhere())->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession());
 
@@ -145,5 +97,5 @@ it('hears the kind of notification and the severity each alert carried, and a pr
 });
 
 it('stands in for a stack with an alert the contract would accept', function (): void {
-    expect(WhatTheContractAccepts::complaintsAbout('AlertEnvelope', anAlertEnvelope()))->toBe([]);
+    expect(WhatTheContractAccepts::complaintsAbout('AlertEnvelope', TheStreamListenedTo::anAlertEnvelope()))->toBe([]);
 });
