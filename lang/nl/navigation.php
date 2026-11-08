@@ -49,6 +49,7 @@ return [
         'storage' => 'Opslag',
         'backups' => 'Back-ups',
         'after_a_restart' => 'Na een herstart',
+        'while_nobody_was_looking' => 'Onbewaakte uren',
         'already_installed' => 'Al geïnstalleerd',
         'other_programs' => 'Andere programma\'s',
         'about' => 'Over',

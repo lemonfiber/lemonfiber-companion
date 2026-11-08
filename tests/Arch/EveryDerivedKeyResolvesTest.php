@@ -30,11 +30,13 @@ use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowSeriousALineIs;
 use Modules\Kernel\Api\HowSureTheTraceIs;
+use Modules\Kernel\Api\HowTheCheckAfterAStartEnded;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
 use Modules\Kernel\Api\HowTheHouseholdAsks;
 use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
+use Modules\Kernel\Api\HowTheTunnelCameBack;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
 use Modules\Kernel\Api\KindOfObstacle;
@@ -245,6 +247,14 @@ function everyDerivedKey(): array
         Severity::class => aPairPerCase(
             Severity::cases(),
             static fn(Severity $severity): array => [$severity->saidOnTheScreen()],
+        ),
+        HowTheCheckAfterAStartEnded::class => aPairPerCase(
+            HowTheCheckAfterAStartEnded::cases(),
+            static fn(HowTheCheckAfterAStartEnded $ended): array => [$ended->saidOnTheScreen()],
+        ),
+        HowTheTunnelCameBack::class => aPairPerCase(
+            HowTheTunnelCameBack::cases(),
+            static fn(HowTheTunnelCameBack $came): array => [$came->saidOnTheScreen()],
         ),
         HowLongAgo::class => aPairPerCase(
             HowLongAgo::cases(),

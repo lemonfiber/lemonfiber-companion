@@ -24,6 +24,7 @@ use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowSeriousAConnectionIs;
 use Modules\Kernel\Api\HowSeriousALineIs;
 use Modules\Kernel\Api\HowSureTheTraceIs;
+use Modules\Kernel\Api\HowTheCheckAfterAStartEnded;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
 use Modules\Kernel\Api\HowTheHouseholdAsks;
 use Modules\Kernel\Api\HowTheImportLinked;
@@ -252,6 +253,16 @@ it('every overall the contract describes has a case', function (): void {
 it('every severity the contract describes has a case', function (): void {
     expect(TheWireUnions::wireUnion('severity'))->not->toBe([], 'no severity union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(Severity::cases()))->toBe(TheWireUnions::wireUnion('severity'));
+});
+
+it('everything the check after a start can come to has a case', function (): void {
+    // Read from the boot envelope, where a check after a start says what it
+    // came to. A failed check read as the nearest word could be drawn as one
+    // that passed.
+    $ended = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('BootEnvelope'), 'outcome');
+
+    expect($ended)->not->toBe([], 'no outcome union was found in the generated boot envelope');
+    expect(TheWireUnions::valuesOf(HowTheCheckAfterAStartEnded::cases()))->toBe($ended);
 });
 
 it('every settler the contract describes has a case', function (): void {

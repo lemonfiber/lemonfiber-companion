@@ -67,6 +67,7 @@ use Modules\Operator\Internal\Screens\WhereThisComesFrom;
 use Modules\Operator\Internal\Screens\WhereThisGotTo;
 use Modules\Operator\Internal\Screens\WhichAppToWatchOn;
 use Modules\Operator\Internal\Screens\WhichVersionsRunHere;
+use Modules\Operator\Internal\Screens\WhileNobodyWasLooking;
 use Modules\Operator\Internal\Screens\YourStacks;
 use Modules\Operator\Internal\WhereAStackOpens;
 use Modules\Stacks\Api\AStacksScreen;
@@ -214,6 +215,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // running now, and this says what would still be running after a
             // reboot nobody was there for.
             Router::native(AStacksScreen::Hosting->value, WhatKeepsRunningHere::class);
+            Router::native(AStacksScreen::WhileNobodyWasLooking->value, WhileNobodyWasLooking::class);
 
             // A guard on the data location, held while its screen asks. A
             // screen of its own rather than a row of the one above, because
