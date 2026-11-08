@@ -16,6 +16,7 @@ use function json_encode;
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Job;
@@ -280,6 +281,14 @@ it('names a whole form under `forms`, and no service', function (): void {
 
     expect($sent->getUrl())->toEndWith('/api/actions/restart');
     expect($sent->body()?->all())->toBe(['forms' => ['downloads'], 'services' => [], 'offer' => null]);
+});
+
+it('carries the offer a start of a form named back with its yes, and none with a start of one service', function (): void {
+    $form = whatWasSentSaying(AgreedTo::theForm(WhatToDoWithIt::Start, Form::called('library'))->quoting(AnOffer::named('the-installs-offer')));
+    $service = whatWasSentSaying(AgreedTo::theService(WhatToDoWithIt::Start, ServiceId::called('sonarr'))->quoting(AnOffer::named('the-installs-offer')));
+
+    expect($form->body()?->all())->toBe(['forms' => ['library'], 'services' => [], 'offer' => 'the-installs-offer'])
+        ->and($service->body()?->all())->toBe(['forms' => [], 'services' => ['sonarr'], 'offer' => null]);
 });
 
 it('asks for a start at the same door as a stop', function (): void {

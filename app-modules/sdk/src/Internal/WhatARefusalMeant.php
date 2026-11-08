@@ -161,6 +161,7 @@ final readonly class WhatARefusalMeant
         RefusalCode::NoUpdateObject,
         RefusalCode::NotALineCount,
         RefusalCode::NotAChoice,
+        RefusalCode::NotOnOffer,
         RefusalCode::MemberAndDefaults,
         RefusalCode::Unrenderable,
         RefusalCode::NoJobName,
@@ -198,6 +199,7 @@ final readonly class WhatARefusalMeant
         RefusalCode::MountLinked,
         RefusalCode::OfflineInstallUnanswered,
         RefusalCode::OfflineInstallUnheld,
+        RefusalCode::OfflineInstallUnread,
         RefusalCode::MovedForGood,
         RefusalCode::ServiceUnfenced,
         // Minting, collecting and revoking a key for an app, refused for
@@ -228,6 +230,11 @@ final readonly class WhatARefusalMeant
         RefusalCode::SignatureWrong,
         RefusalCode::NoChallenge,
         RefusalCode::AttestationRevoked,
+        RefusalCode::NotAPushName,
+        RefusalCode::PushNameTaken,
+        RefusalCode::PushNotHttps,
+        RefusalCode::PushKeysUnreadable,
+        RefusalCode::PushNotRegistered,
         // A core setting refused for what was asked of it.
         RefusalCode::NoSuchSetting,
         RefusalCode::ASecret,

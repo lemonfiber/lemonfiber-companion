@@ -246,6 +246,45 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         $this->send($offered instanceof AnOffer ? $agreed->quoting($offered) : $agreed);
     }
 
+    /**
+     * Start the form again with a yes to the installs its start named.
+     *
+     * The yes is the start that was sent, carrying the name the stack gave
+     * those installs, so what is agreed to is what the operator read. Only a
+     * start of a form takes one, and only where the stack named an offer: an
+     * install it could not read answers none.
+     */
+    public function installAndStart(): void
+    {
+        $sent = $this->sent;
+
+        if ($this->answer()->waitsForTheStack || ! $sent instanceof AgreedTo || ! $this->mayInstallAndStart()) {
+            return;
+        }
+
+        $this->send($sent->quoting(AnOffer::named($this->whatItCameTo()->installOffer)));
+    }
+
+    /** Whether the start sent here can be agreed to again with a yes to the installs it named. */
+    public function mayInstallAndStart(): bool
+    {
+        $sent = $this->sent;
+
+        return $sent instanceof AgreedTo && $sent->startsAForm() && $this->whatItCameTo()->installOffer !== '';
+    }
+
+    /** The catalogue key for where a yes to the installs a start named is given. */
+    public function howTheInstallsAreAgreed(): string
+    {
+        $sent = $this->sent;
+
+        return match (true) {
+            ! $sent instanceof AgreedTo || ! $sent->startsAForm() => 'health.installs.by_its_form',
+            ! $this->mayInstallAndStart() => 'health.installs.unreadable',
+            default => 'health.installs.offline',
+        };
+    }
+
     /** Put the question away without doing anything about it. */
     public function neverMind(): void
     {
@@ -363,10 +402,18 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
     /**
      * A yes the stack refused because what it was given for has moved: the
      * verb is asked about again, under nothing it was offered before, and
-     * rehearsed afresh, so what it would do now is what is agreed to next.
+     * rehearsed afresh, so what it would do now is what is agreed to next. A
+     * start of a form asks nothing first, so it is sent again with no yes, and
+     * names the installs it would make now.
      */
     protected function offerAgain(AgreedTo $sent): void
     {
+        if ($sent->startsAForm()) {
+            $this->send($sent->quoting(AnOffer::none()));
+
+            return;
+        }
+
         $this->sent = null;
         $this->asking = $sent->quoting(AnOffer::none());
         $this->rehearseTheQuestion($this->asking);

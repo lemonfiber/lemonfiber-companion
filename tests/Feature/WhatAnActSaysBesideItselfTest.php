@@ -58,7 +58,7 @@ function aGuardOf(string $service): AMoveInPlace
     return AMoveInPlace::of(ServiceId::called($service), APluginId::called(sprintf('plugin-%s', $service)));
 }
 
-it('says what a start came to where it wrote and started nothing for want of a yes, and that a yes is the terminal\'s', function (): void {
+it('says what a start came to where it wrote and started nothing for want of a yes, and that a yes is its form\'s', function (): void {
     $unstarted = WhatTheVerbCameTo::unstarted(WhetherItWasRehearsed::CarriedOut, WhereTheServicesEndedUp::of(), TheServicesLeftOut::of(), ThePortsHeld::of(), TheStackEdits::these())
         ->saying(WhatElseAVerbSaid::these(
             WhatBecameOfTheMovesInPlace::none(),
@@ -71,7 +71,7 @@ it('says what a start came to where it wrote and started nothing for want of a y
     expect($drawn)->toContain(
         __('health.came_to.unstarted'),
         __('health.installs.heading'),
-        __('health.installs.at_the_terminal'),
+        __('health.installs.by_its_form'),
         __('health.installs.would_install', ['plugin' => 'plugin-jellyfin']),
         __('health.installs.would_install', ['plugin' => 'plugin-sonarr']),
         'Its manifest could not be read',

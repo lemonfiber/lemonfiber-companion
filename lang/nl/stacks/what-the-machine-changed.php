@@ -73,6 +73,7 @@ return [
             'unmoved' => 'De eigen bewaker van lemonfiber blijft bij de plug-in die zijn plaats innam; de release die hem verplaatste deed dat voorgoed',
             'run' => 'Een service wordt weer gestart, of weer gestopt',
             'leave' => 'Je eigen overlay blijft staan zoals hij is',
+            'push-endpoint' => 'Het push-adres van een telefoon blijft staan zoals het is; alleen de telefoon kan het opnieuw aanmelden',
         ],
     ],
 ];

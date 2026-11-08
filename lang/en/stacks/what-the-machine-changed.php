@@ -104,6 +104,7 @@ return [
             'unmoved' => 'lemonfiber\'s own guard stays with the plugin that took its place; the release that moved it moved it for good',
             'run' => 'A service is started again, or stopped again',
             'leave' => 'Your own overlay is left as it stands',
+            'push-endpoint' => 'A phone\'s push endpoint is left as it stands; only the phone can register it again',
         ],
     ],
 ];
