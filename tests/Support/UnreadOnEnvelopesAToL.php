@@ -524,6 +524,13 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'spec before reading it, which is `N1-R17`.',
         ],
         [
+            'path' => 'LifecycleEnvelope.forwarded',
+            'because' => 'The VPN\'s forwarded port before a start and after it, and whether every client takes it. '
+                . 'No `N` requirement asks what a verb came to to carry it, for `LifecycleEnvelope.forwarding`\'s '
+                . 'reason: `N2-R9` has VPN verification reachable, which is a reading of the tunnel rather than '
+                . 'of one start.',
+        ],
+        [
             'path' => 'LifecycleEnvelope.passing',
             'because' => 'Why the pass service was left out of the project a start wrote, where the stream guard is '
                 . 'filled and it was. No `N` requirement asks what a verb came to to carry it: `N18-R3` has a '

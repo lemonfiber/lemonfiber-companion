@@ -742,5 +742,17 @@ final readonly class UnreadOnEnvelopesMToZ
             'path' => 'WiringEnvelope.wired[].reaches.files',
             'because' => 'The medium the filler an ask reaches files, where the ask is narrowed to one. The screen names the service the ask reaches, and no requirement asks which medium it files.',
         ],
+        [
+            'path' => 'SubstitutionEnvelope.substitution.leaves_unfilled[].media_types',
+            'because' => 'As `WiringEnvelope.unfilled[].media_types`: a capability the substitution leaves unanswered is drawn as lost, which it is, and no requirement asks which media its ask names.',
+        ],
+        [
+            'path' => 'WiringEnvelope.unfilled[].media_types',
+            'because' => 'The media an unanswered ask asked a filler of. The ask is drawn as answered by nothing, which it is, and no requirement asks which media it names.',
+        ],
+        [
+            'path' => 'WiringEnvelope.wired[].reaches.media_types',
+            'because' => 'The media the fillers an ask reaches file, where the ask is narrowed to those. The screen names the service the ask reaches, and no requirement asks which media it files.',
+        ],
     ];
 }
