@@ -232,6 +232,17 @@ it('reads a port the stack named only after the start, one it could not name aft
     'the same' => [['was' => 51413, 'now' => 51413, 'pushed' => true], 'port same 51413 taken by all yes'],
 ]);
 
+it('reads one start it failed to come back after as failing, and none as not failing', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([
+        MockResponse::make((string) json_encode(whatAStackSaysOfItsLastStart(['failed_boots' => 1]))),
+        MockResponse::make((string) json_encode(whatAStackSaysOfItsLastStart(['failed_boots' => 0]))),
+    ]);
+
+    expect(everythingTheRestartSays(new Restarts(new PinnedClients())))->toEndWith(sprintf('; failed 1 since %d', WHEN_IT_LAST_STARTED - 86_400))
+        ->and(everythingTheRestartSays(new Restarts(new PinnedClients())))->toEndWith('; not failing');
+});
+
 // `boot` is stood in for and not judged: each case is a payload the contract does not describe, which no stack sends.
 it('refuses what it cannot read, rather than drawing a check that did not pass as one that did', function (array $changed): void {
     MockClient::destroyGlobal();

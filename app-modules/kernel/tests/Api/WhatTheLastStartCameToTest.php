@@ -56,8 +56,9 @@ it('holds the newest check kept against an earlier start where the machine will 
         ->and($last->failing()->either(failing: static fn(int $starts): Code => Code::of((string) $starts), notFailing: static fn(): Code => Code::of('none'))->shown())->toBe('3');
 });
 
-it('refuses failing after no start at all, and says a stack that came back is not failing', function (): void {
+it('refuses failing after no start at all, holds failing after one, and says a stack that came back is not failing', function (): void {
     expect(static fn(): HowLongItHasFailed => HowLongItHasFailed::after(0, WhenItSays::unsaid()))->toThrow(ARestartSaysTooLittle::class, '`failed_boots`')
+        ->and(HowLongItHasFailed::after(1, WhenItSays::unsaid())->either(failing: static fn(int $starts): Code => Code::of((string) $starts), notFailing: static fn(): Code => Code::of('none'))->shown())->toBe('1')
         ->and(HowLongItHasFailed::notFailing()->either(failing: static fn(): Code => Code::of('failing'), notFailing: static fn(): Code => Code::of('none'))->shown())->toBe('none');
 });
 
@@ -77,6 +78,7 @@ it('says a tunnel that held or that nothing checked with no words, and refuses o
     expect(TheTunnelAfterAStart::held()->came())->toBe(HowTheTunnelCameBack::Held)
         ->and(TheTunnelAfterAStart::held()->said())->toBe('')
         ->and(TheTunnelAfterAStart::notChecked()->came())->toBe(HowTheTunnelCameBack::NotChecked)
+        ->and(TheTunnelAfterAStart::notChecked()->said())->toBe('')
         ->and(static fn(): TheTunnelAfterAStart => TheTunnelAfterAStart::notEstablished(' '))->toThrow(ARestartSaysTooLittle::class, '`said`');
 });
 

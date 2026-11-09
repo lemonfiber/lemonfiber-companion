@@ -39,6 +39,6 @@ final readonly class HowLongItHasFailed
      */
     public function either(Closure $failing, Closure $notFailing): object
     {
-        return $this->starts > 0 ? $failing($this->starts, $this->since) : $notFailing();
+        return $this->starts === 0 ? $notFailing() : $failing($this->starts, $this->since);
     }
 }
