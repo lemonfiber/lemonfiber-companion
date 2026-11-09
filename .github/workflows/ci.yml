@@ -720,6 +720,7 @@ jobs:
     with:
       php-version: '8.5'
       coverage: ${{ needs.tests.result == 'success' && 'mutation-gate-map' || '' }}
+      runs-on: ubuntu-24.04-arm
     secrets:
       COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
 
