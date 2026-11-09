@@ -10571,12 +10571,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/nightworksio/php-mutation-gate.git",
-                "reference": "25413d54e2c72c12b840d4bf84588deab5521d58"
+                "reference": "d76f62def53725d55deb2e9f7ca9d733e1fdf3ef"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nightworksio/php-mutation-gate/zipball/25413d54e2c72c12b840d4bf84588deab5521d58",
-                "reference": "25413d54e2c72c12b840d4bf84588deab5521d58",
+                "url": "https://api.github.com/repos/nightworksio/php-mutation-gate/zipball/d76f62def53725d55deb2e9f7ca9d733e1fdf3ef",
+                "reference": "d76f62def53725d55deb2e9f7ca9d733e1fdf3ef",
                 "shasum": ""
             },
             "require": {
@@ -10653,6 +10653,7 @@
                 "ext-pdo": "To start each mutant of a Laravel suite under Pest's warm workers on the test database a first child migrated, where every child migrates again without it",
                 "ext-posix": "To fork each mutant from a warm worker under Pest with pest:patch, which runs each in a fresh process without it",
                 "ext-sockets": "To let watch, pre-commit and pre-push run in a daemon of `serve`, which tells who answers on its socket through it, and which they do without where it is missing",
+                "ext-zstd": "To read and write a ledger as zstd (0.13 or later) without starting the zstd program, which proofs.compression's auto takes where it is loaded",
                 "infection/infection": "To mutate with Infection (~0.35.0) and PHPUnit 12 or 13, through the Infection adapter",
                 "nette/neon": "To read a mutation-gate.neon config",
                 "pestphp/pest": "To mutate with Pest (^5.1), through the Pest adapter and its plugin",
@@ -10805,7 +10806,7 @@
                 "docs": "https://nightworksio.github.io/php-mutation-gate/",
                 "security": "https://github.com/nightworksio/php-mutation-gate/security/policy"
             },
-            "time": "2026-11-06T17:56:07+00:00"
+            "time": "2026-11-09T19:28:12+00:00"
         },
         {
             "name": "nunomaduro/collision",
