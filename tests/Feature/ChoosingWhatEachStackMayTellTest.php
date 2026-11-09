@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheReadingWaitsAFrame;
 use Modules\Kernel\Api\WhatMayReachThePhone;
 use Modules\Kernel\Api\WhatTheAlertsWere;
 use Modules\Kernel\Api\WhatTheOperatorIsTold;
@@ -71,7 +72,7 @@ function theChoicesForEachStack(?NotifyingKeptInMemory $kept = null): ChoosingWh
 }
 
 /**
- * The notification page over these stacks, each signed in unless named, with notifications on unless said.
+ * The notification page over these stacks, each signed in unless named, with notifications on unless said, drawn until every stack is read.
  *
  * @param list<Stack> $stacks
  */
@@ -82,6 +83,23 @@ function theNotificationPage(
     bool $notifying = true,
     ?Stack $signedOut = null,
     ?AStackThatOffers $offering = null,
+): WhatEachStackMayTellThisPhone {
+    return everyStackRead(theNotificationPageUndrawn($stacks, $telling, $choosing, $notifying, $signedOut, $offering));
+}
+
+/**
+ * The notification page over these stacks, as {@see theNotificationPage()} makes it, before its first frame.
+ *
+ * @param list<Stack> $stacks
+ */
+function theNotificationPageUndrawn(
+    array $stacks,
+    AStackThatSaysWhatItTells $telling,
+    ?ChoosingWhatReachesThePhone $choosing = null,
+    bool $notifying = true,
+    ?Stack $signedOut = null,
+    ?AStackThatOffers $offering = null,
+    ?StacksInMemory $held = null,
 ): WhatEachStackMayTellThisPhone {
     $keychain = AKeychainInMemory::working();
 
@@ -97,15 +115,15 @@ function theNotificationPage(
         $switch->turnOn();
     }
 
-    return everyStackRead(new WhatEachStackMayTellThisPhone(
-        StacksInMemory::holding(...$stacks),
+    return new WhatEachStackMayTellThisPhone(
+        $held ?? StacksInMemory::holding(...$stacks),
         $keychain,
         $telling,
         $choosing ?? theChoicesForEachStack(),
         $offering ?? AStackThatOffers::everything(),
         $switch,
         new AppsSettingsThatOpen(),
-    ));
+    );
 }
 
 /** The page drawn a frame at a time until it has read every stack, as the frames it asks for would. */
@@ -166,13 +184,7 @@ it('reads one stack a frame, asking for the next at once, and draws each read so
     $loft = aStackThatMayTell('a', 'The loft');
     $shed = aStackThatMayTell('b', 'The shed');
     $telling = AStackThatSaysWhatItTells::eachAs(static fn(): WhatTheAlertsWere => aStackRaising(KindOfNotification::Update));
-    $keychain = AKeychainInMemory::working();
-
-    foreach ([$loft, $shed] as $stack) {
-        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
-    }
-
-    $page = new WhatEachStackMayTellThisPhone(StacksInMemory::holding($loft, $shed), $keychain, $telling, theChoicesForEachStack(), AStackThatOffers::everything(), new TurningNotificationsOn(ASealInMemory::working(), ConnectionSettingsInMemory::empty(), ANotifierInMemory::allowed(), FrozenClock::at(Instant::atEpochSeconds(0)), WakesInMemory::thatWake()), new AppsSettingsThatOpen());
+    $page = theNotificationPageUndrawn([$loft, $shed], $telling, notifying: false);
     $first = WhatTheDeviceWouldDraw::by($page);
 
     expect(array_map(static fn(WhatAStackMayTellAsShown $section): string => $section->name, $page->sections()))->toBe(['The loft'])
@@ -190,6 +202,42 @@ it('reads one stack a frame, asking for the next at once, and draws each read so
     WhatTheDeviceWouldDraw::by($page);
 
     expect($telling->askings())->toBe(2);
+});
+
+it('reads the stacks on the phone once a frame, however often the page asks for its sections', function (): void {
+    $loft = aStackThatMayTell('a', 'The loft');
+    $held = StacksInMemory::holding($loft);
+    $page = theNotificationPageUndrawn([$loft], AStackThatSaysWhatItTells::eachAs(static fn(): WhatTheAlertsWere => aStackRaising(KindOfNotification::Update)), held: $held);
+
+    WhatTheDeviceWouldDraw::by($page);
+    $page->sections();
+    $page->sections();
+
+    expect($held->timesAsked())->toBe(1);
+});
+
+it('asks for the next frame at once where its one stack had to be asked what it serves, and draws it there', function (): void {
+    $waited = false;
+    $telling = AStackThatSaysWhatItTells::eachAs(static function () use (&$waited): WhatTheAlertsWere {
+        if (! $waited) {
+            $waited = true;
+
+            throw TheReadingWaitsAFrame::becauseTheStackWasAskedWhatItServes();
+        }
+
+        return aStackRaising(KindOfNotification::Update);
+    });
+    $page = theNotificationPageUndrawn([aStackThatMayTell('a', 'The loft')], $telling);
+
+    WhatTheDeviceWouldDraw::by($page);
+
+    expect($page->sections())->toBe([])
+        ->and($page->waitsForTheNextFrame())->toBeTrue();
+
+    WhatTheDeviceWouldDraw::by($page);
+
+    expect(array_map(static fn(WhatAStackMayTellAsShown $section): string => $section->name, $page->sections()))->toBe(['The loft'])
+        ->and($page->waitsForTheNextFrame())->toBeFalse();
 });
 
 it('asks each stack once a frame, however often the page draws', function (): void {

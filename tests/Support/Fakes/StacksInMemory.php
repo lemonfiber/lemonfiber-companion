@@ -111,11 +111,11 @@ final class StacksInMemory implements Stacks
     /**
      * Whether anything is held, without counting as having read it.
      *
-     * Deliberately not counted by {@see timesAsked()}. The count exists for the
-     * one requirement about *order* — that a shut app has not read the
-     * operator's machines — and asking whether the record is empty is not
-     * reading them. Counting it here would make that rule refuse the
-     * arrangement that asking whether this device holds a pairing needs.
+     * Deliberately not counted by {@see timesAsked()}. The count is of reading
+     * the operator's machines — that a shut app has not read them — and asking
+     * whether the record is empty is not reading them. Counting it here would
+     * make that rule refuse the arrangement that asking whether this device
+     * holds a pairing needs.
      */
     public function holdsAny(): bool
     {
@@ -125,11 +125,12 @@ final class StacksInMemory implements Stacks
     /**
      * How many times the list has been read.
      *
-     * For the one requirement that is about the *order* things are asked in
-     * rather than the answer: the device's own authentication comes first on a
-     * cold start, and a launch that read the stack list first would satisfy
-     * every assertion about what it answered and still have looked at retained
-     * state before the operator proved who they were.
+     * For what is about *how often* or *in what order* the list is read rather
+     * than the answer: the device's own authentication comes first on a cold
+     * start, and a launch that read the stack list first would satisfy every
+     * assertion about what it answered and still have looked at retained state
+     * before the operator proved who they were; and a screen reads the list
+     * once a frame, however often its template asks.
      */
     public function timesAsked(): int
     {
