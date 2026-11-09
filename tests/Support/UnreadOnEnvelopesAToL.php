@@ -521,6 +521,10 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'of one start.',
         ],
         [
+            'path' => 'LifecycleEnvelope.watched',
+            'because' => 'What holding the outside watcher to the stack\'s monitors came to on a verb, where it was more than held already. No `N` requirement asks what a verb came to to carry it: `N16-R1` to `N16-R4` ask for the watcher\'s own readings, which are a reading of the watcher rather than a sentence on one start (`N1-R17`).',
+        ],
+        [
             'path' => 'LifecycleEnvelope.passing',
             'because' => 'Why the pass service was left out of the project a start wrote, where the stream guard is '
                 . 'filled and it was. No `N` requirement asks what a verb came to to carry it: `N18-R3` has a '

@@ -74,6 +74,7 @@ return [
             'run' => 'Een service wordt weer gestart, of weer gestopt',
             'leave' => 'Je eigen overlay blijft staan zoals hij is',
             'push-endpoint' => 'Het push-adres van een telefoon blijft staan zoals het is; alleen de telefoon kan het opnieuw aanmelden',
+            'regrab' => 'De release wordt opnieuw opgehaald en van de blokkeerlijst gehaald',
         ],
     ],
 ];
