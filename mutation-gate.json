@@ -16,7 +16,9 @@
     },
     "timeouts": {
         "most": 900,
-        "perTest": 30
+        "multiple": 6,
+        "perTest": 30,
+        "testFloor": 10
     },
     "ignores": {
         "entries": [
