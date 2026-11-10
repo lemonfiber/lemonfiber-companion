@@ -123,7 +123,7 @@ function everythingTheNewsSays(ReadingNews $reading): string
             $lines[] = sprintf('requests %s', $news->requests()->wasRead() ? 'read' : 'unread');
 
             foreach ($news->requests() as $request) {
-                $lines[] = sprintf('%d|%s|%s', $request->id()->number(), $request->title(), $request->by());
+                $lines[] = sprintf('%s|%s|%s', $request->id()->reference(), $request->title(), $request->by());
             }
 
             $lines[] = sprintf('problems %s', $news->problems()->wasRead() ? 'read' : 'unread');

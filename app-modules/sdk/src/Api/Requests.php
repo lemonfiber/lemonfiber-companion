@@ -114,7 +114,7 @@ final readonly class Requests implements Wanting
      */
     private function saying(Decided $decided): HouseholdApproveAction|HouseholdDeclineAction
     {
-        $request = $decided->about()->number();
+        $request = $decided->about()->reference();
 
         return $decided->why(
             was: static fn(string $because): HouseholdDeclineAction => new HouseholdDeclineAction(request: $request, reason: $because),

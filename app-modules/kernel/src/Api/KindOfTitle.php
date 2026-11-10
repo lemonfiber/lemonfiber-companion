@@ -18,4 +18,10 @@ enum KindOfTitle: string
 
     /** A series. */
     case Series = 'tv';
+
+    /** An album or a whole artist. */
+    case Music = 'music';
+
+    /** A book, a whole author or a series of books. */
+    case Books = 'books';
 }

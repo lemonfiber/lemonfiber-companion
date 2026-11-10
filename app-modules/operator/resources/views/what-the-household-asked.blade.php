@@ -67,6 +67,7 @@
         <x-design::card>
             <x-design::strong>{{ $request->title !== '' ? $request->title : __($request->untitled) }}</x-design::strong>
             <x-design::note>{{ __('household.asked_by', ['who' => $request->by]) }}</x-design::note>
+            <x-design::note>{{ __('household.reference', ['reference' => $request->reference]) }}</x-design::note>
 
             {{-- One fact and two sentences: the size, and whether anybody
                  measured it. The key carries the labelling so a translator
@@ -99,14 +100,14 @@
                 <x-operator::offered-action
                     :label="__('household.approve')"
                     :answers-to="__('household.approve_that', ['title' => $request->title !== '' ? $request->title : __($request->untitled)])"
-                    :tap="$this->tapping('approve', $request->number)"
+                    :tap="$this->tapping('approve', $request->reference)"
                     :offer="$this->offered(WhatWasDecided::Approve)"
                     :disabled="$this->answer()->waitsForTheStack"
                 />
                 <x-operator::offered-action
                     :label="__('household.turn_down')"
                     :answers-to="__('household.turn_down_that', ['title' => $request->title !== '' ? $request->title : __($request->untitled)])"
-                    :tap="$this->tapping('wouldDecline', $request->number)"
+                    :tap="$this->tapping('wouldDecline', $request->reference)"
                     :offer="$this->offered(WhatWasDecided::Decline)"
                     tone="tonal"
                     :disabled="$this->answer()->waitsForTheStack"

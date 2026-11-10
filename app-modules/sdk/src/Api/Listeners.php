@@ -25,7 +25,6 @@ use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HowLongEachReadWaits;
 use Modules\Kernel\Api\HowLongIsBelowNothing;
 use Modules\Kernel\Api\RemedySaysNothing;
-use Modules\Kernel\Api\RequestIsUnnumbered;
 use Modules\Kernel\Api\ServiceIsUnnamed;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SettingSaysNothing;
@@ -155,7 +154,7 @@ final class Listeners implements Hearing
             return $this->heard($stack, $this->streams->taken($stack, $session));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasHeard::met(WhatARefusalMeant::obstacle($why));
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|SummaryIsUnreadable|CheckIsUnnamed|RemedySaysNothing|SummaryCountsBelowNothing|StoppageSaysNothing|HowLongIsBelowNothing|NewsIsUnreadable|LinksAreUnreadable|VersionIsBlank|RequestIsUnnumbered|SettingsAreUnreadable|SettingSaysNothing|ServiceIsUnnamed $why) {
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|SummaryIsUnreadable|CheckIsUnnamed|RemedySaysNothing|SummaryCountsBelowNothing|StoppageSaysNothing|HowLongIsBelowNothing|NewsIsUnreadable|LinksAreUnreadable|VersionIsBlank|SettingsAreUnreadable|SettingSaysNothing|ServiceIsUnnamed $why) {
             $this->letGoOf($stack);
 
             return WhatWasHeard::met($this->clients->whatStoodInTheWay($stack, $why));

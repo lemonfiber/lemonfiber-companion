@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-/** One request somebody in the household made, by its number. */
+/** One request somebody in the household made, by its reference. */
 final readonly class ARequestListed
 {
     public function __construct(private RequestId $id, private string $title, private string $by) {}
 
-    /** The number the request service files it under. */
+    /** The reference the household list names it with. */
     public function id(): RequestId
     {
         return $this->id;

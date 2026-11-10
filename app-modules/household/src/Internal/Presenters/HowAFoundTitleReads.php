@@ -86,6 +86,8 @@ final readonly class HowAFoundTitleReads
         return match ($kind) {
             KindOfTitle::Film => Medium::Film->saidOnTheScreen(),
             KindOfTitle::Series => Medium::Series->saidOnTheScreen(),
+            KindOfTitle::Music => 'household.search.kind.music',
+            KindOfTitle::Books => 'household.search.kind.books',
         };
     }
 

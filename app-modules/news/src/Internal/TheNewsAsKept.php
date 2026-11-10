@@ -16,6 +16,7 @@ use function json_decode;
 use function json_encode;
 
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\Unsealed;
 use Modules\News\Api\AnItem;
@@ -125,7 +126,7 @@ final readonly class TheNewsAsKept
         try {
             return match ($kind) {
                 KindOfNews::Update => AnItem::anUpdate($named),
-                KindOfNews::Request => AnItem::aRequest($order),
+                KindOfNews::Request => AnItem::aRequest(RequestId::named($named)),
                 KindOfNews::Problem => AnItem::aProblem($named, Instant::atEpochSeconds($order)),
             };
         } catch (InvalidArgumentException) {

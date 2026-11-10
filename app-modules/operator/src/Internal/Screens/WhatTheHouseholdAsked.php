@@ -155,15 +155,15 @@ final class WhatTheHouseholdAsked extends NativeComponent
      * about. An approval owes the person who asked the thing they asked for and
      * nothing else, so there is no question in front of it.
      */
-    public function approve(string $numbered): void
+    public function approve(string $reference): void
     {
-        $request = $this->waitingOn($numbered);
+        $request = $this->waitingOn($reference);
 
         if (! $request instanceof WhatOneRequestSays) {
             return;
         }
 
-        $this->send(Decided::toApprove(RequestId::numbered($request->number)));
+        $this->send(Decided::toApprove(RequestId::named($request->reference)));
     }
 
     /**
@@ -174,10 +174,10 @@ final class WhatTheHouseholdAsked extends NativeComponent
      * asked is owed. {@see Decided::toDecline()} refuses a blank one, so no
      * road from here produces *declined* with nothing beside it.
      */
-    public function wouldDecline(string $numbered): void
+    public function wouldDecline(string $reference): void
     {
         $this->because = null;
-        $this->turningDown = $this->waitingOn($numbered);
+        $this->turningDown = $this->waitingOn($reference);
     }
 
     /** Whether there is enough typed to turn it down with. */
@@ -212,7 +212,7 @@ final class WhatTheHouseholdAsked extends NativeComponent
         $this->turningDown = null;
         $this->because = null;
 
-        $this->send(Decided::toDecline(RequestId::numbered($request->number), $said));
+        $this->send(Decided::toDecline(RequestId::named($request->reference), $said));
     }
 
     /** Put the question away without deciding anything. */
@@ -280,7 +280,7 @@ final class WhatTheHouseholdAsked extends NativeComponent
      * Nothing waits on a yes in a reading the phone kept: where a request stands
      * now is the fresh reading's to say, so every row of a kept one is refused.
      */
-    private function waitingOn(string $numbered): ?WhatOneRequestSays
+    private function waitingOn(string $reference): ?WhatOneRequestSays
     {
         $answer = $this->answer();
 
@@ -289,7 +289,7 @@ final class WhatTheHouseholdAsked extends NativeComponent
         }
 
         foreach ($answer->requests as $request) {
-            if ((string) $request->number === trim($numbered) && $request->wantsADecision) {
+            if ($request->reference === trim($reference) && $request->wantsADecision) {
                 return $request;
             }
         }

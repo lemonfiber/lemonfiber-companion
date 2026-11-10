@@ -7,7 +7,6 @@ namespace Modules\Sdk\Api;
 use function array_key_exists;
 use function in_array;
 use function is_array;
-use function is_int;
 use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
@@ -17,6 +16,7 @@ use Modules\Kernel\Api\AReleaseListed;
 use Modules\Kernel\Api\ARequestListed;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\RequestId;
+use Modules\Kernel\Api\RequestIsUnnamed;
 use Modules\Kernel\Api\TheNewsOfAStack;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Kernel\Api\WhatTheStackListed;
@@ -99,21 +99,26 @@ final readonly class WhatIsListedAsNew
         $read = [];
 
         foreach (WhatANewsListHolds::listOf($data, WireField::Requests) as $position => $request) {
-            $item = WhatANewsListHolds::entry($request, WireField::Requests, WireField::Number, $position);
-            if (! array_key_exists(WireField::Number->value, $item) || ! is_int($item[WireField::Number->value])) {
-                throw NewsIsUnreadable::item(WireField::Requests, WireField::Number, $position);
-            }
-
-            $number = $item[WireField::Number->value];
+            $item = WhatANewsListHolds::entry($request, WireField::Requests, WireField::Request, $position);
 
             $read[] = new ARequestListed(
-                RequestId::numbered($number),
+                self::reference(WhatANewsListHolds::text($item, WireField::Requests, WireField::Request, $position), $position),
                 self::optional($item, WireField::Title),
                 WhatANewsListHolds::text($item, WireField::Requests, WireField::By, $position),
             );
         }
 
         return $read;
+    }
+
+    /** The reference a listed request is named by, or the list refused where it names none. */
+    private static function reference(string $said, int $position): RequestId
+    {
+        try {
+            return RequestId::named($said);
+        } catch (RequestIsUnnamed) {
+            throw NewsIsUnreadable::item(WireField::Requests, WireField::Request, $position);
+        }
     }
 
     /**

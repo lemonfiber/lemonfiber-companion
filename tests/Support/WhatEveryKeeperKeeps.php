@@ -35,6 +35,7 @@ use Modules\Kernel\Api\KindOfWork;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Noted;
 use Modules\Kernel\Api\ReadIn;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -168,7 +169,7 @@ final readonly class WhatEveryKeeperKeeps
         }
 
         if ($keeper instanceof Noticing) {
-            $keeper->whatIsNewIn($stack->id(), TheItems::of(KindOfNews::Request, AnItem::aRequest(1)));
+            $keeper->whatIsNewIn($stack->id(), TheItems::of(KindOfNews::Request, AnItem::aRequest(RequestId::named('1'))));
 
             return;
         }

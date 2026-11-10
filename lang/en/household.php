@@ -54,6 +54,7 @@ return [
     'nothing_asked_for' => 'You have not asked for anything yet.',
     'waiting_count' => '{0} Nothing is waiting for you|{1} One request is waiting for you|[2,*] :count requests are waiting for you',
     'asked_by' => 'Asked for by :who',
+    'reference' => 'Reference :reference',
     'size_measured' => ':size :unit',
     'size_guessed' => 'About :size :unit',
     'size_unknown' => 'Size not known yet',
@@ -98,6 +99,10 @@ return [
 
     // Searching for a title the house does not have, to ask for it.
     'search' => [
+        'kind' => [
+            'music' => 'Music',
+            'books' => 'Book',
+        ],
         'label' => 'What to look for',
         'placeholder' => 'A film or a series',
         'go' => 'Search',

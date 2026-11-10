@@ -530,7 +530,7 @@ final readonly class EveryAdapterCallThatReads
                 => new Resetters($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Requests::askedOf' => static fn(): object => new Requests($clients, $entropy)->askedOf($stack, $session),
             'Requests::decided' => static fn(): object
-                => new Requests($clients, $entropy)->decided($stack, $session, Decided::toApprove(RequestId::numbered(1))),
+                => new Requests($clients, $entropy)->decided($stack, $session, Decided::toApprove(RequestId::named('1'))),
             'Scouts::surveyedOn' => static fn(): object => new Scouts($clients, $entropy)->surveyedOn($stack, $session),
             'Scouts::wouldMoveIn' => static fn(): object => new Scouts($clients, $entropy)->wouldMoveIn($stack, $session, MovingInBy::Adopting),
             'Scouts::moveIn' => static fn(): object => new Scouts($clients, $entropy)->moveIn($stack, $session, self::aMoveToSpoilTheAnswerTo()),

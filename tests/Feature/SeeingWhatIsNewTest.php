@@ -56,7 +56,7 @@ function whatItLists(array $releases = [], array $requests = [], array $problems
     $listedReleases = array_map(static fn(string $version): AReleaseListed => AReleaseListed::versioned($version, WhatAReleaseDelivers::saidNothing()), $releases);
     $listedRequests = [];
     foreach ($requests as $number => $title) {
-        $listedRequests[] = new ARequestListed(RequestId::numbered($number), $title, 'Anna');
+        $listedRequests[] = new ARequestListed(RequestId::named(sprintf('%d', $number)), $title, 'Anna');
     }
     $listedProblems = [];
     foreach ($problems as $check => $onset) {

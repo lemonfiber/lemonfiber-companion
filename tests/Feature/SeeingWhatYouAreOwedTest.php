@@ -12,6 +12,7 @@ use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
@@ -83,9 +84,9 @@ function whatThisMemberIsTold(): Sentences
 function whatThisMemberAskedFor(): Requested
 {
     return Requested::of(
-        Wanted::of(1, 'Robin', 'The Third Man', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('1'), 'Robin', 'The Third Man', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
         Wanted::turnedDown(
-            2,
+            RequestId::named('2'),
             'Robin',
             'Solaris',
             Size::unknown(),
@@ -292,8 +293,8 @@ it('shows what they asked for, each with where it stands', function (): void {
 
 it('shows a request no service has named yet in their words, by its kind, beside the rest', function (): void {
     $screen = theOwedScreen(AMemberWhoIsOwed::asking(Requested::of(
-        Wanted::notYetNamed(3, 'Robin', KindOfRequest::Series, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
-        Wanted::of(1, 'Robin', 'The Third Man', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::notYetNamed(RequestId::named('3'), 'Robin', KindOfRequest::Series, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('1'), 'Robin', 'The Third Man', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
     )));
     $rows = $screen->requests()->rows;
 

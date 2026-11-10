@@ -13,7 +13,7 @@ use Modules\News\Api\TheItems;
  * What a stack named as newest, as the items of each kind.
  *
  * The event names an item by exactly what an item is named and ordered by: a
- * release by its version, a request by its number, and a problem by its check
+ * release by its version, a request by its place in the household list, and a problem by its check
  * and onset.
  */
 final readonly class TheNewestAsItems
@@ -30,13 +30,13 @@ final readonly class TheNewestAsItems
         return TheItems::of(KindOfNews::Update, ...$items);
     }
 
-    /** The household's newest requests the stack named, as requests, highest number first. */
+    /** The household's newest requests the stack named, as requests, newest asked first. */
     public static function requests(TheNewestNamed $newest): TheItems
     {
         $items = [];
 
         foreach ($newest->requests() as $request) {
-            $items[] = AnItem::aRequest($request->number());
+            $items[] = AnItem::aRequest($request);
         }
 
         return TheItems::of(KindOfNews::Request, ...$items);

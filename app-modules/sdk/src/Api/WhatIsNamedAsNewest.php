@@ -6,7 +6,6 @@ namespace Modules\Sdk\Api;
 
 use function in_array;
 use function is_array;
-use function is_int;
 use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
@@ -15,6 +14,7 @@ use Modules\Kernel\Api\AProblemNamed;
 use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\RequestId;
+use Modules\Kernel\Api\RequestIsUnnamed;
 use Modules\Kernel\Api\TheNewestNamed;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Sdk\Internal\WhatANewsListHolds;
@@ -91,7 +91,7 @@ final readonly class WhatIsNamedAsNewest
     }
 
     /**
-     * Each request by its number, which is all the event names of one.
+     * Each request by its reference, which is all the event names of one.
      *
      * @param array<array-key, mixed> $data
      *
@@ -101,12 +101,16 @@ final readonly class WhatIsNamedAsNewest
     {
         $read = [];
 
-        foreach (WhatANewsListHolds::listOf($data, WireField::Requests) as $position => $number) {
-            if (! is_int($number)) {
-                throw NewsIsUnreadable::item(WireField::Requests, WireField::Number, $position);
+        foreach (WhatANewsListHolds::listOf($data, WireField::Requests) as $position => $reference) {
+            if (! is_string($reference)) {
+                throw NewsIsUnreadable::item(WireField::Requests, WireField::Request, $position);
             }
 
-            $read[] = RequestId::numbered($number);
+            try {
+                $read[] = RequestId::named($reference);
+            } catch (RequestIsUnnamed) {
+                throw NewsIsUnreadable::item(WireField::Requests, WireField::Request, $position);
+            }
         }
 
         return $read;

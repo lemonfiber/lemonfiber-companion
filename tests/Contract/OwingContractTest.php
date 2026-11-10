@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
@@ -389,8 +390,8 @@ it('hands over what they asked for, each with where it stands', function (): voi
 
     $both = [
         'the fake' => static fn(): Owing => AMemberWhoIsOwed::asking(Requested::of(
-            Wanted::of(1, 'Robin', 'The Third Man', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
-            Wanted::turnedDown(2, 'Robin', 'Solaris', Size::unknown(), TurnedDown::because('Not for your age limit')),
+            Wanted::of(RequestId::named('1'), 'Robin', 'The Third Man', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+            Wanted::turnedDown(RequestId::named('2'), 'Robin', 'Solaris', Size::unknown(), TurnedDown::because('Not for your age limit')),
         )),
         'the adapter' => static function () use ($answered): Owing {
             MockClient::destroyGlobal();

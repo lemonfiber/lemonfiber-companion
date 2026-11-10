@@ -10,6 +10,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\Stack;
@@ -108,7 +109,7 @@ function theGardenRoomOutOfReach(): AHouseholdThatAsked
 function theGardenRoomAnswering(): AHouseholdThatAsked
 {
     return AHouseholdThatAsked::wanting(Requested::of(
-        Wanted::of(9, 'Robin', 'Arrival', Size::measured(3_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('9'), 'Robin', 'Arrival', Size::measured(3_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
     ));
 }
 

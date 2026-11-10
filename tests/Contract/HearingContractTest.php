@@ -611,7 +611,7 @@ function theNewestThatStackNamed(bool $updatesRead = true): TheNewestNamed
 {
     return new TheNewestNamed(
         $updatesRead ? WhatTheStackListed::these(AReleaseNamed::versioned('2.5.0'), AReleaseNamed::versioned('2.4.0')) : WhatTheStackListed::unread(),
-        WhatTheStackListed::these(RequestId::numbered(12), RequestId::numbered(9)),
+        WhatTheStackListed::these(RequestId::named('12'), RequestId::named('9')),
         WhatTheStackListed::these(new AProblemNamed(Check::of('disk.space'), Instant::atEpochSeconds(1_759_400_000))),
     );
 }
@@ -630,7 +630,7 @@ function whatWasNamedAsAWord(WhatWasHeard $heard): string
             }
 
             foreach ($newest->requests() as $request) {
-                $requests[] = (string) $request->number();
+                $requests[] = $request->reference();
             }
 
             foreach ($newest->problems() as $problem) {

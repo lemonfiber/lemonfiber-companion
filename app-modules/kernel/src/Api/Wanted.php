@@ -43,7 +43,7 @@ use function trim;
 final readonly class Wanted
 {
     private function __construct(
-        private int $number,
+        private RequestId $id,
         private string $by,
         private WhatARequestIsCalled $called,
         private Size $size,
@@ -67,7 +67,7 @@ final readonly class Wanted
      * while the reason said nothing, which is exactly what is forbidden.
      */
     public static function of(
-        int $number,
+        RequestId $id,
         string $by,
         string $forWhat,
         Size $size,
@@ -77,14 +77,14 @@ final readonly class Wanted
         $title = trim($forWhat);
 
         if ($asker === '') {
-            throw RequestHasNobodyBehindIt::atNumber($number);
+            throw RequestHasNobodyBehindIt::about($id);
         }
 
         if ($title === '') {
-            throw RequestHasNobodyBehindIt::forNothing($number, $asker);
+            throw RequestHasNobodyBehindIt::forNothing($id, $asker);
         }
 
-        return new self($number, $asker, WhatARequestIsCalled::named($title), $size, $standing);
+        return new self($id, $asker, WhatARequestIsCalled::named($title), $size, $standing);
     }
 
     /**
@@ -94,26 +94,21 @@ final readonly class Wanted
      * big are on it, and a request waiting for a yes has been handed to
      * nobody who could name it.
      */
-    public static function notYetNamed(int $number, string $by, KindOfRequest $kind, Size $size, HowARequestStands $standing): self
+    public static function notYetNamed(RequestId $id, string $by, KindOfRequest $kind, Size $size, HowARequestStands $standing): self
     {
         $asker = trim($by);
 
         if ($asker === '') {
-            throw RequestHasNobodyBehindIt::atNumber($number);
+            throw RequestHasNobodyBehindIt::about($id);
         }
 
-        return new self($number, $asker, WhatARequestIsCalled::notYetNamed($kind), $size, $standing);
+        return new self($id, $asker, WhatARequestIsCalled::notYetNamed($kind), $size, $standing);
     }
 
-    /**
-     * What the stack calls this request, for naming it when acting on it.
-     *
-     * Not shown. It is how an approval says which request it is about, and an
-     * operator reading a number has learned nothing they can decide from.
-     */
-    public function number(): int
+    /** The reference the stack names this request by, for acting on it. */
+    public function id(): RequestId
     {
-        return $this->number;
+        return $this->id;
     }
 
     /** Who asked, which is half of what a decision is made from. */
@@ -148,19 +143,19 @@ final readonly class Wanted
      * somebody why a thing they are still waiting for was refused.
      */
     public static function turnedDown(
-        int $number,
+        RequestId $id,
         string $by,
         string $forWhat,
         Size $size,
         TurnedDown $why,
     ): self {
-        return self::declined(self::of($number, $by, $forWhat, $size, HowARequestStands::said(Waiting::Declined)), $why);
+        return self::declined(self::of($id, $by, $forWhat, $size, HowARequestStands::said(Waiting::Declined)), $why);
     }
 
     /** A refused request no service named, by the kind of thing it was. */
-    public static function turnedDownNotYetNamed(int $number, string $by, KindOfRequest $kind, Size $size, TurnedDown $why): self
+    public static function turnedDownNotYetNamed(RequestId $id, string $by, KindOfRequest $kind, Size $size, TurnedDown $why): self
     {
-        return self::declined(self::notYetNamed($number, $by, $kind, $size, HowARequestStands::said(Waiting::Declined)), $why);
+        return self::declined(self::notYetNamed($id, $by, $kind, $size, HowARequestStands::said(Waiting::Declined)), $why);
     }
 
     /**
@@ -191,6 +186,6 @@ final readonly class Wanted
 
     private static function declined(self $was, TurnedDown $why): self
     {
-        return new self($was->number, $was->by, $was->called, $was->size, $was->standing, $why);
+        return new self($was->id, $was->by, $was->called, $was->size, $was->standing, $why);
     }
 }

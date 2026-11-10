@@ -11,6 +11,7 @@ use function implode;
 use function it;
 
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\Unsealed;
 use Modules\News\Api\AnItem;
@@ -40,7 +41,7 @@ it('reads back the kinds switched off and the newest of each kind seen that it w
 });
 
 it('writes only what names and orders each item, and an empty record as one', function (): void {
-    expect(TheNewsAsKept::written(WhatIsKeptOfNews::nothing()->seeing(AnItem::aRequest(42)))->inTheClear())
+    expect(TheNewsAsKept::written(WhatIsKeptOfNews::nothing()->seeing(AnItem::aRequest(RequestId::named('42'))))->inTheClear())
         ->toBe('{"off":[],"seen":{"request":{"known_as":"42","order":42}}}')
         ->and(TheNewsAsKept::written(WhatIsKeptOfNews::nothing())->inTheClear())->toBe('{"off":[],"seen":[]}');
 });

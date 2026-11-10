@@ -28,6 +28,7 @@ use Modules\News\Api\TheItems;
 use Modules\News\Internal\NewsOfAStack;
 use Modules\News\Internal\WhatEachStackLastNamed;
 
+use function sprintf;
 use function str_repeat;
 
 use Tests\Support\Fakes\ASealInMemory;
@@ -61,7 +62,7 @@ function noticingOver(ASealInMemory $seal, NewsKeptInMemory $kept): Noticing
 /** The requests a stack holds, newest first. */
 function requestsNumbered(int ...$numbers): TheItems
 {
-    return TheItems::of(KindOfNews::Request, ...array_map(AnItem::aRequest(...), $numbers));
+    return TheItems::of(KindOfNews::Request, ...array_map(static fn(int $number): AnItem => AnItem::aRequest(RequestId::named(sprintf('%d', $number))), $numbers));
 }
 
 /**
@@ -106,7 +107,7 @@ it('sees an item and every older one with it, and leaves the newer ones new', fu
     newAmong($noticing, requestsNumbered(4));
     $now = requestsNumbered(8, 7, 6, 4);
 
-    expect($noticing->sawIt(theStackWhoseNewsIsNoticed(), AnItem::aRequest(7), $now))->toBeTrue()
+    expect($noticing->sawIt(theStackWhoseNewsIsNoticed(), AnItem::aRequest(RequestId::named('7')), $now))->toBeTrue()
         ->and(newAmong($noticing, $now))->toBe(['8']);
 });
 
@@ -114,16 +115,16 @@ it('never lowers what was seen when an older item is opened', function (): void 
     $noticing = noticingOver(ASealInMemory::working(), NewsKeptInMemory::empty());
     newAmong($noticing, requestsNumbered(4));
     $now = requestsNumbered(8, 7, 4);
-    $noticing->sawIt(theStackWhoseNewsIsNoticed(), AnItem::aRequest(8), $now);
+    $noticing->sawIt(theStackWhoseNewsIsNoticed(), AnItem::aRequest(RequestId::named('8')), $now);
 
-    expect($noticing->sawIt(theStackWhoseNewsIsNoticed(), AnItem::aRequest(7), $now))->toBeTrue()
+    expect($noticing->sawIt(theStackWhoseNewsIsNoticed(), AnItem::aRequest(RequestId::named('7')), $now))->toBeTrue()
         ->and(newAmong($noticing, requestsNumbered(9, 8, 7, 4)))->toBe(['9']);
 });
 
 it('sees an item where nothing was seen yet', function (): void {
     $noticing = noticingOver(ASealInMemory::working(), NewsKeptInMemory::empty());
 
-    $noticing->sawIt(theStackWhoseNewsIsNoticed(), AnItem::aRequest(3), requestsNumbered(3));
+    $noticing->sawIt(theStackWhoseNewsIsNoticed(), AnItem::aRequest(RequestId::named('3')), requestsNumbered(3));
 
     expect(newAmong($noticing, requestsNumbered(4, 3)))->toBe(['4']);
 });
@@ -177,8 +178,8 @@ it('reads a marker that does not read as nothing seen, and starts again from wha
 });
 
 it('says it was not kept where the store or the seal refuses', function (): void {
-    expect(noticingOver(ASealInMemory::working(), NewsKeptInMemory::unreachable())->sawIt(theStackWhoseNewsIsNoticed(), AnItem::aRequest(3), requestsNumbered(3)))->toBeFalse()
-        ->and(noticingOver(ASealInMemory::withNoSecureStorage(), NewsKeptInMemory::empty())->sawIt(theStackWhoseNewsIsNoticed(), AnItem::aRequest(3), requestsNumbered(3)))->toBeFalse();
+    expect(noticingOver(ASealInMemory::working(), NewsKeptInMemory::unreachable())->sawIt(theStackWhoseNewsIsNoticed(), AnItem::aRequest(RequestId::named('3')), requestsNumbered(3)))->toBeFalse()
+        ->and(noticingOver(ASealInMemory::withNoSecureStorage(), NewsKeptInMemory::empty())->sawIt(theStackWhoseNewsIsNoticed(), AnItem::aRequest(RequestId::named('3')), requestsNumbered(3)))->toBeFalse();
 });
 
 it('marks nothing it cannot keep a first sight of, so nothing floods in on the next', function (): void {
@@ -229,7 +230,7 @@ function theNewestAStackNames(array $releases, array $problems, bool $releasesRe
 
     return new TheNewestNamed(
         $releasesRead ? WhatTheStackListed::these(...array_map(AReleaseNamed::versioned(...), $releases)) : WhatTheStackListed::unread(),
-        WhatTheStackListed::these(...array_map(RequestId::numbered(...), $requests)),
+        WhatTheStackListed::these(...array_map(static fn(int $request): RequestId => RequestId::named(sprintf('%d', $request)), $requests)),
         WhatTheStackListed::these(...$named),
     );
 }

@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
@@ -242,7 +243,7 @@ function whatTheyAskedFor(): Requested
         $asked(4, 'Alien', Waiting::ForApproval),
         $asked(5, 'Gone Girl', Waiting::Gone),
         $asked(6, 'Nobody Knows', Waiting::Failed),
-        Wanted::of(7, 'ada', 'Unsaid', Size::unknown(), HowARequestStands::unnamed()),
+        Wanted::of(RequestId::named('7'), 'ada', 'Unsaid', Size::unknown(), HowARequestStands::unnamed()),
     );
 }
 

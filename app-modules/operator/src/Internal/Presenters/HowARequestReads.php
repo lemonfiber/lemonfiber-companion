@@ -88,7 +88,7 @@ final readonly class HowARequestReads
 
         return $wanted->size()->either(
             measured: static fn(int $bytes): WhatOneRequestSays => new WhatOneRequestSays(
-                number: $wanted->number(),
+                reference: $wanted->id()->reference(),
                 title: $title,
                 by: $wanted->by(),
                 standing: $standing,
@@ -101,7 +101,7 @@ final readonly class HowARequestReads
                 untitled: $untitled,
             ),
             guessed: static fn(int $bytes): WhatOneRequestSays => new WhatOneRequestSays(
-                number: $wanted->number(),
+                reference: $wanted->id()->reference(),
                 title: $title,
                 by: $wanted->by(),
                 standing: $standing,
@@ -114,7 +114,7 @@ final readonly class HowARequestReads
                 untitled: $untitled,
             ),
             unknown: static fn(): WhatOneRequestSays => new WhatOneRequestSays(
-                number: $wanted->number(),
+                reference: $wanted->id()->reference(),
                 title: $title,
                 by: $wanted->by(),
                 standing: $standing,
