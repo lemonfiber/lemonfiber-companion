@@ -17,11 +17,15 @@ use function sprintf;
 /** A kept reading of one request for a film, standing as written. */
 function aReadingStanding(string $standing): Unsealed
 {
-    return Unsealed::of(sprintf('{"requests":[{"number":1,"by":"sam","for":"A film","size":{},"standing":[%s],"refused":[]}]}', $standing));
+    return Unsealed::of(sprintf('{"requests":[{"id":"1","by":"sam","for":"A film","size":{},"standing":[%s],"refused":[]}]}', $standing));
 }
 
 it('reads a request standing as the stack said it stood', function (): void {
     expect(TheRequestsAsKept::read(Shape::One, aReadingStanding('"declined"')))->toBeInstanceOf(Requested::class);
+});
+
+it('reads nothing out of a request kept by a number, as a reading kept before requests were named by reference was', function (): void {
+    expect(TheRequestsAsKept::read(Shape::One, Unsealed::of('{"requests":[{"number":1,"by":"sam","for":"A film","size":{},"standing":["declined"],"refused":[]}]}')))->toBeNull();
 });
 
 it('reads nothing out of a request whose standing is not one the stack says', function (string $standing): void {

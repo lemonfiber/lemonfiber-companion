@@ -16,10 +16,10 @@ use Modules\Kernel\Api\AReleaseListed;
 use Modules\Kernel\Api\ARequestListed;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\RequestId;
-use Modules\Kernel\Api\RequestIsUnnamed;
 use Modules\Kernel\Api\TheNewsOfAStack;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Kernel\Api\WhatTheStackListed;
+use Modules\Sdk\Api\Fields\NewsItemsField;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\WhatANewsListHolds;
 use Modules\Sdk\Internal\Wire;
@@ -99,26 +99,16 @@ final readonly class WhatIsListedAsNew
         $read = [];
 
         foreach (WhatANewsListHolds::listOf($data, WireField::Requests) as $position => $request) {
-            $item = WhatANewsListHolds::entry($request, WireField::Requests, WireField::Request, $position);
+            $item = WhatANewsListHolds::entry($request, WireField::Requests, NewsItemsField::Request, $position);
 
             $read[] = new ARequestListed(
-                self::reference(WhatANewsListHolds::text($item, WireField::Requests, WireField::Request, $position), $position),
+                RequestId::named(WhatANewsListHolds::text($item, WireField::Requests, NewsItemsField::Request, $position)),
                 self::optional($item, WireField::Title),
                 WhatANewsListHolds::text($item, WireField::Requests, WireField::By, $position),
             );
         }
 
         return $read;
-    }
-
-    /** The reference a listed request is named by, or the list refused where it names none. */
-    private static function reference(string $said, int $position): RequestId
-    {
-        try {
-            return RequestId::named($said);
-        } catch (RequestIsUnnamed) {
-            throw NewsIsUnreadable::item(WireField::Requests, WireField::Request, $position);
-        }
     }
 
     /**

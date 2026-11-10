@@ -14,9 +14,9 @@ use Modules\Kernel\Api\AProblemNamed;
 use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\RequestId;
-use Modules\Kernel\Api\RequestIsUnnamed;
 use Modules\Kernel\Api\TheNewestNamed;
 use Modules\Kernel\Api\WhatTheStackListed;
+use Modules\Sdk\Api\Fields\NewsItemsField;
 use Modules\Sdk\Internal\WhatANewsListHolds;
 use Modules\Sdk\Internal\Wire;
 
@@ -103,14 +103,10 @@ final readonly class WhatIsNamedAsNewest
 
         foreach (WhatANewsListHolds::listOf($data, WireField::Requests) as $position => $reference) {
             if (! is_string($reference)) {
-                throw NewsIsUnreadable::item(WireField::Requests, WireField::Request, $position);
+                throw NewsIsUnreadable::item(WireField::Requests, NewsItemsField::Request, $position);
             }
 
-            try {
-                $read[] = RequestId::named($reference);
-            } catch (RequestIsUnnamed) {
-                throw NewsIsUnreadable::item(WireField::Requests, WireField::Request, $position);
-            }
+            $read[] = RequestId::named($reference);
         }
 
         return $read;

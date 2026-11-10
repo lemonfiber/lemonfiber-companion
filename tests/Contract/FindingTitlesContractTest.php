@@ -188,7 +188,7 @@ it('a page this app cannot read is an answer it could not read, never a shorter 
     'a title with no id' => [[], [['kind' => 'movies', 'title' => 'Dune', 'stands' => 'askable']]],
     'a title with a blank id' => [[], [['id' => ' ', 'kind' => 'movies', 'title' => 'Dune', 'stands' => 'askable']]],
     'a title with a blank name' => [[], [['id' => '1', 'kind' => 'movies', 'title' => ' ', 'stands' => 'askable']]],
-    'a kind this app has no word for' => [[], [['id' => '1', 'kind' => 'music', 'title' => 'Dune', 'stands' => 'askable']]],
+    'a kind this app has no word for' => [[], [['id' => '1', 'kind' => 'games', 'title' => 'Dune', 'stands' => 'askable']]],
     'a standing this app has no word for' => [[], [['id' => '1', 'kind' => 'movies', 'title' => 'Dune', 'stands' => 'gone']]],
     'a year that is not a number' => [[], [['id' => '1', 'kind' => 'movies', 'title' => 'Dune', 'year' => '2021', 'stands' => 'askable']]],
 ]);

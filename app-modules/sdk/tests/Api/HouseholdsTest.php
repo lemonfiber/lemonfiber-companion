@@ -16,6 +16,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\AMember;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\RequestIsUnnamed;
 use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
@@ -102,15 +103,15 @@ function aHouseholdOf(array $members): array
  *
  * @return array<string, mixed>
  */
-function aRequest(int $id, string $title, string $state): array
+function aRequest(string $id, string $title, string $state): array
 {
     return ['id' => $id, 'title' => $title, 'state' => $state];
 }
 
 it('reads a house into the flat list the screens work in', function (): void {
     $data = aHouseholdOf([
-        aMember('Robin', [aRequest(1, 'A film', 'waiting-for-approval')]),
-        aMember('Sam', [aRequest(2, 'A season', 'getting')]),
+        aMember('Robin', [aRequest('1', 'A film', 'waiting-for-approval')]),
+        aMember('Sam', [aRequest('2', 'A season', 'getting')]),
     ]);
 
     $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
@@ -271,11 +272,11 @@ it('refuses a request with no id rather than one nothing can be decided about', 
 
 it('reads a request no service has named yet by the kind of thing it is, and keeps the rest readable', function (): void {
     $data = ['members' => [aMember('Robin', [
-        ['id' => 1, 'state' => 'waiting-for-approval', 'media' => 'film', 'title' => null],
-        ['id' => 2, 'state' => 'waiting-for-approval', 'media' => 'series'],
-        ['id' => 3, 'state' => 'waiting-for-approval', 'media' => 'audiobook'],
-        ['id' => 4, 'state' => 'waiting-for-approval'],
-        aRequest(5, 'A film', 'getting'),
+        ['id' => '1', 'state' => 'waiting-for-approval', 'media' => 'film', 'title' => null],
+        ['id' => '2', 'state' => 'waiting-for-approval', 'media' => 'series'],
+        ['id' => '3', 'state' => 'waiting-for-approval', 'media' => 'audiobook'],
+        ['id' => '4', 'state' => 'waiting-for-approval'],
+        aRequest('5', 'A film', 'getting'),
     ])]];
 
     $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
@@ -290,7 +291,7 @@ it('reads a request no service has named yet by the kind of thing it is, and kee
 });
 
 it('reads a declined request no service named, with its reason', function (): void {
-    $data = ['members' => [aMember('Robin', [['id' => 1, 'state' => 'declined', 'media' => 'film', 'refused' => ['reason' => 'Not this one.']]])]];
+    $data = ['members' => [aMember('Robin', [['id' => '1', 'state' => 'declined', 'media' => 'film', 'refused' => ['reason' => 'Not this one.']]])]];
 
     $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
 
@@ -302,14 +303,14 @@ it('reads a declined request no service named, with its reason', function (): vo
 });
 
 it('refuses a title that is there and is not text', function (): void {
-    $data = ['members' => [aMember('Robin', [['id' => 1, 'state' => 'getting', 'title' => 42]])]];
+    $data = ['members' => [aMember('Robin', [['id' => '1', 'state' => 'getting', 'title' => 42]])]];
 
     expect(fn(): Requested => Households::in(householdSaying($data)))
         ->toThrow(HouseholdIsUnreadable::class, 'Robin');
 });
 
 it('reads a request with no state as one whose standing nobody named', function (): void {
-    $data = ['members' => [aMember('Robin', [['id' => 1, 'title' => 'A film']])]];
+    $data = ['members' => [aMember('Robin', [['id' => '1', 'title' => 'A film']])]];
 
     $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
 
@@ -321,7 +322,7 @@ it('refuses a state word it does not know, and names the ones it reads', functio
     // Guessing which was meant is how something already in the house gets
     // offered for approval. The accepted list comes from the enum, so a case
     // added to the contract cannot leave the message describing the old one.
-    $data = ['members' => [aMember('Robin', [aRequest(1, 'A film', 'pondering')])]];
+    $data = ['members' => [aMember('Robin', [aRequest('1', 'A film', 'pondering')])]];
 
     expect(fn(): Requested => Households::in(householdSaying($data)))
         ->toThrow(HouseholdIsUnreadable::class, 'pondering');
@@ -333,7 +334,7 @@ it('a request nobody has sized is answered rather than refused', function (): vo
     // state of a queue, and `we do not know` is what belongs on the screen —
     // `0 bytes` beside a request for a whole season is worse than saying
     // nothing.
-    $data = ['members' => [aMember('Robin', [aRequest(1, 'A film', 'getting')])]];
+    $data = ['members' => [aMember('Robin', [aRequest('1', 'A film', 'getting')])]];
 
     $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
 
@@ -352,7 +353,7 @@ it('an estimate it cannot read is answered the same way as one that never came',
     // *we do not know* is true of it either way. Refusing here would lose a
     // request over the one field that has an answer for not having one.
     $data = ['members' => [aMember('Robin', [[
-        'id' => 1,
+        'id' => '1',
         'title' => 'A film',
         'state' => 'getting',
         'estimate' => ['bytes' => 'a lot', 'measured' => true],
@@ -368,13 +369,26 @@ it('an estimate it cannot read is answered the same way as one that never came',
         )->shown())->toBe('unknown');
 });
 
+it('reads a request by the reference the household list names it with, as the stack wrote it', function (): void {
+    $wanted = iterator_to_array(Households::in(householdSaying(aHouseholdOf([aMember('Robin', [aRequest('music-3', 'Rumours', 'waiting-for-approval')])]))), preserve_keys: false);
+
+    expect($wanted[0]->id()->reference())->toBe('music-3');
+});
+
+it('refuses a request referred to by a number, and one referred to by nothing', function (): void {
+    expect(fn(): Requested => Households::in(householdSaying(aHouseholdOf([aMember('Robin', [['id' => 3, 'title' => 'A film', 'state' => 'getting']])]))))
+        ->toThrow(HouseholdIsUnreadable::class, 'Request 0')
+        ->and(fn(): Requested => Households::in(householdSaying(aHouseholdOf([aMember('Robin', [['id' => ' ', 'title' => 'A film', 'state' => 'getting']])]))))
+        ->toThrow(RequestIsUnnamed::class);
+});
+
 it('counts requests within a member, so the refusal names the right one', function (): void {
     // The second request rather than the first, which is what makes the count
     // load-bearing: a position that never advanced, or advanced the wrong way,
     // would send an operator to a request that is fine while the unreadable one
     // sits further down the list.
     $data = ['members' => [aMember('Robin', [
-        aRequest(1, 'A film', 'getting'),
+        aRequest('1', 'A film', 'getting'),
         'not a request',
     ])]];
 
@@ -388,8 +402,8 @@ it('reads requests by position even where the wire numbered them', function (): 
     // refusal that names `Request 1` among them. The keys are the wire's
     // business and are not carried past this fold.
     $data = ['members' => [['name' => 'Robin', 'requests' => [
-        7 => aRequest(1, 'First', 'getting'),
-        3 => aRequest(2, 'Second', 'here'),
+        7 => aRequest('1', 'First', 'getting'),
+        3 => aRequest('2', 'Second', 'here'),
     ]]]];
 
     $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
@@ -405,9 +419,9 @@ it('an estimate says whether anybody measured it, and is read either way', funct
     // answered *guessed* for everything each pass a test that only ever sends
     // one. The two have to stay distinguishable.
     $data = ['members' => [aMember('Robin', [
-        ['id' => 1, 'title' => 'Measured', 'state' => 'getting',
+        ['id' => '1', 'title' => 'Measured', 'state' => 'getting',
             'estimate' => ['bytes' => 4_000_000_000, 'measured' => true]],
-        ['id' => 2, 'title' => 'Guessed', 'state' => 'getting',
+        ['id' => '2', 'title' => 'Guessed', 'state' => 'getting',
             'estimate' => ['bytes' => 900_000_000, 'measured' => false]],
     ])]];
 
@@ -429,9 +443,9 @@ it('an estimate half-readable is no more use than none of it', function (): void
     // A figure with no word for whether anybody measured it is a number an
     // operator cannot weigh, which is the same position as having no figure.
     $data = ['members' => [aMember('Robin', [
-        ['id' => 1, 'title' => 'Bytes but no word', 'state' => 'getting',
+        ['id' => '1', 'title' => 'Bytes but no word', 'state' => 'getting',
             'estimate' => ['bytes' => 4_000_000_000, 'measured' => 'yes']],
-        ['id' => 2, 'title' => 'Word but no bytes', 'state' => 'getting',
+        ['id' => '2', 'title' => 'Word but no bytes', 'state' => 'getting',
             'estimate' => ['bytes' => 'a lot', 'measured' => true]],
     ])]];
 
@@ -450,7 +464,7 @@ it('an estimate half-readable is no more use than none of it', function (): void
 it('reads the reason a request was refused, and when', function (): void {
     $wanted = iterator_to_array(Households::in(householdSaying(['members' => [
         aMember('Robin', [[
-            'id' => 1,
+            'id' => '1',
             'title' => 'A film',
             'state' => 'declined',
             'refused' => ['at' => '2026-09-14T04:00:00Z', 'reason' => 'The disk is nearly full'],
@@ -477,7 +491,7 @@ it('a refusal timed as whitespace is read as one the stack did not time', functi
     foreach (['', ' ', '   ', "\t", "\n"] as $blank) {
         $wanted = iterator_to_array(Households::in(householdSaying(['members' => [
             aMember('Robin', [[
-                'id' => 1,
+                'id' => '1',
                 'title' => 'A film',
                 'state' => 'declined',
                 'refused' => ['at' => $blank, 'reason' => 'Not this week'],
@@ -505,7 +519,7 @@ it('a refusal timed as whitespace is read as one the stack did not time', functi
 it('a refusal the stack did not time is read without one', function (): void {
     $wanted = iterator_to_array(Households::in(householdSaying(['members' => [
         aMember('Robin', [[
-            'id' => 1,
+            'id' => '1',
             'title' => 'A film',
             'state' => 'declined',
             'refused' => ['reason' => 'Not this week'],
@@ -529,9 +543,9 @@ it('a declined request carrying no reason is refused, not shown short', function
     // to prevent — and substituting *no reason given* would be this app writing
     // a sentence on a stack's behalf.
     $each = [
-        'no refused key at all' => ['id' => 1, 'title' => 'A film', 'state' => 'declined'],
-        'a refusal that is not one' => ['id' => 1, 'title' => 'A film', 'state' => 'declined', 'refused' => 'no'],
-        'a blank reason' => ['id' => 1, 'title' => 'A film', 'state' => 'declined', 'refused' => ['reason' => '  ']],
+        'no refused key at all' => ['id' => '1', 'title' => 'A film', 'state' => 'declined'],
+        'a refusal that is not one' => ['id' => '1', 'title' => 'A film', 'state' => 'declined', 'refused' => 'no'],
+        'a blank reason' => ['id' => '1', 'title' => 'A film', 'state' => 'declined', 'refused' => ['reason' => '  ']],
     ];
 
     foreach ($each as $which => $row) {
@@ -547,7 +561,7 @@ it('a request that is not declined is read whatever `refused` says', function ()
     // worse than dropping it.
     $wanted = iterator_to_array(Households::in(householdSaying(['members' => [
         aMember('Robin', [[
-            'id' => 1,
+            'id' => '1',
             'title' => 'A film',
             'state' => 'getting',
             'refused' => ['reason' => 'a reason from a decision that was reversed'],
@@ -571,8 +585,8 @@ it('stands in for a household with a payload the contract would accept', functio
     // A refused request as well as a plain one, because the refusal is a shape
     // of its own, and something has to read inside it.
     $payload = aHouseholdOf([aMember('Robin', [
-        aRequest(1, 'A film nobody has seen', 'waiting-for-approval'),
-        [...aRequest(2, 'A season', 'declined'), 'refused' => ['reason' => 'somebody said no']],
+        aRequest('1', 'A film nobody has seen', 'waiting-for-approval'),
+        [...aRequest('2', 'A season', 'declined'), 'refused' => ['reason' => 'somebody said no']],
     ])]);
 
     expect(WhatTheContractAccepts::complaintsAbout('HouseholdEnvelope', ['kind' => 'household', 'data' => $payload]))
@@ -597,8 +611,8 @@ it('a status nobody named is a row, not the end of the reading', function (): vo
     // awaiting a decision, showing none of it.
     $data = aHouseholdOf([
         aMember('Robin', [
-            ['id' => 1, 'title' => 'A film nobody has a word for'],
-            aRequest(2, 'A season', 'waiting-for-approval'),
+            ['id' => '1', 'title' => 'A film nobody has a word for'],
+            aRequest('2', 'A season', 'waiting-for-approval'),
         ]),
     ]);
 
@@ -620,7 +634,7 @@ it('a standing nobody named wants no decision, and is not a decline', function (
     // to approve it, because the app cannot say it is waiting. And it is not
     // read as a decline, which would demand the refusal sentence a declined row
     // owes — refusing the row for want of a sentence nobody wrote.
-    $data = aHouseholdOf([aMember('Robin', [['id' => 1, 'title' => 'A film']])]);
+    $data = aHouseholdOf([aMember('Robin', [['id' => '1', 'title' => 'A film']])]);
 
     $wanted = Households::in(householdSaying($data));
 
@@ -634,7 +648,7 @@ it('a standing that is not a word at all is refused, not read as absent', functi
     // enum; a number is neither — it is a payload the contract does not permit
     // in the first place, and reading it as *nobody named it* would turn a
     // malformed row into an ordinary one.
-    $data = aHouseholdOf([aMember('Robin', [['id' => 1, 'title' => 'A film', 'state' => 7]])]);
+    $data = aHouseholdOf([aMember('Robin', [['id' => '1', 'title' => 'A film', 'state' => 7]])]);
 
     expect(static fn(): Requested => Households::in(householdSaying($data)))
         ->toThrow(HouseholdIsUnreadable::class);
@@ -645,7 +659,7 @@ it('a standing spelled out and unrecognised is still refused', function (): void
     // contract's union and `Waiting` are generated from one source, so a word
     // that reaches here and is not a case means the two have drifted — which is
     // about this app rather than about the household.
-    $data = aHouseholdOf([aMember('Robin', [aRequest(1, 'A film', 'mislaid')])]);
+    $data = aHouseholdOf([aMember('Robin', [aRequest('1', 'A film', 'mislaid')])]);
 
     expect(static fn(): Requested => Households::in(householdSaying($data)))
         ->toThrow(HouseholdIsUnreadable::class);
@@ -654,7 +668,7 @@ it('a standing spelled out and unrecognised is still refused', function (): void
 it('stands in for a household the contract would accept, with a state left out', function (): void {
     // The claim the three cases above rest on: a request with no `state` is a
     // payload a stack may really send, not one invented to make a point.
-    $data = aHouseholdOf([aMember('Robin', [['id' => 1, 'title' => 'A film']])]);
+    $data = aHouseholdOf([aMember('Robin', [['id' => '1', 'title' => 'A film']])]);
 
     expect(WhatTheContractAccepts::complaintsAbout('HouseholdEnvelope', ['kind' => 'household', 'data' => $data]))
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");

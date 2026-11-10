@@ -103,7 +103,7 @@ function whatAHouseholdThatAskedSends(): array
                     'standing' => 'active',
                     'to_hand_over' => [],
                     'requests' => [[
-                        'id' => 41,
+                        'id' => '41',
                         'title' => 'A film nobody has seen',
                         'state' => 'waiting-for-approval',
                         'estimate' => ['bytes' => 4_000_000_000, 'measured' => false],
@@ -119,7 +119,7 @@ function whatAHouseholdThatAskedSends(): array
                     // which is answered with *we do not know* rather
                     // than a guess of nothing.
                     'requests' => [[
-                        'id' => 42,
+                        'id' => '42',
                         'title' => 'A series somebody has',
                         'state' => 'here',
                     ]],
@@ -284,15 +284,15 @@ function whatTheWireCarriedForADecision(Decided $decided): array
 
 it('an approval names the request and nothing else', function (): void {
     expect(whatTheWireCarriedForADecision(Decided::toApprove(RequestId::named('41'))))
-        ->toBe(['request' => 41]);
+        ->toBe(['request' => '41']);
 });
 
 it('a refusal names the request and carries the sentence with it', function (): void {
-    // Both keys, and the number among them: a refusal sent without its reason
+    // Both keys, and the reference among them: a refusal sent without its reason
     // is the wire half of a refusal that says nothing, and one sent with the
-    // wrong number turns somebody else's request down.
+    // wrong reference turns somebody else's request down.
     expect(whatTheWireCarriedForADecision(Decided::toDecline(RequestId::named('41'), 'No room this month')))
-        ->toBe(['request' => 41, 'reason' => 'No room this month']);
+        ->toBe(['request' => '41', 'reason' => 'No room this month']);
 });
 
 /** What a household answered, as a word, whichever arm it took. */

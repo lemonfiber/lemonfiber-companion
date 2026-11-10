@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
+use Modules\Operator\Internal\ViewModels\WhatOneRequestSays;
 use Modules\Requests\Api\KeepingWhatWasAsked;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
@@ -114,6 +115,13 @@ it('every row says who asked, so a decline can reach them', function (): void {
     expect($rows[0]->by)->toBe('Sam')
         ->and($rows[0]->title)->toBe('A film nobody has seen')
         ->and($rows[1]->by)->toBe('Robin');
+});
+
+it('names every row by the reference the stack gives it, in small type beside who asked', function (): void {
+    $screen = theRequestsScreen(AHouseholdThatAsked::wanting(aHouseholdMidWeek()));
+
+    expect(array_map(static fn(WhatOneRequestSays $row): string => $row->reference, $screen->answer()->requests))->toBe(['41', '42'])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.reference', ['reference' => '41']), __('household.reference', ['reference' => '42']));
 });
 
 it('draws a request no service has named yet by its kind, still one to approve or turn down', function (): void {
@@ -480,7 +488,7 @@ it('turning one down asks for the sentence before it sends anything', function (
 
     $screen->wouldDecline('41');
 
-    expect($screen->turningDown()?->number)->toBe(41)
+    expect($screen->turningDown()?->reference)->toBe('41')
         ->and($screen->mayDecline())->toBeFalse()
         // Nothing sent: the question is open and the reason is not written.
         ->and($wanting->whatItWasToldWasDecided())->toBe([]);

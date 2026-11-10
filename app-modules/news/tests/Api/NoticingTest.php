@@ -99,7 +99,7 @@ it('keeps what one stack has seen apart from another', function (): void {
     newAmong($noticing, requestsNumbered(2), anotherStackWhoseNewsIsNoticed());
 
     expect(newAmong($noticing, requestsNumbered(6, 5)))->toBe(['6'])
-        ->and(newAmong($noticing, requestsNumbered(6, 5), anotherStackWhoseNewsIsNoticed()))->toBe(['6', '5']);
+        ->and(newAmong($noticing, requestsNumbered(6, 5, 2), anotherStackWhoseNewsIsNoticed()))->toBe(['6', '5']);
 });
 
 it('sees an item and every older one with it, and leaves the newer ones new', function (): void {

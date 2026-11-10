@@ -19,7 +19,7 @@ it('names and orders each kind by what the stack vouches for', function (): void
     $problem = AnItem::aProblem('service.gluetun', Instant::atEpochSeconds(1_790_000_000));
 
     expect([$update->kind(), $update->named(), $update->order()])->toBe([KindOfNews::Update, '0.17.0', 0])
-        ->and([$request->kind(), $request->named(), $request->order()])->toBe([KindOfNews::Request, '42', 42])
+        ->and([$request->kind(), $request->named(), $request->order()])->toBe([KindOfNews::Request, '42', 0])
         ->and([$problem->kind(), $problem->named(), $problem->order()])->toBe([KindOfNews::Problem, 'service.gluetun', 1_790_000_000]);
 });
 
@@ -32,12 +32,13 @@ it('is the same item only where its kind, name and order all are', function (): 
         ->and(AnItem::anUpdate('1')->is(AnItem::aRequest(RequestId::named('1'))))->toBeFalse();
 });
 
-it('refuses an item named by nothing, and a request numbered below one', function (): void {
+it('refuses an update or a problem named by nothing', function (): void {
     expect(static fn(): AnItem => AnItem::anUpdate('  '))->toThrow(NotAnItem::class, 'update')
-        ->and(static fn(): AnItem => AnItem::aProblem(' ', Instant::atEpochSeconds(1)))->toThrow(NotAnItem::class, 'problem')
-        ->and(static fn(): AnItem => AnItem::aRequest(RequestId::named('0')))->toThrow(NotAnItem::class, 'numbered 0');
+        ->and(static fn(): AnItem => AnItem::aProblem(' ', Instant::atEpochSeconds(1)))->toThrow(NotAnItem::class, 'problem');
 });
 
-it('takes a request numbered one', function (): void {
-    expect(AnItem::aRequest(RequestId::named('1'))->order())->toBe(1);
+it('names a request by its reference as the stack wrote it', function (): void {
+    expect(AnItem::aRequest(RequestId::named('music-3'))->named())->toBe('music-3')
+        ->and(AnItem::aRequest(RequestId::named('music-3'))->is(AnItem::aRequest(RequestId::named('music-3'))))->toBeTrue()
+        ->and(AnItem::aRequest(RequestId::named('music-3'))->is(AnItem::aRequest(RequestId::named('books-3'))))->toBeFalse();
 });

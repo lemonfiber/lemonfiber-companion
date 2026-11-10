@@ -14,6 +14,7 @@ use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\RequestHasNobodyBehindIt;
+use Modules\Kernel\Api\RequestIsUnnamed;
 use Modules\Kernel\Api\SentenceSaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -137,7 +138,7 @@ final readonly class TheirOwn implements Owing
     {
         try {
             return WhatTheyAsked::told(Households::theirOwnIn($envelope));
-        } catch (UnexpectedKind|HouseholdIsUnreadable|HouseholdWentUnread|RequestHasNobodyBehindIt $why) {
+        } catch (UnexpectedKind|HouseholdIsUnreadable|HouseholdWentUnread|RequestHasNobodyBehindIt|RequestIsUnnamed $why) {
             return WhatTheyAsked::refused(WhatStoodInTheWayOfTheHousehold::ofTheHousehold($this->clients, $stack, $why));
         }
     }

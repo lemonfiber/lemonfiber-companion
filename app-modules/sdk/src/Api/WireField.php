@@ -771,9 +771,6 @@ enum WireField: string implements NamesAWireField
     /** The number an episode is filed under within its season, in a trace. */
     case Number = 'number';
 
-    /** The reference a request is named by on the household list, in what a stack lists as new. */
-    case Request = 'request';
-
     /**
      * What could not be read: the sources a removal reading did not get an
      * answer from, in the words of whatever refused, and the kinds a stack

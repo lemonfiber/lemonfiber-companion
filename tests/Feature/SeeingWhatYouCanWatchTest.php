@@ -234,7 +234,7 @@ function theHeroLabel(): string
 function whatTheyAskedFor(): Requested
 {
     $asked = static fn(int $number, string $title, Waiting $standing): Wanted
-        => Wanted::of($number, 'ada', $title, Size::unknown(), HowARequestStands::said($standing));
+        => Wanted::of(RequestId::named(sprintf('%d', $number)), 'ada', $title, Size::unknown(), HowARequestStands::said($standing));
 
     return Requested::of(
         $asked(1, 'Dune', Waiting::Here),

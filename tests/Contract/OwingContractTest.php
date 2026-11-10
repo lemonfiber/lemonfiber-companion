@@ -172,9 +172,9 @@ function whatAStackSendsOneMemberWhoHasAsked(array $requests): array
 function theRequestsAMemberMade(): array
 {
     return [
-        ['id' => 1, 'title' => 'The Third Man', 'state' => 'waiting-for-approval'],
+        ['id' => '1', 'title' => 'The Third Man', 'state' => 'waiting-for-approval'],
         [
-            'id' => 2,
+            'id' => '2',
             'title' => 'Solaris',
             'state' => 'declined',
             'refused' => ['reason' => 'Not for your age limit'],
@@ -438,7 +438,7 @@ it('a list of requests it could not read is a stack that did not answer, not a s
     // A row this app cannot show is refused rather than dropped, for the reason
     // the operator\'s reading gives: a list one row short reads as somebody never
     // having asked, while the person who asked is in the house and will ask again.
-    $short = whatAStackSendsOneMemberWhoHasAsked([['id' => 'one', 'state' => 'waiting-for-approval']]);
+    $short = whatAStackSendsOneMemberWhoHasAsked([['id' => 1, 'state' => 'waiting-for-approval']]);
 
     $table = [
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],

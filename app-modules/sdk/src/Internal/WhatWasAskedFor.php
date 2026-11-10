@@ -13,7 +13,6 @@ use function is_string;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\RequestId;
-use Modules\Kernel\Api\RequestIsUnnamed;
 use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
@@ -136,11 +135,7 @@ final readonly class WhatWasAskedFor
             throw HouseholdIsUnreadable::request($by, $position);
         }
 
-        try {
-            return RequestId::named($said);
-        } catch (RequestIsUnnamed) {
-            throw HouseholdIsUnreadable::request($by, $position);
-        }
+        return RequestId::named($said);
     }
 
     /**
