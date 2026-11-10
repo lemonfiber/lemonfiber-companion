@@ -14,6 +14,12 @@
     "shards": {
         "max": 10
     },
+    "timeouts": {
+        "most": 900,
+        "multiple": 6,
+        "perTest": 30,
+        "testFloor": 10
+    },
     "ignores": {
         "entries": [
             {

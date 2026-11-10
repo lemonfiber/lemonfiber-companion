@@ -275,6 +275,18 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'The volume a kept copy was taken from. `target` names what the change was against and `does` says the copy is kept and the volume was never changed, and both are drawn; no requirement asks this app to name a volume (`N1-R17`).',
         ],
         [
+            'path' => 'UndoEnvelope.reversed[].action.kind',
+            'because' => 'The kind of media a curator files a release it grabs again under. `target` names what the change was against and `does` says the release is grabbed again, and both are drawn; no requirement asks a reversal to name the kind of media (`N1-R17`).',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.title',
+            'because' => 'The curator\'s own id for the title a regrab is about. An id inside a service names nothing an operator can look up from a phone, for `UndoEnvelope.reversed[].action.id`\'s reason.',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.release',
+            'because' => 'The fingerprint of the release a regrab asks for again, the instruction the curator carries out with. A fingerprint means nothing on a screen, and `does` says the release is grabbed again, which is drawn.',
+        ],
+        [
             'path' => 'WatchEnvelope.would',
             'because' => 'The guard a run would keep — the data location, how often it looks, and the command it '
                 . 'would run — which is exactly what a guard is owed before it starts. It is answered only by a '

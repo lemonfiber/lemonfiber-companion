@@ -105,6 +105,7 @@ return [
             'run' => 'A service is started again, or stopped again',
             'leave' => 'Your own overlay is left as it stands',
             'push-endpoint' => 'A phone\'s push endpoint is left as it stands; only the phone can register it again',
+            'regrab' => 'The release is grabbed again and taken off the blocklist',
         ],
     ],
 ];

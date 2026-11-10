@@ -85,6 +85,9 @@ enum WhatGoingBackDoes: string
     /** A phone's push endpoint is left as it stands, because only the phone holds what a registration is made from. */
     case PushEndpoint = 'push-endpoint';
 
+    /** A release is grabbed again by its curator and taken off the blocklist. */
+    case Regrab = 'regrab';
+
     /** The catalogue key for this, as an operator reads it. */
     public function saidOnTheScreen(): string
     {
