@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace Tests\Support;
 
 use Closure;
+
+use function iterator_to_array;
+
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AnAlert;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\Nonce;
@@ -25,7 +29,7 @@ use function str_repeat;
 use Tests\Support\Fakes\WhereHearingLeftOffInMemory;
 
 /**
- * A stack's event stream as the Hearing contract listens to it: the stack, the session, an event as the core frames it, and both ways of listening.
+ * A stack's event stream as the Hearing contract listens to it: the stack, the session, an event as the core frames it, the alerts a wake heard, and both ways of listening.
  *
  * Shared on purpose by the suites that hold the Hearing port to its contract.
  */
@@ -72,5 +76,15 @@ final readonly class TheStreamListenedTo
                 return new Listeners(new PinnedClients(), new NullLogger(), WhereHearingLeftOffInMemory::nowhere());
             },
         ];
+    }
+
+    /**
+     * Every alert one wake heard, in order.
+     *
+     * @return list<AnAlert>
+     */
+    public static function theAlertsAWakeHeard(Hearing $hearing): array
+    {
+        return iterator_to_array($hearing->howItIs(self::aStack(), self::theSession())->theAlerts(), preserve_keys: false);
     }
 }

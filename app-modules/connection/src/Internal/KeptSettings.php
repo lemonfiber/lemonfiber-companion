@@ -8,20 +8,32 @@ use Closure;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\Shape;
 
-/** What the store answered about this module's settings: a sealed value in its shape, or none. */
+/** What the store answered about this module's settings: a sealed value in its shape, none, or a row this build cannot read. */
 final readonly class KeptSettings
 {
-    private function __construct(private ?SealedPayload $payload, private ?Shape $shape) {}
+    private function __construct(private ?SealedPayload $payload, private ?Shape $shape, private bool $rowIsThere) {}
 
     public static function found(SealedPayload $payload, Shape $shape): self
     {
-        return new self($payload, $shape);
+        return new self($payload, $shape, rowIsThere: true);
     }
 
-    /** Nothing kept, or nothing this build can read, which is the same to a reader. */
+    /** Nothing kept. */
     public static function none(): self
     {
-        return new self(null, null);
+        return new self(null, null, rowIsThere: false);
+    }
+
+    /** A row is kept that this build cannot read, which a reader takes as none and a removal as something to forget. */
+    public static function thatThisBuildCannotRead(): self
+    {
+        return new self(null, null, rowIsThere: true);
+    }
+
+    /** Whether a row is kept, whether or not this build can read it. */
+    public function holdsSomething(): bool
+    {
+        return $this->rowIsThere;
     }
 
     /**

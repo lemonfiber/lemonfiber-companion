@@ -8,6 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\KindOfObstacle;
+use Modules\Kernel\Api\KindsOfNotification;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SetApart;
 use Modules\Kernel\Api\WhatTheAlertsWere;
@@ -27,6 +28,6 @@ function whatTheAlertsSaid(WhatTheAlertsWere $answer): string
 }
 
 it('carries what the operator is told, or what stood in the way, never one for the other', function (): void {
-    expect(whatTheAlertsSaid(WhatTheAlertsWere::told(WhatTheOperatorIsTold::byPreset('quiet', 'Only what needs you today', SetApart::of()))))->toBe('told:quiet')
+    expect(whatTheAlertsSaid(WhatTheAlertsWere::told(WhatTheOperatorIsTold::byPreset('quiet', 'Only what needs you today', SetApart::of(), KindsOfNotification::these()))))->toBe('told:quiet')
         ->and(whatTheAlertsSaid(WhatTheAlertsWere::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

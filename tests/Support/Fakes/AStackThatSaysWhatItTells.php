@@ -32,7 +32,7 @@ final class AStackThatSaysWhatItTells implements Telling
     /** Whether the session it was handed carried anything — for a test to ask. */
     private bool $carried = false;
 
-    /** @param Closure(): WhatTheAlertsWere $answer */
+    /** @param Closure(Stack): WhatTheAlertsWere $answer */
     private function __construct(private readonly Closure $answer) {}
 
     /** A stack whose operator is told about this. */
@@ -45,6 +45,16 @@ final class AStackThatSaysWhatItTells implements Telling
     public static function met(Obstacle $why): self
     {
         return new self(static fn(): WhatTheAlertsWere => WhatTheAlertsWere::met($why));
+    }
+
+    /**
+     * Stacks that each answer as a test says, by the stack asked.
+     *
+     * @param Closure(Stack): WhatTheAlertsWere $answer
+     */
+    public static function eachAs(Closure $answer): self
+    {
+        return new self($answer);
     }
 
     /** The stack it was last asked about, or nothing where it never was. */
@@ -74,6 +84,6 @@ final class AStackThatSaysWhatItTells implements Telling
         // {@see AStackThatKeepsARecord}'s reason.
         $this->carried = $session->forTheHeader() !== '';
 
-        return ($this->answer)();
+        return ($this->answer)($stack);
     }
 }

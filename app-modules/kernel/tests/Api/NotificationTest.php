@@ -10,13 +10,17 @@ use function it;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAlert;
 use Modules\Kernel\Api\AnAlertsName;
+use Modules\Kernel\Api\AnAlertsSort;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItIsWorded;
+use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\Notification;
+use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhatMayReachThePhone;
 use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhereATapLeads;
 use Modules\Kernel\Api\WhichWayItWent;
@@ -40,10 +44,10 @@ function aStackItTells(string $remembered): Stack
 }
 
 it('is built from the core\'s decision and nothing else', function (): void {
-    // The requirement has two halves and this is the one a type can keep: each
-    // way to make a notification takes what the core declared — its decision,
-    // or one alert it raised — and no text. An app wanting to say something of its own
-    // has nowhere to put the sentence.
+    // The requirement has two halves and this is the one a type can keep: the
+    // one way to make a notification takes an alert the core raised, and no
+    // text. An app wanting to say something of its own has nowhere to put the
+    // sentence.
     //
     // The other half — not calling the platform's alert directly — is a
     // `disallowedStaticCalls` entry on `Dialog::alert()`, because a call this
@@ -56,7 +60,7 @@ it('is built from the core\'s decision and nothing else', function (): void {
         }
     }
 
-    expect($built)->toBe(['fromTheCore', 'ofAnAlert']);
+    expect($built)->toBe(['ofAnAlert']);
 });
 
 it('has nowhere to hold a credential, a name or a title', function (): void {
@@ -81,6 +85,7 @@ it('has nowhere to hold a credential, a name or a title', function (): void {
         'worded' => HowItIsWorded::class,
         'filedUnder' => AnAlertsName::class,
         'leadsTo' => WhereATapLeads::class,
+        'sort' => AnAlertsSort::class,
     ]);
 });
 
@@ -88,7 +93,7 @@ it('knows whether its stack is still configured', function (): void {
     $here = StackId::rememberedAs('the-loft');
     $gone = StackId::rememberedAs('the-shed');
 
-    $notification = Notification::fromTheCore(aStackItTells('the-shed'), WhatTheCoreDecided::toSay('backup.finished'), aTapLeading());
+    $notification = Notification::ofAnAlert(aStackItTells('the-shed'), AnAlert::unnamed(WhatTheCoreDecided::toSay('backup.finished'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading());
 
     expect($notification->concernsOneOf($here))->toBeFalse()
         ->and($notification->concernsOneOf($here, $gone))->toBeTrue();
@@ -98,13 +103,13 @@ it('concerns nothing when the device has no stacks at all', function (): void {
     // The boundary the loop gets wrong: an empty list is what a device has
     // immediately after the last stack is removed, which is exactly when a
     // notification about it is most likely to still be in flight.
-    $notification = Notification::fromTheCore(aStackItTells('the-loft'), WhatTheCoreDecided::toSay('backup.finished'), aTapLeading());
+    $notification = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('backup.finished'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading());
 
     expect($notification->concernsOneOf())->toBeFalse();
 });
 
 it('says what it is about when the device is unlocked', function (): void {
-    $said = Notification::fromTheCore(aStackItTells('the-loft'), WhatTheCoreDecided::toSay('backup.finished'), aTapLeading())->either(
+    $said = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('backup.finished'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading())->either(
         plain: fn(WhatTheCoreDecided $says, StackName $called): Code => Code::of(sprintf('%s on %s', $says->shown(), $called->shown())),
         guarded: fn(WhatTheCoreDecided $says): WhatTheCoreDecided => $says,
     );
@@ -132,7 +137,7 @@ it('hands a locked device no stack to name', function (): void {
 
     $handed = null;
 
-    Notification::fromTheCore(aStackItTells('the-loft'), WhatTheCoreDecided::toSay('backup.finished'), aTapLeading())
+    Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('backup.finished'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading())
         ->whileLocked()
         ->either(
             plain: fn(WhatTheCoreDecided $says, StackName $called): Code => Code::of(sprintf('%s%s', $says->shown(), $called->shown())),
@@ -147,7 +152,7 @@ it('hands a locked device no stack to name', function (): void {
 });
 
 it('the guarded arm is the only one a locked device can run', function (): void {
-    $ran = Notification::fromTheCore(aStackItTells('the-loft'), WhatTheCoreDecided::toSay('backup.finished'), aTapLeading())
+    $ran = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('backup.finished'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading())
         ->whileLocked()
         ->either(
             plain: fn(WhatTheCoreDecided $says, StackName $called): Code => Code::of(sprintf('plain %s %s', $says->shown(), $called->shown())),
@@ -161,7 +166,7 @@ it('locking one notification does not unlock the original', function (): void {
     // `whileLocked()` returns a new object, and the mistake it exists to
     // prevent is a renderer that locks a notification and then, still holding
     // the same reference, renders the plain form somewhere else.
-    $notification = Notification::fromTheCore(aStackItTells('the-loft'), WhatTheCoreDecided::toSay('backup.finished'), aTapLeading());
+    $notification = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('backup.finished'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading());
 
     $notification->whileLocked();
 
@@ -174,14 +179,14 @@ it('locking one notification does not unlock the original', function (): void {
 });
 
 it('files a notification of the core\'s decision under that decision, as an onset', function (): void {
-    $notification = Notification::fromTheCore(aStackItTells('the-loft'), WhatTheCoreDecided::toSay('backup.finished'), aTapLeading());
+    $notification = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('backup.finished'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading());
 
     expect($notification->filedAs())->toBe(AnAlertsName::byItsKind(WhatTheCoreDecided::toSay('backup.finished'))->filedFor(StackId::rememberedAs('the-loft')))
         ->and($notification->worded())->toBe(HowItIsWorded::Onset);
 });
 
 it('files a notification of an alert under the alert\'s name, which way it went, locked or not', function (WhichWayItWent $way): void {
-    $notification = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), $way, AnAlertsName::of('vpn.tunnel#2')), aTapLeading());
+    $notification = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), $way, AnAlertsName::of('vpn.tunnel#2'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading());
 
     foreach ([$notification, $notification->whileLocked()] as $told) {
         expect($told->filedAs())->toBe(AnAlertsName::of('vpn.tunnel#2')->filedFor(StackId::rememberedAs('the-loft')))
@@ -196,22 +201,22 @@ it('files a notification of an alert under the alert\'s name, which way it went,
 
 it('is filed as one key for one alert of one stack, so a resolution replaces only its own stack\'s onset', function (): void {
     $named = AnAlertsName::of('disk.full#3');
-    $onset = AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, $named);
-    $resolved = AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, $named);
+    $onset = AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, $named, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning));
+    $resolved = AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, $named, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning));
     $loft = Notification::ofAnAlert(aStackItTells('the-loft'), $onset, aTapLeading());
 
     expect(Notification::ofAnAlert(aStackItTells('the-loft'), $resolved, aTapLeading())->filedAs())->toBe($loft->filedAs())
         ->and($loft->whileLocked()->filedAs())->toBe($loft->filedAs())
         ->and(Notification::ofAnAlert(aStackItTells('the-shed'), $resolved, aTapLeading())->filedAs())->not->toBe($loft->filedAs())
-        ->and(Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset), aTapLeading())->filedAs())->not->toBe($loft->filedAs())
+        ->and(Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading())->filedAs())->not->toBe($loft->filedAs())
         ->and($loft->filedAs())->not->toContain('the-loft')
         ->and($loft->filedAs())->not->toContain('disk.full');
 });
 
 it('stands in for its stack\'s notifications beyond the cap as one, filed once per stack, worded as more to tell, leading where it did', function (): void {
-    $first = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#1')), aTapLeading());
-    $second = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Resolved, AnAlertsName::of('vpn.down#7')), aTapLeading());
-    $elsewhere = Notification::ofAnAlert(aStackItTells('the-shed'), AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#1')), aTapLeading());
+    $first = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#1'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading());
+    $second = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Resolved, AnAlertsName::of('vpn.down#7'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading());
+    $elsewhere = Notification::ofAnAlert(aStackItTells('the-shed'), AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#1'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading());
 
     expect($first->beyondTheCap()->filedAs())->toBe($second->beyondTheCap()->filedAs())
         ->and($first->beyondTheCap()->filedAs())->not->toBe($first->filedAs())
@@ -222,4 +227,14 @@ it('stands in for its stack\'s notifications beyond the cap as one, filed once p
             guarded: static fn(): WhatTheCoreDecided => WhatTheCoreDecided::toSay('guarded'),
         )->shown())->toBe('guarded')
         ->and($first->beyondTheCap()->leadsTo()->asALink())->toBe('lemonfiber://stacks/the-loft');
+});
+
+it('is about the stack its alert came from, and is let through by what the operator chose for it by its sort', function (): void {
+    $backup = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::raised(WhatTheCoreDecided::toSay('backup.done'), WhichWayItWent::Onset, AnAlertsName::of('backup#1'), AnAlertsSort::of(KindOfNotification::Backup, Severity::Advisory)), aTapLeading());
+
+    expect($backup->about()->is(StackId::rememberedAs('the-loft')))->toBeTrue()
+        ->and($backup->isLetThroughBy(WhatMayReachThePhone::everything()))->toBeTrue()
+        ->and($backup->isLetThroughBy(WhatMayReachThePhone::everything()->withOff(KindOfNotification::Backup)))->toBeFalse()
+        ->and($backup->whileLocked()->isLetThroughBy(WhatMayReachThePhone::everything()->withOff(KindOfNotification::Backup)))->toBeFalse()
+        ->and($backup->beyondTheCap()->isLetThroughBy(WhatMayReachThePhone::everything()->withOff(KindOfNotification::Backup)))->toBeFalse();
 });

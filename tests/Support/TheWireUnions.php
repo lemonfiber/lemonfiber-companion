@@ -44,6 +44,7 @@ use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
+use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Overall;
@@ -123,6 +124,7 @@ final readonly class TheWireUnions
         HowItStands::class => 'standing',
         Severity::class => 'severity',
         HowTheCheckAfterAStartEnded::class => 'outcome',
+        KindOfNotification::class => 'notification',
         WhoSettledIt::class => 'whose',
         HowItWasReached::class => 'how',
         HowAServiceRuns::class => 'state',

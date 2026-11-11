@@ -7,6 +7,7 @@ use Modules\Design\Api\TakesTheThemeItOpensOver;
 use Modules\Design\Api\WhoseTheme;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Operator\Internal\Screens\HowThisPhoneIsSet;
+use Modules\Operator\Internal\Screens\WhatEachStackMayTellThisPhone;
 use Modules\Operator\Internal\Screens\WhatIsNewOnEveryStack;
 use Native\Mobile\Edge\NativeComponent;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -22,6 +23,7 @@ function screensThatKeepTheTheme(): array
 {
     return [
         'HowThisPhoneIsSet' => static fn(): HowThisPhoneIsSet => app(HowThisPhoneIsSet::class),
+        'WhatEachStackMayTellThisPhone' => static fn(): WhatEachStackMayTellThisPhone => app(WhatEachStackMayTellThisPhone::class),
         'WhatIsNewOnEveryStack' => static fn(): WhatIsNewOnEveryStack => app(WhatIsNewOnEveryStack::class),
         'AScreenOpenedOverAnother' => static fn(): AScreenOpenedOverAnother => new AScreenOpenedOverAnother(),
     ];

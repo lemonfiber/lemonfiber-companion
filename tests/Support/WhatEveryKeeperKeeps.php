@@ -17,6 +17,7 @@ use function json_encode;
 
 use Lemonfiber\Native\Keeps;
 use LogicException;
+use Modules\Connection\Api\ChoosingWhatReachesThePhone;
 use Modules\Device\Api\PlatformPhoneKeys;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Address;
@@ -29,6 +30,7 @@ use Modules\Kernel\Api\HearIn;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\KindOfWork;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Noted;
@@ -155,6 +157,12 @@ final readonly class WhatEveryKeeperKeeps
 
         if ($keeper instanceof KeepingTheirLanguages) {
             $keeper->choose($stack->id(), Whose::member('robin'), TheirLanguages::of(HearIn::Dutch, ReadIn::English));
+
+            return;
+        }
+
+        if ($keeper instanceof ChoosingWhatReachesThePhone) {
+            $keeper->switchOff($stack->id(), KindOfNotification::Backup);
 
             return;
         }

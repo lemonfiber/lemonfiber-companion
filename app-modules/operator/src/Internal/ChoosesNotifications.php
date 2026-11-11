@@ -6,7 +6,6 @@ namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\Asked;
 use Modules\Kernel\Api\Notifying;
-use Modules\Kernel\Api\Permission;
 use Modules\Wayfinding\Api\WhoTheSettingsSpeakTo;
 
 /**
@@ -70,18 +69,6 @@ trait ChoosesNotifications
     {
         $this->askingForNotifications = $this->notifications->turnOn()->mayProceed() ? null : WhereAskingForNotificationsStands::Declined;
         $this->notifying = $this->notifications->current();
-    }
-
-    /** Why the app wants notifications, said before the phone is asked. */
-    public function whyNotifications(): string
-    {
-        return Permission::Notifications->reason();
-    }
-
-    /** What still works without notifications. */
-    public function withoutNotifications(): string
-    {
-        return Permission::Notifications->alternative();
     }
 
     /** The operator closed the reason without allowing anything. */

@@ -31,6 +31,7 @@ use Modules\Operator\Internal\ChoosesNotifications;
 use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\NotACountOfDays;
 use Modules\Operator\Internal\OffersTheAppsSettings;
+use Modules\Operator\Internal\OpensTheNotificationPage;
 use Modules\Operator\Internal\Presenters\HowThisPhoneIsSetReads;
 use Modules\Operator\Internal\ViewModels\ASettingAsShown;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
@@ -55,6 +56,7 @@ final class HowThisPhoneIsSet extends NativeComponent implements TakesTheThemeIt
     use DrawsItsTemplate;
     use ChoosesNotifications;
     use OffersTheAppsSettings;
+    use OpensTheNotificationPage;
 
     public const string TEMPLATE = 'operator::how-this-phone-is-set';
     /** How long the app may be away before the lock asks again, once read. */

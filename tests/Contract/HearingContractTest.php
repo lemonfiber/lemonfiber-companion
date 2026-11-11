@@ -7,9 +7,6 @@ use Modules\Kernel\Api\AClaimant;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ALink;
 use Modules\Kernel\Api\AnAffectedItem;
-use Modules\Kernel\Api\AnAlert;
-use Modules\Kernel\Api\AnAlertsName;
-use Modules\Kernel\Api\AnEventHeard;
 use Modules\Kernel\Api\AProblemNamed;
 use Modules\Kernel\Api\AReleaseNamed;
 use Modules\Kernel\Api\AStoppage;
@@ -34,7 +31,6 @@ use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
-use Modules\Kernel\Api\TheAlerts;
 use Modules\Kernel\Api\TheClaimants;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\TheLinks;
@@ -44,10 +40,8 @@ use Modules\Kernel\Api\WhatFollowedFromIt;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatSettledIt;
 use Modules\Kernel\Api\WhatStoppedMoving;
-use Modules\Kernel\Api\WhatTheCoreDecided;
 use Modules\Kernel\Api\WhatTheStackListed;
 use Modules\Kernel\Api\WhatWasHeard;
-use Modules\Kernel\Api\WhichWayItWent;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\PinnedClients;
@@ -58,13 +52,11 @@ use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Tests\Support\AStreamThatStaysOpen;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
-use Tests\Support\Fakes\NotesKeptInMemory;
 use Tests\Support\Fakes\WhereHearingLeftOffInMemory;
 use Tests\Support\TheStreamListenedTo;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 use Tests\Support\WhereEachOpenResumed;
-use Tests\Support\WhereItResumes;
 
 // The Hearing contract, run against the adapter and against the fake.
 //
@@ -482,18 +474,6 @@ it('resumes a stream it could not read after the last event it carried, and agai
     expect(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1', 'run-1']);
 });
 
-it('opens after where an earlier launch left off, and hears the alerts the stack hands back', function (): void {
-    MockClient::destroyGlobal();
-    $stack = MockClient::global([MockResponse::make(anAlertEvent())]);
-    $leftOff = WhereHearingLeftOffInMemory::nowhere()->heardBefore(TheStreamListenedTo::aStack()->id(), AnEventHeard::named('run-0'));
-
-    $alerts = theAlertsAWakeHeard(new Listeners(new PinnedClients(), new NullLogger(), $leftOff));
-
-    expect(WhereEachOpenResumed::in($stack))->toBe(['run-0'])
-        ->and($alerts)->toEqual([AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2'))])
-        ->and(WhereItResumes::said($leftOff->leftOffAt(TheStreamListenedTo::aStack()->id())))->toBe('after:run-1');
-});
-
 it('notes where a stream got to only when it moved', function (): void {
     MockClient::destroyGlobal();
     $stack = MockClient::global([
@@ -506,17 +486,6 @@ it('notes where a stream got to only when it moved', function (): void {
 
     expect(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1'])
         ->and($leftOff->timesNoted())->toBe(1);
-});
-
-it('notes nothing for an event whose identifier is empty', function (): void {
-    MockClient::destroyGlobal();
-    MockClient::global([MockResponse::make(str_replace('id: run-1', 'id: ', anAlertEvent()))]);
-    $leftOff = WhereHearingLeftOffInMemory::nowhere();
-
-    $alerts = theAlertsAWakeHeard(new Listeners(new PinnedClients(), new NullLogger(), $leftOff));
-
-    expect($alerts)->toHaveCount(1)
-        ->and($leftOff->timesNoted())->toBe(0);
 });
 
 it('resumes within one screen where the store would not keep where it got to, and from the start once let go of', function (): void {
@@ -892,96 +861,8 @@ it('stands in for a stack with the wiring it says as the contract would accept',
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });
 
-/**
- * One `alert` envelope as the core writes it, changed where a case says.
- *
- * @param  array<mixed> $changed
- * @return array<string, mixed>
- */
-function anAlertEnvelope(array $changed = []): array
-{
-    return [
-        'api_version' => 1,
-        'kind' => 'alert',
-        'data' => [
-            'check' => 'vpn.tunnel',
-            'kind' => 'vpn.down',
-            'moment' => 'onset',
-            'severity' => 'critical',
-            'summary' => 'The tunnel dropped',
-            'meaning' => 'Downloads have stopped rather than leak',
-            'remedies' => ['Restart the gateway'],
-            'affected' => ['vpn.tunnel'],
-            'id' => 'vpn.tunnel#2',
-            ...$changed,
-        ],
-    ];
-}
-
-/**
- * One `alert` event as the core frames it, changed where a case says.
- *
- * @param array<mixed> $changed
- */
-function anAlertEvent(array $changed = []): string
-{
-    return TheStreamListenedTo::anEvent('alert', json_encode(anAlertEnvelope($changed), JSON_THROW_ON_ERROR));
-}
-
-/**
- * Every alert one wake heard, in order.
- *
- * @return list<AnAlert>
- */
-function theAlertsAWakeHeard(Hearing $hearing): array
-{
-    return iterator_to_array($hearing->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession())->theAlerts(), preserve_keys: false);
-}
-
-it('hears every alert a wake carried, in order, beside whatever else it said', function (): void {
-    $raised = [
-        AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2')),
-        AnAlert::unnamed(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Resolved),
-    ];
-
-    foreach (TheStreamListenedTo::everyWay(
-        [MockResponse::make(sprintf('%s%s', anAlertEvent(), anAlertEvent(['moment' => 'resolved', 'id' => null])))],
-        AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::aSignOfLife()->alerting(TheAlerts::of(...$raised))]),
-    ) as $which => $make) {
-        expect(theAlertsAWakeHeard($make()))->toEqual($raised, $which);
-    }
-});
-
 it('hears no alert where a wake carried none', function (): void {
     foreach (TheStreamListenedTo::everyWay([MockResponse::make(aDashboardEvent(whatAHealthyStackSaysOfItsHealth()))], AStackThatSpeaksUp::thenEnding(...[WhatWasHeard::said(theHealthySummary())])) as $which => $make) {
-        expect(theAlertsAWakeHeard($make()))->toBe([], $which);
+        expect(TheStreamListenedTo::theAlertsAWakeHeard($make()))->toBe([], $which);
     }
-});
-
-it('skips an alert it cannot read, notes why without what the stack sent, and still hears the rest and the stream', function (array $changed): void {
-    MockClient::destroyGlobal();
-    MockClient::global([MockResponse::make(sprintf('%s%s', anAlertEvent($changed), anAlertEvent()))]);
-    $notes = new NotesKeptInMemory();
-
-    $heard = new Listeners(new PinnedClients(), $notes, WhereHearingLeftOffInMemory::nowhere())->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession());
-
-    expect(whatWasHeardAsAWord($heard))->toBe('alive')
-        ->and(iterator_to_array($heard->theAlerts(), preserve_keys: false))
-        ->toEqual([AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.tunnel#2'))])
-        ->and($notes->noted())->toHaveCount(1)
-        ->and($notes->noted()[0])->toStartWith('alert: skipped one this app cannot read')
-        ->and($notes->noted()[0])->not->toContain('Click here')
-        ->and($notes->noted()[0])->not->toContain('sideways');
-})->with([
-    'no kind' => [['kind' => ' ']],
-    'a kind that is a sentence' => [['kind' => 'Click here to restore your files']],
-    'a kind in capitals' => [['kind' => 'VPN.Down']],
-    'no way it went' => [['moment' => null]],
-    'a way this app does not read' => [['moment' => 'sideways']],
-    'a name that is not words' => [['id' => 7]],
-    'no payload' => [['kind' => null, 'moment' => null]],
-]);
-
-it('stands in for a stack with an alert the contract would accept', function (): void {
-    expect(WhatTheContractAccepts::complaintsAbout('AlertEnvelope', anAlertEnvelope()))->toBe([]);
 });

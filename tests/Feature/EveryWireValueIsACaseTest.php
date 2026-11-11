@@ -31,6 +31,7 @@ use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
+use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Overall;
@@ -263,6 +264,17 @@ it('everything the check after a start can come to has a case', function (): voi
 
     expect($ended)->not->toBe([], 'no outcome union was found in the generated boot envelope');
     expect(TheWireUnions::valuesOf(HowTheCheckAfterAStartEnded::cases()))->toBe($ended);
+});
+
+it('every kind of notification the contract describes has a case', function (): void {
+    // Read from the alert envelope, where each alert names its kind. The
+    // notification page offers a switch for each kind a stack raises, so a
+    // kind the contract grew that nothing here has a case for must fail rather
+    // than be offered under another's name.
+    $kinds = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('AlertEnvelope'), 'notification');
+
+    expect($kinds)->not->toBe([], 'no notification union was found in the generated alert envelope');
+    expect(TheWireUnions::valuesOf(KindOfNotification::cases()))->toBe($kinds);
 });
 
 it('every settler the contract describes has a case', function (): void {

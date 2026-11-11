@@ -9,6 +9,7 @@ use function it;
 
 use Modules\Kernel\Api\AlertSaysNothing;
 use Modules\Kernel\Api\AnEventSetApart;
+use Modules\Kernel\Api\KindsOfNotification;
 use Modules\Kernel\Api\SetApart;
 use Modules\Kernel\Api\WhatTheOperatorIsTold;
 use Modules\Kernel\Api\WhetherItIsHeard;
@@ -16,7 +17,7 @@ use Modules\Kernel\Api\WhetherItIsHeard;
 use function sprintf;
 
 it('carries the preset, what it means and the exceptions made to it', function (): void {
-    $told = WhatTheOperatorIsTold::byPreset('quiet', 'Only what needs you today', SetApart::of(AnEventSetApart::of('disk-low', WhetherItIsHeard::Heard)));
+    $told = WhatTheOperatorIsTold::byPreset('quiet', 'Only what needs you today', SetApart::of(AnEventSetApart::of('disk-low', WhetherItIsHeard::Heard)), KindsOfNotification::these());
 
     expect($told->preset())->toBe('quiet')
         ->and($told->means())->toBe('Only what needs you today')
@@ -27,6 +28,6 @@ it('refuses a preset without its name or without what it means', function (strin
     $preset = $field === 'preset' ? $blank : 'quiet';
     $means = $field === 'means' ? $blank : 'Only what needs you today';
 
-    expect(fn(): WhatTheOperatorIsTold => WhatTheOperatorIsTold::byPreset($preset, $means, SetApart::of()))
+    expect(fn(): WhatTheOperatorIsTold => WhatTheOperatorIsTold::byPreset($preset, $means, SetApart::of(), KindsOfNotification::these()))
         ->toThrow(AlertSaysNothing::class, sprintf('`%s`', $field));
 })->with([[' ', 'preset'], [' ', 'means']]);

@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnEventSetApart;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\KindOfObstacle;
+use Modules\Kernel\Api\KindsOfNotification;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -50,7 +51,7 @@ function aQuietSettingWithTwoExceptions(): WhatTheOperatorIsTold
     return WhatTheOperatorIsTold::byPreset('quiet', 'Only what needs you today', SetApart::of(
         AnEventSetApart::of('update-available', WhetherItIsHeard::Silenced),
         AnEventSetApart::of('disk-low', WhetherItIsHeard::Heard),
-    ));
+    ), KindsOfNotification::these());
 }
 
 /** The screen, with a stack it knows and a keychain holding whatever a test says. Named for this file (`G10`). */
@@ -99,13 +100,13 @@ it('draws what the preset means as its heading, never the preset\'s own word, an
 });
 
 it('draws a preset with nothing set apart as saying so', function (): void {
-    $said = WhatTheDeviceWouldDraw::by(theToldScreen(AStackThatSaysWhatItTells::with(WhatTheOperatorIsTold::byPreset('everything', 'Every event, as it happens', SetApart::of()))))->said();
+    $said = WhatTheDeviceWouldDraw::by(theToldScreen(AStackThatSaysWhatItTells::with(WhatTheOperatorIsTold::byPreset('everything', 'Every event, as it happens', SetApart::of(), KindsOfNotification::these()))))->said();
 
     expect($said)->toContain(__('stacks.alerts.nothing_set_apart'));
 });
 
 it('a preset with nothing set apart is an answer', function (): void {
-    $answer = theToldScreen(AStackThatSaysWhatItTells::with(WhatTheOperatorIsTold::byPreset('everything', 'Every event, as it happens', SetApart::of())))->answer();
+    $answer = theToldScreen(AStackThatSaysWhatItTells::with(WhatTheOperatorIsTold::byPreset('everything', 'Every event, as it happens', SetApart::of(), KindsOfNotification::these())))->answer();
 
     expect($answer->went->cameBack())->toBeTrue()->and($answer->exceptions)->toBe([]);
 });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Household\Internal\Screens\AskingForATitle;
+use Modules\Operator\Internal\Screens\WhatEachStackMayTellThisPhone;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatIsNewOnEveryStack;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
@@ -264,6 +265,7 @@ function thePortsThatGoThroughTheGate(): array
  */
 const WHAT_WAITS_FOR_THE_STACK_ITSELF = [
     WhatIsNewOnEveryStack::class => 'reads one stack a frame of several, so a stack that had to be asked waits its turn as any unread stack does while the others keep what they show',
+    WhatEachStackMayTellThisPhone::class => 'reads one stack a frame of several, so a stack that had to be asked waits its turn as any unread stack does while the others keep their sections',
 ];
 
 it('draws the frame that waits for what the stack serves on every screen that asks it anything', function (): void {

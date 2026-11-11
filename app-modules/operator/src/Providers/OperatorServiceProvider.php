@@ -37,6 +37,7 @@ use Modules\Operator\Internal\Screens\ThisStackOnThisPhone;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatAcceptingItCosts;
 use Modules\Operator\Internal\Screens\WhatEachServiceIsFor;
+use Modules\Operator\Internal\Screens\WhatEachStackMayTellThisPhone;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
@@ -167,6 +168,9 @@ final class OperatorServiceProvider extends ServiceProvider
 
             // The phone's own settings, reached from the foot of the menu.
             Router::native(AScreenWithoutAStack::Settings->value, HowThisPhoneIsSet::class);
+
+            // The notification page, reached from the phone's own settings.
+            Router::native(AScreenWithoutAStack::Notifications->value, WhatEachStackMayTellThisPhone::class);
 
             // The stack in the URI rather than in the screen, because a device
             // keeps each stack's session separate and a screen that chose its

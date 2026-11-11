@@ -20,7 +20,7 @@ it('separates the refusal worth re-asking about from the ones that are not', fun
         ->and(WhyNothingIsShown::TheDeviceWouldNotShowIt->mightBeWorthAsking())->toBeFalse();
 });
 
-it('is four cases, and a fifth would owe an answer to that question', function (): void {
+it('is five cases, and a sixth would owe an answer to that question', function (): void {
     // Pinned so that adding a case is a decision rather than an oversight:
     // `mightBeWorthAsking()` returns false for anything it does not name, which
     // is the safe default and also the silent one. This fails first.
@@ -29,9 +29,14 @@ it('is four cases, and a fifth would owe an answer to that question', function (
         WhyNothingIsShown::TheStackIsGone,
         WhyNothingIsShown::TheDeviceWouldNotShowIt,
         WhyNothingIsShown::TheOperatorTurnedThemOff,
+        WhyNothingIsShown::TheOperatorLeftItOut,
     ]);
 });
 
 it('is not worth asking the phone about where the operator turned notifications off', function (): void {
     expect(WhyNothingIsShown::TheOperatorTurnedThemOff->mightBeWorthAsking())->toBeFalse();
+});
+
+it('is not worth asking the phone about what the operator left out from a stack', function (): void {
+    expect(WhyNothingIsShown::TheOperatorLeftItOut->mightBeWorthAsking())->toBeFalse();
 });

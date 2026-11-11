@@ -5,13 +5,16 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAlert;
 use Modules\Kernel\Api\AnAlertsName;
+use Modules\Kernel\Api\AnAlertsSort;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
@@ -205,7 +208,7 @@ it('keeps listening when the list is shut, and lets go when the screen stops', f
 
 it('tells the operator each alert another stack raised, filed under its name', function (): void {
     $notifier = ANotifierInMemory::allowed();
-    $raised = WhatWasHeard::aSignOfLife()->alerting(TheAlerts::of(AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.down#1'))));
+    $raised = WhatWasHeard::aSignOfLife()->alerting(TheAlerts::of(AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.down#1'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning))));
     $keychain = signedIntoBoth();
     $clock = FrozenClock::at(Instant::atEpochSeconds(LISTENING_AT));
     $screen = new HowThisStackIs(
@@ -224,8 +227,8 @@ it('tells the operator each alert another stack raised, filed under its name', f
 
 it('tells the operator each alert the screen\'s own stack raised, its resolution filed with its onset', function (): void {
     $notifier = ANotifierInMemory::allowed();
-    $onset = AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.down#1'));
-    $resolved = AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Resolved, AnAlertsName::of('vpn.down#1'));
+    $onset = AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.down#1'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning));
+    $resolved = AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Resolved, AnAlertsName::of('vpn.down#1'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning));
     $keychain = signedIntoBoth();
     $clock = FrozenClock::at(Instant::atEpochSeconds(LISTENING_AT));
     $screen = new HowThisStackIs(

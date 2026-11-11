@@ -19,4 +19,7 @@ enum AlertsField: string implements NamesAWireField
 
     /** The events set apart from an alert preset. */
     case Exceptions = 'exceptions';
+
+    /** The kinds of notification the stack raises as it is configured. */
+    case Kinds = 'kinds';
 }

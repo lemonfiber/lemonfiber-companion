@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Connection\Internal\TheChoicesAsKept;
 use Modules\Connection\Internal\TheSettingsAsKept;
 use Modules\Health\Internal\TheSummaryAsKept;
 use Modules\Kernel\Api\ACertificateReplacementAgreed;
@@ -77,6 +78,7 @@ use Tests\Support\Tree;
  */
 const THE_WRITERS_OF_WHAT_IS_KEPT = [
     TheSettingsAsKept::class,
+    TheChoicesAsKept::class,
     TheSummaryAsKept::class,
     TheNewsAsKept::class,
     TheUpkeepAsKept::class,

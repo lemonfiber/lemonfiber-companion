@@ -39,6 +39,7 @@ use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowTheTunnelCameBack;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
+use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\LockAfter;
 use Modules\Kernel\Api\Medium;
@@ -255,6 +256,10 @@ function everyDerivedKey(): array
         HowTheTunnelCameBack::class => aPairPerCase(
             HowTheTunnelCameBack::cases(),
             static fn(HowTheTunnelCameBack $came): array => [$came->saidOnTheScreen()],
+        ),
+        KindOfNotification::class => aPairPerCase(
+            KindOfNotification::cases(),
+            static fn(KindOfNotification $kind): array => [$kind->saidOnTheScreen()],
         ),
         HowLongAgo::class => aPairPerCase(
             HowLongAgo::cases(),

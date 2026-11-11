@@ -14,7 +14,8 @@ use function view;
  *
  * The platform's own switch, so the state is drawn as the platform draws it and
  * read aloud as on or off rather than by colour. The tap names a method, and
- * the platform hands it the switch's new state as its last argument.
+ * the platform hands it the switch's new state as its last argument. A switch
+ * that cannot be used now is drawn, never hidden.
  */
 final class Toggle extends Component
 {
@@ -25,6 +26,7 @@ final class Toggle extends Component
         public readonly string $tap,
         public readonly bool $on = false,
         string $answersTo = '',
+        public readonly bool $disabled = false,
     ) {
         $this->named = $answersTo === '' ? $label : $answersTo;
     }

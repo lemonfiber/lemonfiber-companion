@@ -1,4 +1,3 @@
-@use('Modules\Operator\Internal\WhereAskingForNotificationsStands')
 <x-operator::screen-opens :title="__('settings.title')" :back="$this->hasAWayBack()" />
 
 <x-operator::content>
@@ -29,33 +28,9 @@
     {{-- Whether the operator is told what a stack raises. Off until they turn
          it on; turning it on says why first, and only its button asks the phone. --}}
     @if ($this->offersNotifications())
-        <x-design::section :label="__('settings.notifications')">
-            <x-design::toggle :label="__('settings.notifications_on')" :on="$this->notificationsAreOn()" :tap="$this->tapping('notificationsTurned')" />
-        </x-design::section>
-
-        @if ($this->notificationsAreOn())
-            <x-design::note>{{ __('settings.notifications_may_be_missing') }}</x-design::note>
-        @endif
-
-        @if ($this->askingForNotifications !== null)
-            <x-design::card>
-                <x-design::body>{{ __($this->whyNotifications()) }}</x-design::body>
-
-                @if ($this->askingForNotifications === WhereAskingForNotificationsStands::Declined)
-                    <x-design::body>{{ __('settings.notifications_declined') }}</x-design::body>
-                    <x-design::note>{{ __($this->withoutNotifications()) }}</x-design::note>
-                    <x-design::action :label="__('settings.notifications_open_settings')" tap="openTheAppsSettings()" />
-
-                    @if ($this->theSettingsWouldNotOpen)
-                        <x-design::note>{{ __('settings.notifications_would_not_open') }}</x-design::note>
-                    @endif
-                @else
-                    <x-design::action :label="__('settings.notifications_allow')" tap="allowNotifications()" />
-                @endif
-
-                <x-design::action :label="__('settings.notifications_not_now')" tap="notNow()" tone="tonal" />
-            </x-design::card>
-        @endif
+        <x-operator::the-notifications-switch :on="$this->notificationsAreOn()" :asking="$this->askingForNotifications" :settings-would-not-open="$this->theSettingsWouldNotOpen">
+            <x-design::row :headline="__('settings.notifications_from_each_stack')" :goes="$this->notificationPageIsAt()" />
+        </x-operator::the-notifications-switch>
     @endif
 
     {{-- How long readings are kept. A count of days is said as that count;

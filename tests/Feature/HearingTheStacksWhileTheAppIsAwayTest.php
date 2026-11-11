@@ -7,12 +7,15 @@ use Lemonfiber\Native\Wakes;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAlert;
 use Modules\Kernel\Api\AnAlertsName;
+use Modules\Kernel\Api\AnAlertsSort;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Severity;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
@@ -68,7 +71,7 @@ function itIsHealthy(): WhatWasHeard
 /** The VPN going down, raised while the phone was away. */
 function theVpnWentDown(): TheAlerts
 {
-    return TheAlerts::of(AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.down#1')));
+    return TheAlerts::of(AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.down#1'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)));
 }
 
 it('tells each alert a stack raised meanwhile, keeps its summary, and lets go once it has said it', function (): void {

@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnEventSetApart;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\KindOfObstacle;
+use Modules\Kernel\Api\KindsOfNotification;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -49,7 +50,7 @@ function theSameSetting(): WhatTheOperatorIsTold
     return WhatTheOperatorIsTold::byPreset('quiet', 'Only what needs you today', SetApart::of(
         AnEventSetApart::of('update-available', WhetherItIsHeard::Silenced),
         AnEventSetApart::of('disk-low', WhetherItIsHeard::Heard),
-    ));
+    ), KindsOfNotification::these());
 }
 
 /**

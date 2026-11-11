@@ -50,6 +50,7 @@ return [
     ],
     'notifications' => 'Meldingen',
     'notifications_on' => 'Laat me weten wanneer een stack aandacht nodig heeft',
+    'notifications_from_each_stack' => 'Wat elke stack je mag vertellen',
     'notifications_allow' => 'Meldingen toestaan',
     'notifications_not_now' => 'Niet nu',
     'notifications_declined' => 'Meldingen staan uit voor lemonfiber in de instellingen van je telefoon. Zet ze daar aan en kom dan terug.',

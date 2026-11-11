@@ -41,12 +41,16 @@ use Lemonfiber\Native\Scanning as TheCamera;
 use Lemonfiber\Native\Screen;
 use Lemonfiber\Native\Storage as PlatformStore;
 use Lemonfiber\Native\Wakes as TheWakes;
+use Modules\Connection\Api\ChoosingWhatReachesThePhone;
 use Modules\Connection\Api\KeepingReadingsFor;
+use Modules\Connection\Api\NotifyingOnlyWhatEachStackLets;
 use Modules\Connection\Api\NotifyingOnlyWhenTurnedOn;
 use Modules\Connection\Api\TheLock;
 use Modules\Connection\Api\ThisDeviceKept;
 use Modules\Connection\Api\TurningNotificationsOn;
+use Modules\Connection\Internal\NotifyingKept;
 use Modules\Connection\Internal\SettingsKept;
+use Modules\Connection\Internal\Store\NotifyingInTheDatabase;
 use Modules\Connection\Internal\Store\SettingsInTheDatabase;
 use Modules\Design\Api\WhichThemeIsOnTheGlass;
 use Modules\Design\Api\WhoseTheme;
@@ -361,13 +365,18 @@ final class CompositionRoot extends ServiceProvider
         // a third party reading what a stack said about somebody's home — and
         // NothingLeavesThisDeviceTest is the rule that refuses it. A local
         // notification is composed and shown on the device and never leaves it.
-        // `Notifier` is `PlatformNotifier`, kept to a cap per stack and to the
-        // operator's switch. What the cap counts is one memory for the life of
-        // the process, so it counts across every screen. The switch asks the
-        // phone itself, so it is handed the notifier the phone answers.
+        // `Notifier` is `PlatformNotifier`, kept to a cap per stack, to what
+        // the operator lets reach the phone from each stack and to their
+        // switch. What the cap counts is one memory for the life of the
+        // process, so it counts across every screen, and it counts only what
+        // the operator let through. The switch asks the phone itself, so it
+        // is handed the notifier the phone answers.
         $this->app->singleton(WhatWasToldLately::class);
         $this->app->bind(Notifier::class, NotifyingOnlyWhenTurnedOn::class);
         $this->app->when(NotifyingOnlyWhenTurnedOn::class)
+            ->needs(Notifier::class)
+            ->give(NotifyingOnlyWhatEachStackLets::class);
+        $this->app->when(NotifyingOnlyWhatEachStackLets::class)
             ->needs(Notifier::class)
             ->give(NotifyingWithinACap::class);
         $this->app->when([NotifyingWithinACap::class, TurningNotificationsOn::class])
@@ -523,6 +532,10 @@ final class CompositionRoot extends ServiceProvider
         // The id this install plays under, kept sealed with those settings.
         $this->app->bind(KnowingThisDevice::class, ThisDeviceKept::class);
 
+        // What the operator lets reach the phone from each stack, sealed by
+        // `connection` before it reaches it.
+        $this->app->bind(NotifyingKept::class, NotifyingInTheDatabase::class);
+
         // What `news` keeps of each stack: the kinds marked as new and the
         // newest of each seen, sealed by `news` before they reach it.
         $this->app->bind(NewsKept::class, NewsInTheDatabase::class);
@@ -559,7 +572,7 @@ final class CompositionRoot extends ServiceProvider
         // store is added to what is cleared by adding it here, and nothing
         // that clears has to know how many there are.
         $this->app->tag(
-            [HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class, RequestsKept::class, LanguagesKept::class, SettingsKept::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, WhereHearingLeftOff::class],
+            [HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class, RequestsKept::class, LanguagesKept::class, SettingsKept::class, NotifyingKept::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, WhereHearingLeftOff::class],
             self::WHAT_THE_PHONE_KEEPS,
         );
         $this->app->when(EveryStoreThePhoneKeeps::class)
@@ -573,7 +586,7 @@ final class CompositionRoot extends ServiceProvider
         // key for it. What was begun is recorded in the same secure store as
         // the pairing it removes.
         $this->app->tag(
-            [Stacks::class, SecureStorage::class, KeepingTheGrant::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, KeepingTheirLanguages::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, WhereHearingLeftOff::class, Assessors::class, HoldingAPhoneKey::class, KeepingThePhoneKeysName::class],
+            [Stacks::class, SecureStorage::class, KeepingTheGrant::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, KeepingTheirLanguages::class, Noticing::class, ChoosingWhatReachesThePhone::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, WhereHearingLeftOff::class, Assessors::class, HoldingAPhoneKey::class, KeepingThePhoneKeysName::class],
             self::WHAT_IS_KEPT_OF_A_STACK,
         );
         $this->app->when(EveryKeeperOfAStack::class)
