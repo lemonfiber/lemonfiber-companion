@@ -71,8 +71,6 @@ enum PluginsField: string implements NamesAWireField
     /** Each way a proof did not hold. */
     case Faults = 'faults';
 
-    /** What the stack's own checks made of an install. */
-    case Verified = 'verified';
 
     /** Every check an install made worse. */
     case Broke = 'broke';

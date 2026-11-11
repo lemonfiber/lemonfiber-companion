@@ -209,14 +209,14 @@ final readonly class PluginInstallReports
      */
     private static function checks(array $install): WhatTheChecksMade
     {
-        if (! array_key_exists(PluginsField::Verified->value, $install) || $install[PluginsField::Verified->value] === null) {
+        if (! array_key_exists(WireField::Verified->value, $install) || $install[WireField::Verified->value] === null) {
             return WhatTheChecksMade::notAsked();
         }
 
-        $verified = $install[PluginsField::Verified->value];
+        $verified = $install[WireField::Verified->value];
 
         if (! is_array($verified)) {
-            throw PluginsAreUnreadable::missing(PluginsField::Verified);
+            throw PluginsAreUnreadable::missing(WireField::Verified);
         }
 
         return WhatTheChecksMade::of(

@@ -84,6 +84,9 @@ enum AStacksScreen: string
     /** What this machine keeps running when nobody is signed in. */
     case Hosting = '/stacks/{stack}/keeps-running';
 
+    /** What happened while nobody was looking: what this machine came back to after it last started. */
+    case WhileNobodyWasLooking = '/stacks/{stack}/while-nobody-was-looking';
+
     /** A guard on this machine's data location, held only while its screen keeps asking. */
     case Guard = '/stacks/{stack}/guard';
 

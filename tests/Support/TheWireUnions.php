@@ -35,6 +35,7 @@ use Modules\Kernel\Api\HowMuchItMatters;
 use Modules\Kernel\Api\HowSeriousAConnectionIs;
 use Modules\Kernel\Api\HowSeriousALineIs;
 use Modules\Kernel\Api\HowSureTheTraceIs;
+use Modules\Kernel\Api\HowTheCheckAfterAStartEnded;
 use Modules\Kernel\Api\HowTheDoorWasChosen;
 use Modules\Kernel\Api\HowTheHouseholdAsks;
 use Modules\Kernel\Api\HowTheImportLinked;
@@ -121,6 +122,7 @@ final readonly class TheWireUnions
         Overall::class => 'overall',
         HowItStands::class => 'standing',
         Severity::class => 'severity',
+        HowTheCheckAfterAStartEnded::class => 'outcome',
         WhoSettledIt::class => 'whose',
         HowItWasReached::class => 'how',
         HowAServiceRuns::class => 'state',

@@ -241,6 +241,7 @@ use Modules\Sdk\Api\Releasers;
 use Modules\Sdk\Api\Removers;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Resetters;
+use Modules\Sdk\Api\Restarts;
 use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Reversers;
 use Modules\Sdk\Api\Scouts;
@@ -374,6 +375,7 @@ final readonly class EveryAdapterCallThatReads
             'Guides::whatBecameOf' => static fn(): object
                 => new Guides($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Heralds::toldAbout' => static fn(): object => new Heralds($clients)->toldAbout($stack, $session),
+            'Restarts::afterTheLastStart' => static fn(): object => new Restarts($clients)->afterTheLastStart($stack, $session),
             'Inspectors::checkedOn' => static fn(): object => new Inspectors($clients)->checkedOn($stack, $session),
             'Chroniclers::versionsOn' => static fn(): object => new Chroniclers($clients)->versionsOn($stack, $session),
             'Keepers::keptRunningOn' => static fn(): object => new Keepers($clients, $entropy)->keptRunningOn($stack, $session),

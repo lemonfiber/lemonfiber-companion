@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\AskingForHelp;
 use Modules\Kernel\Api\AskingForTitles;
+use Modules\Kernel\Api\AskingHowItCameBack;
 use Modules\Kernel\Api\AskingTheIndexers;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\ChoosingAFiller;
@@ -151,6 +152,7 @@ use Modules\Sdk\Api\Releasers;
 use Modules\Sdk\Api\Removers;
 use Modules\Sdk\Api\Requests;
 use Modules\Sdk\Api\Resetters;
+use Modules\Sdk\Api\Restarts;
 use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Reversers;
 use Modules\Sdk\Api\Scouts;
@@ -364,6 +366,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // What the operator is told about, read beside the rest and bound for
         // the same reason: one place decides whether a certificate is checked.
         $this->app->bind(Telling::class, Heralds::class);
+        $this->app->bind(AskingHowItCameBack::class, Restarts::class);
 
         // How the line is shared, read beside the rest and bound for the same
         // reason: one place decides whether a certificate is checked.

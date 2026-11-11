@@ -811,6 +811,10 @@ enum WireField: string implements NamesAWireField
     /** What stood before: the data root a copy was taken against, and the service a choice of filler replaces. */
     case Was = 'was';
 
+    /** What the stack's own checks made of an install, or the check after a start that ran after the latest one. */
+    case Verified = 'verified';
+
+
     /** What stands after: the data root a copy goes to here, and the service a choice of filler makes answer. */
     case Now = 'now';
 

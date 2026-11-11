@@ -211,6 +211,14 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'a switch for each of them (`N27-R17`), and that page offers no switch per kind yet.',
         ],
         [
+            'path' => 'BootEnvelope.verified.against',
+            'because' => 'The start a check ran after. The stack already says which check ran after the latest start, under `verified`, and that the newest is under `last_verified`; this app draws each as what the stack filed it under and never places a check by a time of its own.',
+        ],
+        [
+            'path' => 'BootEnvelope.last_verified.against',
+            'because' => 'As `BootEnvelope.verified.against`: the newest check is drawn as an earlier one wherever it is not also under `verified`.',
+        ],
+        [
             'path' => 'AlertsEnvelope.changed',
             'because' => 'Whether the call that answered changed what the operator is told about. This app '
                 . 'reads the setting and never changes it — what is heard about is the core\'s decision, '

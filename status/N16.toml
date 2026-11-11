@@ -12,7 +12,7 @@ requirement = [
   { id = "N16-R4", state = "open" },
   { id = "N16-R5", state = "done", evidence = ["app-modules/kernel/src/Api/WhatKeepsItRunning.php", "app-modules/kernel/src/Api/WhatRunsUnattended.php", "app-modules/kernel/tests/Api/UnattendedTest.php", "app-modules/kernel/tests/Api/WhatKeepsItRunningTest.php"] },
   { id = "N16-R6", state = "done", evidence = ["app-modules/kernel/src/Api/HowAServiceRuns.php", "app-modules/kernel/src/Api/WhatTheVerbCameTo.php", "app-modules/kernel/tests/Api/HowItIsHostedTest.php", "app-modules/kernel/tests/Api/UnattendedTest.php"] },
-  { id = "N16-R7", state = "open" },
+  { id = "N16-R7", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhileNobodyWasLooking.php", "app-modules/kernel/src/Api/WhatTheLastStartCameTo.php", "app-modules/sdk/src/Api/WhatTheStartCameTo.php", "tests/Feature/SeeingWhatHappenedWhileNobodyWasLookingTest.php"] },
   { id = "N16-R8", state = "open" },
   { id = "N16-R9", state = "open" },
   { id = "N16-R10", state = "done", evidence = ["app-modules/kernel/src/Api/Stalled.php", "app-modules/kernel/src/Api/Unsupported.php", "app-modules/kernel/tests/Api/AWalkthroughTest.php", "app-modules/kernel/tests/Api/DaemonsTest.php"] },
