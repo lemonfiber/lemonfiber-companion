@@ -1,7 +1,7 @@
 {
     "format": 1,
-    "commit": "fb81c2e57e7a4db9b3298bd69e5247c98763d93f",
-    "time": "2026-11-10T05:55:26Z",
+    "commit": "d20fab1108176cfc2ad888cb2839f9f3cfd091c1",
+    "time": "2026-11-11T03:41:37Z",
     "verdict": "passed",
     "score": 100.0,
     "trees": [
@@ -116,5 +116,57 @@
     ],
     "newCode": {
         "floor": 100.0
-    }
+    },
+    "heatmap": [
+        {
+            "path": "app-modules/codes/src/Api/QrCodes.php",
+            "score": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/ClearingWhatCannotBeRead.php",
+            "score": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/ClearingWhatThePhoneKeeps.php",
+            "score": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/HowThePairingWent.php",
+            "score": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/HowTheSignInWent.php",
+            "score": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/Introducing.php",
+            "score": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/KeepingReadingsFor.php",
+            "score": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/LetsGoOfARefusedSession.php",
+            "score": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/LettingGoOfOldReadings.php",
+            "score": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/LockingAfter.php",
+            "score": 100.0,
+            "notKilled": 0
+        }
+    ]
 }
