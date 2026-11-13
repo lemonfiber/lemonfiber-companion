@@ -9,11 +9,11 @@
     <x-design::body>{{ __('household.found.from_search') }}</x-design::body>
     <x-design::action :label="__('household.found.to_search')" :goes="$this->goes()->to(AStacksScreen::Search)" tone="tonal" />
 @else
-    @if ($this->pictured() !== null)
-    <native:image src="{{ $this->pictured() }}" class="w-32 aspect-[2/3] rounded object-cover" />
-    @endif
+    {{-- Lettered with its name, and drawn over with the core's picture where
+         there is one. --}}
+    <x-household::poster :poster="$this->poster()" />
     <x-design::title>{{ $this->shown()->titled }}</x-design::title>
-    <x-design::note>{{ __($this->shown()->line, ['year' => $this->shown()->year, 'kind' => __($this->shown()->kind), 'stands' => __($this->shown()->stands)]) }}</x-design::note>
+    <x-design::note>{{ __($this->shown()->line, ['by' => $this->shown()->by, 'year' => $this->shown()->year, 'kind' => __($this->shown()->kind), 'stands' => __($this->shown()->stands)]) }}</x-design::note>
 
     @if ($this->asked !== null && $this->asked->cameBack())
         {{-- The core's own sentence for what the ask became. --}}

@@ -654,6 +654,9 @@ enum WireField: string implements NamesAWireField
      */
     case Kind = 'kind';
 
+    /** The kinds of notification a stack raises as it is configured, and the kinds a member can ask for. */
+    case Kinds = 'kinds';
+
     /**
      * A judgement: how a single check turned out, as a tagged union, and
      * which of two versions of a service is the later, in one word.

@@ -7,11 +7,31 @@
     <native:outlined-text-input
         native:model="typed"
         label="{{ __('household.search.label') }}"
-        placeholder="{{ __('household.search.placeholder') }}"
+        placeholder="{{ __($this->choices()->placeholder) }}"
         autocorrect="off"
         @submit="search()"
     />
     <x-design::action :label="__('household.search.go')" tap="search()" :disabled="! $this->maySearch()" />
+    {{-- What the core lists the member as able to ask for, and nothing else:
+         a row of one chip is not drawn. --}}
+    @if ($this->choices()->kinds !== [])
+    <x-design::chips>
+        @forelse ($this->choices()->kinds as $kind)
+            <x-design::chip :label="__($kind->said)" :tap="$this->tapping('choose', $kind->word)" :chosen="$kind->chosen" />
+        @empty
+            {{-- Nothing: the row is drawn only where there is a choice. --}}
+        @endforelse
+    </x-design::chips>
+    @endif
+    @if ($this->choices()->units !== [])
+    <x-design::chips>
+        @forelse ($this->choices()->units as $unit)
+            <x-design::chip :label="__($unit->said)" :tap="$this->tapping('choose', $unit->word)" :chosen="$unit->chosen" />
+        @empty
+            {{-- Nothing: the row is drawn only where there is a choice. --}}
+        @endforelse
+    </x-design::chips>
+    @endif
 </native:column>
 
 @if (! $this->answer()->isSignedIn)
@@ -23,7 +43,7 @@
     {{-- Nothing asked yet, so nothing is said about the house: only what this
          tab is for. --}}
     <native:column class="w-full px-6">
-        <x-design::body>{{ __('household.search.explained') }}</x-design::body>
+        <x-design::body>{{ __($this->choices()->explained) }}</x-design::body>
     </native:column>
 @else
     <native:column class="w-full gap-2 px-6 pb-2">
@@ -56,7 +76,7 @@
         @forelse ($this->answer()->found->rows ?? [] as $row)
             <x-design::row
                 :headline="$row->titled"
-                :supporting="__($row->line, ['year' => $row->year, 'kind' => __($row->kind), 'stands' => __($row->stands)])"
+                :supporting="__($row->line, ['by' => $row->by, 'year' => $row->year, 'kind' => __($row->kind), 'stands' => __($row->stands)])"
                 :goes="$this->goes()->found($row->found)"
                 :answers-to="__('household.search.open_named', ['title' => $row->titled])"
                 :carries="$row->carries"

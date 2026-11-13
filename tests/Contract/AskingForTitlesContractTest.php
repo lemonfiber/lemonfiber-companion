@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAnAskCameTo;
 use Modules\Kernel\Api\WhenItCameOut;
@@ -168,6 +169,24 @@ it('sends the rehearsal as a dry run and the ask under the key it is handed, nam
         ->and($first['key'])->toBe('the-same-ask')
         ->and($again['key'])->toBe('the-same-ask')
         ->and($rehearsal['key'])->not->toBe('the-same-ask');
+});
+
+it('asks for an album or a book with its unit, and for a film with none and no season either', function (): void {
+    $askers = anAskerAnswered(
+        MockResponse::make((string) json_encode(whatTheCoreSaidOfTheAsk(['rehearsed' => false]))),
+        MockResponse::make((string) json_encode(whatTheCoreSaidOfTheAsk(['rehearsed' => false]))),
+    );
+    $album = AFoundTitle::curated('mb-1', KindOfTitle::Music, UnitOfTitle::Album, 'Rumours', 'Fleetwood Mac', WhenItCameOut::in(1977), WhereAFoundTitleStands::Askable);
+
+    $askers->ask(aHouseToAskIn(), Session::of('a-session-not-a-secret'), $album, IdempotencyKey::of('an-album'));
+    $askers->ask(aHouseToAskIn(), Session::of('a-session-not-a-secret'), aTitleToAskFor(), IdempotencyKey::of('a-film'));
+
+    [$forTheAlbum, $forTheFilm] = array_map(whatWasSentToAsk(...), MockClient::global()->getRecordedResponses());
+
+    expect($forTheAlbum['body'])->toMatchArray(['id' => 'mb-1', 'kind' => 'music', 'unit' => 'album'])
+        ->and($forTheAlbum['body']['seasons'] ?? [])->toBe([])
+        ->and($forTheFilm['body']['unit'] ?? null)->toBeNull()
+        ->and($forTheFilm['body']['seasons'] ?? [])->toBe([]);
 });
 
 it('comes away with the obstacle, in the core\'s words where it gave any, where the core would not take the ask', function (): void {

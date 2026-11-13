@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\FindingTitles;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowTheKindsWent;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\Nonce;
@@ -14,11 +15,14 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Kernel\Api\WhatASearchFound;
+use Modules\Kernel\Api\WhatCanBeAskedFor;
 use Modules\Kernel\Api\WhatToLookFor;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhereTheNextPageBegins;
+use Modules\Kernel\Api\WhichTitles;
 use Modules\Sdk\Api\Finders;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
@@ -202,3 +206,125 @@ it('stands in for a stack with payloads the contract would accept', function ():
     expect(WhatTheContractAccepts::complaintsAbout('AskableEnvelope', whatTheCoreFound()))
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
 });
+
+/** A page of music the core found, with a title naming its maker and one naming nobody. */
+function theMusicTheCoreFound(): string
+{
+    return (string) json_encode(whatTheCoreFound(['next' => null], [
+        ['id' => 'mb-1', 'kind' => 'music', 'unit' => 'album', 'title' => 'Rumours', 'by' => 'Fleetwood Mac', 'year' => 1977, 'stands' => 'askable', 'cover' => 'https://covers.example/rumours.jpg'],
+        ['id' => 'mb-2', 'kind' => 'music', 'unit' => 'artist', 'title' => 'Fleetwood Mac', 'by' => null, 'stands' => 'on-its-way'],
+    ]));
+}
+
+/** Each title on the page, as what it was found among and who made it. */
+function whoMadeWhatWasFound(FindingTitles $finding, WhatToLookFor $words): string
+{
+    return $finding->firstPage(aHouseToSearch(), Session::of('a-session-not-a-secret'), $words)->either(
+        found: static function (WhatASearchFound $page): TheWordCarriedOut {
+            $titles = [];
+
+            foreach ($page as $title) {
+                $titles[] = sprintf('%s:%s:%s', $title->id(), $title->among()->word(), $title->by(named: static fn(string $by): TheWordCarriedOut => new TheWordCarriedOut($by), unnamed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'))->said);
+            }
+
+            return new TheWordCarriedOut(implode(',', $titles));
+        },
+        refused: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
+    )->said;
+}
+
+/**
+ * What the adapter asked, each request as its path and query.
+ *
+ * @return list<string>
+ */
+function whatTheFinderAsked(): array
+{
+    return array_values(array_map(
+        static fn(Response $recorded): string => sprintf('%s?%s', $recorded->getPendingRequest()->getRequest()->resolveEndpoint(), http_build_query($recorded->getPendingRequest()->query()->all())),
+        MockClient::global()->getRecordedResponses(),
+    ));
+}
+
+it('reads a title of music or books with its unit and who made it, and asks with the kind and unit chosen', function (): void {
+    $words = WhatToLookFor::typed('rumours')->among(WhichTitles::of(KindOfTitle::Music, UnitOfTitle::Album));
+    $finders = aFinderAnswered(MockResponse::make(theMusicTheCoreFound()), MockResponse::make(theMusicTheCoreFound()));
+
+    expect(whoMadeWhatWasFound($finders, $words))->toBe('mb-1:music/album:Fleetwood Mac,mb-2:music/artist:-');
+
+    $finders->pageAfter(aHouseToSearch(), Session::of('a-session-not-a-secret'), $words, WhereTheNextPageBegins::at('page-2'));
+
+    expect(whatTheFinderAsked())->toBe(['/api/askable?kind=music&unit=album&term=rumours', '/api/askable?kind=music&unit=album&term=rumours&after=page-2']);
+});
+
+it('a unit this app has no word for, or a maker that is not words, is an answer it could not read', function (array $title): void {
+    expect(howTheSearchWent(aFinderAnswered(MockResponse::make((string) json_encode(whatTheCoreFound([], [$title]))))))
+        ->toBe(KindOfObstacle::AnswerCouldNotBeRead->name);
+})->with([
+    'a unit this app has no word for' => [['id' => '1', 'kind' => 'music', 'unit' => 'single', 'title' => 'Dreams', 'stands' => 'askable']],
+    'a unit that is not a word' => [['id' => '1', 'kind' => 'music', 'unit' => 3, 'title' => 'Dreams', 'stands' => 'askable']],
+    'a maker that is not words' => [['id' => '1', 'kind' => 'music', 'unit' => 'album', 'title' => 'Dreams', 'by' => 7, 'stands' => 'askable']],
+]);
+
+/**
+ * What the core lists a member as able to ask for, changed where a case says.
+ *
+ * @param  list<mixed>|string|null  $kinds
+ * @return array<string, mixed>
+ */
+function whatTheCoreListed(array|string|null $kinds = null): array
+{
+    return ['api_version' => 1, 'kind' => 'askable-kinds', 'data' => [
+        'member' => 'sanne',
+        'kinds' => $kinds ?? [
+            ['kind' => 'tv', 'units' => []],
+            ['kind' => 'movies', 'units' => []],
+            ['kind' => 'music', 'units' => ['album', 'artist']],
+            ['kind' => 'books', 'units' => ['book', 'author', 'series']],
+        ],
+    ]];
+}
+
+/** What asking what can be asked for came to, as the words each choice is chosen by, or the obstacle. */
+function whatCouldBeAskedFor(FindingTitles $finding): string
+{
+    return $finding->whatCanBeAskedFor(aHouseToSearch(), Session::of('a-session-not-a-secret'))->either(
+        listed: static fn(WhatCanBeAskedFor $listed): TheWordCarriedOut => new TheWordCarriedOut(implode(',', array_map(
+            static fn(WhichTitles $kind): string => implode('+', array_map(static fn(WhichTitles $unit): string => $unit->word(), [$kind, ...$listed->unitsBeside($kind)])),
+            $listed->kinds(),
+        ))),
+        refused: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
+    )->said;
+}
+
+it('reads what a member can ask for in the core\'s order, either way, asking for it by no name', function (): void {
+    $listed = WhatCanBeAskedFor::listing()
+        ->and(KindOfTitle::Series)
+        ->and(KindOfTitle::Film)
+        ->and(KindOfTitle::Music, UnitOfTitle::Album, UnitOfTitle::Artist)
+        ->and(KindOfTitle::Books, UnitOfTitle::Book, UnitOfTitle::Author, UnitOfTitle::Series);
+    $either = [
+        'the fake' => AStackThatFindsTitles::finding()->listing(HowTheKindsWent::listed($listed)),
+        'the adapter' => aFinderAnswered(MockResponse::make((string) json_encode(whatTheCoreListed()))),
+    ];
+
+    foreach ($either as $which => $finding) {
+        expect(whatCouldBeAskedFor($finding))->toBe('films-and-series,music/album+music/album+music/artist,books/book+books/book+books/author+books/series', $which);
+    }
+
+    expect(whatTheFinderAsked())->toBe(['/api/askable/kinds?']);
+});
+
+it('comes away with the obstacle where the core would not list what can be asked for, or listed what this app cannot read', function (MockResponse $answered, KindOfObstacle $kind): void {
+    expect(whatCouldBeAskedFor(aFinderAnswered($answered)))->toBe($kind->name);
+})->with([
+    'refused' => [MockResponse::make('{"error":"no"}', 401), KindOfObstacle::CredentialWasRefused],
+    'not json at all' => [MockResponse::make('not json at all'), KindOfObstacle::AnswerCouldNotBeRead],
+    'no table at all' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'askable-kinds', 'data' => 'nothing'])), KindOfObstacle::AnswerCouldNotBeRead],
+    'kinds that are not a list' => [MockResponse::make((string) json_encode(whatTheCoreListed('music'))), KindOfObstacle::AnswerCouldNotBeRead],
+    'a kind that is not one' => [MockResponse::make((string) json_encode(whatTheCoreListed(['music']))), KindOfObstacle::AnswerCouldNotBeRead],
+    'a kind this app has no word for' => [MockResponse::make((string) json_encode(whatTheCoreListed([['kind' => 'games', 'units' => []]]))), KindOfObstacle::AnswerCouldNotBeRead],
+    'a kind with no units' => [MockResponse::make((string) json_encode(whatTheCoreListed([['kind' => 'music']]))), KindOfObstacle::AnswerCouldNotBeRead],
+    'a unit this app has no word for' => [MockResponse::make((string) json_encode(whatTheCoreListed([['kind' => 'music', 'units' => ['single']]]))), KindOfObstacle::AnswerCouldNotBeRead],
+    'a unit that is not a word' => [MockResponse::make((string) json_encode(whatTheCoreListed([['kind' => 'music', 'units' => [1]]]))), KindOfObstacle::AnswerCouldNotBeRead],
+]);

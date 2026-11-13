@@ -54,7 +54,7 @@ final readonly class ThePicturesItDraws
     public function ofAFoundTitle(Stack $stack, Session $session, AFoundTitle $title): ?string
     {
         return $this->drawn(
-            ArtworkKey::of($stack->id(), WhichPicture::AskablePoster, $title->id()),
+            ArtworkKey::of($stack->id(), WhichPicture::AskablePoster, $title->named()),
             $stack,
             fn(): HowArtworkCame => $this->fetching->posterOfAFoundTitle($stack, $session, $title),
         );

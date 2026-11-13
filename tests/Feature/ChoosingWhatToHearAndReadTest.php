@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Modules\Household\Internal\ViewModels\ALanguageAsShown;
+use Modules\Household\Internal\ViewModels\AChoiceAsShown;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HearIn;
@@ -35,13 +35,13 @@ function aHouseToChooseLanguagesIn(): Stack
 /**
  * The words chosen in a row of chips, marked where chosen. Named for this file.
  *
- * @param list<ALanguageAsShown> $offered
+ * @param list<AChoiceAsShown> $offered
  *
  * @return list<string>
  */
 function theLanguagesOffered(array $offered): array
 {
-    return array_map(static fn(ALanguageAsShown $language): string => sprintf('%s%s', $language->word, $language->chosen ? '*' : ''), $offered);
+    return array_map(static fn(AChoiceAsShown $language): string => sprintf('%s%s', $language->word, $language->chosen ? '*' : ''), $offered);
 }
 
 it('offers every language to hear and to read, with the title as it comes chosen until the member chooses', function (): void {

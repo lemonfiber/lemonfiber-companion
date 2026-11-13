@@ -7,6 +7,7 @@ use Modules\Sdk\Api\Fields\AlertField;
 use Modules\Sdk\Api\Fields\AlertsField;
 use Modules\Sdk\Api\Fields\ArchivesField;
 use Modules\Sdk\Api\Fields\AskableField;
+use Modules\Sdk\Api\Fields\AskableKindsField;
 use Modules\Sdk\Api\Fields\BackupField;
 use Modules\Sdk\Api\Fields\BandwidthField;
 use Modules\Sdk\Api\Fields\BootField;
@@ -141,6 +142,7 @@ function everyFieldNamedOnTheWire(): array
         ...StopSeedingField::cases(),
         ...PausingField::cases(),
         ...AskableField::cases(),
+        ...AskableKindsField::cases(),
         ...PlayingField::cases(),
         ...StoredField::cases(),
         ...NewsItemsField::cases(),

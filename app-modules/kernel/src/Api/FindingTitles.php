@@ -15,7 +15,10 @@ namespace Modules\Kernel\Api;
  */
 interface FindingTitles
 {
-    /** The first page of a search for these words, as whoever the session belongs to. */
+    /** What the member the session belongs to can search for and ask for, as the core lists it. */
+    public function whatCanBeAskedFor(Stack $stack, Session $session): HowTheKindsWent;
+
+    /** The first page of a search for these words, among what they are looked for among, as whoever the session belongs to. */
     public function firstPage(Stack $stack, Session $session, WhatToLookFor $words): HowASearchWent;
 
     /** The page a previous page said comes next. */

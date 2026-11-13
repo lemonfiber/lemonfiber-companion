@@ -10,7 +10,7 @@ use Modules\Sdk\Internal\TheWordsItReads;
 use function sprintf;
 
 /**
- * An `askable` or an `asked` envelope did not hold what the contract says one holds.
+ * An `askable`, `askable-kinds` or `asked` envelope did not hold what the contract says one holds.
  *
  * Refused rather than read short: a found title with no id cannot be asked for,
  * and an ask with no sentence would leave the member guessing what it came to.

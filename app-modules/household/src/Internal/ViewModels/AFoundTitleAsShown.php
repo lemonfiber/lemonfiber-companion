@@ -7,9 +7,9 @@ namespace Modules\Household\Internal\ViewModels;
 use Modules\Kernel\Api\AFoundTitle;
 
 /**
- * One title on a page of a member's search, as a row: its name, its year, what it is, where it stands, and what its page is opened with.
+ * One title on a page of a member's search, as a row: its name, who made it, its year, what it is, where it stands, and what its page is opened with.
  *
- * `line`, `kind` and `stands` are catalogue keys; `year` is empty where the core knew none.
+ * `line`, `kind` and `stands` are catalogue keys; `by` and `year` are empty where the core named none.
  * `pictured` is the source its poster is drawn from, or null where it is lettered.
  * `found` is the title itself, for the road to its page.
  */
@@ -20,6 +20,7 @@ final readonly class AFoundTitleAsShown
         public AFoundTitle $found,
         public string $titled,
         public string $line,
+        public string $by,
         public string $year,
         public string $kind,
         public string $stands,
@@ -30,12 +31,12 @@ final readonly class AFoundTitleAsShown
     /** The same row, where it stands said by another catalogue key. */
     public function standing(string $stands): self
     {
-        return new self($this->found, $this->titled, $this->line, $this->year, $this->kind, $stands, $this->carries, $this->pictured);
+        return new self($this->found, $this->titled, $this->line, $this->by, $this->year, $this->kind, $stands, $this->carries, $this->pictured);
     }
 
     /** The same row, its poster drawn from this source. */
     public function pictured(?string $source): self
     {
-        return new self($this->found, $this->titled, $this->line, $this->year, $this->kind, $this->stands, $this->carries, $source);
+        return new self($this->found, $this->titled, $this->line, $this->by, $this->year, $this->kind, $this->stands, $this->carries, $source);
     }
 }
