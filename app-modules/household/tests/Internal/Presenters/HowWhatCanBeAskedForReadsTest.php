@@ -25,10 +25,20 @@ function theChipsOffered(array $chips): array
     return array_map(static fn(AChoiceAsShown $chip): string => sprintf('%s=%s%s', $chip->said, $chip->word, $chip->chosen ? '*' : ''), $chips);
 }
 
-/** The chips for what a house lists, with this chosen. */
+/** The chips for what a house lists, with the choice this word names chosen, or the first offered. */
 function theChipsFor(WhatCanBeAskedFor $listed, string $chosen): WhatCanBeSearchedAsShown
 {
-    return new HowWhatCanBeAskedForReads()->chips($listed, $listed->named($chosen));
+    $named = $listed->offered()->first();
+
+    foreach ($listed->offered() as $choice) {
+        if ($choice->word() === $chosen || $choice->kindWord() === $chosen) {
+            $named = $choice;
+
+            break;
+        }
+    }
+
+    return new HowWhatCanBeAskedForReads()->chips($listed, $named);
 }
 
 it('offers a chip for each kind listed and each unit of the kind chosen, marking the ones chosen', function (): void {

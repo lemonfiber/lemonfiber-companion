@@ -210,10 +210,20 @@ it('stands in for a stack with payloads the contract would accept', function ():
 /** A page of music the core found, with a title naming its maker and one naming nobody. */
 function theMusicTheCoreFound(): string
 {
-    return (string) json_encode(whatTheCoreFound(['next' => null], [
+    return (string) json_encode(theMusicPage());
+}
+
+/**
+ * That page, as the payload a stack sends.
+ *
+ * @return array<string, mixed>
+ */
+function theMusicPage(): array
+{
+    return whatTheCoreFound(['next' => null], [
         ['id' => 'mb-1', 'kind' => 'music', 'unit' => 'album', 'title' => 'Rumours', 'by' => 'Fleetwood Mac', 'year' => 1977, 'stands' => 'askable', 'cover' => 'https://covers.example/rumours.jpg'],
         ['id' => 'mb-2', 'kind' => 'music', 'unit' => 'artist', 'title' => 'Fleetwood Mac', 'by' => null, 'stands' => 'on-its-way'],
-    ]));
+    ]);
 }
 
 /** Each title on the page, as what it was found among and who made it. */
@@ -291,7 +301,7 @@ function whatCouldBeAskedFor(FindingTitles $finding): string
     return $finding->whatCanBeAskedFor(aHouseToSearch(), Session::of('a-session-not-a-secret'))->either(
         listed: static fn(WhatCanBeAskedFor $listed): TheWordCarriedOut => new TheWordCarriedOut(implode(',', array_map(
             static fn(WhichTitles $kind): string => implode('+', array_map(static fn(WhichTitles $unit): string => $unit->word(), [$kind, ...$listed->unitsBeside($kind)])),
-            $listed->kinds(),
+            [...$listed->kinds()],
         ))),
         refused: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
@@ -328,3 +338,10 @@ it('comes away with the obstacle where the core would not list what can be asked
     'a unit this app has no word for' => [MockResponse::make((string) json_encode(whatTheCoreListed([['kind' => 'music', 'units' => ['single']]]))), KindOfObstacle::AnswerCouldNotBeRead],
     'a unit that is not a word' => [MockResponse::make((string) json_encode(whatTheCoreListed([['kind' => 'music', 'units' => [1]]]))), KindOfObstacle::AnswerCouldNotBeRead],
 ]);
+
+it('stands in for a stack with lists of what can be asked for, and pages of music, the contract would accept', function (): void {
+    expect(WhatTheContractAccepts::complaintsAbout('AskableKindsEnvelope', whatTheCoreListed()))
+        ->toBe([], "The list this suite stands in for a stack with is not one a stack would send.\n")
+        ->and(WhatTheContractAccepts::complaintsAbout('AskableEnvelope', theMusicPage()))
+        ->toBe([], "The page of music this suite stands in for a stack with is not one a stack would send.\n");
+});

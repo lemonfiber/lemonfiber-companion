@@ -9,6 +9,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\AFoundTitle;
+use Modules\Kernel\Api\ChoicesOfTitles;
 use Modules\Kernel\Api\HowTheKindsWent;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\KindOfTitle;
@@ -37,18 +38,18 @@ function everythingListed(): WhatCanBeAskedFor
 /**
  * Each choice, by the word a member chooses it by.
  *
- * @param  list<WhichTitles> $choices
  * @return list<string>
  */
-function theWords(array $choices): array
+function theWords(ChoicesOfTitles $choices): array
 {
-    return array_map(static fn(WhichTitles $choice): string => $choice->word(), $choices);
+    return array_map(static fn(WhichTitles $choice): string => $choice->word(), [...$choices]);
 }
 
 it('offers films and series as one choice, and each unit of music and books as its own', function (): void {
     expect(theWords(everythingListed()->kinds()))->toBe(['films-and-series', 'music/album', 'books/book'])
         ->and(theWords(everythingListed()->unitsBeside(WhichTitles::of(KindOfTitle::Books, UnitOfTitle::Author))))->toBe(['books/book', 'books/author', 'books/series'])
-        ->and(everythingListed()->unitsBeside(WhichTitles::filmsAndSeries()))->toBe([]);
+        ->and(everythingListed()->unitsBeside(WhichTitles::filmsAndSeries())->count())->toBe(0)
+        ->and(everythingListed()->offered()->count())->toBe(6);
 });
 
 it('offers nothing of a kind of music or books that lists no unit', function (): void {
@@ -57,16 +58,10 @@ it('offers nothing of a kind of music or books that lists no unit', function ():
     expect(theWords($listed->kinds()))->toBe(['books/book']);
 });
 
-it('names what a member chose, the first of a kind they chose, or the first offered', function (): void {
-    $listed = everythingListed();
-
-    expect($listed->named('books/author')->word())->toBe('books/author')
-        ->and($listed->named('music')->word())->toBe('music/album')
-        ->and($listed->named('films-and-series')->word())->toBe('films-and-series')
-        ->and($listed->named('games/cartridge')->word())->toBe('films-and-series')
-        ->and(WhatCanBeAskedFor::listing()->and(KindOfTitle::Music, UnitOfTitle::Artist)->named('')->word())->toBe('music/artist')
-        ->and(WhatCanBeAskedFor::listing()->named('music')->word())->toBe('films-and-series')
-        ->and(WhatCanBeAskedFor::filmsAndSeriesAlone()->named('music/album')->word())->toBe('films-and-series');
+it('starts on the first choice offered, and on films and series where nothing is offered', function (): void {
+    expect(WhatCanBeAskedFor::listing()->and(KindOfTitle::Music, UnitOfTitle::Artist)->offered()->first()->word())->toBe('music/artist')
+        ->and(WhatCanBeAskedFor::listing()->offered()->first()->word())->toBe('films-and-series')
+        ->and(WhatCanBeAskedFor::filmsAndSeriesAlone()->offered()->first()->word())->toBe('films-and-series');
 });
 
 it('tells films and series from a unit of music or books, and one choice from another', function (): void {
@@ -109,7 +104,7 @@ it('keeps a title of music or books with its unit and who made it, and names it 
 it('takes the arm asking what can be asked for went down, and carries what each held', function (): void {
     $why = Obstacle::of(KindOfObstacle::StackDidNotAnswer);
 
-    expect(HowTheKindsWent::listed(everythingListed())->either(listed: static fn(WhatCanBeAskedFor $listed): TheWordCarriedOut => new TheWordCarriedOut($listed->named('books')->word()), refused: static fn(): TheWordCarriedOut => new TheWordCarriedOut('refused'))->said)->toBe('books/book')
+    expect(HowTheKindsWent::listed(everythingListed())->either(listed: static fn(WhatCanBeAskedFor $listed): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d', $listed->kinds()->count())), refused: static fn(): TheWordCarriedOut => new TheWordCarriedOut('refused'))->said)->toBe('3')
         ->and(HowTheKindsWent::refused($why)->either(listed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('listed'), refused: static fn(Obstacle $met): TheWordCarriedOut => new TheWordCarriedOut($met->kind()->value))->said)->toBe($why->kind()->value);
 });
 

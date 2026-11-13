@@ -183,10 +183,28 @@ final class LookingForATitle extends NativeComponent
         );
     }
 
-    /** What the search looks among now: what the member chose, where it is still offered. */
+    /**
+     * What the search looks among now: what the member chose, or the first of the kind they chose, or the first offered.
+     *
+     * A choice made before the list changed never searches what the core no longer lists.
+     */
     private function which(): WhichTitles
     {
-        return $this->askable()->named($this->among);
+        $askable = $this->askable();
+
+        foreach ($askable->offered() as $choice) {
+            if ($choice->word() === $this->among) {
+                return $choice;
+            }
+        }
+
+        foreach ($askable->kinds() as $choice) {
+            if ($choice->kindWord() === $this->among) {
+                return $choice;
+            }
+        }
+
+        return $askable->offered()->first();
     }
 
     /** Search for these words from their first page. */

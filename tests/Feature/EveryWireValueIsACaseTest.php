@@ -748,13 +748,11 @@ it('every kind a member\'s search names a title has a case', function (): void {
     expect(TheWireUnions::valuesOf(KindOfTitle::cases()))->toBe($words);
 });
 
-it('every unit a member\'s search names a title of music or books by has a case, and every unit a member can ask for', function (): void {
+it('every unit a member\'s search names a title of music or books by has a case', function (): void {
     $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('AskableEnvelope'), 'unit');
-    $listed = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('AskableKindsEnvelope'), 'units');
 
     expect($words)->not->toBe([], 'no unit union was found in the generated envelope')
-        ->and(TheWireUnions::valuesOf(UnitOfTitle::cases()))->toBe($words)
-        ->and(TheWireUnions::valuesOf(UnitOfTitle::cases()))->toBe($listed);
+        ->and(TheWireUnions::valuesOf(UnitOfTitle::cases()))->toBe($words);
 });
 
 it('everywhere a found title can stand has a case', function (): void {

@@ -45,36 +45,16 @@ final readonly class WhatCanBeAskedFor
         return new self($offered);
     }
 
-    /**
-     * The choice a word names, or the first of its kind, or the first offered.
-     *
-     * A word for a choice that is not offered names the first one that is, so
-     * a choice made before the list changed never searches what the core no
-     * longer lists.
-     */
-    public function named(string $word): WhichTitles
+    /** Every choice offered, in the core's order. */
+    public function offered(): ChoicesOfTitles
     {
-        foreach ($this->offered as $choice) {
-            if ($choice->word() === $word) {
-                return $choice;
-            }
-        }
-
-        foreach ($this->offered as $choice) {
-            if ($choice->kindWord() === $word) {
-                return $choice;
-            }
-        }
-
-        return $this->offered === [] ? WhichTitles::filmsAndSeries() : $this->offered[0];
+        return ChoicesOfTitles::of(...$this->offered);
     }
 
     /**
      * The first choice of each kind, in the core's order.
-     *
-     * @return list<WhichTitles>
      */
-    public function kinds(): array
+    public function kinds(): ChoicesOfTitles
     {
         $kinds = [];
 
@@ -82,15 +62,13 @@ final readonly class WhatCanBeAskedFor
             $kinds[$choice->kindWord()] ??= $choice;
         }
 
-        return array_values($kinds);
+        return ChoicesOfTitles::of(...array_values($kinds));
     }
 
     /**
      * Every choice of the same kind as this one, where its kind is divided into units.
-     *
-     * @return list<WhichTitles>
      */
-    public function unitsBeside(WhichTitles $chosen): array
+    public function unitsBeside(WhichTitles $chosen): ChoicesOfTitles
     {
         $units = [];
 
@@ -100,7 +78,7 @@ final readonly class WhatCanBeAskedFor
             }
         }
 
-        return $units;
+        return ChoicesOfTitles::of(...$units);
     }
 
     /**

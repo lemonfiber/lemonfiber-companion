@@ -53,6 +53,7 @@ use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\Standing;
 use Modules\Kernel\Api\Stream;
+use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WalkthroughStep;
 use Modules\Kernel\Api\WhatACapDoes;
@@ -201,6 +202,7 @@ final readonly class TheWireUnions
         WhatToDoWithTheDownloads::class => 'asked',
         WhatADownloadClientSaid::class => 'was',
         KindOfTitle::class => 'kind',
+        UnitOfTitle::class => 'unit',
         WhereAFoundTitleStands::class => 'stands',
         WhatAnAskBecame::class => 'outcome',
 
