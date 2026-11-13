@@ -30,7 +30,7 @@ function aRequest(
     ?Size $size = null,
     Waiting $standing = Waiting::ForApproval,
 ): Wanted {
-    return Wanted::of(RequestId::named('41'), $by, $forWhat, $size ?? Size::unknown(), HowARequestStands::said($standing));
+    return Wanted::of(RequestId::named('41'), $by, $forWhat, KindOfRequest::Something, $size ?? Size::unknown(), HowARequestStands::said($standing));
 }
 
 /**
@@ -140,6 +140,7 @@ it('a refused request carries the reason that was given', function (): void {
         RequestId::named('41'),
         'Sam',
         'A film nobody has seen',
+        KindOfRequest::Something,
         Size::unknown(),
         TurnedDown::because('The disk is nearly full'),
     );
@@ -152,14 +153,14 @@ it('a refused request is `declined` by construction', function (): void {
     // once: a decline carrying no reason, and a reason attached to a request
     // that was never declined — a screen telling somebody why a thing they are
     // still waiting for was refused.
-    $wanted = Wanted::turnedDown(RequestId::named('41'), 'Sam', 'A film', Size::unknown(), TurnedDown::because('No room'));
+    $wanted = Wanted::turnedDown(RequestId::named('41'), 'Sam', 'A film', KindOfRequest::Something, Size::unknown(), TurnedDown::because('No room'));
 
     expect(whereItStands($wanted))->toBe('declined')
         ->and($wanted->standing()->wasDeclined())->toBeTrue();
 });
 
 it('a request that was not refused says so rather than answering with nothing', function (): void {
-    $wanted = Wanted::of(RequestId::named('41'), 'Sam', 'A film', Size::unknown(), HowARequestStands::said(Waiting::ForApproval));
+    $wanted = Wanted::of(RequestId::named('41'), 'Sam', 'A film', KindOfRequest::Something, Size::unknown(), HowARequestStands::said(Waiting::ForApproval));
 
     expect(whyItWasTurnedDown($wanted))->toBe('not refused');
 });
@@ -168,7 +169,7 @@ it('a refused request is still refused for the reasons every request is', functi
     // `turnedDown()` goes through `of()`, so the blank-title and blank-requester
     // refusals reach it too — which is what keeps a decline from being the one
     // row that can arrive unreadable.
-    expect(fn(): Wanted => Wanted::turnedDown(RequestId::named('41'), '  ', 'A film', Size::unknown(), TurnedDown::because('No')))
+    expect(fn(): Wanted => Wanted::turnedDown(RequestId::named('41'), '  ', 'A film', KindOfRequest::Something, Size::unknown(), TurnedDown::because('No')))
         ->toThrow(RequestHasNobodyBehindIt::class);
 });
 
@@ -209,5 +210,5 @@ it('builds a request nothing has named yet by its kind, still refusing one nobod
 });
 
 it('refuses a blank title given to a request, which is not the same as one not named yet', function (): void {
-    expect(fn(): WhatARequestIsCalled => WhatARequestIsCalled::named('  '))->toThrow(RequestHasNobodyBehindIt::class);
+    expect(fn(): WhatARequestIsCalled => WhatARequestIsCalled::named('  ', KindOfRequest::Film))->toThrow(RequestHasNobodyBehindIt::class);
 });

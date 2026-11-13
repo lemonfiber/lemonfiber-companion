@@ -22,6 +22,7 @@ use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\Requested;
@@ -210,7 +211,7 @@ function keepTheRequestsIn(ConnectionInterface $database): string
 
     return $keeping->keep(
         StackId::of(Nonce::of(THE_STACK_WHOSE_HEALTH_IS_KEPT)),
-        Requested::of(Wanted::of(RequestId::named('7'), 'Mira', THE_TITLE_ONLY_THE_KEPT_REQUESTS_NAME, Size::unknown(), HowARequestStands::said(Waiting::ForApproval))),
+        Requested::of(Wanted::of(RequestId::named('7'), 'Mira', THE_TITLE_ONLY_THE_KEPT_REQUESTS_NAME, KindOfRequest::Something, Size::unknown(), HowARequestStands::said(Waiting::ForApproval))),
     )->either(
         down: static fn(): Code => Code::of('written'),
         notKept: static fn(): Code => Code::of('not-kept'),

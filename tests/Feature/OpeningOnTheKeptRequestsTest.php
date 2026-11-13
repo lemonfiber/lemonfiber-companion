@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
@@ -109,7 +110,7 @@ function theGardenRoomOutOfReach(): AHouseholdThatAsked
 function theGardenRoomAnswering(): AHouseholdThatAsked
 {
     return AHouseholdThatAsked::wanting(Requested::of(
-        Wanted::of(RequestId::named('9'), 'Robin', 'Arrival', Size::measured(3_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('9'), 'Robin', 'Arrival', KindOfRequest::Something, Size::measured(3_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
     ));
 }
 
@@ -211,7 +212,7 @@ it('keeps the kept reading, waiting, beside what stopped the stack answering, an
 
     expect($screen->turningDown())->toBeNull();
 
-    $screen->turningDown = new WhatOneRequestSays('1', 'Dune', 'Mira', 'household.waiting', wantsADecision: true, sizeSaid: 'household.size_unknown', sizeFigure: 0, sizeUnit: '', refusedReason: '', refusedAt: '', untitled: '');
+    $screen->turningDown = new WhatOneRequestSays('1', 'Dune', 'Mira', 'household.waiting', wantsADecision: true, sizeSaid: 'household.size_unknown', sizeFigure: 0, sizeUnit: '', refusedReason: '', refusedAt: '', untitled: '', kind: '');
     $screen->because = 'We have it already';
     $writing = WhatTheDeviceWouldDraw::by($screen);
     $screen->decline();

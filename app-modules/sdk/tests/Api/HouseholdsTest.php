@@ -15,6 +15,7 @@ use function json_encode;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\AMember;
 use Modules\Kernel\Api\Code;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\RequestIsUnnamed;
 use Modules\Kernel\Api\TheMembers;
@@ -287,6 +288,28 @@ it('reads a request no service has named yet by the kind of thing it is, and kee
         'a something not named yet',
         'a something not named yet',
         'A film',
+    ]);
+});
+
+it('reads what kind of thing a named request is by the media word, and something asked for where the word is unknown or absent', function (): void {
+    $data = ['members' => [aMember('Robin', [
+        ['id' => 'music-3', 'state' => 'getting', 'media' => 'album', 'title' => 'Rumours'],
+        ['id' => 'books-1', 'state' => 'declined', 'media' => 'book series', 'title' => 'Discworld', 'refused' => ['reason' => 'Not now.']],
+        ['id' => '7', 'state' => 'here', 'media' => 'film', 'title' => 'Dune'],
+        ['id' => '8', 'state' => 'here', 'media' => 'audiobook', 'title' => 'Dune'],
+        ['id' => '9', 'state' => 'here', 'media' => 9, 'title' => 'Dune'],
+        aRequest('10', 'Dune', 'here'),
+    ])]];
+
+    $wanted = iterator_to_array(Households::in(householdSaying($data)), preserve_keys: false);
+
+    expect(array_map(static fn(Wanted $one): KindOfRequest => $one->called()->kind(), $wanted))->toBe([
+        KindOfRequest::Album,
+        KindOfRequest::BookSeries,
+        KindOfRequest::Film,
+        KindOfRequest::Something,
+        KindOfRequest::Something,
+        KindOfRequest::Something,
     ]);
 });
 

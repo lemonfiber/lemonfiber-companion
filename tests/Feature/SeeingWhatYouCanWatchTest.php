@@ -15,6 +15,7 @@ use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\HowArtworkCame;
 use Modules\Kernel\Api\KindOfObstacle;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -234,7 +235,7 @@ function theHeroLabel(): string
 function whatTheyAskedFor(): Requested
 {
     $asked = static fn(int $number, string $title, Waiting $standing): Wanted
-        => Wanted::of(RequestId::named(sprintf('%d', $number)), 'ada', $title, Size::unknown(), HowARequestStands::said($standing));
+        => Wanted::of(RequestId::named(sprintf('%d', $number)), 'ada', $title, KindOfRequest::Something, Size::unknown(), HowARequestStands::said($standing));
 
     return Requested::of(
         $asked(1, 'Dune', Waiting::Here),
@@ -243,7 +244,7 @@ function whatTheyAskedFor(): Requested
         $asked(4, 'Alien', Waiting::ForApproval),
         $asked(5, 'Gone Girl', Waiting::Gone),
         $asked(6, 'Nobody Knows', Waiting::Failed),
-        Wanted::of(RequestId::named('7'), 'ada', 'Unsaid', Size::unknown(), HowARequestStands::unnamed()),
+        Wanted::of(RequestId::named('7'), 'ada', 'Unsaid', KindOfRequest::Something, Size::unknown(), HowARequestStands::unnamed()),
     );
 }
 

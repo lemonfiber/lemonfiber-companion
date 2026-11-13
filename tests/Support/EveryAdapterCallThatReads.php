@@ -259,6 +259,7 @@ use Modules\Sdk\Api\Tuners;
 use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
+use Modules\Sdk\Api\WaysOfBeingTold;
 use Modules\Sdk\Api\Wirers;
 use Psr\Log\NullLogger;
 
@@ -411,6 +412,8 @@ final readonly class EveryAdapterCallThatReads
                 => new Askers($clients, $entropy)->rehearse($stack, $session, self::aFoundTitleToSpoilTheAnswerTo()),
             'Askers::ask' => static fn(): object
                 => new Askers($clients, $entropy)->ask($stack, $session, self::aFoundTitleToSpoilTheAnswerTo(), IdempotencyKey::of('an-ask')),
+            'WaysOfBeingTold::offered' => static fn(): object => new WaysOfBeingTold($clients)->offered($stack, $session),
+            'WaysOfBeingTold::choose' => static fn(): object => new WaysOfBeingTold($clients)->choose($stack, $session, ['mail']),
             'Finders::whatCanBeAskedFor' => static fn(): object => new Finders($clients)->whatCanBeAskedFor($stack, $session),
             'Finders::firstPage' => static fn(): object
                 => new Finders($clients)->firstPage($stack, $session, WhatToLookFor::typed('dune')),

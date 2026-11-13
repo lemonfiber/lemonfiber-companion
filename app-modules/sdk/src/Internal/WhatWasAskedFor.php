@@ -59,10 +59,11 @@ final readonly class WhatWasAskedFor
     {
         $standing = self::standing($row, $by, $position);
         $id = self::id($row, $by, $position);
+        $kind = self::kind($row);
         $title = self::under($row, WireField::Title);
 
         if ($title === null) {
-            return self::notYetNamed($row, $by, $position, $id, $standing);
+            return self::notYetNamed($row, $by, $position, $id, $kind, $standing);
         }
 
         if (! is_string($title)) {
@@ -70,10 +71,28 @@ final readonly class WhatWasAskedFor
         }
 
         if (! $standing->wasDeclined()) {
-            return Wanted::of($id, $by, $title, self::size($row), $standing);
+            return Wanted::of($id, $by, $title, $kind, self::size($row), $standing);
         }
 
-        return Wanted::turnedDown($id, $by, $title, self::size($row), self::whyItWasRefused($row, $by, $position));
+        return Wanted::turnedDown($id, $by, $title, $kind, self::size($row), self::whyItWasRefused($row, $by, $position));
+    }
+
+    /**
+     * The kind of thing the core says it is, by its `media` word, or something asked for where it says no word this app knows.
+     *
+     * @param array<mixed> $row
+     */
+    private static function kind(array $row): KindOfRequest
+    {
+        $media = self::under($row, WireField::Media);
+
+        $kind = is_string($media) ? KindOfRequest::tryFrom($media) : null;
+
+        if (! $kind instanceof KindOfRequest) {
+            return KindOfRequest::Something;
+        }
+
+        return $kind;
     }
 
     /**
@@ -85,15 +104,8 @@ final readonly class WhatWasAskedFor
      *
      * @param array<mixed> $row
      */
-    private static function notYetNamed(array $row, string $by, int $position, RequestId $id, HowARequestStands $standing): Wanted
+    private static function notYetNamed(array $row, string $by, int $position, RequestId $id, KindOfRequest $kind, HowARequestStands $standing): Wanted
     {
-        $media = self::under($row, WireField::Media);
-        $kind = is_string($media) ? KindOfRequest::tryFrom($media) : null;
-
-        if (! $kind instanceof KindOfRequest) {
-            $kind = KindOfRequest::Something;
-        }
-
         if (! $standing->wasDeclined()) {
             return Wanted::notYetNamed($id, $by, $kind, self::size($row), $standing);
         }

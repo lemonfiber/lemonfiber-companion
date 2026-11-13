@@ -48,11 +48,11 @@ final readonly class WhatIsKeptOfRequests
     public static function aReadingWithEveryPart(): Requested
     {
         return Requested::of(
-            Wanted::of(RequestId::named('1'), 'Mira', 'Dune', Size::measured(4_200_000_000), HowARequestStands::said(Waiting::ForApproval)),
-            Wanted::of(RequestId::named('2'), 'Joost', 'Severance', Size::guessedAt(30_000_000_000), HowARequestStands::said(Waiting::Getting)),
-            Wanted::turnedDown(RequestId::named('3'), 'Mira', 'Cats', Size::unknown(), TurnedDown::at('2026-09-30 21:04', 'We have it already')),
-            Wanted::turnedDown(RequestId::named('4'), 'Joost', 'The Room', Size::measured(700_000_000), TurnedDown::because('Not in this house')),
-            Wanted::of(RequestId::named('5'), 'Joost', 'Twin Peaks', Size::unknown(), HowARequestStands::unnamed()),
+            Wanted::of(RequestId::named('1'), 'Mira', 'Dune', KindOfRequest::Something, Size::measured(4_200_000_000), HowARequestStands::said(Waiting::ForApproval)),
+            Wanted::of(RequestId::named('2'), 'Joost', 'Severance', KindOfRequest::Something, Size::guessedAt(30_000_000_000), HowARequestStands::said(Waiting::Getting)),
+            Wanted::turnedDown(RequestId::named('3'), 'Mira', 'Cats', KindOfRequest::Something, Size::unknown(), TurnedDown::at('2026-09-30 21:04', 'We have it already')),
+            Wanted::turnedDown(RequestId::named('4'), 'Joost', 'The Room', KindOfRequest::Something, Size::measured(700_000_000), TurnedDown::because('Not in this house')),
+            Wanted::of(RequestId::named('5'), 'Joost', 'Twin Peaks', KindOfRequest::Something, Size::unknown(), HowARequestStands::unnamed()),
         );
     }
 

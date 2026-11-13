@@ -29,6 +29,7 @@ final readonly class WhatOneRequestSays
      * @param string $reference     the reference the stack names it by, which approving or turning it down sends
      * @param string $title         what was asked for, which is what a decision is made about, or empty where nothing has named it yet
      * @param string $untitled      the key for the kind of thing it is, where nothing has named it yet, or empty
+     * @param string $kind          the key for the kind of thing a named request is, or empty where it is unnamed or the core said no kind
      * @param string $by            who asked, so a decline can reach them by name
      * @param string $standing      the key for where the request stands
      * @param bool   $wantsADecision whether this one is waiting on a decision
@@ -63,5 +64,12 @@ final readonly class WhatOneRequestSays
         public string $refusedReason,
         public string $refusedAt,
         public string $untitled,
+        public string $kind,
     ) {}
+
+    /** Whether there is a kind to draw beneath the title. */
+    public function saysWhatItIs(): bool
+    {
+        return $this->kind !== '';
+    }
 }

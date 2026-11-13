@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\KindOfObstacle;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
@@ -390,8 +391,8 @@ it('hands over what they asked for, each with where it stands', function (): voi
 
     $both = [
         'the fake' => static fn(): Owing => AMemberWhoIsOwed::asking(Requested::of(
-            Wanted::of(RequestId::named('1'), 'Robin', 'The Third Man', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
-            Wanted::turnedDown(RequestId::named('2'), 'Robin', 'Solaris', Size::unknown(), TurnedDown::because('Not for your age limit')),
+            Wanted::of(RequestId::named('1'), 'Robin', 'The Third Man', KindOfRequest::Something, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+            Wanted::turnedDown(RequestId::named('2'), 'Robin', 'Solaris', KindOfRequest::Something, Size::unknown(), TurnedDown::because('Not for your age limit')),
         )),
         'the adapter' => static function () use ($answered): Owing {
             MockClient::destroyGlobal();

@@ -20,6 +20,10 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'When a request in the news was asked for. The news lists requests in the core\'s order, newest asked first, and no requirement asks a row to say when (`N1-R17`).',
         ],
         [
+            'path' => 'NotifyMineEnvelope.rehearsed',
+            'because' => 'Whether the answer was a rehearsal. The app sends no rehearsal of a member\'s choice of how they are told, so every answer it reads is one carried out.',
+        ],
+        [
             'path' => 'MusicEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],

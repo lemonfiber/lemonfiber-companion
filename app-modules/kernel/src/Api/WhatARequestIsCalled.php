@@ -9,7 +9,7 @@ use Closure;
 use function trim;
 
 /**
- * What a request is called: its title, or, where no service has named it yet, only what kind of thing it is.
+ * What a request is called: its title and the kind of thing it is, or, where no service has named it yet, only the kind.
  *
  * A request still waiting for a yes has been handed to nobody, so the core may
  * hold no title for it. It is still a request somebody can rule on.
@@ -18,8 +18,8 @@ final readonly class WhatARequestIsCalled
 {
     private function __construct(private string $title, private KindOfRequest $kind) {}
 
-    /** A request with a title, refused when blank. */
-    public static function named(string $title): self
+    /** A request with a title and the kind of thing it is, refused when the title is blank. */
+    public static function named(string $title, KindOfRequest $kind): self
     {
         $said = trim($title);
 
@@ -27,13 +27,19 @@ final readonly class WhatARequestIsCalled
             throw RequestHasNobodyBehindIt::namedBlank();
         }
 
-        return new self($said, KindOfRequest::Something);
+        return new self($said, $kind);
     }
 
     /** A request nothing has named yet, by the kind of thing it is. */
     public static function notYetNamed(KindOfRequest $kind): self
     {
         return new self('', $kind);
+    }
+
+    /** What kind of thing it is, named or not. */
+    public function kind(): KindOfRequest
+    {
+        return $this->kind;
     }
 
     /**

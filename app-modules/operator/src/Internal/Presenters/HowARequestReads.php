@@ -78,7 +78,11 @@ final readonly class HowARequestReads
         $title = $wanted->called()->either(named: static fn(string $named): AsText => AsText::of($named), notYet: static fn(): AsText => AsText::nothing())->said;
         $untitled = $wanted->called()->either(
             named: static fn(): AsText => AsText::nothing(),
-            notYet: static fn(KindOfRequest $kind): AsText => AsText::of(sprintf(self::NOT_YET_NAMED, $kind->value)),
+            notYet: static fn(KindOfRequest $kind): AsText => AsText::of(sprintf(self::NOT_YET_NAMED, $kind->word())),
+        )->said;
+        $kind = $wanted->called()->either(
+            named: static fn(): AsText => AsText::of($wanted->called()->kind()->wasSaid() ? $wanted->called()->kind()->saidToTheMember() : ''),
+            notYet: static fn(): AsText => AsText::nothing(),
         )->said;
         $reason = $why instanceof TurnedDown ? $why->reason() : '';
         $at = $why instanceof TurnedDown ? $why->when(
@@ -99,6 +103,7 @@ final readonly class HowARequestReads
                 refusedReason: $reason,
                 refusedAt: $at,
                 untitled: $untitled,
+                kind: $kind,
             ),
             guessed: static fn(int $bytes): WhatOneRequestSays => new WhatOneRequestSays(
                 reference: $wanted->id()->reference(),
@@ -112,6 +117,7 @@ final readonly class HowARequestReads
                 refusedReason: $reason,
                 refusedAt: $at,
                 untitled: $untitled,
+                kind: $kind,
             ),
             unknown: static fn(): WhatOneRequestSays => new WhatOneRequestSays(
                 reference: $wanted->id()->reference(),
@@ -130,6 +136,7 @@ final readonly class HowARequestReads
                 refusedReason: $reason,
                 refusedAt: $at,
                 untitled: $untitled,
+                kind: $kind,
             ),
         );
     }

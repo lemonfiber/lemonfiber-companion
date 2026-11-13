@@ -67,8 +67,8 @@ function theStackWhoseHouseholdIsRead(): Stack
 function aHouseholdMidWeek(): Requested
 {
     return Requested::of(
-        Wanted::of(RequestId::named('41'), 'Sam', 'A film nobody has seen', Size::guessedAt(4_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
-        Wanted::of(RequestId::named('42'), 'Robin', 'A series somebody has', Size::measured(900_000_000), HowARequestStands::said(Waiting::Here)),
+        Wanted::of(RequestId::named('41'), 'Sam', 'A film nobody has seen', KindOfRequest::Something, Size::guessedAt(4_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('42'), 'Robin', 'A series somebody has', KindOfRequest::Something, Size::measured(900_000_000), HowARequestStands::said(Waiting::Here)),
     );
 }
 
@@ -127,7 +127,7 @@ it('names every row by the reference the stack gives it, in small type beside wh
 it('draws a request no service has named yet by its kind, still one to approve or turn down', function (): void {
     $screen = theRequestsScreen(AHouseholdThatAsked::wanting(Requested::of(
         Wanted::notYetNamed(RequestId::named('7'), 'Sanne', KindOfRequest::Film, Size::guessedAt(5_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
-        Wanted::of(RequestId::named('8'), 'Robin', 'A film nobody has seen', Size::unknown(), HowARequestStands::said(Waiting::Getting)),
+        Wanted::of(RequestId::named('8'), 'Robin', 'A film nobody has seen', KindOfRequest::Something, Size::unknown(), HowARequestStands::said(Waiting::Getting)),
     )));
     $rows = $screen->answer()->requests;
     $named = __('household.not_yet_named.anybodys.film');
@@ -137,6 +137,21 @@ it('draws a request no service has named yet by its kind, still one to approve o
         ->and($rows[0]->wantsADecision)->toBeTrue()
         ->and($rows[1]->title)->toBe('A film nobody has seen')
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain($named, 'A film nobody has seen');
+});
+
+it('names what each named request is, and no kind for one named by its kind or with none said', function (): void {
+    $screen = theRequestsScreen(AHouseholdThatAsked::wanting(Requested::of(
+        Wanted::of(RequestId::named('music-3'), 'Sanne', 'Rumours', KindOfRequest::Artist, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('8'), 'Robin', 'A film nobody has seen', KindOfRequest::Something, Size::unknown(), HowARequestStands::said(Waiting::Getting)),
+        Wanted::notYetNamed(RequestId::named('9'), 'Robin', KindOfRequest::Book, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+    )));
+
+    expect(array_map(static fn(WhatOneRequestSays $row): array => [$row->kind, $row->saysWhatItIs()], $screen->answer()->requests))->toBe([
+        ['household.request_kind.artist', true],
+        ['', false],
+        ['', false],
+    ])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Artist', __('household.not_yet_named.anybodys.book'));
 });
 
 it('an estimate is labelled as one, and a measurement is not', function (): void {
@@ -177,9 +192,9 @@ it('a figure too big for its unit moves up rather than grows', function (): void
     // `1000 MB`, which is the four-figure number the ladder exists to prevent,
     // arriving at the one size that reaches each band first.
     $wanted = Requested::of(
-        Wanted::of(RequestId::named('44'), 'Robin', 'A megabyte exactly', Size::measured(1_000_000), HowARequestStands::said(Waiting::Getting)),
-        Wanted::of(RequestId::named('45'), 'Robin', 'A gigabyte exactly', Size::measured(1_000_000_000), HowARequestStands::said(Waiting::Getting)),
-        Wanted::of(RequestId::named('46'), 'Robin', 'A terabyte exactly', Size::measured(1_000_000_000_000), HowARequestStands::said(Waiting::Getting)),
+        Wanted::of(RequestId::named('44'), 'Robin', 'A megabyte exactly', KindOfRequest::Something, Size::measured(1_000_000), HowARequestStands::said(Waiting::Getting)),
+        Wanted::of(RequestId::named('45'), 'Robin', 'A gigabyte exactly', KindOfRequest::Something, Size::measured(1_000_000_000), HowARequestStands::said(Waiting::Getting)),
+        Wanted::of(RequestId::named('46'), 'Robin', 'A terabyte exactly', KindOfRequest::Something, Size::measured(1_000_000_000_000), HowARequestStands::said(Waiting::Getting)),
     );
 
     $rows = theRequestsScreen(AHouseholdThatAsked::wanting($wanted))->answer()->requests;
@@ -199,12 +214,12 @@ it('a figure between two whole ones is rounded rather than trimmed', function ()
     // Asked of every band, because each divides by its own constant and a
     // rounding that is right in terabytes is not thereby right in megabytes.
     $wanted = Requested::of(
-        Wanted::of(RequestId::named('47'), 'Robin', 'Just under, in megabytes', Size::measured(900_400_000), HowARequestStands::said(Waiting::Getting)),
-        Wanted::of(RequestId::named('48'), 'Robin', 'Just over, in megabytes', Size::measured(900_600_000), HowARequestStands::said(Waiting::Getting)),
-        Wanted::of(RequestId::named('49'), 'Robin', 'Just under, in gigabytes', Size::measured(4_400_000_000), HowARequestStands::said(Waiting::Getting)),
-        Wanted::of(RequestId::named('50'), 'Robin', 'Just over, in gigabytes', Size::measured(4_600_000_000), HowARequestStands::said(Waiting::Getting)),
-        Wanted::of(RequestId::named('51'), 'Robin', 'Just under, in terabytes', Size::measured(4_400_000_000_000), HowARequestStands::said(Waiting::Getting)),
-        Wanted::of(RequestId::named('52'), 'Robin', 'Just over, in terabytes', Size::measured(4_600_000_000_000), HowARequestStands::said(Waiting::Getting)),
+        Wanted::of(RequestId::named('47'), 'Robin', 'Just under, in megabytes', KindOfRequest::Something, Size::measured(900_400_000), HowARequestStands::said(Waiting::Getting)),
+        Wanted::of(RequestId::named('48'), 'Robin', 'Just over, in megabytes', KindOfRequest::Something, Size::measured(900_600_000), HowARequestStands::said(Waiting::Getting)),
+        Wanted::of(RequestId::named('49'), 'Robin', 'Just under, in gigabytes', KindOfRequest::Something, Size::measured(4_400_000_000), HowARequestStands::said(Waiting::Getting)),
+        Wanted::of(RequestId::named('50'), 'Robin', 'Just over, in gigabytes', KindOfRequest::Something, Size::measured(4_600_000_000), HowARequestStands::said(Waiting::Getting)),
+        Wanted::of(RequestId::named('51'), 'Robin', 'Just under, in terabytes', KindOfRequest::Something, Size::measured(4_400_000_000_000), HowARequestStands::said(Waiting::Getting)),
+        Wanted::of(RequestId::named('52'), 'Robin', 'Just over, in terabytes', KindOfRequest::Something, Size::measured(4_600_000_000_000), HowARequestStands::said(Waiting::Getting)),
     );
 
     $rows = theRequestsScreen(AHouseholdThatAsked::wanting($wanted))->answer()->requests;
@@ -216,7 +231,7 @@ it('a figure between two whole ones is rounded rather than trimmed', function ()
 
 it('a request nobody has sized says so rather than showing nothing', function (): void {
     $wanted = Requested::of(
-        Wanted::of(RequestId::named('43'), 'Sam', 'Something nobody has sized', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('43'), 'Sam', 'Something nobody has sized', KindOfRequest::Something, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
     );
 
     $row = theRequestsScreen(AHouseholdThatAsked::wanting($wanted))->answer()->requests[0];
@@ -395,10 +410,11 @@ it('a refused request shows the reason on the row', function (): void {
             RequestId::named('41'),
             'Sam',
             'A film nobody has seen',
+            KindOfRequest::Something,
             Size::unknown(),
             TurnedDown::at('2026-09-14T04:00:00Z', 'The disk is nearly full'),
         ),
-        Wanted::of(RequestId::named('42'), 'Robin', 'A series somebody has', Size::unknown(), HowARequestStands::said(Waiting::Here)),
+        Wanted::of(RequestId::named('42'), 'Robin', 'A series somebody has', KindOfRequest::Something, Size::unknown(), HowARequestStands::said(Waiting::Here)),
     )));
 
     $rows = $screen->answer()->requests;
@@ -415,7 +431,7 @@ it('a refused request shows the reason on the row', function (): void {
 
 it('a refusal the stack did not time carries the reason and no moment', function (): void {
     $screen = theRequestsScreen(AHouseholdThatAsked::wanting(Requested::of(
-        Wanted::turnedDown(RequestId::named('41'), 'Sam', 'A film', Size::unknown(), TurnedDown::because('Not this week')),
+        Wanted::turnedDown(RequestId::named('41'), 'Sam', 'A film', KindOfRequest::Something, Size::unknown(), TurnedDown::because('Not this week')),
     )));
 
     $rows = $screen->answer()->requests;
