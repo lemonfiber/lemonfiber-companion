@@ -1,7 +1,7 @@
 {
     "format": 1,
-    "commit": "8e7e5f8b2dac3b0a91d38fe584e697c889746f43",
-    "time": "2026-11-11T20:03:31Z",
+    "commit": "dfd2ebe97d2e0b38a8cadf7ef3fe740f56b74466",
+    "time": "2026-11-13T15:24:37Z",
     "verdict": "passed",
     "score": 100.0,
     "trees": [
@@ -121,70 +121,70 @@
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\ControlStructures\\IfNegated",
-            "seconds": 7297.840829196856,
-            "survived": 0,
-            "killRate": 100.0
-        },
-        {
-            "runner": "pest",
-            "mutator": "Pest\\Mutate\\Mutators\\Logical\\InstanceOfToFalse",
-            "seconds": 5200.779322373495,
+            "seconds": 7465.966922124449,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Removal\\RemoveArrayItem",
-            "seconds": 5141.35283829101,
+            "seconds": 5452.797379546157,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\Logical\\InstanceOfToFalse",
+            "seconds": 5238.711948437305,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Logical\\InstanceOfToTrue",
-            "seconds": 5045.285100470186,
+            "seconds": 5114.777231493605,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Logical\\RemoveNot",
-            "seconds": 4804.797397901048,
+            "seconds": 4909.825769136042,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\ControlStructures\\TernaryNegated",
-            "seconds": 4559.992012401062,
+            "seconds": 4648.948780428725,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Equality\\IdenticalToNotIdentical",
-            "seconds": 4182.976588900012,
-            "survived": 0,
-            "killRate": 100.0
-        },
-        {
-            "runner": "pest",
-            "mutator": "Pest\\Mutate\\Mutators\\String\\EmptyStringToNotEmpty",
-            "seconds": 3759.303541716311,
+            "seconds": 4261.259468909118,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Array\\UnwrapArrayValues",
-            "seconds": 2087.7007434820816,
+            "seconds": 3801.917938308847,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\String\\EmptyStringToNotEmpty",
+            "seconds": 3799.870365586256,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Removal\\RemoveMethodCall",
-            "seconds": 1983.0105439713436,
+            "seconds": 2646.8763205332766,
             "survived": 0,
             "killRate": 100.0
         }
@@ -199,6 +199,7 @@
         {
             "path": "app-modules/connection/src/Api/ChoosingWhatReachesThePhone.php",
             "score": 100.0,
+            "base": 100.0,
             "notKilled": 0
         },
         {
