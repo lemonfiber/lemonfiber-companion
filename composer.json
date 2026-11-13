@@ -154,14 +154,12 @@
             "git config core.hooksPath .githooks",
             "@php scripts/patch_nativephp.php",
             "@php scripts/patch_phpunit_source_mapper.php",
-            "@php scripts/patch_mutation_gate_heating.php",
             "@php vendor/bin/mutation-gate pest:patch"
         ],
         "post-update-cmd": [
             "git config core.hooksPath .githooks",
             "@php scripts/patch_nativephp.php",
             "@php scripts/patch_phpunit_source_mapper.php",
-            "@php scripts/patch_mutation_gate_heating.php",
             "@php vendor/bin/mutation-gate pest:patch"
         ],
         "analyse": "phpstan analyse",
