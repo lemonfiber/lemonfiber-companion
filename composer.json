@@ -21,7 +21,7 @@
         "ext-sodium": "*",
         "bacon/bacon-qr-code": "^3.0",
         "internachi/modular": "^3.0",
-        "laravel/framework": "^13.17",
+        "laravel/framework": "^13.40",
         "laravel/tinker": "^3.0",
         "lemonfiber/bridge": "^0.1",
         "modules/backups": "dev-main",
