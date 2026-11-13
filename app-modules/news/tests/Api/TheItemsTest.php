@@ -68,7 +68,8 @@ it('finds the requests numbered above the one seen, and the problems begun after
 
     expect(namedIn($requests->newerThan(AnItem::aRequest(RequestId::named('7')))))->toBe(['9'])
         ->and(namedIn($requests->newerThan(AnItem::aRequest(RequestId::named('9')))))->toBe([])
-        ->and(namedIn($problems->newerThan(AnItem::aProblem('storage.full', Instant::atEpochSeconds(200)))))->toBe(['service.gluetun']);
+        ->and(namedIn($problems->newerThan(AnItem::aProblem('storage.full', Instant::atEpochSeconds(200)))))->toBe(['service.gluetun'])
+        ->and(namedIn($problems->newerThan(AnItem::aProblem('disk.slow', Instant::atEpochSeconds(100)))))->toBe(['service.gluetun', 'storage.full']);
 });
 
 it('says which of two items is newer by the order of their kind', function (): void {
