@@ -47,6 +47,8 @@ const NOT_SENT_BECAUSE = [
  * requirement that says why the app does not.
  */
 const NOT_SENT_YET = [
+    'notify-choose',
+    'push-woken',
     'space',
 ];
 

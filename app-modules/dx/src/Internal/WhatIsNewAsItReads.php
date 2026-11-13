@@ -12,17 +12,18 @@ use function count;
 use function is_array;
 use function is_string;
 
+use Modules\Sdk\Api\Fields\NewsItemsField;
 use Modules\Sdk\Api\WireField;
 
 /**
  * What is new on a stand-in stack, as a reader can take it: every kind read,
- * each request under a number of its own, and each problem dated in digits.
+ * each request under a reference of its own, and each problem dated in digits.
  *
  * The `news-items` envelope's own declaration, corrected in the three places
  * the generated type leaves open. A synthesised onset is the word `onset`,
  * which `WhatIsListedAsNew` refuses as it would refuse any stack that wrote
  * one; a synthesised `unread` names a kind, so What's new would list nothing
- * of it; and every synthesised request carries the same number, so two rows
+ * of it; and every synthesised request carries the same reference, so two rows
  * would be one item.
  */
 final readonly class WhatIsNewAsItReads
@@ -46,18 +47,18 @@ final readonly class WhatIsNewAsItReads
         $problems = $news[WireField::Problems->value];
         $requests = $news[WireField::Requests->value];
         $dated = [];
-        $numbered = [];
+        $referenced = [];
 
         foreach (is_array($problems) ? $problems : [] as $problem) {
             $dated[] = [...self::namedKeysOf($problem), WireField::Onset->value => $onset];
         }
 
         foreach (is_array($requests) ? $requests : [] as $request) {
-            $numbered[] = [...self::namedKeysOf($request), WireField::Number->value => count($numbered) + 1];
+            $referenced[] = [...self::namedKeysOf($request), NewsItemsField::Request->value => (string) (count($referenced) + 1)];
         }
 
         $news[WireField::Problems->value] = $dated;
-        $news[WireField::Requests->value] = $numbered;
+        $news[WireField::Requests->value] = $referenced;
         $news[WireField::Unread->value] = [];
         $envelope['data'] = $news;
 
