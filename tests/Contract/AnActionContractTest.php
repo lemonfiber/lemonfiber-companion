@@ -13,6 +13,7 @@ use Modules\Kernel\Api\AskingThemIn;
 use Modules\Kernel\Api\ChangingASetting;
 use Modules\Kernel\Api\ChangingTheLine;
 use Modules\Kernel\Api\CheckingWhatDisturbs;
+use Modules\Kernel\Api\ChoosingHowToBeTold;
 use Modules\Kernel\Api\ChoosingWhatIsAllowed;
 use Modules\Kernel\Api\ConnectingADevice;
 use Modules\Kernel\Api\ExtendingIt;
@@ -70,7 +71,7 @@ function everyActionNamed(): array
 {
     return [
         ...AcceptingAChoice::cases(), ...CheckingWhatDisturbs::cases(), ...RevokingAGrant::cases(), ...ReplacingACertificate::cases(), ...SearchingTheIndexers::cases(), ...AskingThemIn::cases(), ...ChangingASetting::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...ForgettingWhatIsKept::cases(), ...HandingOver::cases(), ...MovingInBy::cases(),
-        ...AskingForIt::cases(), ...SwitchingTheForms::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
+        ...AskingForIt::cases(), ...ChoosingHowToBeTold::cases(), ...SwitchingTheForms::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
         ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
         ...WhatToDoWithADownload::cases(), ...WhatToDoWithTheDownloads::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(), ...WhatWasDecided::cases(), ...WhatThePlayerAsks::cases(),
         ABundleAsked::described(HowManyLines::asMuchAsAPhoneShows(), WhatFilenamesShow::Replaced, SettingsToReveal::none()),

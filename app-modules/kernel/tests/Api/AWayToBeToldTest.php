@@ -25,8 +25,8 @@ it('refuses a way with no id to choose it by, or no name to read', function (str
 ]);
 
 it('says whether anything is offered and whether this phone is woken', function (): void {
-    expect(WaysToBeTold::offered(phone: true, ways: [])->isEmpty())->toBeTrue()
-        ->and(WaysToBeTold::offered(phone: true, ways: [])->wakesThisPhone())->toBeTrue()
-        ->and(WaysToBeTold::offered(phone: false, ways: [AWayToBeTold::offered('mail', 'Email', receiving: false)])->isEmpty())->toBeFalse()
-        ->and(WaysToBeTold::offered(phone: false, ways: [])->wakesThisPhone())->toBeFalse();
+    expect(WaysToBeTold::wakingThisPhone()->isEmpty())->toBeTrue()
+        ->and(WaysToBeTold::wakingThisPhone()->wakesThisPhone())->toBeTrue()
+        ->and(WaysToBeTold::notWakingThisPhone(AWayToBeTold::offered('mail', 'Email', receiving: false))->isEmpty())->toBeFalse()
+        ->and(WaysToBeTold::notWakingThisPhone()->wakesThisPhone())->toBeFalse();
 });

@@ -76,6 +76,12 @@ return [
         'phone_woken' => 'This phone is told too.',
         'phone_not_woken' => 'This phone is not told.',
     ],
+    'your_ask' => [
+        'heading' => 'What you asked for',
+        'not_among' => 'This is not among what you asked for any more.',
+        'in_the_music' => "In the house's music. Play it where the house keeps its music.",
+        'in_the_books' => "In the house's books. Read it where the house keeps its books.",
+    ],
     'nothing_asked_for' => 'You have not asked for anything yet.',
     'waiting_count' => '{0} Nothing is waiting for you|{1} One request is waiting for you|[2,*] :count requests are waiting for you',
     'asked_by' => 'Asked for by :who',
@@ -338,6 +344,8 @@ return [
         'reads' => ':title, :kind, :year',
         'reads_undated' => ':title, :kind',
         'reads_standing' => ':title, :standing',
+        'above_standing_kind' => ':standing · :kind',
+        'reads_standing_kind' => ':title, :kind, :standing',
     ],
 
     // The newest title in the house, drawn across Home with Play and More.

@@ -443,10 +443,10 @@ it('a refused credential met on the requests read lets the session go too', func
 
 function twoWaysToBeTold(): AHouseThatTellsWhenItsReady
 {
-    return AHouseThatTellsWhenItsReady::offering(WaysToBeTold::offered(phone: true, ways: [
+    return AHouseThatTellsWhenItsReady::offering(WaysToBeTold::wakingThisPhone(
         AWayToBeTold::offered('house-ntfy', 'The house app', receiving: true),
         AWayToBeTold::offered('mail', 'Email', receiving: false),
-    ]));
+    ));
 }
 
 it('offers each way the operator offered by the name the household reads, chosen where they are told on it, and says whether this phone is told', function (): void {
@@ -460,7 +460,7 @@ it('offers each way the operator offered by the name the household reads, chosen
 });
 
 it('says a phone that is not woken is not told', function (): void {
-    $screen = theOwedScreen(AMemberWhoIsOwed::owedNothing(), telling: AHouseThatTellsWhenItsReady::offering(WaysToBeTold::offered(phone: false, ways: [AWayToBeTold::offered('mail', 'Email', receiving: true)])));
+    $screen = theOwedScreen(AMemberWhoIsOwed::owedNothing(), telling: AHouseThatTellsWhenItsReady::offering(WaysToBeTold::notWakingThisPhone(AWayToBeTold::offered('mail', 'Email', receiving: true))));
 
     expect($screen->waysToBeTold()->phone)->toBe('household.told.phone_not_woken')
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.told.phone_not_woken'));
@@ -533,7 +533,25 @@ it('asks nothing about the ways where this device holds no session, and asks aga
     $screen->waysToBeTold();
     $screen->waysToBeTold();
     $screen->again();
+    $screen->render();
     $screen->waysToBeTold();
 
     expect($telling->readings)->toBe(2);
+});
+
+it('reads the ways on a frame of their own, after the frame that read what they asked for, and asks for it at once', function (): void {
+    $telling = twoWaysToBeTold();
+    $screen = theOwedScreen(AMemberWhoIsOwed::owedNothing(), telling: $telling);
+
+    $first = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($telling->readings)->toBe(0)
+        ->and($screen->waitsForTheNextFrame())->toBeTrue()
+        ->and($first)->not->toContain(__('household.told.heading'));
+
+    $second = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($telling->readings)->toBe(1)
+        ->and($screen->waitsForTheNextFrame())->toBeFalse()
+        ->and($second)->toContain(__('household.told.heading'));
 });

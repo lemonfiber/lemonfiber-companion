@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function array_values;
+
 use ArrayIterator;
 use IteratorAggregate;
 use Override;
@@ -19,10 +21,16 @@ final readonly class WaysToBeTold implements IteratorAggregate
     /** @param list<AWayToBeTold> $ways */
     private function __construct(private array $ways, private bool $phone) {}
 
-    /** @param list<AWayToBeTold> $ways */
-    public static function offered(bool $phone, array $ways): self
+    /** The ways offered, where this phone is registered to be woken. */
+    public static function wakingThisPhone(AWayToBeTold ...$ways): self
     {
-        return new self($ways, $phone);
+        return new self(array_values($ways), phone: true);
+    }
+
+    /** The ways offered, where this phone is not. */
+    public static function notWakingThisPhone(AWayToBeTold ...$ways): self
+    {
+        return new self(array_values($ways), phone: false);
     }
 
     /** Whether nothing is offered, where the choice is not drawn. */

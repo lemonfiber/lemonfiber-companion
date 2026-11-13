@@ -31,13 +31,13 @@ use Modules\News\Api\Noticing;
 use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\Presenters\HowWhatIsNewReads;
-use Modules\Operator\Internal\ReadsAStackOnceAFrame;
 use Modules\Operator\Internal\TheNewsAsItems;
 use Modules\Operator\Internal\ViewModels\WhatAnItemSays;
 use Modules\Operator\Internal\ViewModels\WhatEachStackListed;
 use Modules\Operator\Internal\ViewModels\WhatIsNewAsShown;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
+use Modules\Wayfinding\Api\Screens\ReadsAStackOnceAFrame;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 

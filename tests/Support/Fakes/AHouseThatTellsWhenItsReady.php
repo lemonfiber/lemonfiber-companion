@@ -12,6 +12,7 @@ use Modules\Kernel\Api\HowBeingToldCameBack;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\WaysChosen;
 use Modules\Kernel\Api\WaysToBeTold;
 use Override;
 
@@ -65,13 +66,19 @@ final class AHouseThatTellsWhenItsReady implements ChoosingHowTheyAreTold
 
         return $this->readRefused instanceof Obstacle
             ? HowBeingToldCameBack::refused($this->readRefused)
-            : HowBeingToldCameBack::told(WaysToBeTold::offered($this->phone, $this->ways));
+            : HowBeingToldCameBack::told($this->offeredNow());
     }
 
     #[Override]
-    public function choose(Stack $stack, Session $session, array $ways): HowBeingToldCameBack
+    public function choose(Stack $stack, Session $session, WaysChosen $ways): HowBeingToldCameBack
     {
-        $this->chosen[] = $ways;
+        $ids = [];
+
+        foreach ($ways as $id) {
+            $ids[] = $id;
+        }
+
+        $this->chosen[] = $ids;
 
         if ($this->choiceRefused instanceof Obstacle) {
             return HowBeingToldCameBack::refused($this->choiceRefused);
@@ -80,11 +87,16 @@ final class AHouseThatTellsWhenItsReady implements ChoosingHowTheyAreTold
         $answered = [];
 
         foreach ($this->ways as $way) {
-            $answered[] = AWayToBeTold::offered($way->id(), $way->name(), receiving: in_array($way->id(), $ways, strict: true));
+            $answered[] = AWayToBeTold::offered($way->id(), $way->name(), receiving: in_array($way->id(), $ids, strict: true));
         }
 
         $this->ways = $answered;
 
-        return HowBeingToldCameBack::told(WaysToBeTold::offered($this->phone, $this->ways));
+        return HowBeingToldCameBack::told($this->offeredNow());
+    }
+
+    private function offeredNow(): WaysToBeTold
+    {
+        return $this->phone ? WaysToBeTold::wakingThisPhone(...$this->ways) : WaysToBeTold::notWakingThisPhone(...$this->ways);
     }
 }

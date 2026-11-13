@@ -76,6 +76,12 @@ return [
         'phone_woken' => 'Deze telefoon krijgt het ook te horen.',
         'phone_not_woken' => 'Deze telefoon krijgt het niet te horen.',
     ],
+    'your_ask' => [
+        'heading' => 'Wat je vroeg',
+        'not_among' => 'Dit staat niet meer tussen wat je vroeg.',
+        'in_the_music' => "In de muziek van het huis. Speel het af waar het huis zijn muziek bewaart.",
+        'in_the_books' => "In de boeken van het huis. Lees het waar het huis zijn boeken bewaart.",
+    ],
     'nothing_asked_for' => 'Je hebt nog niets aangevraagd.',
     'waiting_count' => '{0} Niets wacht op je akkoord|{1} Eén verzoek wacht op je akkoord|[2,*] :count verzoeken wachten op je akkoord',
     'asked_by' => 'Gevraagd door :who',
@@ -322,6 +328,8 @@ return [
         'reads' => ':title, :kind, :year',
         'reads_undated' => ':title, :kind',
         'reads_standing' => ':title, :standing',
+        'above_standing_kind' => ':standing · :kind',
+        'reads_standing_kind' => ':title, :kind, :standing',
     ],
 
     'hero' => [

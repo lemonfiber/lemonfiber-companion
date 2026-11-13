@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Household\Internal\Screens;
 
 use Closure;
+use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Household\Internal\OffersTheAppsSettings;
@@ -28,16 +29,19 @@ use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\WaysChosen;
 use Modules\Kernel\Api\WaysToBeTold;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheyAreOwed;
 use Modules\Kernel\Api\WhatTheyAsked;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
-use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
+use Modules\Wayfinding\Api\Screens\ReadsAStackOnceAFrame;
 use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
+
+use function view;
 
 /**
  * What this machine says the person holding the session is owed.
@@ -84,7 +88,7 @@ final class WhatYouAreOwed extends NativeComponent
     use OffersTheAppsSettings;
     use FindsItsWayAroundTheHouse;
     use LetsGoOfARefusedSession;
-    use DrawsItsTemplate;
+    use ReadsAStackOnceAFrame;
 
     public const string TEMPLATE = 'household::what-you-are-owed';
 
@@ -127,10 +131,25 @@ final class WhatYouAreOwed extends NativeComponent
         $this->told = null;
     }
 
-    /** The ways the operator offered the household to be told something they asked for has arrived, read once and held. */
+    public function render(): View
+    {
+        $this->aFrameBegins();
+
+        return view(self::TEMPLATE);
+    }
+
+    /** The ways the operator offered the household to be told something they asked for has arrived, read on a frame of their own and held. */
     public function waysToBeTold(): HowTheyAreToldAsShown
     {
-        return $this->told ??= $this->toldBy(
+        if ($this->told instanceof HowTheyAreToldAsShown) {
+            return $this->told;
+        }
+
+        if (! $this->mayReadItsStack()) {
+            return HowTheyAreToldAsShown::nothingOffered();
+        }
+
+        return $this->told = $this->toldBy(
             fn(Stack $stack, Session $session): HowBeingToldCameBack => $this->telling->offered($stack, $session),
             HowTheyAreToldAsShown::nothingOffered(),
         );
@@ -143,7 +162,7 @@ final class WhatYouAreOwed extends NativeComponent
         $chosen = $was->afterPressing($id);
 
         $this->told = $this->toldBy(
-            fn(Stack $stack, Session $session): HowBeingToldCameBack => $this->telling->choose($stack, $session, $chosen),
+            fn(Stack $stack, Session $session): HowBeingToldCameBack => $this->telling->choose($stack, $session, WaysChosen::byId(...$chosen)),
             $was,
         );
     }
@@ -175,7 +194,12 @@ final class WhatYouAreOwed extends NativeComponent
      */
     private function readings(): WhatTheirRequestsTurnedOutToBe
     {
-        return $this->readings ??= $this->ask();
+        if (! $this->readings instanceof WhatTheirRequestsTurnedOutToBe) {
+            $this->readsItsStack();
+            $this->readings = $this->ask();
+        }
+
+        return $this->readings;
     }
 
     /**

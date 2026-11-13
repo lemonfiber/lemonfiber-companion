@@ -116,6 +116,10 @@
     <x-design::body>{{ __('household.signed_out') }}</x-design::body>
     <x-design::action :label="__('connection.sign_in')" :goes="$this->signIn()" />
 @endif
+
+@if ($this->waitsForTheNextFrame())
+    <x-design::the-next-frame />
+@endif
 </x-operator::content>
 
 <x-household::screen-closes :goes="$this->goes()" :here="$this->itsTab()" />

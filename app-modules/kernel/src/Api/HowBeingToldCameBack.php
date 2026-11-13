@@ -18,7 +18,7 @@ final readonly class HowBeingToldCameBack
 
     public static function refused(Obstacle $why): self
     {
-        return new self(WaysToBeTold::offered(phone: false, ways: []), $why);
+        return new self(WaysToBeTold::notWakingThisPhone(), $why);
     }
 
     /**

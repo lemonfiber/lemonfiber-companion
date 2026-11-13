@@ -13,6 +13,7 @@ use Modules\Kernel\Api\AskingThemIn;
 use Modules\Kernel\Api\ChangingASetting;
 use Modules\Kernel\Api\ChangingTheLine;
 use Modules\Kernel\Api\CheckingWhatDisturbs;
+use Modules\Kernel\Api\ChoosingHowToBeTold;
 use Modules\Kernel\Api\ChoosingWhatIsAllowed;
 use Modules\Kernel\Api\ConnectingADevice;
 use Modules\Kernel\Api\ExtendingIt;
@@ -336,6 +337,7 @@ const VERBS_THE_APP_ASKS_FOR = [
     'migrate-import' => 'carries the old setup\'s own records across, having first said what would and would not come',
     'migrate-beside' => 'stands lemonfiber up beside the setup already here, having first said where each service would listen',
     'migrate-replace' => 'stops the setup already here and stands in its place, having first said what it would stop',
+    'notify-choose' => 'chooses which of the ways the operator offered tell the member who holds the session that something they asked for has arrived, and none other',
 
     // Wires the services to each other. It changes nothing already right and
     // keeps what the operator changed, and it overwrites nothing of theirs.
@@ -622,6 +624,7 @@ it('every action this app asks for has a reason, and every reason an action', fu
         ...array_map(static fn(WhatToDoWithARun $run): string => $run->asked(), WhatToDoWithARun::cases()),
         ...array_map(static fn(TakingItOff $off): string => $off->asked(), TakingItOff::cases()),
         ...array_map(static fn(AskingForIt $ask): string => $ask->asked(), AskingForIt::cases()),
+        ...array_map(static fn(ChoosingHowToBeTold $told): string => $told->asked(), ChoosingHowToBeTold::cases()),
         ...array_map(static fn(HandingOver $over): string => $over->asked(), HandingOver::cases()),
         ...array_map(static fn(ExtendingIt $extending): string => $extending->asked(), ExtendingIt::cases()),
         ...array_map(static fn(WhatThePlayerAsks $player): string => $player->asked(), WhatThePlayerAsks::cases()),

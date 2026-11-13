@@ -38,7 +38,9 @@ final readonly class HowBeingToldRead
             $ways[] = self::way($row, APath::beneath(WireField::Offered->value, $position));
         }
 
-        return WaysToBeTold::offered(Required::flag($data, NotifyMineField::Phone, BeingToldIsUnreadable::missing(NotifyMineField::Phone->value)), $ways);
+        return Required::flag($data, NotifyMineField::Phone, BeingToldIsUnreadable::missing(NotifyMineField::Phone->value))
+            ? WaysToBeTold::wakingThisPhone(...$ways)
+            : WaysToBeTold::notWakingThisPhone(...$ways);
     }
 
     /** @param Envelope<mixed> $envelope */

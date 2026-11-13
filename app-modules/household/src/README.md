@@ -64,6 +64,12 @@ reason beside it is the core's own words. A series' Play is its first
 episode's. A title outside the member's limits is answered as absent, as one
 the house does not hold is.
 
+**A music or book ask opens its own page.** On Home, an ask of an album, an
+artist, a book, an author or a book series carries its kind and opens
+`WhereYourAskStands` at its reference. The page reads what the Requests tab
+reads, draws where the ask stands as the one action, not usable, and, once it
+is here, says where in the house to find it in words that name no service.
+
 **Play hands the device's player only what the core states.**
 `PutsATitleOnScreen` asks the core for the title again as Play is pressed, and
 hands the player the location and door the core states for it then and the

@@ -248,8 +248,8 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheirOwnTitlesTurnedOutToBe => $this->owing->theirRequests($stack, $session)->asked()->either(
-                told: static fn(Requested $wanted): WhatTheirOwnTitlesTurnedOutToBe
-                    => new HowTheirOwnTitlesRead()->these($wanted),
+                told: fn(Requested $wanted): WhatTheirOwnTitlesTurnedOutToBe
+                    => new HowTheirOwnTitlesRead()->these($wanted, $this->goes()),
                 refused: function (Obstacle $why) use ($stack): WhatTheirOwnTitlesTurnedOutToBe {
                     // Told here as well as on the shelf's read: whichever read
                     // met the refusal is the one holding the obstacle when the

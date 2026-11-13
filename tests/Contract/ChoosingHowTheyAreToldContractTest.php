@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WaysChosen;
 use Modules\Kernel\Api\WaysToBeTold;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\WaysOfBeingTold;
@@ -21,6 +22,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\Response;
 use Tests\Support\Fakes\AHouseThatTellsWhenItsReady;
+use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -58,7 +60,7 @@ function aTellerAnswered(MockResponse ...$answered): ChoosingHowTheyAreTold
     MockClient::destroyGlobal();
     MockClient::global($answered);
 
-    return new WaysOfBeingTold(new PinnedClients());
+    return new WaysOfBeingTold(new PinnedClients(), SequencedEntropy::counting());
 }
 
 function howTheyAreTold(HowBeingToldCameBack $came): string
@@ -81,7 +83,7 @@ function whatWasSentToChoose(Response $recorded): array
 }
 
 it('reads the ways offered in the core\'s order, either way, and whether this phone is woken', function (): void {
-    $offered = WaysToBeTold::offered(phone: true, ways: [AWayToBeTold::offered('house-ntfy', 'The house app', receiving: true), AWayToBeTold::offered('mail', 'Email', receiving: false)]);
+    $offered = WaysToBeTold::wakingThisPhone(AWayToBeTold::offered('house-ntfy', 'The house app', receiving: true), AWayToBeTold::offered('mail', 'Email', receiving: false));
     $either = [
         'the fake' => AHouseThatTellsWhenItsReady::offering($offered),
         'the adapter' => aTellerAnswered(MockResponse::make((string) json_encode(whatTheCoreOffered()))),
@@ -99,12 +101,12 @@ it('reads a house that offers nothing as one that offers nothing', function (): 
 it('reads its ways from the member\'s own read, and sends a choice as the ways chosen and nothing else, reading the core\'s answer either way', function (): void {
     $answered = whatTheCoreOffered(['offered' => [['id' => 'house-ntfy', 'name' => 'The house app', 'receiving' => false], ['id' => 'mail', 'name' => 'Email', 'receiving' => true]]]);
     $teller = aTellerAnswered(MockResponse::make((string) json_encode(whatTheCoreOffered())), MockResponse::make((string) json_encode($answered)));
-    $fake = AHouseThatTellsWhenItsReady::offering(WaysToBeTold::offered(phone: true, ways: [AWayToBeTold::offered('house-ntfy', 'The house app', receiving: true), AWayToBeTold::offered('mail', 'Email', receiving: false)]));
+    $fake = AHouseThatTellsWhenItsReady::offering(WaysToBeTold::wakingThisPhone(AWayToBeTold::offered('house-ntfy', 'The house app', receiving: true), AWayToBeTold::offered('mail', 'Email', receiving: false)));
 
     $teller->offered(aHouseThatTells(), Session::of('a-session-not-a-secret'));
 
     foreach (['the fake' => $fake, 'the adapter' => $teller] as $which => $telling) {
-        expect(howTheyAreTold($telling->choose(aHouseThatTells(), Session::of('a-session-not-a-secret'), ['mail'])))->toBe('house-ntfy:The house app:not told,mail:Email:told|phone', $which);
+        expect(howTheyAreTold($telling->choose(aHouseThatTells(), Session::of('a-session-not-a-secret'), WaysChosen::byId('mail'))))->toBe('house-ntfy:The house app:not told,mail:Email:told|phone', $which);
     }
 
     [$read, $chosen] = array_map(whatWasSentToChoose(...), MockClient::global()->getRecordedResponses());
@@ -119,7 +121,7 @@ it('comes away with the obstacle where the core would not say, or said what this
     $teller = aTellerAnswered($answered, clone $answered);
 
     expect(howTheyAreTold($teller->offered(aHouseThatTells(), Session::of('a-session-not-a-secret'))))->toBe($kind->name)
-        ->and(howTheyAreTold($teller->choose(aHouseThatTells(), Session::of('a-session-not-a-secret'), [])))->toBe($kind->name);
+        ->and(howTheyAreTold($teller->choose(aHouseThatTells(), Session::of('a-session-not-a-secret'), WaysChosen::byId())))->toBe($kind->name);
 })->with([
     'refused' => [MockResponse::make('{"error":"no"}', 401), KindOfObstacle::CredentialWasRefused],
     'not json at all' => [MockResponse::make('not json at all'), KindOfObstacle::AnswerCouldNotBeRead],

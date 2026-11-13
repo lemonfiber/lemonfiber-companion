@@ -83,7 +83,6 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Ushers::whatBecameOf' => THE_WORK_AN_INVITATION_BECOMES,
         $which === 'Graders::confirm' => Api::QUALITY_ENDPOINT,
         $which === 'Graders::choose' => sprintf('%sMusicEnvelope', AN_ENVELOPE_BY_NAME),
-        $which === 'WaysOfBeingTold::choose' => sprintf('%sNotifyMineEnvelope', AN_ENVELOPE_BY_NAME),
         str_starts_with($which, 'Upgraders::') => sprintf('%sUpgradeEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Scouts::whatBecameOf' => sprintf('%sAdoptionEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Wirers::whatBecameOf' => sprintf('%sSeedEnvelope', AN_ENVELOPE_BY_NAME),
