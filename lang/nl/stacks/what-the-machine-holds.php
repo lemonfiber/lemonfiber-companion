@@ -38,6 +38,10 @@ return [
             'catalogue' => 'Een plugin opzoeken in de catalogus',
             'posters' => 'Posters ophalen voor wat een huisgenoot zocht',
             'waking' => 'Een telefoon wekken die vroeg om gewekt te worden',
+            'ntfy' => 'Een melding afleveren bij een ntfy-onderwerp',
+            'gotify' => 'Een melding afleveren bij een gotify-server',
+            'webhook' => 'Een melding naar een webhook sturen',
+            'apprise' => 'Een melding afleveren bij een Apprise-API',
         ],
         'allowed' => [
             'allowed' => 'Toegestaan door de instellingen van deze machine',

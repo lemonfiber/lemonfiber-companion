@@ -35,6 +35,9 @@ enum KindOfNotification: string
     /** An invitation accepted, declined or lapsed. */
     case Member = 'member';
 
+    /** Something a member asked for has arrived: the one kind a member is told. */
+    case Ready = 'ready';
+
     /** The key for what the kind is called on the notification page. */
     public function saidOnTheScreen(): string
     {

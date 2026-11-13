@@ -43,6 +43,10 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'As `PluginsEnvelope.install.would.tree`: an update carries the new version\'s install account whole, and the one reader reads both.',
         ],
         [
+            'path' => 'PluginsEnvelope.unproxied',
+            'because' => 'Whether the stack runs no proxy, so a proxied service an install brings is reached on that machine alone. What a service is reached at is drawn from the services listing, and no requirement asks an install\'s account to say it again (`N1-R17`).',
+        ],
+        [
             'path' => 'PluginsEnvelope.unvetted',
             'because' => WhatThisAppDoesNotRead::THE_OPERATORS_OVERLAY,
         ],

@@ -62,6 +62,10 @@ return [
             'catalogue' => 'Looking up a plugin in the catalogue',
             'posters' => 'Fetching posters for what a member searched for',
             'waking' => 'Waking a phone that asked to be woken',
+            'ntfy' => 'Delivering an alert to an ntfy topic',
+            'gotify' => 'Delivering an alert to a gotify server',
+            'webhook' => 'Posting an alert to a webhook',
+            'apprise' => 'Delivering an alert to an Apprise API',
         ],
         'allowed' => [
             'allowed' => 'Allowed by this machine\'s settings',
