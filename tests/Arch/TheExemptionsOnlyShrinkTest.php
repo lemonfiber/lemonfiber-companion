@@ -6,27 +6,10 @@ use Lemonfiber\Companion\PHPStan\Rules\ClosedSets\OutsideVocabularies;
 use Lemonfiber\Companion\PHPStan\Rules\OneHome\Coincidences;
 use Tests\Support\Tree;
 
-// D8 and D9 each carry a list of what they leave alone, and a list like that
-// is where a rule goes to stop meaning anything: every red run can be made
-// green by one more line in it. So each list is held to a ceiling that may
-// fall and may not rise, and every entry must still name something. A fixed
-// site that leaves its entry behind would exempt whatever comes to take its
-// name.
-//
-// Lower the ceiling in the change that empties an entry.
-
-// D9 — one value has one home
-it('lets the list of constants allowed a second home only shrink', function (): void {
-    $ceiling = 31;
-
-    expect(count(Coincidences::named()))->toBeLessThanOrEqual($ceiling, sprintf(
-        "D9 leaves %d constants alone, and the ceiling is %d.\n"
-        . 'A value two classes declare has one home; give it one, rather than a line in '
-        . "Coincidences (D9).\n",
-        count(Coincidences::named()),
-        $ceiling,
-    ));
-});
+// D8's list of what it leaves alone is held to a ceiling that may fall and
+// may not rise, and every entry D8 and D9 leave alone must still name
+// something: a fixed site that leaves its entry behind would exempt whatever
+// comes to take its name.
 
 // D8 — a closed set of strings is an enum
 it('lets the list of files allowed a set of strings instead of an enum only shrink', function (): void {

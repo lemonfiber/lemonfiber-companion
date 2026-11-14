@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace Lemonfiber\Companion\PHPStan\Rules\OneHome;
 
 use function array_filter;
-use function array_map;
 use function array_merge;
-use function array_unique;
 use function array_values;
-use function count;
 use function in_array;
 
 /**
@@ -24,25 +21,30 @@ final readonly class Clash
     /**
      * Every clash among the values a collector gathered, file by file.
      *
-     * A value held in one class only is no clash, an enum case is reported
-     * only as another's home, and an exempted constant is left out altogether.
+     * Two homes clash where they are in different classes and one can refer to
+     * the other; equal values out of each other's reach only coincide. An enum
+     * case is reported only as another's home, and an exempted constant is left
+     * out altogether.
      *
      * @param array<string, list<list<array{string, string, int, bool}>>> $collected
      * @param list<string>                                                 $exempted
      *
      * @return list<self>
      */
-    public static function among(array $collected, array $exempted): array
+    public static function among(array $collected, array $exempted, Reach $reach): array
     {
         $clashes = [];
 
         foreach (self::homesByValue($collected, $exempted) as $homes) {
-            if (count(array_unique(array_map(static fn(Home $home): string => $home->class(), $homes))) < 2) {
-                continue;
-            }
-
             foreach (array_filter($homes, static fn(Home $home): bool => ! $home->isCase) as $home) {
-                $clashes[] = new self($home, array_values(array_filter($homes, static fn(Home $other): bool => $other->name !== $home->name)));
+                $others = array_values(array_filter(
+                    $homes,
+                    static fn(Home $other): bool => $other->class() !== $home->class() && $reach->joins($home->file, $other->file),
+                ));
+
+                if ($others !== []) {
+                    $clashes[] = new self($home, $others);
+                }
             }
         }
 

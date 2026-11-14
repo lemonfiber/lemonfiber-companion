@@ -8,10 +8,7 @@ use function array_keys;
 
 use Bootstrap\Composition\NativePHP\TheHarnessInstead;
 use Bootstrap\Composition\NativePHP\TheTheme;
-use Lemonfiber\Native\Handover;
 use Lemonfiber\Native\Link;
-use Lemonfiber\Native\Scanning;
-use Lemonfiber\Native\Telling;
 use Modules\Device\Api\NotifyingWithinACap;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Dx\Api\AStandInStack;
@@ -24,10 +21,7 @@ use Modules\Kernel\Api\ARatio;
 use Modules\Kernel\Api\AtAGlance;
 use Modules\Kernel\Api\HowFarADownloadIs;
 use Modules\Kernel\Api\Nonce;
-use Modules\Sdk\Api\Fields\NotifyField;
 use Modules\Sdk\Internal\WhatARefusalMeant;
-use Modules\Vault\Api\PlatformWorkLeftRunning;
-use Modules\Vault\Internal\KeptInAShape;
 
 use function sprintf;
 
@@ -73,12 +67,7 @@ final readonly class Coincidences
         HowFarADownloadIs::class => ['ALL_OF_IT' => 'the percentage a finished download has reached'],
         NotifyingWithinACap::class => ['AT_MOST' => 'how many notifications one stack may raise within a minute'],
         AtAGlance::class => ['MIXED_BY' => 'the hash a fingerprint is mixed by before it is read at a glance'],
-        PlatformWorkLeftRunning::class => ['JOB_UNDER' => 'the field of a kept record that holds the handle'],
-        KeptInAShape::class => ['SHAPE' => 'the field of a kept record that says which shape it was written in'],
-        Handover::class => ['OFFERED' => "the native half's word for a sheet that was presented"],
         Link::class => ['UNREACHABLE' => "the native half's word for no network"],
-        Scanning::class => ['READ' => "the native half's word for a code that was read"],
-        Telling::class => ['WITHHELD' => "the native half's word for notifications the operator turned down"],
         AStoreOnAHandset::class => [
             'THE_NARROWEST' => 'what the double of the native store answers a word it does not know with, spelled apart from the bridge it stands behind',
             'WHENEVER_THE_APP_RUNS' => "what the double of Android's store grants every value, spelled apart from the bridge it stands behind",
@@ -90,10 +79,6 @@ final readonly class Coincidences
             'LABELLED' => "the prop EDGE carries a control's words on",
         ],
         WhereAnExpressionPoints::class => ['PAYLOAD' => 'the property an SDK envelope carries its payload on'],
-        NotifyField::class => [
-            'Last' => "the notify envelope's field for a back-end's newest delivery",
-            'ChosenBy' => "the notify envelope's field for who chose a back-end",
-        ],
         TheTheme::class => ['THE_FACE_WHERE_NONE_IS_NAMED' => "mobile-ui's alias for the face a text that names none is set in"],
     ];
 
