@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Screens;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
+use Modules\Kernel\Api\KnowingWhereAlertsGo;
 use Modules\Kernel\Api\Outgoing;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -16,7 +17,9 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatLeavesThisMachine;
 use Modules\Operator\Internal\LooksAgainWhileItMoves;
 use Modules\Operator\Internal\OffersTheAppsSettings;
+use Modules\Operator\Internal\Presenters\HowHostedBackEndsRead;
 use Modules\Operator\Internal\Presenters\HowWhatLeavesReads;
+use Modules\Operator\Internal\ViewModels\WhatHostedBackEndsSend;
 use Modules\Operator\Internal\ViewModels\WhatLeavesTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
@@ -68,8 +71,11 @@ final class WhatLeavesHere extends NativeComponent
      */
     public ?WhatLeavesTurnedOutToBe $answered = null;
 
+    public ?WhatHostedBackEndsSend $hostedAnswered = null;
+
     public function __construct(
         private readonly Outgoing $outgoing,
+        private readonly KnowingWhereAlertsGo $alerts,
         private readonly SecureStorage $storage,
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
@@ -80,6 +86,24 @@ final class WhatLeavesHere extends NativeComponent
     public function answer(): WhatLeavesTurnedOutToBe
     {
         return $this->answered ??= $this->ask();
+    }
+
+    /** What leaves to use each hosted back-end the machine's alerts go to, asked once per frame. */
+    public function hosted(): WhatHostedBackEndsSend
+    {
+        if ($this->hostedAnswered instanceof WhatHostedBackEndsSend) {
+            return $this->hostedAnswered;
+        }
+
+        $stack = $this->stack();
+
+        return $this->hostedAnswered = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): WhatHostedBackEndsSend => $this->alerts->whereAlertsGoOn($stack, $session)->either(
+                read: HowHostedBackEndsRead::in(...),
+                met: $this->lettingGoIfRefused($stack, HowHostedBackEndsRead::met(...)),
+            ),
+            notHeld: HowHostedBackEndsRead::signedOut(...),
+        );
     }
 
     /** Resume the session, ask the machine, and flatten what came back. */

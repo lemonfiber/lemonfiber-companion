@@ -187,6 +187,12 @@ enum AStacksScreen: string
     /** What this machine will tell its operator about. */
     case Told = '/stacks/{stack}/told';
 
+    /** Where this machine's alerts go: every back-end, how far each is proven, and how its deliveries went. */
+    case Alerts = '/stacks/{stack}/alerts';
+
+    /** One back-end this machine's alerts go to, with every delivery it failed since the last confirmed one. */
+    case AlertBackEnd = '/stacks/{stack}/alerts/{service}';
+
     /** How this machine shares its line with the household, and changing it. */
     case Line = '/stacks/{stack}/line';
 

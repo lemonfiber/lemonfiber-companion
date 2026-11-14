@@ -80,6 +80,25 @@
         <x-design::note>{{ __('stacks.outbound.theirs.origin.legend') }}</x-design::note>
     @endif
 
+    <x-design::heading>{{ __('alerts.hosted.heading') }}</x-design::heading>
+
+    @if ($this->hosted()->went->cameBack())
+        @forelse ($this->hosted()->hosts as $hosted)
+            <x-design::card>
+                <x-design::strong>{{ $hosted->host }}</x-design::strong>
+                @forelse ($hosted->leaves as $leaves)
+                    <x-design::note>{{ $leaves }}</x-design::note>
+                @empty
+                    <x-design::note>{{ __('alerts.hosted.sends_nothing') }}</x-design::note>
+                @endforelse
+            </x-design::card>
+        @empty
+            <x-design::body>{{ __('alerts.hosted.none') }}</x-design::body>
+        @endforelse
+    @elseif ($this->hosted()->went->isSignedIn)
+        <x-design::body>{{ __('alerts.hosted.not_read', ['reason' => __($this->hosted()->went->met, $this->hosted()->went->filling())]) }}</x-design::body>
+    @endif
+
     <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else

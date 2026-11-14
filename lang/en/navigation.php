@@ -61,6 +61,7 @@ return [
         'plugins' => 'Plugins',
         'bandwidth' => 'Bandwidth',
         'outgoing_traffic' => 'Outgoing traffic',
+        'where_alerts_go' => 'Where alerts go',
         'alerts' => 'Alerts',
         'history' => 'History',
         'sources' => 'Sources',

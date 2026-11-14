@@ -36,6 +36,8 @@
 
                 <x-design::body>{{ __('notifications.page.kept_floor', ['floor' => __($section->floorSaid)]) }}</x-design::body>
             @endif
+
+            <x-design::link :label="__('alerts.where_alerts_go')" :answers-to="__('alerts.where_alerts_go_for', ['stack' => $section->name])" :goes="$section->alertsGo" />
         </x-design::section>
 
         {{-- The floor, under Problems, where the stack raises them. --}}

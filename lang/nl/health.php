@@ -76,6 +76,11 @@ return [
         'days' => '{1} een dag geleden|[2,*] :count dagen geleden',
     ],
     'family_and_count' => ':family (:count)',
+    'in' => [
+        'minutes' => '{0} binnen een minuut|{1} over een minuut|[2,*] over :count minuten',
+        'hours' => '{1} over een uur|[2,*] over :count uur',
+        'days' => '{1} over een dag|[2,*] over :count dagen',
+    ],
     'held_for' => [
         'minutes' => '{0} Zo sinds minder dan een minuut|{1} Zo sinds een minuut|[2,*] Zo sinds :count minuten',
         'hours' => '{1} Zo sinds een uur|[2,*] Zo sinds :count uur',

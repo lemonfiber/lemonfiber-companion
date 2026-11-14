@@ -61,6 +61,7 @@ return [
         'plugins' => 'Plug-ins',
         'bandwidth' => 'Bandbreedte',
         'outgoing_traffic' => 'Uitgaand verkeer',
+        'where_alerts_go' => 'Meldingskanalen',
         'alerts' => 'Meldingen',
         'history' => 'Geschiedenis',
         'sources' => 'Bronnen',

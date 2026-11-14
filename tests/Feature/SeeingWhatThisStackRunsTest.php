@@ -341,7 +341,7 @@ it('the way back to the machine and on to the logs are routes as well', function
     $screen = theServicesScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings()));
 
     expect(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->aboutItsService(AStacksScreen::Logs, ServiceId::called('sonarr'))))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->about(AStacksScreen::Logs, ServiceId::called('sonarr'))))->not->toBeNull();
 });
 
 it('renders its own view', function (): void {
@@ -531,7 +531,7 @@ it('draws each service the stack holds back apart from the services, with everyt
         ->and(array_slice($said, 0, is_int($theFirstService) ? $theFirstService : 0))->toContain(__('plugins.waiting.heading'), __('plugins.waiting.held_back', ['service' => 'qbittorrent']))
         ->and($drawn->offers())->toContain(__('plugins.waiting.open', ['service' => 'gluetun']), __('plugins.waiting.open', ['service' => 'qbittorrent']))
         ->and(array_map(static fn(WhatOneServiceSays $row): string => $row->id->named(), $screen->answer()->services))->toBe(['sonarr', 'jellyfin'])
-        ->and(NativeRouter::resolve($screen->goes()->aboutItsService(AStacksScreen::Waiting, ServiceId::called('gluetun')))['class'] ?? null)->toBe(WhatThisServiceWaitsFor::class);
+        ->and(NativeRouter::resolve($screen->goes()->about(AStacksScreen::Waiting, ServiceId::called('gluetun')))['class'] ?? null)->toBe(WhatThisServiceWaitsFor::class);
 });
 
 it('draws no group of services held back where the stack holds none back', function (): void {

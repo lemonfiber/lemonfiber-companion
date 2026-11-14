@@ -78,6 +78,11 @@ return [
         'days' => '{1} a day ago|[2,*] :count days ago',
     ],
     'family_and_count' => ':family (:count)',
+    'in' => [
+        'minutes' => '{0} in under a minute|{1} in a minute|[2,*] in :count minutes',
+        'hours' => '{1} in an hour|[2,*] in :count hours',
+        'days' => '{1} in a day|[2,*] in :count days',
+    ],
     'held_for' => [
         'minutes' => '{0} Like this for under a minute|{1} Like this for a minute|[2,*] Like this for :count minutes',
         'hours' => '{1} Like this for an hour|[2,*] Like this for :count hours',

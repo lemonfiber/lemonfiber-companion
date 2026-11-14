@@ -15,6 +15,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatARunCovers;
+use Modules\Kernel\Api\WhatAScreenIsAbout;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Stacks\Api\AStacksScreen;
@@ -76,24 +77,18 @@ final readonly class WhereAStackIs
         return $screen->forTheStack($this->stack);
     }
 
+    /** One of this machine's screens about one thing; a case whose path names only the machine is refused. */
+    public function about(AStacksScreen $screen, WhatAScreenIsAbout $about): string
+    {
+        return $screen->forTheStacks($this->stack, $about);
+    }
+
     /** Where one item got to on this machine. */
     public function traceOf(WhatToFollow $item): string
     {
         return AStacksScreen::Trace->forTheStacks($this->stack, $item);
     }
 
-    /**
-     * One of this machine's screens about one of its services: what it has been saying, or everything it waits for while held back.
-     *
-     * A case whose path carries no service is refused by
-     * {@see AStacksScreen::forTheStacks()}.
-     */
-    public function aboutItsService(AStacksScreen $screen, ServiceId $service): string
-    {
-        return $screen->forTheStacks($this->stack, $service);
-    }
-
-    /** One service of this machine, and the verbs about it. */
     public function doingWith(ServiceId $service): string
     {
         return AStacksScreen::Doing->forTheStacks($this->stack, $service);

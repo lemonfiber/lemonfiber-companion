@@ -3,11 +3,18 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AlertBackEndId;
+use Modules\Kernel\Api\AlertBackEnds;
+use Modules\Kernel\Api\AnAlertBackEnd;
 use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARequestOfOurs;
 use Modules\Kernel\Api\ARequestOfTheirs;
 use Modules\Kernel\Api\ARequestOnAPluginsBehalf;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowDeliveryStands;
+use Modules\Kernel\Api\HowFarItIsProven;
+use Modules\Kernel\Api\HowItsDeliveriesWent;
+use Modules\Kernel\Api\KindOfAlertBackEnd;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -20,10 +27,14 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheirRequests;
+use Modules\Kernel\Api\UnreadBackEnds;
 use Modules\Kernel\Api\WhatLeavesThisMachine;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
+use Modules\Kernel\Api\WhereAlertsGo;
 use Modules\Kernel\Api\WhereItGoes;
+use Modules\Kernel\Api\WhereItIsHosted;
 use Modules\Kernel\Api\WhetherItIsAllowed;
+use Modules\Kernel\Api\WhoChoseIt;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Presenters\HowWhatLeavesReads;
@@ -34,6 +45,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatSaysWhatLeavesIt;
+use Tests\Support\Fakes\AStackThatSaysWhereAlertsGo;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -75,6 +87,7 @@ function theLeavingScreen(
     AStackThatSaysWhatLeavesIt $outgoing,
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
+    ?AStackThatSaysWhereAlertsGo $alerts = null,
 ): WhatLeavesHere {
     $stack = theStackWhoseConnectionsAreRead();
     $keychain ??= AKeychainInMemory::working();
@@ -83,7 +96,8 @@ function theLeavingScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatLeavesHere($outgoing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $alerts ??= AStackThatSaysWhereAlertsGo::saying(WhereAlertsGo::read(HowDeliveryStands::Unconfigured, AlertBackEnds::these(), UnreadBackEnds::these()));
+    $screen = new WhatLeavesHere($outgoing, $alerts, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -278,4 +292,66 @@ it('a list of only the stack\'s own services marks none and explains nothing', f
 
     expect($screen->answer()->marksAnOrigin())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('stacks.outbound.theirs.origin.legend'));
+});
+
+function aBackEndHostedAt(string $id, WhereItIsHosted $hosted): AnAlertBackEnd
+{
+    return AnAlertBackEnd::configured(AlertBackEndId::called($id), KindOfAlertBackEnd::Ntfy, sprintf('%s/alerts', $id), WhoChoseIt::theOperator(), $hosted, HowFarItIsProven::unproven(), HowItsDeliveriesWent::nothingYet());
+}
+
+it('a hosted back-end alerts go to is listed under services you chose, with what it sends, and never among lemonfiber\'s own', function (): void {
+    $screen = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings()), alerts: AStackThatSaysWhereAlertsGo::saying(WhereAlertsGo::read(
+        HowDeliveryStands::Ready,
+        AlertBackEnds::these(
+            aBackEndHostedAt('ntfy-cloud', WhereItIsHosted::at('ntfy.sh', 'The alert\'s title and text', 'This machine\'s address')),
+            aBackEndHostedAt('ntfy-home', WhereItIsHosted::notHosted()),
+        ),
+        UnreadBackEnds::these(),
+    )));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($screen->hosted()->hosts)->toHaveCount(1)
+        ->and($screen->hosted()->hosts[0]->host)->toBe('ntfy.sh')
+        ->and($screen->hosted()->hosts[0]->leaves)->toBe(['The alert\'s title and text', 'This machine\'s address'])
+        ->and($screen->answer()->ours)->toHaveCount(2)
+        ->and($drawn)->toContain(__('alerts.hosted.heading'))
+        ->and($drawn)->toContain('ntfy.sh')
+        ->and($drawn)->toContain('This machine\'s address')
+        ->and($drawn)->not->toContain('ntfy-home')
+        ->and($drawn)->not->toContain(__('alerts.hosted.none'));
+});
+
+it('no hosted back-end says so under services you chose', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings())))->said();
+
+    expect($drawn)->toContain(__('alerts.hosted.heading'))
+        ->and($drawn)->toContain(__('alerts.hosted.none'));
+});
+
+it('a hosted back-end listing nothing it sends says that, rather than nothing', function (): void {
+    $screen = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings()), alerts: AStackThatSaysWhereAlertsGo::saying(WhereAlertsGo::read(
+        HowDeliveryStands::Ready,
+        AlertBackEnds::these(aBackEndHostedAt('ntfy-cloud', WhereItIsHosted::at('ntfy.sh'))),
+        UnreadBackEnds::these(),
+    )));
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('alerts.hosted.sends_nothing'));
+});
+
+it('where alerts go that could not be read is said under services you chose, and the rest of the screen still draws', function (): void {
+    $alerts = AStackThatSaysWhereAlertsGo::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+    $screen = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings()), alerts: $alerts);
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($screen->hosted()->went->cameBack())->toBeFalse()
+        ->and($drawn)->toContain(__('stacks.outbound.ours.heading'))
+        ->and($drawn)->not->toContain(__('alerts.hosted.none'))
+        ->and($alerts->askings)->toBe(1);
+});
+
+it('where alerts go is not asked where this phone holds no session for the machine', function (): void {
+    $alerts = AStackThatSaysWhereAlertsGo::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+
+    expect(theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings()), signedIn: false, alerts: $alerts)->hosted()->went->isSignedIn)->toBeFalse()
+        ->and($alerts->askings)->toBe(0);
 });

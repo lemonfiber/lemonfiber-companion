@@ -16,6 +16,8 @@ use Modules\Operator\Internal\ViewModels\AKindOfNotificationAsShown;
 use Modules\Operator\Internal\ViewModels\ASettingAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatAStackMayTellAsShown;
+use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Stacks\Api\AStacksScreen;
 
 use function sprintf;
 
@@ -48,6 +50,7 @@ final readonly class HowWhatAStackMayTellReads
             problemsAreOn: $chosen->isOn(KindOfNotification::Problem),
             keptOff: [],
             floorSaid: $this->severitySaid($chosen->floor()),
+            alertsGo: WhereAStackIs::rememberedAs($stack)->to(AStacksScreen::Alerts),
         );
     }
 
@@ -70,6 +73,7 @@ final readonly class HowWhatAStackMayTellReads
             problemsAreOn: $chosen->isOn(KindOfNotification::Problem),
             keptOff: $off,
             floorSaid: $this->severitySaid($chosen->floor()),
+            alertsGo: WhereAStackIs::rememberedAs($stack)->to(AStacksScreen::Alerts),
         );
     }
 
