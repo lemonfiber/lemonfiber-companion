@@ -6,6 +6,7 @@ use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatARunCovers;
+use Modules\Kernel\Api\WhatAScreenIsAbout;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -240,7 +241,7 @@ function aSampleOf(ReflectionParameter $taken): object|string
     $named = $type instanceof ReflectionNamedType ? $type->getName() : 'string';
 
     return match ($named) {
-        ServiceId::class => ServiceId::called('gluetun'),
+        ServiceId::class, WhatAScreenIsAbout::class => ServiceId::called('gluetun'),
         WhatToFollow::class => WhatToFollow::called('Dune'),
         AWordInUse::class => AWordInUse::named('Grabber'),
         WhatToDoWithTheDownloads::class => WhatToDoWithTheDownloads::Pause,
@@ -409,5 +410,5 @@ it('which screens are about one thing is read off their own patterns', function 
     ));
 
     expect(array_map(static fn(AStacksScreen $screen): string => $screen->name, $aboutOneThing))
-        ->toBe(['Doing', 'Logs', 'Waiting', 'Title', 'Found', 'Asked', 'RunBack', 'PutBack', 'LetGo', 'Downloads', 'InviteNamed', 'TakeOut', 'Device', 'PluginSettings', 'WordAbout', 'Trace', 'Accept', 'Run', 'RunChecks']);
+        ->toBe(['Doing', 'Logs', 'Waiting', 'Title', 'Found', 'Asked', 'RunBack', 'AlertBackEnd', 'PutBack', 'LetGo', 'Downloads', 'InviteNamed', 'TakeOut', 'Device', 'PluginSettings', 'WordAbout', 'Trace', 'Accept', 'Run', 'RunChecks']);
 });

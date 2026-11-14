@@ -39,6 +39,7 @@ use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Presenters\HowWhatLeavesReads;
 use Modules\Operator\Internal\Screens\WhatLeavesHere;
+use Modules\Operator\Internal\ViewModels\WhatHostedBackEndsSend;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
@@ -294,6 +295,20 @@ it('a list of only the stack\'s own services marks none and explains nothing', f
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('stacks.outbound.theirs.origin.legend'));
 });
 
+function everyFrameOf(WhatLeavesHere $screen): WhatTheDeviceWouldDraw
+{
+    do {
+        $drawn = WhatTheDeviceWouldDraw::by($screen);
+    } while ($screen->waitsForTheNextFrame());
+
+    return $drawn;
+}
+
+function whatHostedBackEndsSendOn(WhatLeavesHere $screen): WhatHostedBackEndsSend
+{
+    return $screen->hosted() ?? throw new LogicException('what hosted back-ends send was left for a later frame');
+}
+
 function aBackEndHostedAt(string $id, WhereItIsHosted $hosted): AnAlertBackEnd
 {
     return AnAlertBackEnd::configured(AlertBackEndId::called($id), KindOfAlertBackEnd::Ntfy, sprintf('%s/alerts', $id), WhoChoseIt::theOperator(), $hosted, HowFarItIsProven::unproven(), HowItsDeliveriesWent::nothingYet());
@@ -308,11 +323,11 @@ it('a hosted back-end alerts go to is listed under services you chose, with what
         ),
         UnreadBackEnds::these(),
     )));
-    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $drawn = everyFrameOf($screen)->said();
 
-    expect($screen->hosted()->hosts)->toHaveCount(1)
-        ->and($screen->hosted()->hosts[0]->host)->toBe('ntfy.sh')
-        ->and($screen->hosted()->hosts[0]->leaves)->toBe(['The alert\'s title and text', 'This machine\'s address'])
+    expect(whatHostedBackEndsSendOn($screen)->hosts)->toHaveCount(1)
+        ->and(whatHostedBackEndsSendOn($screen)->hosts[0]->host)->toBe('ntfy.sh')
+        ->and(whatHostedBackEndsSendOn($screen)->hosts[0]->leaves)->toBe(['The alert\'s title and text', 'This machine\'s address'])
         ->and($screen->answer()->ours)->toHaveCount(2)
         ->and($drawn)->toContain(__('alerts.hosted.heading'))
         ->and($drawn)->toContain('ntfy.sh')
@@ -322,7 +337,7 @@ it('a hosted back-end alerts go to is listed under services you chose, with what
 });
 
 it('no hosted back-end says so under services you chose', function (): void {
-    $drawn = WhatTheDeviceWouldDraw::by(theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings())))->said();
+    $drawn = everyFrameOf(theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings())))->said();
 
     expect($drawn)->toContain(__('alerts.hosted.heading'))
         ->and($drawn)->toContain(__('alerts.hosted.none'));
@@ -335,15 +350,15 @@ it('a hosted back-end listing nothing it sends says that, rather than nothing', 
         UnreadBackEnds::these(),
     )));
 
-    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('alerts.hosted.sends_nothing'));
+    expect(everyFrameOf($screen)->said())->toContain(__('alerts.hosted.sends_nothing'));
 });
 
 it('where alerts go that could not be read is said under services you chose, and the rest of the screen still draws', function (): void {
     $alerts = AStackThatSaysWhereAlertsGo::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
     $screen = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings()), alerts: $alerts);
-    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $drawn = everyFrameOf($screen)->said();
 
-    expect($screen->hosted()->went->cameBack())->toBeFalse()
+    expect(whatHostedBackEndsSendOn($screen)->went->cameBack())->toBeFalse()
         ->and($drawn)->toContain(__('stacks.outbound.ours.heading'))
         ->and($drawn)->not->toContain(__('alerts.hosted.none'))
         ->and($alerts->askings)->toBe(1);
@@ -352,6 +367,18 @@ it('where alerts go that could not be read is said under services you chose, and
 it('where alerts go is not asked where this phone holds no session for the machine', function (): void {
     $alerts = AStackThatSaysWhereAlertsGo::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
 
-    expect(theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings()), signedIn: false, alerts: $alerts)->hosted()->went->isSignedIn)->toBeFalse()
+    expect(whatHostedBackEndsSendOn(theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings()), signedIn: false, alerts: $alerts))->went->isSignedIn)->toBeFalse()
+        ->and($alerts->askings)->toBe(0);
+});
+
+it('reads what hosted back-ends send on a frame of its own, never on the frame that read what leaves', function (): void {
+    $alerts = AStackThatSaysWhereAlertsGo::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
+    $screen = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings()), alerts: $alerts);
+
+    $screen->render();
+    $screen->answer();
+
+    expect($screen->hostedIsBeingRead())->toBeTrue()
+        ->and($screen->waitsForTheNextFrame())->toBeTrue()
         ->and($alerts->askings)->toBe(0);
 });

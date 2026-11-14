@@ -98,13 +98,13 @@ final readonly class HowWhereAlertsGoReads
             HowTheReadingWent::itCameBack(),
             notSetUp: $read->isNotSetUp(),
             stateSaid: $read->stands->saidOnTheScreen(),
-            stateTone: self::tone($read->stands)->value,
+            stateTone: $this->tone($read->stands)->value,
             backEnds: $backEnds,
             unread: $unread,
         );
     }
 
-    private static function tone(HowDeliveryStands $stands): Tone
+    private function tone(HowDeliveryStands $stands): Tone
     {
         return match ($stands) {
             HowDeliveryStands::Ready => Tone::Fine,

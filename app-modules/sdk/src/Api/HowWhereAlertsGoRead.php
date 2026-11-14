@@ -221,7 +221,11 @@ final readonly class HowWhereAlertsGoRead
     /** @param array<mixed> $table */
     private static function optional(array $table, NamesAWireField $field): mixed
     {
-        return array_key_exists($field->value, $table) ? $table[$field->value] : null;
+        if (! array_key_exists($field->value, $table)) {
+            return null;
+        }
+
+        return $table[$field->value];
     }
 
     /** @return array<mixed> */

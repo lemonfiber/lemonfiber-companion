@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
+use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
@@ -23,11 +24,13 @@ use Modules\Operator\Internal\ViewModels\WhatHostedBackEndsSend;
 use Modules\Operator\Internal\ViewModels\WhatLeavesTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
-use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
+use Modules\Wayfinding\Api\Screens\ReadsAStackOnceAFrame;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
+
+use function view;
 
 /**
  * Everything that leaves this machine.
@@ -59,10 +62,8 @@ final class WhatLeavesHere extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
-    use DrawsItsTemplate;
+    use ReadsAStackOnceAFrame;
     use AsksAgain;
-
-    public const string TEMPLATE = 'operator::what-leaves-here';
 
     /**
      * What came back, once the frame has asked.
@@ -82,16 +83,34 @@ final class WhatLeavesHere extends NativeComponent
         protected readonly WhatItListensWith $listening,
     ) {}
 
+    public function render(): View
+    {
+        $this->aFrameBegins();
+
+        return view('operator::what-leaves-here');
+    }
+
     /** What came back, asked once per frame. */
     public function answer(): WhatLeavesTurnedOutToBe
     {
-        return $this->answered ??= $this->ask();
+        if (! $this->answered instanceof WhatLeavesTurnedOutToBe) {
+            $this->readsItsStack();
+            $this->answered = $this->ask();
+        }
+
+        return $this->answered;
     }
 
-    /** What leaves to use each hosted back-end the machine's alerts go to, asked once per frame. */
-    public function hosted(): WhatHostedBackEndsSend
+    /** Whether what hosted back-ends send waits for the next frame, because this one has read the machine already. */
+    public function hostedIsBeingRead(): bool
     {
-        if ($this->hostedAnswered instanceof WhatHostedBackEndsSend) {
+        return ! $this->hosted() instanceof WhatHostedBackEndsSend;
+    }
+
+    /** What leaves to use each hosted back-end the machine's alerts go to, or nothing while it waits for a frame of its own. */
+    public function hosted(): ?WhatHostedBackEndsSend
+    {
+        if ($this->hostedAnswered instanceof WhatHostedBackEndsSend || ! $this->mayReadItsStack()) {
             return $this->hostedAnswered;
         }
 

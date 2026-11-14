@@ -82,7 +82,9 @@
 
     <x-design::heading>{{ __('alerts.hosted.heading') }}</x-design::heading>
 
-    @if ($this->hosted()->went->cameBack())
+    @if ($this->hostedIsBeingRead())
+        <x-design::the-next-frame />
+    @elseif ($this->hosted()->went->cameBack())
         @forelse ($this->hosted()->hosts as $hosted)
             <x-design::card>
                 <x-design::strong>{{ $hosted->host }}</x-design::strong>

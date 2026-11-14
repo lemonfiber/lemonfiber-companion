@@ -70,7 +70,7 @@ function theOneBackEndIn(WhereAlertsGo $read): AnAlertBackEnd
     throw new WhereAlertsGoIsUnreadable('no back-end was read');
 }
 
-function howItEnded(ADelivery $delivery): string
+function howTheDeliveryEnded(ADelivery $delivery): string
 {
     return $delivery->ended->either(
         confirmed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('confirmed'),
@@ -79,7 +79,7 @@ function howItEnded(ADelivery $delivery): string
     )->said;
 }
 
-function whatIsSaidOf(AnAlertBackEnd $backEnd): string
+function whatIsReadOfTheBackEnd(AnAlertBackEnd $backEnd): string
 {
     $said = [
         $backEnd->id()->named(),
@@ -99,7 +99,7 @@ function whatIsSaidOf(AnAlertBackEnd $backEnd): string
             held: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('held: %s', $why)),
         )->said,
         $backEnd->deliveries()->last(
-            delivered: static fn(ADelivery $last): TheWordCarriedOut => new TheWordCarriedOut(sprintf('last %d %s %s', $last->at->epochSeconds(), $last->kind->value, howItEnded($last))),
+            delivered: static fn(ADelivery $last): TheWordCarriedOut => new TheWordCarriedOut(sprintf('last %d %s %s', $last->at->epochSeconds(), $last->kind->value, howTheDeliveryEnded($last))),
             none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no delivery'),
         )->said,
         sprintf('%d failed', $backEnd->deliveries()->failures()->count()),
@@ -127,7 +127,7 @@ it('reads a back-end a member chose, hosted, failing and waiting to be tried aga
     ])], state: 'degraded')));
 
     expect($read->stands)->toBe(HowDeliveryStands::Degraded)
-        ->and(whatIsSaidOf(theOneBackEndIn($read)))->toBe(
+        ->and(whatIsReadOfTheBackEnd(theOneBackEndIn($read)))->toBe(
             'ntfy-home | gotify | ntfy.home.example/alerts | member Anna | hosted at push.example.com leaving the alert\'s title + this machine\'s address'
             . ' | proven 1790000000 | last 1790000600 problem failed: 502 Bad Gateway | 2 failed | attempt 3 of 5 at 1790000900',
         )
@@ -135,12 +135,12 @@ it('reads a back-end a member chose, hosted, failing and waiting to be tried aga
 });
 
 it('reads a back-end the operator chose that has never delivered', function (): void {
-    expect(whatIsSaidOf(theOneBackEndIn(HowWhereAlertsGoRead::in(notifySaying(aNotifyReport([aBackEndRow()]))))))
+    expect(whatIsReadOfTheBackEnd(theOneBackEndIn(HowWhereAlertsGoRead::in(notifySaying(aNotifyReport([aBackEndRow()]))))))
         ->toBe('ntfy-home | ntfy | ntfy.home.example/alerts | operator | not hosted | unproven | no delivery | 0 failed | no retry');
 });
 
 it('reads a held back-end, and absent arms written as null as absent', function (): void {
-    expect(whatIsSaidOf(theOneBackEndIn(HowWhereAlertsGoRead::in(notifySaying(aNotifyReport([aBackEndRow([
+    expect(whatIsReadOfTheBackEnd(theOneBackEndIn(HowWhereAlertsGoRead::in(notifySaying(aNotifyReport([aBackEndRow([
         'proof' => ['held' => 'the topic was refused'],
         'hosted' => null,
         'last' => null,
@@ -155,7 +155,7 @@ it('tells a confirmed delivery from one only sent', function (string $outcome, s
     ])]))));
 
     expect($backEnd->deliveries()->last(
-        delivered: static fn(ADelivery $last): TheWordCarriedOut => new TheWordCarriedOut(howItEnded($last)),
+        delivered: static fn(ADelivery $last): TheWordCarriedOut => new TheWordCarriedOut(howTheDeliveryEnded($last)),
         none: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'),
     )->said)->toBe($said);
 })->with([

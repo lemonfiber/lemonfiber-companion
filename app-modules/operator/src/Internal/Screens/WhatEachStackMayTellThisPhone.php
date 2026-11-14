@@ -36,6 +36,8 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowWhatAStackMayTellReads;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatAStackMayTellAsShown;
+use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\Screens\ReadsAStackOnceAFrame;
 use Modules\Wayfinding\Api\WhoTheSettingsSpeakTo;
 use Native\Mobile\Attributes\Lazy;
@@ -151,6 +153,12 @@ final class WhatEachStackMayTellThisPhone extends NativeComponent implements Tak
         if ($floor instanceof Severity) {
             $this->chose($stack, fn(StackId $id): WhatMayReachThePhone => $this->choosing->tellProblemsFrom($id, $floor));
         }
+    }
+
+    /** Where one stack's alerts go, opened from its section. */
+    public function whereAlertsGo(string $stack): string
+    {
+        return WhereAStackIs::rememberedAs($stack)->to(AStacksScreen::Alerts);
     }
 
     public function render(): View

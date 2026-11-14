@@ -82,6 +82,7 @@ final readonly class WhereAScreenCanSendYou
      */
     private const array ROADS_A_PRESENTER_BUILDS = [
         'household::what-you-can-watch' => ['$this->goes()->title($holding->id())', '$this->goes()->asked($wanted->id())'],
+        'operator::where-alerts-go-here' => ['$this->goes()->about(AStacksScreen::AlertBackEnd, $backEnd->id())'],
     ];
 
     /**

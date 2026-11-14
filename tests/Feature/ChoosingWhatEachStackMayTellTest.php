@@ -30,6 +30,7 @@ use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
 use Modules\Operator\Internal\ViewModels\AKindOfNotificationAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatAStackMayTellAsShown;
+use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\Catalogue;
@@ -383,4 +384,16 @@ it('redraws a section it could not read with what is chosen since, and says the 
     expect($again->keptOff)->toBe(['notifications.kind.update'])
         ->and($again->floorSaid)->toBe('notifications.floor.warning')
         ->and($again->went)->toBe($went);
+});
+
+it('opens where each stack\'s alerts go from its own section, read or not, named for its stack', function (): void {
+    $loft = aStackThatMayTell('a', 'The loft');
+    $shed = aStackThatMayTell('b', 'The shed');
+    $page = theNotificationPage([$loft, $shed], AStackThatSaysWhatItTells::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
+    $drawn = WhatTheDeviceWouldDraw::by($page);
+
+    expect($page->whereAlertsGo($page->sections()[0]->stack))->toBe(AStacksScreen::Alerts->forTheStack($loft->id()))
+        ->and($page->whereAlertsGo($page->sections()[1]->stack))->toBe(AStacksScreen::Alerts->forTheStack($shed->id()))
+        ->and($drawn->offers())->toContain(__('alerts.where_alerts_go_for', ['stack' => 'The loft']))
+        ->and($drawn->offers())->toContain(__('alerts.where_alerts_go_for', ['stack' => 'The shed']));
 });
