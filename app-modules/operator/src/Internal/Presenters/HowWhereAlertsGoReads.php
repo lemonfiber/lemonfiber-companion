@@ -10,7 +10,6 @@ use Modules\Kernel\Api\AlertBackEndId;
 use Modules\Kernel\Api\AnAlertBackEnd;
 use Modules\Kernel\Api\ARetry;
 use Modules\Kernel\Api\HowDeliveryStands;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhereAlertsGo;
@@ -137,7 +136,7 @@ final readonly class HowWhereAlertsGoReads
             ),
             proof: $backEnd->proof()->either(
                 unproven: static fn(): AnAlertLineAsShown => new AnAlertLineAsShown(self::NEVER_DELIVERED, '', AgoAsShown::saysNothing()),
-                proven: fn(Instant $at): AnAlertLineAsShown => new AnAlertLineAsShown(self::LAST_PROVEN, '', AgoAsShown::from(HowLongAgo::since($at, $this->now), $at, $this->now)),
+                proven: fn(Instant $at): AnAlertLineAsShown => new AnAlertLineAsShown(self::LAST_PROVEN, '', AgoAsShown::since($at, $this->now)),
                 held: static fn(string $why): AnAlertLineAsShown => new AnAlertLineAsShown(self::HELD, $why, AgoAsShown::saysNothing()),
             ),
             last: $backEnd->deliveries()->last(
@@ -154,7 +153,7 @@ final readonly class HowWhereAlertsGoReads
 
     private function delivery(ADelivery $delivery): ADeliveryAsShown
     {
-        $ago = AgoAsShown::from(HowLongAgo::since($delivery->at, $this->now), $delivery->at, $this->now);
+        $ago = AgoAsShown::since($delivery->at, $this->now);
 
         return new ADeliveryAsShown(
             ended: $delivery->ended->either(

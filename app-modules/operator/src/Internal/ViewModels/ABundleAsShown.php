@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\ViewModels;
 
+use Modules\Operator\Internal\Presenters\AgoAsShown;
+
 /**
  * A support bundle, flattened for a template.
  *
@@ -22,7 +24,7 @@ final readonly class ABundleAsShown
      * @param list<string>       $revealed     the settings it shows as they are, by name
      * @param list<APieceAsShown> $pieces      every file it holds, in the stack's order
      * @param list<string>       $missing      what could not be collected, in the stack's words
-     * @param string             $takenAt      when it was taken, as the stack wrote it
+     * @param AgoAsShown         $takenAt      how long ago it was taken
      * @param string             $lemonfiber   the version of lemonfiber that took it
      * @param string             $stack        the version of the stack it was taken from
      */
@@ -35,7 +37,7 @@ final readonly class ABundleAsShown
         public array $revealed,
         public array $pieces,
         public array $missing,
-        public string $takenAt,
+        public AgoAsShown $takenAt,
         public string $lemonfiber,
         public string $stack,
     ) {}

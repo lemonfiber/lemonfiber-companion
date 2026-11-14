@@ -6,7 +6,6 @@ namespace Modules\Operator\Internal;
 
 use Closure;
 use Modules\Kernel\Api\ARefusalInItsWords;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
@@ -75,7 +74,7 @@ trait FollowsARunOfChecks
         $ran = Instant::atEpochSeconds($this->ranAt);
         $now = $this->listening->clock->now();
 
-        return AgoAsShown::from(HowLongAgo::since($ran, $now), $ran, $now);
+        return AgoAsShown::since($ran, $now);
     }
 
     /** Take in the report the run came back with. */

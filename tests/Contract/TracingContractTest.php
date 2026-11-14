@@ -27,6 +27,7 @@ use Tests\Support\Fakes\AStackThatTraces;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\TracesToFollow;
 use Tests\Support\WhatTheContractAccepts;
+use Tests\Support\WhatTheTimestampNamed;
 
 // The Tracing contract, run against the adapter and against the fake.
 //
@@ -85,11 +86,11 @@ function whatWasFound(WhatTheTraceFound $found): string
     $said = [$found->sure()->value, $found->got()->furthest()->value, $found->got()->stall()];
 
     foreach ($found->got()->stages() as $stage) {
-        $said[] = sprintf('%s@%s:%s', $stage->stage()->value, $stage->service()->named(), $stage->at());
+        $said[] = sprintf('%s@%s:%s', $stage->stage()->value, $stage->service()->named(), WhatTheTimestampNamed::in($stage->at())->seconds);
     }
 
     foreach ($found->history() as $moment) {
-        $said[] = sprintf('%s:%s', $moment->happened()->value, $moment->at());
+        $said[] = sprintf('%s:%s', $moment->happened()->value, WhatTheTimestampNamed::in($moment->at())->seconds);
     }
 
     foreach ($found->disagreements() as $disagreement) {
@@ -142,8 +143,8 @@ it('comes away with how sure, how far, what was tried, where services disagree a
 
         expect($now)->toBe($said, $which)
             ->and($now)->toContain('uncertain|downloading|No peers have been seen for two days')
-            ->and($now)->toContain('monitored@sonarr:|grabbed@sonarr:2026-09-20T10:00:00Z')
-            ->and($now)->toContain('download-failed:2026-09-19T21:00:00Z')
+            ->and($now)->toContain('monitored@sonarr:|grabbed@sonarr:1789898400')
+            ->and($now)->toContain('download-failed:1789851600')
             ->and($now)->toContain('8/10+1;s1 8/9+1 [S1E9 The We We Are downloading];s2 0/1+0 [S2E1 Hello, Ms. Cobel searching]');
     }
 });

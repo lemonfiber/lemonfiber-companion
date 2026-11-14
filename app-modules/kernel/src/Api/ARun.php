@@ -23,16 +23,13 @@ use function trim;
  */
 final readonly class ARun implements WhatAScreenIsAbout
 {
-    /** The stamp the stack writes where its clock would not answer. */
-    private const int UNDATED = 0;
-
     /** @param int<0, max> $seconds */
     private function __construct(private int $seconds) {}
 
     /** A run by the stamp a screen was handed; anything but whole seconds since the epoch is refused. */
     public static function stamped(string $stamp): self
     {
-        $seconds = filter_var(trim($stamp), FILTER_VALIDATE_INT, ['options' => ['min_range' => self::UNDATED]]);
+        $seconds = filter_var(trim($stamp), FILTER_VALIDATE_INT, ['options' => ['min_range' => Instant::UNDATED]]);
 
         if (trim($stamp) === '') {
             throw UndoSaysNothing::about('at');
@@ -56,7 +53,7 @@ final readonly class ARun implements WhatAScreenIsAbout
     {
         return $when->either(
             at: static fn(Instant $at): self => new self($at->epochSeconds()),
-            unreadable: static fn(): self => new self(self::UNDATED),
+            unreadable: static fn(): self => new self(Instant::UNDATED),
         );
     }
 

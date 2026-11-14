@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
@@ -47,7 +46,7 @@ final readonly class HowTheHouseholdsAskingReads
      */
     public function kept(Requested $wanted, Instant $readAt, Instant $now, HowTheReadingWent $askedNow): WhatTheHouseholdTurnedOutToWant
     {
-        return $this->read($wanted, $askedNow, AgoAsShown::from(HowLongAgo::since($readAt, $now), $readAt, $now), waits: true);
+        return $this->read($wanted, $askedNow, AgoAsShown::since($readAt, $now), waits: true);
     }
 
     /**

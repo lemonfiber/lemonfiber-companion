@@ -25,6 +25,7 @@ use Modules\Kernel\Api\WhatTheHandoffNeedsNext;
 use Modules\Kernel\Api\WhatToHandThem;
 use Modules\Kernel\Api\WhereTheHandoffStands;
 use Modules\Sdk\Api\Fields\HandoffField;
+use Modules\Sdk\Internal\Optional;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -61,7 +62,7 @@ final readonly class Handoffs
                 TheStepsOnTheirDevice::of(...self::steps($data)),
                 TheClientsToHandOver::of(...self::clients($data)),
             ),
-            AMomentAsWritten::of(self::optional($data, HandoffField::Issued)),
+            AMomentAsWritten::byTheStack(Optional::number($data, HandoffField::Issued, HandoffIsUnreadable::missing(HandoffField::Issued))),
             TheSignedInDevices::of(...self::sessions($data)),
         );
     }
@@ -153,6 +154,10 @@ final readonly class Handoffs
         $found = [];
 
         foreach (self::rows($data, WireField::Sessions) as $position => $row) {
+            if (! is_array($row)) {
+                throw HandoffIsUnreadable::row(WireField::Sessions, $position);
+            }
+
             $found[] = ASignedInDevice::listed(
                 self::cell($row, WireField::Device, WireField::Sessions, $position),
                 self::cell($row, WireField::Client, WireField::Sessions, $position),
@@ -188,14 +193,14 @@ final readonly class Handoffs
         return $row[$field->value];
     }
 
-    /** When the media server last heard from one device: unwritten where it sent `null` or nothing. */
-    private static function lastSeen(mixed $row, int $position): AMomentAsWritten
+    /**
+     * When the media server last heard from one device: unwritten where it sent `null` or nothing.
+     *
+     * @param array<array-key, mixed> $row
+     */
+    private static function lastSeen(array $row, int $position): AMomentAsWritten
     {
-        if (is_array($row) && (! array_key_exists(HandoffField::LastSeen->value, $row) || $row[HandoffField::LastSeen->value] === null)) {
-            return AMomentAsWritten::unwritten();
-        }
-
-        return AMomentAsWritten::of(self::cell($row, HandoffField::LastSeen, WireField::Sessions, $position));
+        return AMomentAsWritten::byTheStack(Optional::number($row, HandoffField::LastSeen, HandoffIsUnreadable::row(WireField::Sessions, $position)));
     }
 
     /** A yes or a no one app owes. */

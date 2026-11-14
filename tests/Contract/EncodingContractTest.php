@@ -47,7 +47,7 @@ it('draws a pairing line as a square of dark and light', function (): void {
 });
 
 it('draws the link that collects a key as a square of dark and light', function (): void {
-    $claim = AKeyClaim::of(AKeysName::of('Home Assistant'), 'lemonfiber://key?claim=a-claim-collected-once', AMomentAsWritten::byTheStack('2026-10-13T21:10:00'));
+    $claim = AKeyClaim::of(AKeysName::of('Home Assistant'), 'lemonfiber://key?claim=a-claim-collected-once', AMomentAsWritten::byTheStack(1_791_925_800));
 
     foreach (['the fake' => ACodeOfWhatItWasGiven::working(), 'the adapter' => new QrCodes()] as $which => $encoding) {
         expect(isASquareWithSomethingInIt($encoding->codeFor($claim)))->toBeTrue($which);

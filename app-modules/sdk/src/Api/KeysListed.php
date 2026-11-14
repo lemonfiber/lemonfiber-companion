@@ -22,6 +22,7 @@ use Modules\Kernel\Api\WhatAKeyIsFor;
 use Modules\Kernel\Api\WhereAKeyStands;
 use Modules\Sdk\Api\Fields\KeysField;
 use Modules\Sdk\Internal\InTheOrderSent;
+use Modules\Sdk\Internal\Optional;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
@@ -87,8 +88,8 @@ final readonly class KeysListed
             self::scope(self::text($row, WireField::Scope, $position), $position),
             self::purpose($row, $position),
             self::state($row, $position),
-            AMomentAsWritten::byTheStack(self::text($row, KeysField::Minted, $position)),
-            self::used($row, $position),
+            AMomentAsWritten::byTheStack(Required::number($row, KeysField::Minted, KeysAreUnreadable::said(KeysField::Minted, $position))),
+            AMomentAsWritten::byTheStack(Optional::number($row, WireField::Used, KeysAreUnreadable::said(WireField::Used, $position))),
             self::flag($row, KeysField::MemberMinted, $position),
         );
     }
@@ -139,20 +140,6 @@ final readonly class KeysListed
         }
 
         return $row[$field->value];
-    }
-
-    /**
-     * When the key was last used, unwritten where it never was.
-     *
-     * @param array<mixed> $row
-     */
-    private static function used(array $row, int $position): AMomentAsWritten
-    {
-        if (! array_key_exists(WireField::Used->value, $row) || $row[WireField::Used->value] === null) {
-            return AMomentAsWritten::unwritten();
-        }
-
-        return AMomentAsWritten::byTheStack(self::text($row, WireField::Used, $position));
     }
 
     /** @param array<mixed> $row */

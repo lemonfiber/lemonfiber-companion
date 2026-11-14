@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
-use Modules\Kernel\Api\AMomentInItsHistory;
 use Modules\Kernel\Api\AnEpisodeNotHereYet;
 use Modules\Kernel\Api\ASearchThatSettles;
 use Modules\Kernel\Api\ASeriesCounted;
 use Modules\Kernel\Api\AStageItReached;
 use Modules\Kernel\Api\HowMuchOfASeasonIsHere;
 use Modules\Kernel\Api\HowSureTheTraceIs;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\WhatTheTraceFound;
@@ -54,26 +54,26 @@ final readonly class HowATraceReads
     }
 
     /** The stack answered, and this is where the item got to. */
-    public function this(WhereItGotTo $trace): TheTraceTurnedOutToBe
+    public function this(WhereItGotTo $trace, Instant $now): TheTraceTurnedOutToBe
     {
         return $trace->either(
             nothingAskedFor: static fn(): TheTraceTurnedOutToBe => self::nothingFrom(HowTheReadingWent::itCameBack(), $trace->item()),
-            followed: static fn(WhatTheTraceFound $found): TheTraceTurnedOutToBe => self::followed($trace->item(), $found),
+            followed: static fn(WhatTheTraceFound $found): TheTraceTurnedOutToBe => self::followed($trace->item(), $found, $now),
         );
     }
 
-    private static function followed(string $item, WhatTheTraceFound $found): TheTraceTurnedOutToBe
+    private static function followed(string $item, WhatTheTraceFound $found, Instant $now): TheTraceTurnedOutToBe
     {
         $stages = [];
 
         foreach ($found->got()->stages() as $stage) {
-            $stages[] = self::stage($stage);
+            $stages[] = self::stage($stage, $now);
         }
 
         $history = [];
 
         foreach ($found->history() as $moment) {
-            $history[] = self::moment($moment);
+            $history[] = new AMomentAsShown($moment->happened()->saidOnTheScreen(), AgoAsShown::sinceWritten($moment->at(), $now));
         }
 
         $disagreements = [];
@@ -106,20 +106,16 @@ final readonly class HowATraceReads
         );
     }
 
-    private static function stage(AStageItReached $stage): AStageAsShown
+    private static function stage(AStageItReached $stage, Instant $now): AStageAsShown
     {
-        return self::reached($stage->stage(), $stage->service()->named(), $stage->at());
+        return self::reached($stage->stage(), $stage->service()->named(), AgoAsShown::sinceWritten($stage->at(), $now));
     }
 
-    private static function reached(Stage $stage, string $service, string $at): AStageAsShown
+    private static function reached(Stage $stage, string $service, AgoAsShown $at): AStageAsShown
     {
         return new AStageAsShown($stage->value, $stage->saidOnTheScreen(), $service, $at);
     }
 
-    private static function moment(AMomentInItsHistory $moment): AMomentAsShown
-    {
-        return new AMomentAsShown($moment->happened()->saidOnTheScreen(), $moment->at());
-    }
 
     private static function series(ASeriesCounted $series): ASeriesAsShown
     {

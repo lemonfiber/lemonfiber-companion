@@ -8,7 +8,6 @@ use function count;
 
 use Modules\Design\Api\ATap;
 use Modules\Kernel\Api\Configured;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Reading;
 use Modules\Kernel\Api\Showing;
@@ -150,7 +149,7 @@ final readonly class HowWhatIsNewReads
             waiting: static fn(): AgoAsShown => AgoAsShown::saysNothing(),
             holding: static fn(Reading $reading): AgoAsShown => $reading->either(
                 live: static fn(): AgoAsShown => AgoAsShown::saysNothing(),
-                retained: static fn(object $value, Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
+                retained: static fn(object $value, Instant $at): AgoAsShown => AgoAsShown::since($at, $now),
             ),
         );
 

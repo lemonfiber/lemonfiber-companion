@@ -16,18 +16,14 @@ final readonly class WhatWroteACopy
 {
     private function __construct(
         private string $version,
-        private string $at,
+        private AMomentAsWritten $at,
     ) {}
 
     /** The version that wrote it and when, as the stack stamped them. */
-    public static function of(string $version, string $at): self
+    public static function of(string $version, AMomentAsWritten $at): self
     {
         if (trim($version) === '') {
             throw KeepingSaysNothing::about('product_version');
-        }
-
-        if (trim($at) === '') {
-            throw KeepingSaysNothing::about('created_at');
         }
 
         return new self($version, $at);
@@ -39,8 +35,8 @@ final readonly class WhatWroteACopy
         return $this->version;
     }
 
-    /** When it was taken, as the stack stamped it. */
-    public function at(): string
+    /** When it was taken, as the stack counted it. */
+    public function at(): AMomentAsWritten
     {
         return $this->at;
     }

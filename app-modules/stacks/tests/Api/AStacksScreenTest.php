@@ -60,7 +60,7 @@ it('puts the machine and what the screen is about each in their own segment, enc
     'an item to follow' => [AStacksScreen::Trace, WhatToFollow::called('AC/DC Live'), 'trace/AC%2FDC%20Live'],
     'a copy' => [AStacksScreen::PutBack, ACopy::named('lemonfiber 2026/09/24'), 'copies/lemonfiber%202026%2F09%2F24'],
     'a plugin' => [AStacksScreen::PluginSettings, APluginId::called('a plugin/2'), 'plugins/a%20plugin%2F2'],
-    'a run on the record' => [AStacksScreen::RunBack, ARun::stamped('17 90'), 'record/17%2090'],
+    'a run on the record' => [AStacksScreen::RunBack, ARun::stamped('1790150000'), 'record/1790150000'],
     'a download' => [AStacksScreen::LetGo, ADownloadHeld::named('Show Season1/Extras'), 'room/Show%20Season1%2FExtras'],
     'pausing the downloads' => [AStacksScreen::Downloads, WhatToDoWithTheDownloads::Pause, 'downloads/pause'],
     'a member' => [AStacksScreen::TakeOut, SomebodyInTheHousehold::called('Anna Maria/2'), 'household/Anna%20Maria%2F2'],

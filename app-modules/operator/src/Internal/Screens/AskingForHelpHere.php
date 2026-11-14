@@ -12,6 +12,7 @@ use Modules\Kernel\Api\ABundleFile;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AskingForHelp;
 use Modules\Kernel\Api\AWrittenBundle;
+use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
@@ -111,6 +112,7 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
         private readonly Sharing $sharing,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        private readonly Clock $clock,
     ) {}
 
     /** The same question this screen's cadence asks, answered from what it last heard. */
@@ -289,7 +291,7 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowTheBundleWent => $this->helping->whatBecameOf($stack, $session, Job::named($handle))->either(
                 stillRunning: static fn(): HowTheBundleWent => new HowABundleReads()->running(),
-                done: static fn(ABundle $bundle): HowTheBundleWent => new HowABundleReads()->done($bundle),
+                done: fn(ABundle $bundle): HowTheBundleWent => new HowABundleReads()->done($bundle, $this->clock->now()),
                 refused: static fn(ARefusalInItsWords $why): HowTheBundleWent => new HowABundleReads()->refused($why),
                 ended: static fn(): HowTheBundleWent => new HowABundleReads()->ended(),
                 met: $this->lettingGoIfRefused($stack, new HowABundleReads()->met(...)),

@@ -77,8 +77,8 @@ final readonly class WhatPuttingItBackWouldDo
         return $this->written->version();
     }
 
-    /** When it was taken, as the stack stamped it. */
-    public function takenAt(): string
+    /** When it was taken, as the stack counted it. */
+    public function takenAt(): AMomentAsWritten
     {
         return $this->written->at();
     }

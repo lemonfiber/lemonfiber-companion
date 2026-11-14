@@ -699,7 +699,7 @@ final readonly class EveryAdapterCallThatReads
             ACopy::named('lemonfiber-20260924-0300-full'),
             'an-agreement',
             ScopeOfACopy::theWholeStack(),
-            WhatWroteACopy::of('0.9.0', '2026-09-24T03:00:00Z'),
+            WhatWroteACopy::of('0.9.0', AMomentAsWritten::of('2026-09-24T03:00:00Z')),
             WhatACopyHolds::these(),
             older: false,
             data: WhereTheDataGoes::whereItWas(),

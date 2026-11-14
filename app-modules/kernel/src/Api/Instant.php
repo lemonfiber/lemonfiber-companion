@@ -21,6 +21,9 @@ namespace Modules\Kernel\Api;
  */
 final readonly class Instant
 {
+    /** What the stack counts an instant as where its clock would not answer. */
+    public const int UNDATED = 0;
+
     /** @param int<0, max> $seconds */
     private function __construct(private int $seconds) {}
 

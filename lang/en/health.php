@@ -182,7 +182,7 @@ return [
         'season_all_here' => 'Every wanted episode is here',
         'no_seasons' => 'No season of it is counted',
         'the_way' => 'The way it came',
-        'recorded_at' => ':service, :at',
+        'recorded_at' => ':service, :when',
         'recorded_untimed' => ':service, with no time given',
         'no_stages' => 'It has not reached a stage yet',
         'tried' => 'What has been tried',

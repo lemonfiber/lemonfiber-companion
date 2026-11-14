@@ -14,6 +14,7 @@ use function is_string;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\BundleEnvelope;
 use Modules\Kernel\Api\ABundle;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\APieceOfABundle;
 use Modules\Kernel\Api\ASettingToReveal;
 use Modules\Kernel\Api\AWrittenBundle;
@@ -263,7 +264,7 @@ final readonly class TheBundle
     private static function taken(array $taken): WhenABundleWasTaken
     {
         return WhenABundleWasTaken::at(
-            self::text($taken, WireField::At),
+            AMomentAsWritten::byTheStack(Required::number($taken, WireField::At, BundleIsUnreadable::missing(WireField::At))),
             self::text($taken, BundleField::Lemonfiber),
             self::text($taken, WireField::Stack),
         );

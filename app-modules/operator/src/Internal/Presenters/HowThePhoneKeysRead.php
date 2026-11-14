@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
-use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\APhoneKey;
 use Modules\Kernel\Api\APhoneKeysName;
 use Modules\Kernel\Api\ARefusalInItsWords;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ThePhoneKeys;
@@ -63,20 +61,12 @@ final readonly class HowThePhoneKeysRead
         return new APhoneKeyAsShown(
             name: $key->name()->shown(),
             livesSaid: $key->lives()->saidOnTheScreen(),
-            registered: $this->ago($key->registered(), $now),
-            used: $this->ago($key->used(), $now),
-            revoked: $this->ago($key->whenRevoked(), $now),
+            registered: AgoAsShown::sinceWritten($key->registered(), $now),
+            used: AgoAsShown::sinceWritten($key->used(), $now),
+            revoked: AgoAsShown::sinceWritten($key->whenRevoked(), $now),
             mayBeRevoked: ! $key->wasRevoked(),
             isThisPhone: $thisPhone instanceof APhoneKeysName && $key->name()->shown() === $thisPhone->shown(),
         );
     }
 
-    /** How long before `$now` a moment was, or nothing where it names none. */
-    private function ago(AMomentAsWritten $moment, Instant $now): AgoAsShown
-    {
-        return $moment->read(
-            read: static fn(Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
-            unreadable: AgoAsShown::saysNothing(...),
-        );
-    }
 }

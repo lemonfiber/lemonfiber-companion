@@ -178,7 +178,7 @@ return [
         'season_all_here' => 'Elke gevraagde aflevering is er',
         'no_seasons' => 'Er is geen seizoen van geteld',
         'the_way' => 'De weg die het aflegde',
-        'recorded_at' => ':service, :at',
+        'recorded_at' => ':service, :when',
         'recorded_untimed' => ':service, zonder tijd',
         'no_stages' => 'Het heeft nog geen fase bereikt',
         'tried' => 'Wat er is geprobeerd',

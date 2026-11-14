@@ -11,6 +11,7 @@ use function it;
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\ARelocation;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Job;
@@ -61,7 +62,7 @@ function aListingWhoseDataGoes(WhereTheDataGoes $data): WhatPuttingItBackWouldDo
         ACopy::named('lemonfiber-20260924-0300-full'),
         'restore-the-whole-stack-0.9.0',
         ScopeOfACopy::theWholeStack(),
-        WhatWroteACopy::of('0.9.0', '2026-09-24T03:00:00Z'),
+        WhatWroteACopy::of('0.9.0', AMomentAsWritten::byTheStack(1_790_218_800)),
         WhatACopyHolds::these(),
         older: false,
         data: $data,

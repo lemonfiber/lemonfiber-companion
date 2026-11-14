@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyPutBack;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARelocation;
 use Modules\Kernel\Api\Fingerprint;
@@ -34,6 +35,7 @@ use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatAScopeSays;
 use Tests\Support\WhatTheContractAccepts;
+use Tests\Support\WhatTheTimestampNamed;
 
 // The PuttingBack contract, run against the adapter and against the fake.
 //
@@ -77,7 +79,7 @@ function whatAStackSaysOfPuttingItBack(array $would = [], ?array $done = null): 
             'agreement' => 'restore-one-service-sonarr-0.9.0',
             'downgrade' => false,
             'manifest' => [
-                'created_at' => '2026-09-24T03:00:00Z',
+                'created_at' => 1_790_218_800,
                 'data_root' => '/srv/old',
                 'members' => [['archive_path' => 'services/sonarr', 'label' => 'sonarr configuration']],
                 'product_version' => '0.9.0',
@@ -113,7 +115,7 @@ function theSameListing(): WhatPuttingItBackWouldDo
         theCopyPutBack(),
         'restore-one-service-sonarr-0.9.0',
         ScopeOfACopy::oneService(ServiceId::called('sonarr')),
-        WhatWroteACopy::of('0.9.0', '2026-09-24T03:00:00Z'),
+        WhatWroteACopy::of('0.9.0', AMomentAsWritten::byTheStack(1_790_218_800)),
         WhatACopyHolds::these('sonarr configuration'),
         older: false,
         data: WhereTheDataGoes::elsewhere(ARelocation::from('/srv/old', '/srv/new')),
@@ -167,7 +169,7 @@ function whatPuttingItBackWouldDoSaid(PuttingBack $puttingBack): string
             $listing->agreement(),
             WhatAScopeSays::of($listing->scope()),
             $listing->takenBy(),
-            $listing->takenAt(),
+            WhatTheTimestampNamed::in($listing->takenAt())->seconds,
             implode(',', iterator_to_array($listing->contents(), preserve_keys: false)),
             $listing->isOlder() ? 'older' : 'this version',
             whereTheDataGoesSaid($listing->whereTheDataGoes()),
@@ -287,7 +289,7 @@ it('reads every part of the listing, and where the data would go', function (): 
 
     foreach (everyWayOfPuttingACopyBack($listed, HowPuttingItBackIsGoing::stillRunning()) as $which => $build) {
         expect(whatPuttingItBackWouldDoSaid($build()))
-            ->toBe('lemonfiber-20260924-0300-sonarr|restore-one-service-sonarr-0.9.0|service:sonarr|by 0.9.0 at 2026-09-24T03:00:00Z|holds sonarr configuration|this version|/srv/old to /srv/new', $which);
+            ->toBe('lemonfiber-20260924-0300-sonarr|restore-one-service-sonarr-0.9.0|service:sonarr|by 0.9.0 at 1790218800|holds sonarr configuration|this version|/srv/old to /srv/new', $which);
     }
 });
 
@@ -352,8 +354,8 @@ it('a listing this app cannot read is an answer it could not read, never a short
     'no manifest' => [['manifest' => 'none']],
     'a relocation that is not two roots' => [['relocation' => '/srv/new']],
     'a relocation with a blank root' => [['relocation' => ['was' => '/srv/old', 'now' => ' ']]],
-    'a service with a blank name' => [['manifest' => ['created_at' => '2026-09-24T03:00:00Z', 'data_root' => '/srv', 'members' => [], 'product_version' => '0.9.0', 'schema' => 1, 'scope' => ['scope' => 'service', 'name' => ' '], 'sensitive' => true]]],
-    'a thing held with a blank label' => [['manifest' => ['created_at' => '2026-09-24T03:00:00Z', 'data_root' => '/srv', 'members' => [['archive_path' => 'config', 'label' => ' ']], 'product_version' => '0.9.0', 'schema' => 1, 'scope' => ['scope' => 'whole_stack'], 'sensitive' => true]]],
+    'a service with a blank name' => [['manifest' => ['created_at' => 1_790_218_800, 'data_root' => '/srv', 'members' => [], 'product_version' => '0.9.0', 'schema' => 1, 'scope' => ['scope' => 'service', 'name' => ' '], 'sensitive' => true]]],
+    'a thing held with a blank label' => [['manifest' => ['created_at' => 1_790_218_800, 'data_root' => '/srv', 'members' => [['archive_path' => 'config', 'label' => ' ']], 'product_version' => '0.9.0', 'schema' => 1, 'scope' => ['scope' => 'whole_stack'], 'sensitive' => true]]],
 ]);
 
 it('comes away from a yes with the job the stack named', function (): void {

@@ -13,19 +13,19 @@ namespace Modules\Kernel\Api;
 final readonly class WhenABundleWasTaken
 {
     private function __construct(
-        private string $at,
+        private AMomentAsWritten $at,
         private string $lemonfiber,
         private string $stack,
     ) {}
 
     /** Taken at that moment, from those versions. */
-    public static function at(string $at, string $lemonfiber, string $stack): self
+    public static function at(AMomentAsWritten $at, string $lemonfiber, string $stack): self
     {
         return new self($at, $lemonfiber, $stack);
     }
 
-    /** The moment it was taken, as the stack wrote it. */
-    public function moment(): string
+    /** The moment it was taken, as the stack counted it. */
+    public function moment(): AMomentAsWritten
     {
         return $this->at;
     }

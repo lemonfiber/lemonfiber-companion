@@ -13,15 +13,16 @@ use function preg_match;
 
 use const PREG_UNMATCHED_AS_NULL;
 
-use function sprintf;
-
 /**
- * A moment a service wrote down in the RFC 3339 form, read to the second.
+ * A moment as something outside this app wrote it down, read to the second.
  *
- * Log lines arrive stamped the way the engine stamps them —
- * `2026-09-29T21:39:01.530691525Z` — and that string is kept as written for
- * whoever wants it whole. This is the other reading of it: the {@see Instant}
- * it names, so a screen can say what the phone's own clock read at the time.
+ * Three writers, three forms. Log lines arrive stamped the way the engine
+ * stamps them, in RFC 3339 — `2026-09-29T21:39:01.530691525Z` — and that
+ * string is kept as written for whoever wants it whole. A link writes its
+ * moments as whole seconds since the epoch in digits. The stack counts every
+ * instant of its own as whole seconds since the epoch, and writes `0` where
+ * its clock would not answer. Each reads into the {@see Instant} it names, so
+ * a screen can say what the phone's own clock read at the time.
  *
  * **Worked out by arithmetic rather than with a date library**, which the kernel
  * keeps out: the days between the epoch and a calendar date are a formula, and
@@ -81,12 +82,6 @@ final readonly class AMomentAsWritten
     /** Sixty rather than fifty-nine: the standard allows a leap second. */
     private const int LAST_SECOND = 60;
 
-    /** A date and a time to the second, with no zone: how lemonfiber writes an instant of its own, in UTC. */
-    private const string THE_STACKS_OWN = '/\A\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\z/';
-
-    /** The zone the stack's own instants are written in, said the way RFC 3339 says it. */
-    private const string IN_UTC = '%sZ';
-
     private const int DAYS_IN_AN_ERA = 146_097;
 
     /** From 1 March of year 0, where the era arithmetic starts, to 1 January 1970. */
@@ -106,10 +101,10 @@ final readonly class AMomentAsWritten
         return new self(null);
     }
 
-    /** A moment the stack wrote of its own, in UTC with no zone; anything else it reads as unreadable. */
-    public static function byTheStack(string $written): self
+    /** A moment the stack counted in whole seconds since the epoch, or none where it wrote none; `0`, its clock not answering, reads as unreadable. */
+    public static function byTheStack(?int $seconds): self
     {
-        return new self(preg_match(self::THE_STACKS_OWN, $written) === 1 ? self::instantIn(sprintf(self::IN_UTC, $written)) : null);
+        return new self($seconds !== null && $seconds > Instant::UNDATED ? Instant::atEpochSeconds($seconds) : null);
     }
 
     /** A moment written out as whole seconds since the epoch, as a link or a stack's record writes one; anything else it reads as unreadable. */

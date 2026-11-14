@@ -9,7 +9,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KeySaysNothing;
 
 it('holds the link as the stack gave it, and when it lapses', function (): void {
-    $claim = AKeyClaim::of(AKeysName::of('Home Assistant'), 'lemonfiber://key?claim=c1', AMomentAsWritten::byTheStack('2026-10-13T21:10:00'));
+    $claim = AKeyClaim::of(AKeysName::of('Home Assistant'), 'lemonfiber://key?claim=c1', AMomentAsWritten::byTheStack(1_791_925_800));
 
     expect($claim->name()->shown())->toBe('Home Assistant')
         ->and($claim->carried())->toBe('lemonfiber://key?claim=c1')
@@ -17,6 +17,6 @@ it('holds the link as the stack gave it, and when it lapses', function (): void 
 });
 
 it('refuses a claim with no link to collect it by', function (): void {
-    expect(static fn(): AKeyClaim => AKeyClaim::of(AKeysName::of('Home Assistant'), '  ', AMomentAsWritten::byTheStack('2026-10-13T21:10:00')))
+    expect(static fn(): AKeyClaim => AKeyClaim::of(AKeysName::of('Home Assistant'), '  ', AMomentAsWritten::byTheStack(1_791_925_800)))
         ->toThrow(KeySaysNothing::class);
 });

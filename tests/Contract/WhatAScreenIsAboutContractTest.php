@@ -47,7 +47,7 @@ function everythingAScreenCanBeAbout(): array
         'an item to follow' => [WhatToFollow::called('AC/DC Live')],
         'a copy' => [ACopy::named('lemonfiber 2026/09/24')],
         'a plugin' => [APluginId::called('a plugin/2')],
-        'a run on the record' => [ARun::stamped('17 90')],
+        'a run on the record' => [ARun::stamped('1790150000')],
         'a download' => [ADownloadHeld::named('Show Season1/Extras')],
         'pausing the downloads' => [WhatToDoWithTheDownloads::Pause],
         'resuming the downloads' => [WhatToDoWithTheDownloads::Resume],

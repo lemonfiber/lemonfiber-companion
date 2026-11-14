@@ -140,7 +140,7 @@ return [
         'names_no_copy' => 'Dit noemt geen kopie om terug te zetten',
         'a_rehearsal' => 'Een generale repetitie: er is niets teruggezet',
         'would_put_back' => 'Deze kopie terugzetten zou :scope herstellen',
-        'taken_by' => 'Gemaakt door lemonfiber :version op :at',
+        'taken_by' => 'Gemaakt door lemonfiber :version, :when',
         'older' => 'Hij komt van een oudere hoofdversie van lemonfiber. Terugzetten mag, en kan daarna nog wat bijstellen vragen.',
         'would_move' => 'De gegevens zouden naar :now gaan, niet naar :was waar ze vandaan komen.',
         'would_go_where_it_was' => 'De gegevens zouden teruggaan naar waar ze vandaan komen.',

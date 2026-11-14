@@ -44,10 +44,10 @@ final class AStackThatMintsKeys implements MintingKeysAsClaims
     public const string LINK = 'lemonfiber://key?claim=a-claim-collected-once';
 
     /** When that link lapses. */
-    public const string LAPSES = '2026-10-13T21:10:00';
+    public const int LAPSES = 1_791_925_800;
 
     /** When it registers a phone key. */
-    public const string REGISTERED = '2026-10-13T21:00:00';
+    public const int REGISTERED = 1_791_925_200;
 
     /** What it says of a signature that does not verify. */
     public const string WRONG_SIGNATURE = 'The signature does not prove this mint.';
@@ -88,7 +88,7 @@ final class AStackThatMintsKeys implements MintingKeysAsClaims
 
         $this->registered[$key->name()->shown()] = $key->publicKey();
 
-        return WhatMintingCameTo::answered(APhoneKey::standing($key->name(), WhereAPhoneKeyLives::TrustedEnvironment, AMomentAsWritten::byTheStack(self::REGISTERED), AMomentAsWritten::byTheStack('')));
+        return WhatMintingCameTo::answered(APhoneKey::standing($key->name(), WhereAPhoneKeyLives::TrustedEnvironment, AMomentAsWritten::byTheStack(self::REGISTERED), AMomentAsWritten::unwritten()));
     }
 
     public function challengedOn(Stack $stack, Session $session, APhoneKeysName $phone, AKeyToMint $key): WhatMintingCameTo

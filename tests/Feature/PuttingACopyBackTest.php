@@ -5,11 +5,13 @@ declare(strict_types=1);
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyPutBack;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AnExistingSetup;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARelocation;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowPuttingItBackIsGoing;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -36,8 +38,12 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatPutsCopiesBack;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
+
+/** When the screen is drawn. */
+const WHEN_A_COPY_IS_LISTED = 1_790_305_200;
 
 // Putting a copy back: the rehearsal first, labelled as one; the yes, sent
 // against that listing and nothing else; and the stack's report of it.
@@ -83,7 +89,7 @@ function thePuttingBackScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new PuttingACopyBack($puttingBack, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new PuttingACopyBack($puttingBack, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), FrozenClock::at(Instant::atEpochSeconds(WHEN_A_COPY_IS_LISTED)));
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $copy]);
 
     return $screen;
@@ -96,7 +102,7 @@ function aListingOfTheCopy(WhereTheDataGoes $data, bool $older = false, ?ScopeOf
         ACopy::named('lemonfiber-20260924-0300-full'),
         'restore-the-whole-stack-0.9.0',
         $scope ?? ScopeOfACopy::theWholeStack(),
-        WhatWroteACopy::of('0.9.0', '2026-09-24T03:00:00Z'),
+        WhatWroteACopy::of('0.9.0', AMomentAsWritten::byTheStack(1_790_218_800)),
         WhatACopyHolds::these('lemonfiber configuration', 'service configuration'),
         older: $older,
         data: $data,
@@ -123,7 +129,7 @@ function everythingTheListingShows(WhatPuttingItBackWouldShow $shown): array
         'namesACopy' => $shown->namesACopy,
         'scope' => $shown->scope instanceof AScopeAsShown ? [$shown->scope->said, $shown->scope->with, $shown->scope->trees] : null,
         'takenBy' => $shown->takenBy,
-        'takenAt' => $shown->takenAt,
+        'takenAt' => [$shown->takenAt->said, $shown->takenAt->count],
         'contents' => $shown->contents,
         'isOlder' => $shown->isOlder,
         'relocation' => $shown->relocation instanceof ARelocationAsShown ? [$shown->relocation->was, $shown->relocation->now] : null,
@@ -186,7 +192,7 @@ function nothingListedOfTheCopy(array $changed): array
         'namesACopy' => true,
         'scope' => null,
         'takenBy' => null,
-        'takenAt' => null,
+        'takenAt' => ['', 0],
         'contents' => [],
         'isOlder' => false,
         'relocation' => null,
@@ -229,7 +235,7 @@ it('rehearses first, labelled as one, with the scope, what wrote it, what it hol
         'namesACopy' => true,
         'scope' => ['stacks.copy.scope.whole_stack', [], []],
         'takenBy' => '0.9.0',
-        'takenAt' => '2026-09-24T03:00:00Z',
+        'takenAt' => ['health.ago.days', 1],
         'contents' => ['lemonfiber configuration', 'service configuration'],
         'isOlder' => false,
         'relocation' => ['/srv/old', '/srv/new'],
@@ -239,7 +245,7 @@ it('rehearses first, labelled as one, with the scope, what wrote it, what it hol
         ->and($puttingBack->agreed())->toBe([])
         ->and($drawn->said())->toContain(__('stacks.put_back.a_rehearsal'))
         ->and($drawn->said())->toContain(__('stacks.put_back.would_put_back', ['scope' => aLineOfPuttingBack('stacks.copy.scope.whole_stack')]))
-        ->and($drawn->said())->toContain(__('stacks.put_back.taken_by', ['version' => '0.9.0', 'at' => '2026-09-24T03:00:00Z']))
+        ->and($drawn->said())->toContain(__('stacks.put_back.taken_by', ['version' => '0.9.0', 'when' => trans_choice('health.ago.days', 1)]))
         ->and($drawn->said())->toContain(__('stacks.put_back.would_move', ['was' => '/srv/old', 'now' => '/srv/new']))
         ->and($drawn->said())->toContain('lemonfiber configuration')
         ->and($drawn->said())->toContain(__('stacks.put_back.only_while_stopped'))
@@ -269,7 +275,7 @@ it('lists one service, and the trees of an existing setup, as what would be put 
 ]);
 
 it('says a copy that lists nothing inside it does', function (): void {
-    $listing = WhatPuttingItBackWouldDo::listed(ACopy::named('lemonfiber-20260924-0300-full'), 'restore-0.9.0', ScopeOfACopy::theWholeStack(), WhatWroteACopy::of('0.9.0', '2026-09-24T03:00:00Z'), WhatACopyHolds::these(), older: false, data: WhereTheDataGoes::whereItWas());
+    $listing = WhatPuttingItBackWouldDo::listed(ACopy::named('lemonfiber-20260924-0300-full'), 'restore-0.9.0', ScopeOfACopy::theWholeStack(), WhatWroteACopy::of('0.9.0', AMomentAsWritten::byTheStack(1_790_218_800)), WhatACopyHolds::these(), older: false, data: WhereTheDataGoes::whereItWas());
     $screen = thePuttingBackScreen(AStackThatPutsCopiesBack::listing($listing, HowPuttingItBackIsGoing::stillRunning()));
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.put_back.holds_nothing'));

@@ -91,7 +91,7 @@
             {{-- Only a copy of an existing setup names the trees it read. --}}
         @endforelse
 
-        <x-design::note>{{ __('stacks.put_back.taken_by', ['version' => $this->answer()->takenBy, 'at' => $this->answer()->takenAt]) }}</x-design::note>
+        <x-design::note>{{ __('stacks.put_back.taken_by', ['version' => $this->answer()->takenBy, 'when' => trans_choice($this->answer()->takenAt->said, $this->answer()->takenAt->count)]) }}</x-design::note>
 
         {{-- Where the data would land, before the yes rather than after it. --}}
         @if ($this->answer()->relocation !== null)

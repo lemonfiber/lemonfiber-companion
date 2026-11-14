@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\ACredentialGrant;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Operator\Internal\ViewModels\AGrantAsShown;
 
@@ -26,10 +25,7 @@ final readonly class HowAGrantReads
             credential: $grant->credential(),
             whose: $grant->whose()->named(),
             fills: $grant->fills(),
-            approved: $grant->approved()->read(
-                read: static fn(Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
-                unreadable: AgoAsShown::saysNothing(...),
-            ),
+            approved: AgoAsShown::sinceWritten($grant->approved(), $now),
         );
     }
 }

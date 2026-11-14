@@ -8,6 +8,7 @@ use function expect;
 use function it;
 use function iterator_to_array;
 
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AMomentInItsHistory;
 use Modules\Kernel\Api\AnEpisodeNotHereYet;
 use Modules\Kernel\Api\ASeriesCounted;
@@ -60,8 +61,8 @@ it('tells nothing asked for from an item followed, and keeps what was followed',
 });
 
 it('keeps everything a trace found', function (): void {
-    $stage = AStageItReached::recorded(Stage::Grabbed, ServiceId::called('sonarr'), '2026-09-20T10:00:00Z');
-    $moment = AMomentInItsHistory::recorded(WhatHappenedToIt::DownloadFailed, '2026-09-19');
+    $stage = AStageItReached::recorded(Stage::Grabbed, ServiceId::called('sonarr'), AMomentAsWritten::of('2026-09-20T10:00:00Z'));
+    $moment = AMomentInItsHistory::recorded(WhatHappenedToIt::DownloadFailed, AMomentAsWritten::of('2026-09-19'));
     $found = WhatTheTraceFound::traced(
         HowSureTheTraceIs::Uncertain,
         HowFarItGot::reached(Stage::Grabbed, TheStagesItReached::of($stage), 'No peers'),
@@ -72,8 +73,8 @@ it('keeps everything a trace found', function (): void {
 
     expect([$found->sure(), $found->got()->furthest(), $found->got()->stall(), iterator_to_array($found->got()->stages(), preserve_keys: true), iterator_to_array($found->history(), preserve_keys: true), iterator_to_array($found->disagreements(), preserve_keys: true)])
         ->toBe([HowSureTheTraceIs::Uncertain, Stage::Grabbed, 'No peers', [$stage], [$moment], ['Jellyfin holds what nobody watches']])
-        ->and([$stage->stage(), $stage->service()->named(), $stage->at(), $moment->happened(), $moment->at()])
-        ->toBe([Stage::Grabbed, 'sonarr', '2026-09-20T10:00:00Z', WhatHappenedToIt::DownloadFailed, '2026-09-19']);
+        ->and([$stage->stage(), $stage->service()->named(), $moment->happened()])->toBe([Stage::Grabbed, 'sonarr', WhatHappenedToIt::DownloadFailed])
+        ->and([$stage->at(), $moment->at()])->toEqual([AMomentAsWritten::of('2026-09-20T10:00:00Z'), AMomentAsWritten::of('2026-09-19')]);
 });
 
 it('counts a series by season and tells it from a whole item', function (): void {
@@ -95,8 +96,6 @@ it('counts a series by season and tells it from a whole item', function (): void
 it('refuses counts and sentences that cannot be', function (callable $build, string $field): void {
     expect($build)->toThrow(TheTraceSaysNothing::class, sprintf('`%s`', $field));
 })->with([
-    'a blank time on a stage' => [static fn(): AStageItReached => AStageItReached::recorded(Stage::Grabbed, ServiceId::called('sonarr'), ' '), 'at'],
-    'no time on a moment' => [static fn(): AMomentInItsHistory => AMomentInItsHistory::recorded(WhatHappenedToIt::Grabbed, ' '), 'at'],
     'a negative episode' => [static fn(): AnEpisodeNotHereYet => AnEpisodeNotHereYet::numbered(1, -1, 'Pilot', Stage::Searching), 'number'],
     'a negative season of an episode' => [static fn(): AnEpisodeNotHereYet => AnEpisodeNotHereYet::numbered(-1, 1, 'Pilot', Stage::Searching), 'number'],
     'an untitled episode' => [static fn(): AnEpisodeNotHereYet => AnEpisodeNotHereYet::numbered(1, 1, ' ', Stage::Searching), 'title'],
@@ -116,7 +115,7 @@ it('takes a count at its edge, and a whole season here', function (): void {
     expect(HowMuchOfASeasonIsHere::counted(0, 2, 2, 0)->have())->toBe(2)
         ->and(ASeriesCounted::counted(0, 0, 0)->wanted())->toBe(0)
         ->and(AnEpisodeNotHereYet::numbered(0, 0, 'Special', Stage::Monitored)->number())->toBe(0)
-        ->and(AStageItReached::recorded(Stage::Monitored, ServiceId::called('sonarr'), '')->at())->toBe('');
+        ->and(AStageItReached::recorded(Stage::Monitored, ServiceId::called('sonarr'), AMomentAsWritten::unwritten())->at())->toEqual(AMomentAsWritten::unwritten());
 });
 
 it('follows a term trimmed', function (): void {
@@ -132,8 +131,8 @@ it('keeps each list in order and as a list however it is handed', function (): v
         ->and(TheEpisodesNotHereYet::of($a, $b))->toHaveCount(2)
         ->and(iterator_to_array(TheSeasonsOfIt::of(...['x' => $season]), preserve_keys: true))->toBe([$season])
         ->and(TheSeasonsOfIt::of($season))->toHaveCount(1)
-        ->and(iterator_to_array(TheStagesItReached::of(...['x' => AStageItReached::recorded(Stage::Found, ServiceId::called('radarr'), '')]), preserve_keys: true))->toHaveKeys([0])
-        ->and(iterator_to_array(TheMomentsInItsHistory::of(...['x' => AMomentInItsHistory::recorded(WhatHappenedToIt::Removed, 'now')]), preserve_keys: true))->toHaveKeys([0])
+        ->and(iterator_to_array(TheStagesItReached::of(...['x' => AStageItReached::recorded(Stage::Found, ServiceId::called('radarr'), AMomentAsWritten::unwritten())]), preserve_keys: true))->toHaveKeys([0])
+        ->and(iterator_to_array(TheMomentsInItsHistory::of(...['x' => AMomentInItsHistory::recorded(WhatHappenedToIt::Removed, AMomentAsWritten::unwritten())]), preserve_keys: true))->toHaveKeys([0])
         ->and(iterator_to_array(WhereTheServicesDisagree::of(...['x' => 'one']), preserve_keys: true))->toBe(['one']);
 });
 

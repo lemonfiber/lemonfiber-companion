@@ -14,12 +14,14 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\RestoreEnvelope;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyPutBack;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\ARelocation;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatWroteACopy;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Sdk\Api\Fields\RestoreField;
+use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Scopes;
 use Modules\Sdk\Internal\Wire;
 
@@ -49,7 +51,7 @@ final readonly class TheRestore
             Scopes::in($manifest),
             WhatWroteACopy::of(
                 self::text($manifest, RestoreField::ProductVersion),
-                self::text($manifest, RestoreField::CreatedAt),
+                AMomentAsWritten::byTheStack(Required::number($manifest, RestoreField::CreatedAt, RestoreIsUnreadable::missing(RestoreField::CreatedAt))),
             ),
             self::contents($manifest),
             older: self::flag($would, RestoreField::Downgrade),

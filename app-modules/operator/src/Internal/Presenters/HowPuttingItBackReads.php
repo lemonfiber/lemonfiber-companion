@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Presenters;
 use Modules\Kernel\Api\ACopyPutBack;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARelocation;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhereTheDataGoes;
@@ -28,14 +29,14 @@ use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 final readonly class HowPuttingItBackReads
 {
     /** What the stack listed about putting the copy back. */
-    public function listing(WhatPuttingItBackWouldDo $listing): WhatPuttingItBackWouldShow
+    public function listing(WhatPuttingItBackWouldDo $listing, Instant $now): WhatPuttingItBackWouldShow
     {
         return new WhatPuttingItBackWouldShow(
             went: HowTheReadingWent::itCameBack(),
             namesACopy: true,
             scope: new HowAScopeReads()->of($listing->scope()),
             takenBy: $listing->takenBy(),
-            takenAt: $listing->takenAt(),
+            takenAt: AgoAsShown::sinceWritten($listing->takenAt(), $now),
             contents: [...$listing->contents()],
             isOlder: $listing->isOlder(),
             relocation: $this->relocation($listing->whereTheDataGoes()),
@@ -134,7 +135,7 @@ final readonly class HowPuttingItBackReads
             namesACopy: $namesACopy,
             scope: null,
             takenBy: null,
-            takenAt: null,
+            takenAt: AgoAsShown::saysNothing(),
             contents: [],
             isOlder: false,
             relocation: null,
