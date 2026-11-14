@@ -103,7 +103,7 @@ function theScreenRunningChecks(AStackThatWasAsked $asking, AStackThatRunsChecks
     }
 
     $screen = new WhatRunningChecksDisturbs($asking, $running, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening($stream, $clock));
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $family instanceof Category ? $family->value : WhatARunCovers::EVERY]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $family instanceof Category ? $family->value : WhatARunCovers::EVERY]);
 
     return $screen;
 }
@@ -123,16 +123,16 @@ it('offers running every check on Health, and a family\'s checks while that fami
     expect(WhatTheDeviceWouldDraw::by($health)->offers())->toContain($everyOffer)
         ->and(WhatTheDeviceWouldDraw::by($health)->offers())->toContain($familyOffer)
         ->and(array_map(static fn(ARunOffered $run): string => $run->covers->word(), $health->runsOffered()))->toBe([WhatARunCovers::EVERY, 'vpn'])
-        ->and($health->goes()->runningChecks(WhatARunCovers::theFamily(Category::Vpn)))->toBe(AStacksScreen::RunChecks->forTheStacks($stack, WhatARunCovers::theFamily(Category::Vpn)))
-        ->and(NativeRouter::resolve($health->goes()->runningChecks(WhatARunCovers::theFamily(Category::Vpn))))->not->toBeNull()
-        ->and(NativeRouter::resolve($health->goes()->runningChecks(WhatARunCovers::everyCheck())))->not->toBeNull();
+        ->and($health->goes()->about(AStacksScreen::RunChecks, WhatARunCovers::theFamily(Category::Vpn)))->toBe(AStacksScreen::RunChecks->forTheStacks($stack, WhatARunCovers::theFamily(Category::Vpn)))
+        ->and(NativeRouter::resolve($health->goes()->about(AStacksScreen::RunChecks, WhatARunCovers::theFamily(Category::Vpn))))->not->toBeNull()
+        ->and(NativeRouter::resolve($health->goes()->about(AStacksScreen::RunChecks, WhatARunCovers::everyCheck())))->not->toBeNull();
 });
 
 it('offers nothing to run on a route that names no run this app knows', function (): void {
     $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended());
     $asking = AStackThatWasAsked::saying(aReportBeforeTheRun());
     $screen = theScreenRunningChecks($asking, $running);
-    $screen->setParams(['stack' => TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id()->stored(), 'service' => 'gluetun']);
+    $screen->setParams(['stack' => TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id()->stored(), 'about' => 'gluetun']);
     $screen->run();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 

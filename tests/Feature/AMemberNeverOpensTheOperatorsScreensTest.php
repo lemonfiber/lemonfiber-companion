@@ -84,7 +84,7 @@ function everyOperatorsScreenAMemberIsKeptFrom(): array
 function whatIsBuiltFor(SecureStorage $keychain, string $asked, StackId $stack): string
 {
     $built = '';
-    $guard = new OutOfTheOperatorsScreens($keychain, ['stack' => $stack->stored(), 'service' => 'sonarr'], static function (string $class) use (&$built): string {
+    $guard = new OutOfTheOperatorsScreens($keychain, ['stack' => $stack->stored(), 'about' => 'sonarr'], static function (string $class) use (&$built): string {
         $built = $class;
 
         return $class;
@@ -98,7 +98,7 @@ function whatIsBuiltFor(SecureStorage $keychain, string $asked, StackId $stack):
 /** The path a route's pattern names for one stack. */
 function thePathOf(string $pattern, StackId $stack): string
 {
-    return str_replace(['{stack}', '{service}'], [$stack->stored(), 'sonarr'], $pattern);
+    return str_replace(['{stack}', '{about}'], [$stack->stored(), 'sonarr'], $pattern);
 }
 
 /** The screen a member lands on, Home, as the router serves the route for it. */

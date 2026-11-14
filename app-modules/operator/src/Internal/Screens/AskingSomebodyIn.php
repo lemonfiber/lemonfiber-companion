@@ -138,13 +138,13 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
      *
      * Only the field is filled: nothing is asked until the operator taps.
      */
-    public function mount(?string $service = null): void
+    public function mount(?string $about = null): void
     {
-        if ($service === null || trim($service) === '') {
+        if ($about === null || trim($about) === '') {
             return;
         }
 
-        $this->name = $service;
+        $this->name = $about;
     }
 
     /**

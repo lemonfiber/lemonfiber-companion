@@ -86,7 +86,7 @@ function theRunningScreen(AStackThatWasAsked $asking, AStackThatRunsChecks $runn
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
     $screen = new WhatRunningACheckDisturbs($asking, $running, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening($stream, $clock));
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $check]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $check]);
 
     return $screen;
 }

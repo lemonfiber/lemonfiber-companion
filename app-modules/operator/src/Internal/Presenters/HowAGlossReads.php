@@ -8,6 +8,7 @@ use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Operator\Internal\ViewModels\AGlossAsShown;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Stacks\Api\AStacksScreen;
 
 /**
  * What a word a screen draws means, as the fields the gloss beside it draws.
@@ -25,11 +26,11 @@ final readonly class HowAGlossReads
             return new AGlossAsShown(
                 word: $word->word(),
                 short: $word->short(),
-                goes: $word->deep() === '' ? null : $goes->wordAbout(AWordInUse::named($word->word())),
+                goes: $word->deep() === '' ? null : $goes->about(AStacksScreen::WordAbout, AWordInUse::named($word->word())),
             );
         }
 
-        return new AGlossAsShown(word: $drawn->said(), asks: $goes->wordAbout($drawn));
+        return new AGlossAsShown(word: $drawn->said(), asks: $goes->about(AStacksScreen::WordAbout, $drawn));
     }
 
     /** A word drawn as it came, while the glossary waits for the next frame. */

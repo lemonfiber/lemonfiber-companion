@@ -39,7 +39,7 @@ function everyScreenThatHearsThePlayer(APlayerOnAHandset $player, WhatIsPlaying 
     $around = AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain);
 
     $page = new WhatThisTitleIs($watching, ThePicturesOnScreen::none(), $keychain, $titles, $around, new AppsSettingsThatOpen());
-    $page->setParams(['stack' => $stack->id()->stored(), 'service' => 'a1']);
+    $page->setParams(['stack' => $stack->id()->stored(), 'about' => 'a1']);
 
     $home = new WhatYouCanWatch($watching, ThePicturesOnScreen::none(), AMemberWhoIsOwed::owedNothing(), $keychain, $titles, $around, new AppsSettingsThatOpen());
     $home->setParams(['stack' => $stack->id()->stored()]);

@@ -178,7 +178,7 @@ function theShedsOtherScreenHearing(
             $listening,
         ),
     };
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => 'sonarr']);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => 'sonarr']);
 
     return $screen;
 }

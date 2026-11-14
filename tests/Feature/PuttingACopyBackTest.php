@@ -84,7 +84,7 @@ function thePuttingBackScreen(
     }
 
     $screen = new PuttingACopyBack($puttingBack, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $copy]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $copy]);
 
     return $screen;
 }
@@ -602,7 +602,7 @@ it('refuses a route parameter that is not text as naming a stack', function (): 
     // parameter array is untyped, and anything that is not a string names no
     // stack.
     $screen = thePuttingBackScreen(AStackThatPutsCopiesBack::listing(aListingOfTheCopy(toTheNewRoot()), HowPuttingItBackIsGoing::stillRunning()));
-    $screen->setParams(['stack' => 42, 'service' => 'lemonfiber-20260924-0300-full']);
+    $screen->setParams(['stack' => 42, 'about' => 'lemonfiber-20260924-0300-full']);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
@@ -610,7 +610,7 @@ it('refuses a route parameter that is not text as naming a stack', function (): 
 it('names no copy where the route carries one that is not text, and asks the stack nothing', function (): void {
     $puttingBack = AStackThatPutsCopiesBack::listing(aListingOfTheCopy(toTheNewRoot()), HowPuttingItBackIsGoing::stillRunning());
     $screen = thePuttingBackScreen($puttingBack);
-    $screen->setParams(['stack' => theStackACopyGoesBackOn()->id()->stored(), 'service' => 42]);
+    $screen->setParams(['stack' => theStackACopyGoesBackOn()->id()->stored(), 'about' => 42]);
 
     expect($screen->copyNamed())->toBe('')
         ->and(everythingTheListingShows($screen->answer()))->toBe(nothingListedOfTheCopy(['namesACopy' => false]))

@@ -92,7 +92,7 @@ function aScreenThatSentNothing(string $class): AwaitsAnOutcome
     }
 
     foreach (app()->make(Stacks::class)->configured() as $stack) {
-        $screen->setParams(['stack' => $stack->id()->stored(), 'service' => 'gluetun']);
+        $screen->setParams(['stack' => $stack->id()->stored(), 'about' => 'gluetun']);
     }
 
     return $screen;

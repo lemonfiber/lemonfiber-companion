@@ -533,7 +533,7 @@ it('offers the trace of a stopped item, and of no cause several items share', fu
     expect($roads)->toContain(__('health.trace.road_in', ['item' => 'Heat']))
         ->and($roads)->toContain(__('health.trace.road_in', ['item' => 'Dune']))
         ->and($roads)->not->toContain(__('health.trace.road_in', ['item' => 'Permission denied on /media/films']))
-        ->and(NativeRouter::resolve($listening->screen->traceOf('Heat')))->toHaveKey('params.service', 'Heat');
+        ->and(NativeRouter::resolve($listening->screen->traceOf('Heat')))->toHaveKey('params.about', 'Heat');
 });
 
 it('draws no stopped heading and no slow heading where nothing has stopped', function (): void {

@@ -129,7 +129,7 @@ function oneThingInTheAttic(AStackThatSupervises $stack, KeepingWhatItRuns $kept
         AroundThePhone::listening(),
         $kept,
     );
-    $screen->setParams(['stack' => $attic->id()->stored(), 'service' => $named]);
+    $screen->setParams(['stack' => $attic->id()->stored(), 'about' => $named]);
 
     return $screen;
 }

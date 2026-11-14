@@ -78,7 +78,7 @@ function whatEachScreenDrewOf(AStandInStack $machine, array $only = []): array
         }
 
         $screen->setParams($case->isAboutOneThing()
-            ? ['stack' => $stack, 'service' => whatTheSecondSegmentNames($case)]
+            ? ['stack' => $stack, 'about' => whatTheSecondSegmentNames($case)]
             : ['stack' => $stack]);
         $screen->setData(whatTheRoadToItCarries($case));
 

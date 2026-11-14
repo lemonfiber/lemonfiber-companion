@@ -127,7 +127,7 @@ function everyRouteTheAppServes(string $stack): array
 
     foreach (AStacksScreen::cases() as $case) {
         $routes[sprintf('AStacksScreen::%s', $case->name)] = $case->isAboutOneThing()
-            ? ['stack' => $stack, 'service' => 'gluetun']
+            ? ['stack' => $stack, 'about' => 'gluetun']
             : ['stack' => $stack];
     }
 
@@ -307,7 +307,7 @@ function theFramesFollowingAVerbThatReadTwice(): array
         return [['the router serves no Doing screen'], []];
     }
 
-    $screen->setParams(['stack' => theStackThisWalkLooksAt(), 'service' => 'Id']);
+    $screen->setParams(['stack' => theStackThisWalkLooksAt(), 'about' => 'Id']);
     WhatTheDeviceWouldDraw::by($screen);
     WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);

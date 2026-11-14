@@ -24,6 +24,7 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAStallReads;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
 use Modules\Operator\Internal\ViewModels\WhatStoppedTurnedOutToBe;
+use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\ReadsAStackOnceAFrame;
@@ -137,7 +138,7 @@ final class WhatStoppedComingIn extends NativeComponent
     /** Where one stalled item got to, followed through every service. */
     public function traceOf(string $title): string
     {
-        return $this->goes()->traceOf(WhatToFollow::called($title));
+        return $this->goes()->about(AStacksScreen::Trace, WhatToFollow::called($title));
     }
 
     /** Where this screen's words are explained from. */

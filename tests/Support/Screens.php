@@ -185,7 +185,7 @@ final readonly class Screens
             // with a second placeholder is covered here without anybody
             // remembering to add it — and a case that needs one and is asked
             // for the other refuses rather than handing back a path with
-            // `{service}` still in it.
+            // `{about}` still in it.
             $paths[sprintf('AStacksScreen::%s', $screen->name)] = $screen->isAboutOneThing()
                 ? $screen->forTheStacks(
                     StackId::rememberedAs(self::aStackInTheUri()),

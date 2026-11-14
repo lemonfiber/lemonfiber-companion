@@ -164,7 +164,7 @@ function theGuardsChoicesScreen(AStackThatTunesItsSettings $tuning): HowThisPlug
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
     );
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => 'gluetun']);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => 'gluetun']);
     $screen->answer();
 
     return $screen;

@@ -116,7 +116,7 @@ function theConnectingScreen(
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
     );
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $named]);
 
     return $screen;
 }
@@ -325,7 +325,7 @@ it('asks about nobody when the route names nobody', function (): void {
 it('asks about nobody when what the route carries is not a name', function (): void {
     $handing = AStackThatHandsDevicesOver::answering(WhatBecameOfTheHandoff::answered(aHandoffThatStands(WhereTheHandoffStands::Ready)));
     $screen = theConnectingScreen($handing);
-    $screen->setParams(['stack' => theStackADeviceConnectsTo()->id()->stored(), 'service' => ['Sam']]);
+    $screen->setParams(['stack' => theStackADeviceConnectsTo()->id()->stored(), 'about' => ['Sam']]);
     $screen->show();
 
     expect($handing->asked())->toBe([])

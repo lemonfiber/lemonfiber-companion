@@ -57,7 +57,7 @@
             :name="$service->name"
             :said="__($service->runsSaid) . ' · ' . ($service->runsFor === [] ? __('health.runs_for_no_form') : __('health.runs_for', ['forms' => implode(', ', $service->runsFor)]))"
             :figure="$service->exited === '' ? '' : __('health.exit_figure', ['code' => $service->exited])"
-            :goes="$this->goes()->doingWith($service->id)"
+            :goes="$this->goes()->about(AStacksScreen::Doing, $service->id)"
             :answers-to="__('health.open_service', ['name' => $service->name])"
         />
     @empty
@@ -198,7 +198,7 @@
                     :tone="$service->tone"
                     :name="$service->name"
                     :said="__($service->mattersSaid)"
-                    :goes="$this->goes()->doingWith($service->id)"
+                    :goes="$this->goes()->about(AStacksScreen::Doing, $service->id)"
                     :answers-to="__('health.open_service', ['name' => $service->name])"
                 />
             @empty
@@ -215,7 +215,7 @@
     @forelse (WhatToDoWithTheDownloads::cases() as $asked)
         <x-operator::port-row
             :name="__($this->pausingSays($asked))"
-            :goes="$this->goes()->downloads($asked)"
+            :goes="$this->goes()->about(AStacksScreen::Downloads, $asked)"
         />
     @empty
         {{-- Unreachable: pausing and resuming are both always offered. --}}

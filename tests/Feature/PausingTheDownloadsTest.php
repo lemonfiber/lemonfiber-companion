@@ -21,6 +21,7 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\PausingTheDownloads;
 use Modules\Operator\Internal\ViewModels\ADownloadClientAsShown;
+use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -63,7 +64,7 @@ function thePausingScreen(AStackThatPausesDownloads $pausing, ?AKeychainInMemory
     }
 
     $screen = new PausingTheDownloads($pausing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $asked]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $asked]);
 
     return $screen;
 }
@@ -358,6 +359,6 @@ it('renders its own view, and is reached from Services each way', function (): v
     $screen = thePausingScreen(aStackRehearsingAPause(HowPausingIsGoing::stillRunning()));
 
     expect($screen->render()->name())->toBe('operator::pausing-the-downloads')
-        ->and(NativeRouter::resolve($screen->goes()->downloads(WhatToDoWithTheDownloads::Pause)))->not->toBeNull()
-        ->and(NativeRouter::resolve($screen->goes()->downloads(WhatToDoWithTheDownloads::Resume)))->not->toBeNull();
+        ->and(NativeRouter::resolve($screen->goes()->about(AStacksScreen::Downloads, WhatToDoWithTheDownloads::Pause)))->not->toBeNull()
+        ->and(NativeRouter::resolve($screen->goes()->about(AStacksScreen::Downloads, WhatToDoWithTheDownloads::Resume)))->not->toBeNull();
 });

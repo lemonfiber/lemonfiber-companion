@@ -10,6 +10,7 @@ use Modules\Kernel\Api\WhatAScreenIsAbout;
 use function rawurlencode;
 use function str_contains;
 use function str_replace;
+use function trim;
 
 /**
  * Every screen a stack has, and the one place each one's path is written.
@@ -65,12 +66,12 @@ enum AStacksScreen: string
      * One thing this machine runs, and the verbs about it.
      *
      * A service or a whole form, which is the two granularities arriving
-     * at one screen. The path says `{service}` for both because the name is all
-     * either is: {@see Screens\WhatToDoWithThis}
-     * reads a service first and a form second, which is the narrower reading
-     * and the safer one where a stack has named a service after its form.
+     * at one screen. The second segment is the name either goes by:
+     * {@see Screens\WhatToDoWithThis} reads a service first and a form second,
+     * which is the narrower reading and the safer one where a stack has named
+     * a service after its form.
      */
-    case Doing = '/stacks/{stack}/do/{service}';
+    case Doing = '/stacks/{stack}/do/{about}';
 
     /** Where this machine stands on being up to date. */
     case Updates = '/stacks/{stack}/updates';
@@ -79,10 +80,10 @@ enum AStacksScreen: string
     case Elsewhere = '/stacks/{stack}/elsewhere';
 
     /** What one of this machine's services has been saying. */
-    case Logs = '/stacks/{stack}/logs/{service}';
+    case Logs = '/stacks/{stack}/logs/{about}';
 
     /** Everything one service this machine holds back waits for, and giving it the settings among that. */
-    case Waiting = '/stacks/{stack}/waiting/{service}';
+    case Waiting = '/stacks/{stack}/waiting/{about}';
 
     /**
      * What this machine says the member holding the session is owed, and what
@@ -113,7 +114,7 @@ enum AStacksScreen: string
      * Under `watch` because it is reached from nowhere else: it details one
      * thing Home shows, which is what the second segment names.
      */
-    case Title = '/stacks/{stack}/watch/{service}';
+    case Title = '/stacks/{stack}/watch/{about}';
 
     /** The member's Search tab: titles the house does not hold yet, found by the core under their limits. */
     case Search = '/stacks/{stack}/search';
@@ -125,10 +126,10 @@ enum AStacksScreen: string
      * segment is the id the search listed it under, and the rest of what the
      * search said of it is carried along.
      */
-    case Found = '/stacks/{stack}/found/{service}';
+    case Found = '/stacks/{stack}/found/{about}';
 
     /** One music or book ask of the member's, opened from Home: its name, its kind, and where it stands as the action, not usable. */
-    case Asked = '/stacks/{stack}/asked/{service}';
+    case Asked = '/stacks/{stack}/asked/{about}';
 
     /** The member's own corner of the app: changing house, the phone's settings and taking the house off the phone. */
     case Profile = '/stacks/{stack}/profile';
@@ -160,7 +161,7 @@ enum AStacksScreen: string
      *
      * The second segment is the stamp the record keeps the run under.
      */
-    case RunBack = '/stacks/{stack}/record/{service}';
+    case RunBack = '/stacks/{stack}/record/{about}';
 
     /**
      * Where every service on this machine comes from.
@@ -191,7 +192,7 @@ enum AStacksScreen: string
     case Alerts = '/stacks/{stack}/alerts';
 
     /** One back-end this machine's alerts go to, with every delivery it failed since the last confirmed one. */
-    case AlertBackEnd = '/stacks/{stack}/alerts/{service}';
+    case AlertBackEnd = '/stacks/{stack}/alerts/{about}';
 
     /** How this machine shares its line with the household, and changing it. */
     case Line = '/stacks/{stack}/line';
@@ -207,7 +208,7 @@ enum AStacksScreen: string
      *
      * The second segment is the name a copy was written under.
      */
-    case PutBack = '/stacks/{stack}/copies/{service}';
+    case PutBack = '/stacks/{stack}/copies/{about}';
 
     /** Asking for help: a support bundle, described before it is written. */
     case Help = '/stacks/{stack}/help';
@@ -220,14 +221,14 @@ enum AStacksScreen: string
      *
      * The second segment is the name the account of the disk gave a download.
      */
-    case LetGo = '/stacks/{stack}/room/{service}';
+    case LetGo = '/stacks/{stack}/room/{about}';
 
     /**
      * Pausing every download client, or letting them fetch again, rehearsed before anything is agreed to.
      *
      * The second segment is which of the two, as this app names it.
      */
-    case Downloads = '/stacks/{stack}/downloads/{service}';
+    case Downloads = '/stacks/{stack}/downloads/{about}';
 
     /** Which version of lemonfiber this machine runs, and whether a newer one exists. */
     case Itself = '/stacks/{stack}/itself';
@@ -261,7 +262,7 @@ enum AStacksScreen: string
      *
      * The second segment is the name they were asked for by.
      */
-    case InviteNamed = '/stacks/{stack}/invite/{service}';
+    case InviteNamed = '/stacks/{stack}/invite/{about}';
 
     /** Pairing another phone with this machine: a code it scans, or a line it types. */
     case Pair = '/stacks/{stack}/pair';
@@ -271,7 +272,7 @@ enum AStacksScreen: string
      *
      * The second segment is the name the member's account is held under.
      */
-    case TakeOut = '/stacks/{stack}/household/{service}';
+    case TakeOut = '/stacks/{stack}/household/{about}';
 
     /**
      * Connecting one member's device: the code that points it at the media server, and whether it has signed in.
@@ -279,7 +280,7 @@ enum AStacksScreen: string
      * The second segment is the name the member's account is held under. It is
      * not under {@see self::TakeOut}'s path, whose name takes the rest of it.
      */
-    case Device = '/stacks/{stack}/device/{service}';
+    case Device = '/stacks/{stack}/device/{about}';
 
     /** What is already on this machine that is not lemonfiber's, and what may be done about it. */
     case AlreadyHere = '/stacks/{stack}/already-here';
@@ -294,7 +295,7 @@ enum AStacksScreen: string
     case Plugins = '/stacks/{stack}/plugins';
 
     /** One plugin's settings and secrets, and changing a setting, rehearsed before it is agreed to. */
-    case PluginSettings = '/stacks/{stack}/plugins/{service}';
+    case PluginSettings = '/stacks/{stack}/plugins/{about}';
 
     /** Taking lemonfiber off this machine, one removal at a time, each read before it is agreed to. */
     case Uninstall = '/stacks/{stack}/uninstall';
@@ -307,19 +308,19 @@ enum AStacksScreen: string
      *
      * The second segment is the word.
      */
-    case WordAbout = '/stacks/{stack}/words/{service}';
+    case WordAbout = '/stacks/{stack}/words/{about}';
 
     /** Where one item got to, followed through the services by the name it is known by. */
-    case Trace = '/stacks/{stack}/trace/{service}';
+    case Trace = '/stacks/{stack}/trace/{about}';
 
     /** What accepting one warning about a choice costs, said before the operator accepts it; the second segment is the check. */
-    case Accept = '/stacks/{stack}/accept/{service}';
+    case Accept = '/stacks/{stack}/accept/{about}';
 
     /** Running a check the stack leaves unverified because it disturbs something, said before it runs; the second segment is the check. */
-    case Run = '/stacks/{stack}/run/{service}';
+    case Run = '/stacks/{stack}/run/{about}';
 
     /** Running every check, or every check of one family, the ones that disturb included, said before it runs; the second segment is what it covers. */
-    case RunChecks = '/stacks/{stack}/run-every/{service}';
+    case RunChecks = '/stacks/{stack}/run-every/{about}';
 
     /** Watching one thing arrive, narrated end to end, and the record of what was said. */
     case Walkthrough = '/stacks/{stack}/walkthrough';
@@ -331,7 +332,7 @@ enum AStacksScreen: string
     public const string NAMED = '{stack}';
 
     /** What it holds the one thing a screen is about under. */
-    public const string ABOUT = '{service}';
+    public const string ABOUT = '{about}';
 
     /** This screen's path, for one machine; a case that also names what it is about is refused. */
     public function forTheStack(StackId $stack): string
@@ -351,6 +352,12 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($about->namedInAPath())], $this->value);
+    }
+
+    /** The name the router gives the one thing a screen is about, which is its placeholder without the braces. */
+    public static function aboutIsCalled(): string
+    {
+        return trim(self::ABOUT, '{}');
     }
 
     /** Whether the pattern names one thing on the machine as well as the machine. */

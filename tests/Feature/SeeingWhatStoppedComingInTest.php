@@ -339,7 +339,7 @@ it('offers each stalled item\'s trace, reached by its title', function (): void 
     $screen = theStalledScreen(AStackThatStalled::with(aWeekOfStalledDownloads()));
 
     expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('health.trace.road_in', ['item' => 'A film nobody has seen']))
-        ->and(NativeRouter::resolve($screen->traceOf('A film nobody has seen')))->toHaveKey('params.service', 'A film nobody has seen');
+        ->and(NativeRouter::resolve($screen->traceOf('A film nobody has seen')))->toHaveKey('params.about', 'A film nobody has seen');
 });
 
 it('counts plainly and says nothing stopped where nothing stopped', function (): void {

@@ -90,7 +90,7 @@ function theLettingGoScreen(
     }
 
     $screen = new LettingADownloadGo($stopping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $download]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $download]);
 
     return $screen;
 }
@@ -287,7 +287,7 @@ it('offers nothing to agree to where the stack would not say what it would cost'
 it('names no download where it was opened on none, and asks the stack nothing', function (mixed $named): void {
     $stopping = aStackOfferingToLetTheFilmGo(HowLettingItGoIsGoing::stillRunning());
     $screen = theLettingGoScreen($stopping);
-    $screen->setParams(['stack' => theStackADownloadIsLetGoOn()->id()->stored(), 'service' => $named]);
+    $screen->setParams(['stack' => theStackADownloadIsLetGoOn()->id()->stored(), 'about' => $named]);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect(everythingTheOfferToLetGoShows($screen->answer()))->toBe(nothingOfferedToLetGo(['namesADownload' => false]))
@@ -499,7 +499,7 @@ it('has nothing to report for a yes nobody gave', function (): void {
 
 it('refuses a route parameter that is not text as naming a stack', function (): void {
     $screen = theLettingGoScreen(aStackOfferingToLetTheFilmGo(HowLettingItGoIsGoing::stillRunning()));
-    $screen->setParams(['stack' => 42, 'service' => 'Some.Film.2024']);
+    $screen->setParams(['stack' => 42, 'about' => 'Some.Film.2024']);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });

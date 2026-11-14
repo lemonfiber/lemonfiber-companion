@@ -67,7 +67,7 @@ function aPageToPressPlayOn(AShelfThatWasRead $watching, APlayerOnAHandset $play
         AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain),
         new AppsSettingsThatOpen(),
     );
-    $page->setParams(['stack' => $stack->id()->stored(), 'service' => 'a1']);
+    $page->setParams(['stack' => $stack->id()->stored(), 'about' => 'a1']);
 
     return $page;
 }

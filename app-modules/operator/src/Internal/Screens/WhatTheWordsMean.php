@@ -100,14 +100,14 @@ final class WhatTheWordsMean extends NativeComponent
      * The search is set to the word as well, so it is the one shown rather
      * than one of many somebody has to scroll to.
      */
-    public function mount(string $service = ''): void
+    public function mount(string $about = ''): void
     {
-        if (trim($service) === '') {
+        if (trim($about) === '') {
             return;
         }
 
-        $this->looking = $service;
-        $this->open = $service;
+        $this->looking = $about;
+        $this->open = $about;
     }
 
     /**

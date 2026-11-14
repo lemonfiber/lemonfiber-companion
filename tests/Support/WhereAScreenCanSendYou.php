@@ -215,7 +215,7 @@ final readonly class WhereAScreenCanSendYou
      * The accessors declared somewhere other than on a screen.
      *
      * Keyed by the accessor alone, because that is how a template names one:
-     * `$this->goes()->doingWith($service)` says which accessor and never which type. The
+     * `$this->goes()->takingOut($member->name)` says which accessor and never which type. The
      * type is the one that knows where a machine's screens are, found by not
      * being a screen itself rather than by name.
      *
