@@ -21,6 +21,7 @@ namespace Modules\Kernel\Api;
  */
 final readonly class Instant
 {
+    /** @param int<0, max> $seconds */
     private function __construct(private int $seconds) {}
 
     /**
@@ -40,6 +41,7 @@ final readonly class Instant
         return new self($seconds);
     }
 
+    /** @return int<0, max> */
     public function epochSeconds(): int
     {
         return $this->seconds;

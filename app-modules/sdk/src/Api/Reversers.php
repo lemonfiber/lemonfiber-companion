@@ -55,7 +55,7 @@ final readonly class Reversers implements PuttingARunBack
 
         try {
             $envelope = $client->act(
-                new UndoAction(at: $agreed->run()->stamp()),
+                new UndoAction(at: $agreed->run()->seconds()),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 

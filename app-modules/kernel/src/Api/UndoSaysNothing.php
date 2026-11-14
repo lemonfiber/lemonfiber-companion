@@ -25,4 +25,13 @@ final class UndoSaysNothing extends InvalidArgumentException
             $field,
         ));
     }
+
+    /** A stamp that is not whole seconds since the epoch, quoted as it was handed. */
+    public static function notAStamp(string $said): self
+    {
+        return new self(sprintf(
+            'A run to put back was named `%s`, and a run is named by the whole seconds since the epoch it was stamped at.',
+            $said,
+        ));
+    }
 }
