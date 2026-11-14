@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatARunCovers;
@@ -434,6 +435,13 @@ it('a screen that needs only a stack refuses to be handed a run of checks as wel
     expect(fn(): string => AStacksScreen::Health->forTheStacksChecks(
         StackId::rememberedAs(Screens::aStackInTheUri()),
         WhatARunCovers::everyCheck(),
+    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+});
+
+it('a screen that needs only a stack refuses to be handed a request as well', function (): void {
+    expect(fn(): string => AStacksScreen::Health->forTheStacksRequest(
+        StackId::rememberedAs(Screens::aStackInTheUri()),
+        RequestId::named('music-3'),
     ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
 });
 

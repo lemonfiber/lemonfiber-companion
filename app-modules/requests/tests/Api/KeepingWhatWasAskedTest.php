@@ -275,8 +275,8 @@ it('lets go of a kept reading that opens to something that is not a reading of w
     'a refusal for no reason' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{},"standing":["declined"],"refused":[{"reason":" ","at":[]}]}]}'],
     'a refusal at a moment that is not text' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{},"standing":["declined"],"refused":[{"reason":"No","at":[7]}]}]}'],
     'no refused field' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{},"standing":["getting"]}]}'],
-    'a kind this build does not know' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","kind":"podcast","size":{},"standing":["getting"],"refused":[]}]}'],
-    'a kind that is not a word' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","kind":7,"size":{},"standing":["getting"],"refused":[]}]}'],
+    'a kind this build does not know' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","kind_of_request":"podcast","size":{},"standing":["getting"],"refused":[]}]}'],
+    'a kind that is not a word' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","kind_of_request":7,"size":{},"standing":["getting"],"refused":[]}]}'],
 ]);
 
 it('lets go of the reading kept for one stack, and of no other\'s', function (): void {

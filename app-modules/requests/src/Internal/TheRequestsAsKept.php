@@ -45,7 +45,7 @@ final readonly class TheRequestsAsKept
 {
     private const string NOT_YET_NAMED = 'not_yet_named';
 
-    private const string KIND = 'kind';
+    private const string KIND = 'kind_of_request';
 
     /**
      * The reading as a value to seal, or nothing where it cannot be written.
