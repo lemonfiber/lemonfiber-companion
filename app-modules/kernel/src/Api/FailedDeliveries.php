@@ -7,7 +7,6 @@ namespace Modules\Kernel\Api;
 use function array_values;
 
 use ArrayIterator;
-use Closure;
 
 use function count;
 
@@ -31,20 +30,6 @@ final readonly class FailedDeliveries implements Countable, IteratorAggregate
         return new self(array_values($failed));
     }
 
-    /**
-     * The newest failure, or that there is none.
-     *
-     * @template TFound of object
-     * @template TNone of object
-     *
-     * @param  Closure(ADelivery): TFound $found
-     * @param  Closure(): TNone           $none
-     * @return TFound|TNone
-     */
-    public function newest(Closure $found, Closure $none): object
-    {
-        return $this->failed === [] ? $none() : $found($this->failed[0]);
-    }
 
     #[Override]
     public function count(): int
