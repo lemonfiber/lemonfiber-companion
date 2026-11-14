@@ -7,7 +7,6 @@ namespace Modules\Sdk\Api;
 use function array_key_exists;
 use function in_array;
 use function is_array;
-use function is_int;
 use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
@@ -20,6 +19,7 @@ use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\TheNewsOfAStack;
 use Modules\Kernel\Api\WhatAReleaseDelivers;
 use Modules\Kernel\Api\WhatTheStackListed;
+use Modules\Sdk\Api\Fields\NewsItemsField;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\WhatANewsListHolds;
 use Modules\Sdk\Internal\Wire;
@@ -99,15 +99,10 @@ final readonly class WhatIsListedAsNew
         $read = [];
 
         foreach (WhatANewsListHolds::listOf($data, WireField::Requests) as $position => $request) {
-            $item = WhatANewsListHolds::entry($request, WireField::Requests, WireField::Number, $position);
-            if (! array_key_exists(WireField::Number->value, $item) || ! is_int($item[WireField::Number->value])) {
-                throw NewsIsUnreadable::item(WireField::Requests, WireField::Number, $position);
-            }
-
-            $number = $item[WireField::Number->value];
+            $item = WhatANewsListHolds::entry($request, WireField::Requests, NewsItemsField::Request, $position);
 
             $read[] = new ARequestListed(
-                RequestId::numbered($number),
+                RequestId::named(WhatANewsListHolds::text($item, WireField::Requests, NewsItemsField::Request, $position)),
                 self::optional($item, WireField::Title),
                 WhatANewsListHolds::text($item, WireField::Requests, WireField::By, $position),
             );

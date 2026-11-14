@@ -123,7 +123,7 @@ function everythingTheNewsSays(ReadingNews $reading): string
             $lines[] = sprintf('requests %s', $news->requests()->wasRead() ? 'read' : 'unread');
 
             foreach ($news->requests() as $request) {
-                $lines[] = sprintf('%d|%s|%s', $request->id()->number(), $request->title(), $request->by());
+                $lines[] = sprintf('%s|%s|%s', $request->id()->reference(), $request->title(), $request->by());
             }
 
             $lines[] = sprintf('problems %s', $news->problems()->wasRead() ? 'read' : 'unread');
@@ -150,7 +150,7 @@ it('comes away with each kind newest first, and a kind the stack could not read 
 });
 
 it('reads a request by its number, its title and who asked', function (): void {
-    $payload = whatAStackListsAsNew([['number' => 12, 'title' => 'Dune', 'by' => 'Anna'], ['number' => 7, 'title' => null, 'by' => 'Bram']], []);
+    $payload = whatAStackListsAsNew([['request' => '12', 'title' => 'Dune', 'by' => 'Anna'], ['request' => '7', 'title' => null, 'by' => 'Bram']], []);
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode($payload))]);
 
@@ -181,9 +181,10 @@ it('refuses a list it cannot read whole, rather than showing part of it as every
     expect(everythingTheNewsSays(new Newsreaders(new PinnedClients())))->toBe(KindOfObstacle::AnswerCouldNotBeRead->value);
 })->with([
     'an unread kind that is not a word' => [['unread' => [7]]],
-    'a request without its number' => [['requests' => [['title' => 'Dune', 'by' => 'Anna']], 'unread' => []]],
-    'a request numbered in words' => [['requests' => [['number' => 'twelve', 'title' => 'Dune', 'by' => 'Anna']], 'unread' => []]],
-    'a request without who asked' => [['requests' => [['number' => 12, 'title' => 'Dune']], 'unread' => []]],
+    'a request without its reference' => [['requests' => [['title' => 'Dune', 'by' => 'Anna']], 'unread' => []]],
+    'a request referred to by a number' => [['requests' => [['request' => 12, 'title' => 'Dune', 'by' => 'Anna']], 'unread' => []]],
+    'a request referred to by nothing' => [['requests' => [['request' => ' ', 'title' => 'Dune', 'by' => 'Anna']], 'unread' => []]],
+    'a request without who asked' => [['requests' => [['request' => '12', 'title' => 'Dune']], 'unread' => []]],
     'a release without its version' => [['updates' => [['delivers' => 'Plugins']]]],
 ]);
 

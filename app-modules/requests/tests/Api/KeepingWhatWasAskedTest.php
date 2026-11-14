@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Noted;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
 use Modules\Kernel\Api\Shape;
@@ -60,8 +61,8 @@ function aPhoneKeepingRequests(int $seconds = 0): WhatIsKeptOfRequests
 function everythingTheRequestSays(Wanted $wanted): string
 {
     return sprintf(
-        '#%d %s for %s, %s, %s, %s',
-        $wanted->number(),
+        '#%s %s for %s, %s, %s, %s',
+        $wanted->id()->reference(),
         $wanted->by(),
         WhatARequestIsCalledAsAWord::of($wanted),
         $wanted->size()->either(
@@ -190,7 +191,7 @@ it('keeps nothing where nothing can be sealed, or where the store will not keep 
 
 it('keeps nothing where a household\'s words are not text it can write', function (): void {
     $kept = aPhoneKeepingRequests();
-    $garbled = Requested::of(Wanted::of(1, "\xB1\x31", 'Dune', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)));
+    $garbled = Requested::of(Wanted::of(RequestId::named('1'), "\xB1\x31", 'Dune', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)));
 
     expect(whetherTheRequestsWereKept($kept->keeping->keep(theStackTheRequestsAreKeptFor(), $garbled)))->toBe('not kept')
         ->and($kept->store->forgetEverything()->howMany())->toBe(0);

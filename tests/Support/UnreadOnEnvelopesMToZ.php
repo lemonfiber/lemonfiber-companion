@@ -16,6 +16,10 @@ final readonly class UnreadOnEnvelopesMToZ
     /** @var list<array{path: string, because: string}> */
     public const array ROWS = [
         [
+            'path' => 'NewsItemsEnvelope.requests[].asked',
+            'because' => 'When a request in the news was asked for. The news lists requests in the core\'s order, newest asked first, and no requirement asks a row to say when (`N1-R17`).',
+        ],
+        [
             'path' => 'MusicEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],

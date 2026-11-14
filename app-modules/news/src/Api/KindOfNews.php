@@ -8,7 +8,7 @@ namespace Modules\News\Api;
  * The three kinds of thing a stack can have that is new to the operator.
  *
  * Each is newer by an order the stack vouches for: an update by its place in
- * the stack's record, a request by its number, and a problem by when it began.
+ * the stack's record, a request by its place in the household list, and a problem by when it began.
  * The value is what a kept row names the kind by.
  */
 enum KindOfNews: string

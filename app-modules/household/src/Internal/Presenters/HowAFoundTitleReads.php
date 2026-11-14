@@ -45,6 +45,12 @@ final readonly class HowAFoundTitleReads
 
     public const string UNDATED = 'household.search.line_undated';
 
+    /** A title that is music. */
+    public const string MUSIC = 'household.search.kind.music';
+
+    /** A title that is a book. */
+    public const string BOOKS = 'household.search.kind.books';
+
     /** One page, each title a row leading to its page. */
     public function found(WhatToLookFor $words, WhatASearchFound $page): WhatTheSearchShows
     {
@@ -86,6 +92,8 @@ final readonly class HowAFoundTitleReads
         return match ($kind) {
             KindOfTitle::Film => Medium::Film->saidOnTheScreen(),
             KindOfTitle::Series => Medium::Series->saidOnTheScreen(),
+            KindOfTitle::Music => self::MUSIC,
+            KindOfTitle::Books => self::BOOKS,
         };
     }
 

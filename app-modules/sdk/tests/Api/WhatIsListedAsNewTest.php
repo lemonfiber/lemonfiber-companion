@@ -27,9 +27,9 @@ function newsListing(array $requests): Envelope
 }
 
 it('refuses an entry it cannot read by its position, counted from the first as nought', function (): void {
-    $request = ['number' => 12, 'title' => 'Dune', 'by' => 'Anna'];
-    $news = newsListing([$request, [...$request, 'number' => 'thirteen']]);
+    $request = ['request' => '12', 'title' => 'Dune', 'by' => 'Anna'];
+    $news = newsListing([$request, [...$request, 'request' => 13]]);
 
     expect(static fn(): TheNewsOfAStack => WhatIsListedAsNew::in($news))
-        ->toThrow(NewsIsUnreadable::class, 'Entry 1 of `requests` in a news envelope has no readable `number`.');
+        ->toThrow(NewsIsUnreadable::class, 'Entry 1 of `requests` in a news envelope has no readable `request`.');
 });

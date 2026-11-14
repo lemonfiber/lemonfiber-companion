@@ -19,19 +19,19 @@ use function sprintf;
  */
 final class RequestHasNobodyBehindIt extends InvalidArgumentException
 {
-    public static function atNumber(int $number): self
+    public static function about(RequestId $id): self
     {
         return new self(sprintf(
-            'Request %d arrived with nobody named as having asked for it, so nothing could be decided about it.',
-            $number,
+            'Request %s arrived with nobody named as having asked for it, so nothing could be decided about it.',
+            $id->reference(),
         ));
     }
 
-    public static function forNothing(int $number, string $by): self
+    public static function forNothing(RequestId $id, string $by): self
     {
         return new self(sprintf(
-            'Request %d from %s names nothing asked for, so there is nothing to approve or decline.',
-            $number,
+            'Request %s from %s names nothing asked for, so there is nothing to approve or decline.',
+            $id->reference(),
             $by,
         ));
     }

@@ -38,6 +38,18 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'The words searched for, as the core trimmed them. The app sent them and holds them already.',
         ],
         [
+            'path' => 'AskableEnvelope.titles[].by',
+            'because' => 'The artist or author of a title, which only music and books carry. This app searches for films and series alone, so no title it is handed has one.',
+        ],
+        [
+            'path' => 'AskableEnvelope.titles[].cover',
+            'because' => 'Where a cover of music or books is published. The app loads nothing that is not the core\'s own answer (`N1-R16`): a cover reaches it through the core\'s poster read or not at all.',
+        ],
+        [
+            'path' => 'AskableEnvelope.titles[].unit',
+            'because' => 'What a title of music or books is within its kind. This app searches for films and series alone, which carry none.',
+        ],
+        [
             'path' => 'AskedEnvelope.kind',
             'because' => 'The kind of the title asked for, which the page asking holds from the search that found it.',
         ],
@@ -59,6 +71,14 @@ final readonly class UnreadOnEnvelopesAToL
             'path' => 'AskedEnvelope.seasons',
             'because' => 'The seasons asked for. The app names none, which asks for every season not already here or '
                 . 'on its way, so the answer repeats what was sent.',
+        ],
+        [
+            'path' => 'AskedEnvelope.request',
+            'because' => 'The reference the household list names an ask the core keeps by, which only music and books have. This app asks for films and series alone, and points the member at Requests, which lists every ask.',
+        ],
+        [
+            'path' => 'AskedEnvelope.unit',
+            'because' => 'What an ask for music or books is within its kind. This app asks for films and series alone, which carry none.',
         ],
         [
             'path' => 'AskedEnvelope.title',
@@ -639,6 +659,10 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'When a member was last about. The same block, and the same distinction — `N2-R13` has '
                 . 'a *reading* carry its age, which is how old this app\'s answer is rather than how long ago '
                 . 'somebody opened a client.',
+        ],
+        [
+            'path' => 'HouseholdEnvelope.members[].requests[].asked',
+            'because' => 'When a request was asked for. The list is drawn in the core\'s order, and no requirement in `N1` to `N4` asks a row to say when it was asked (`N1-R17`).',
         ],
         [
             'path' => 'HouseholdEnvelope.members[].requests[].waiting_days',

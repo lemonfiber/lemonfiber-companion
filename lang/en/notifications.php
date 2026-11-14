@@ -42,6 +42,7 @@ return [
         'backup' => 'Backups that worked',
         'request' => 'Requests waiting for you',
         'member' => 'Invitations accepted, declined or lapsed',
+        'ready' => 'Something a member asked for has arrived',
     ],
     'floor' => [
         'advisory' => 'Advisory',

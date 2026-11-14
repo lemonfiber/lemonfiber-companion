@@ -7,6 +7,7 @@ namespace Modules\News\Tests\Internal;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\RequestId;
 use Modules\News\Api\AnItem;
 use Modules\News\Api\KindOfNews;
 use Modules\News\Internal\WhatIsKeptOfNews;
@@ -21,7 +22,7 @@ it('marks every kind and has seen nothing where nothing is kept', function (): v
 });
 
 it('holds the newest of each kind seen apart, the later in place of the earlier', function (): void {
-    $kept = WhatIsKeptOfNews::nothing()->seeing(AnItem::aRequest(3))->seeing(AnItem::aRequest(5))->seeing(AnItem::anUpdate('0.17.0'));
+    $kept = WhatIsKeptOfNews::nothing()->seeing(AnItem::aRequest(RequestId::named('3')))->seeing(AnItem::aRequest(RequestId::named('5')))->seeing(AnItem::anUpdate('0.17.0'));
 
     expect($kept->seen(KindOfNews::Request)->named())->toBe('5')
         ->and($kept->seen(KindOfNews::Update)->named())->toBe('0.17.0')
@@ -29,7 +30,7 @@ it('holds the newest of each kind seen apart, the later in place of the earlier'
 });
 
 it('forgets the newest of a kind it stops marking, and marks it again without bringing it back', function (): void {
-    $kept = WhatIsKeptOfNews::nothing()->seeing(AnItem::aRequest(3))->seeing(AnItem::anUpdate('0.17.0'))->notMarking(KindOfNews::Request)->notMarking(KindOfNews::Request);
+    $kept = WhatIsKeptOfNews::nothing()->seeing(AnItem::aRequest(RequestId::named('3')))->seeing(AnItem::anUpdate('0.17.0'))->notMarking(KindOfNews::Request)->notMarking(KindOfNews::Request);
     $again = $kept->marking(KindOfNews::Request);
 
     expect($kept->isMarked(KindOfNews::Request))->toBeFalse()

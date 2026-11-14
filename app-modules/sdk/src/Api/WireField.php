@@ -768,10 +768,7 @@ enum WireField: string implements NamesAWireField
     /** Whether an app is open source, where one is recommended or handed over. */
     case OpenSource = 'open_source';
 
-    /**
-     * The number something is filed under: an episode within its season, in a
-     * trace, and a request, in what a stack lists as new.
-     */
+    /** The number an episode is filed under within its season, in a trace. */
     case Number = 'number';
 
     /**

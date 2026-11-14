@@ -12,6 +12,7 @@ use function is_string;
 
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\KindOfRequest;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
@@ -57,11 +58,11 @@ final readonly class WhatWasAskedFor
     public static function request(array $row, string $by, int $position): Wanted
     {
         $standing = self::standing($row, $by, $position);
-        $number = self::number($row, $by, $position);
+        $id = self::id($row, $by, $position);
         $title = self::under($row, WireField::Title);
 
         if ($title === null) {
-            return self::notYetNamed($row, $by, $position, $number, $standing);
+            return self::notYetNamed($row, $by, $position, $id, $standing);
         }
 
         if (! is_string($title)) {
@@ -69,10 +70,10 @@ final readonly class WhatWasAskedFor
         }
 
         if (! $standing->wasDeclined()) {
-            return Wanted::of($number, $by, $title, self::size($row), $standing);
+            return Wanted::of($id, $by, $title, self::size($row), $standing);
         }
 
-        return Wanted::turnedDown($number, $by, $title, self::size($row), self::whyItWasRefused($row, $by, $position));
+        return Wanted::turnedDown($id, $by, $title, self::size($row), self::whyItWasRefused($row, $by, $position));
     }
 
     /**
@@ -84,7 +85,7 @@ final readonly class WhatWasAskedFor
      *
      * @param array<mixed> $row
      */
-    private static function notYetNamed(array $row, string $by, int $position, int $number, HowARequestStands $standing): Wanted
+    private static function notYetNamed(array $row, string $by, int $position, RequestId $id, HowARequestStands $standing): Wanted
     {
         $media = self::under($row, WireField::Media);
         $kind = is_string($media) ? KindOfRequest::tryFrom($media) : null;
@@ -94,10 +95,10 @@ final readonly class WhatWasAskedFor
         }
 
         if (! $standing->wasDeclined()) {
-            return Wanted::notYetNamed($number, $by, $kind, self::size($row), $standing);
+            return Wanted::notYetNamed($id, $by, $kind, self::size($row), $standing);
         }
 
-        return Wanted::turnedDownNotYetNamed($number, $by, $kind, self::size($row), self::whyItWasRefused($row, $by, $position));
+        return Wanted::turnedDownNotYetNamed($id, $by, $kind, self::size($row), self::whyItWasRefused($row, $by, $position));
     }
 
     /**
@@ -126,15 +127,15 @@ final readonly class WhatWasAskedFor
     }
 
     /** @param array<mixed> $row */
-    private static function number(array $row, string $by, int $position): int
+    private static function id(array $row, string $by, int $position): RequestId
     {
         $said = self::under($row, WireField::Id);
 
-        if (! is_int($said)) {
+        if (! is_string($said)) {
             throw HouseholdIsUnreadable::request($by, $position);
         }
 
-        return $said;
+        return RequestId::named($said);
     }
 
     /**

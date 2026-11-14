@@ -89,7 +89,7 @@ function whatTheBarnNamesAsNewest(array $releases, array $requests, array $probl
 
     return WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing()))->naming(new TheNewestNamed(
         WhatTheStackListed::these(...array_map(AReleaseNamed::versioned(...), $releases)),
-        WhatTheStackListed::these(...array_map(RequestId::numbered(...), $requests)),
+        WhatTheStackListed::these(...array_map(static fn(int $request): RequestId => RequestId::named(sprintf('%d', $request)), $requests)),
         WhatTheStackListed::these(...$named),
     ));
 }
@@ -279,7 +279,7 @@ it('draws no count an earlier screen heard once the operator has seen it all', f
     $stack = theStackWhoseNewIsCounted()->id();
 
     $noticing->sawThemAll($stack, TheItems::of(KindOfNews::Update, AnItem::anUpdate('2.4.0'), AnItem::anUpdate('2.3.0')));
-    $noticing->sawThemAll($stack, TheItems::of(KindOfNews::Request, AnItem::aRequest(11), AnItem::aRequest(10), AnItem::aRequest(9)));
+    $noticing->sawThemAll($stack, TheItems::of(KindOfNews::Request, AnItem::aRequest(RequestId::named('11')), AnItem::aRequest(RequestId::named('10')), AnItem::aRequest(RequestId::named('9'))));
     $noticing->sawThemAll($stack, TheItems::of(KindOfNews::Problem, AnItem::aProblem('vpn.leak', Instant::atEpochSeconds(1_790_000_600))));
 
     expect(theWhatsNewRow($earlier)['badge'])->toBeNull()

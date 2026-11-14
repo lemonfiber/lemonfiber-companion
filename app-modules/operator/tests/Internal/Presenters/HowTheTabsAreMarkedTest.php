@@ -8,6 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\RequestId;
 use Modules\News\Api\AnItem;
 use Modules\News\Api\HowMuchIsNew;
 use Modules\News\Api\WhatIsNew;
@@ -28,7 +29,7 @@ it('marks no tab with a count or a badge where nothing is new', function (): voi
 it('marks Health with the new problems and Updates with the new updates, each count written out as its badge', function (): void {
     $marks = new HowTheTabsAreMarked()->of(HowMuchIsNew::holding(
         WhatIsNew::these(AnItem::anUpdate('0.17.0')),
-        WhatIsNew::these(AnItem::aRequest(42)),
+        WhatIsNew::these(AnItem::aRequest(RequestId::named('42'))),
         WhatIsNew::these(AnItem::aProblem('service.gluetun', Instant::atEpochSeconds(1_790_000_000)), AnItem::aProblem('service.sonarr', Instant::atEpochSeconds(1_790_000_001))),
     ));
 

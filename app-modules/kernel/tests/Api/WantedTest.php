@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\RequestHasNobodyBehindIt;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
@@ -29,7 +30,7 @@ function aRequest(
     ?Size $size = null,
     Waiting $standing = Waiting::ForApproval,
 ): Wanted {
-    return Wanted::of(41, $by, $forWhat, $size ?? Size::unknown(), HowARequestStands::said($standing));
+    return Wanted::of(RequestId::named('41'), $by, $forWhat, $size ?? Size::unknown(), HowARequestStands::said($standing));
 }
 
 /**
@@ -53,7 +54,7 @@ it('carries who asked and what for, which is what a decision is made from', func
 
     expect($wanted->by())->toBe('Sam')
         ->and(WhatARequestIsCalledAsAWord::of($wanted))->toBe('A film nobody has seen')
-        ->and($wanted->number())->toBe(41);
+        ->and($wanted->id()->reference())->toBe('41');
 });
 
 it('takes the words as the stack wrote them, less the space around them', function (): void {
@@ -136,7 +137,7 @@ function whyItWasTurnedDown(Wanted $wanted): string
 
 it('a refused request carries the reason that was given', function (): void {
     $wanted = Wanted::turnedDown(
-        41,
+        RequestId::named('41'),
         'Sam',
         'A film nobody has seen',
         Size::unknown(),
@@ -151,14 +152,14 @@ it('a refused request is `declined` by construction', function (): void {
     // once: a decline carrying no reason, and a reason attached to a request
     // that was never declined — a screen telling somebody why a thing they are
     // still waiting for was refused.
-    $wanted = Wanted::turnedDown(41, 'Sam', 'A film', Size::unknown(), TurnedDown::because('No room'));
+    $wanted = Wanted::turnedDown(RequestId::named('41'), 'Sam', 'A film', Size::unknown(), TurnedDown::because('No room'));
 
     expect(whereItStands($wanted))->toBe('declined')
         ->and($wanted->standing()->wasDeclined())->toBeTrue();
 });
 
 it('a request that was not refused says so rather than answering with nothing', function (): void {
-    $wanted = Wanted::of(41, 'Sam', 'A film', Size::unknown(), HowARequestStands::said(Waiting::ForApproval));
+    $wanted = Wanted::of(RequestId::named('41'), 'Sam', 'A film', Size::unknown(), HowARequestStands::said(Waiting::ForApproval));
 
     expect(whyItWasTurnedDown($wanted))->toBe('not refused');
 });
@@ -167,7 +168,7 @@ it('a refused request is still refused for the reasons every request is', functi
     // `turnedDown()` goes through `of()`, so the blank-title and blank-requester
     // refusals reach it too — which is what keeps a decline from being the one
     // row that can arrive unreadable.
-    expect(fn(): Wanted => Wanted::turnedDown(41, '  ', 'A film', Size::unknown(), TurnedDown::because('No')))
+    expect(fn(): Wanted => Wanted::turnedDown(RequestId::named('41'), '  ', 'A film', Size::unknown(), TurnedDown::because('No')))
         ->toThrow(RequestHasNobodyBehindIt::class);
 });
 
@@ -199,11 +200,11 @@ it('says a standing nobody named is neither here for them nor on its way', funct
 });
 
 it('builds a request nothing has named yet by its kind, still refusing one nobody asked for', function (): void {
-    $wanted = Wanted::notYetNamed(42, ' Sam ', KindOfRequest::Series, Size::unknown(), HowARequestStands::said(Waiting::ForApproval));
+    $wanted = Wanted::notYetNamed(RequestId::named('42'), ' Sam ', KindOfRequest::Series, Size::unknown(), HowARequestStands::said(Waiting::ForApproval));
 
     expect(WhatARequestIsCalledAsAWord::of($wanted))->toBe('a series not named yet')
         ->and($wanted->by())->toBe('Sam')
-        ->and(fn(): Wanted => Wanted::notYetNamed(42, '  ', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)))
+        ->and(fn(): Wanted => Wanted::notYetNamed(RequestId::named('42'), '  ', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)))
         ->toThrow(RequestHasNobodyBehindIt::class);
 });
 

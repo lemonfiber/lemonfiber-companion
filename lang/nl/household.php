@@ -54,6 +54,7 @@ return [
     'nothing_asked_for' => 'Je hebt nog niets aangevraagd.',
     'waiting_count' => '{0} Niets wacht op je akkoord|{1} Eén verzoek wacht op je akkoord|[2,*] :count verzoeken wachten op je akkoord',
     'asked_by' => 'Gevraagd door :who',
+    'reference' => 'Referentie :reference',
     'size_measured' => ':size :unit',
     'size_guessed' => 'Ongeveer :size :unit',
     'size_unknown' => 'Grootte nog onbekend',
@@ -92,6 +93,10 @@ return [
     'ask_again_for_yours' => 'Opnieuw controleren wat je hebt aangevraagd',
 
     'search' => [
+        'kind' => [
+            'music' => 'Muziek',
+            'books' => 'Boek',
+        ],
         'label' => 'Waar zoek je naar',
         'placeholder' => 'Een film of een serie',
         'go' => 'Zoeken',

@@ -582,7 +582,7 @@ function aNewestNamed(array $changed = []): array
         'kind' => 'news',
         'data' => [
             'updates' => ['2.5.0', '2.4.0'],
-            'requests' => [12, 9],
+            'requests' => ['12', '9'],
             'problems' => [['check' => 'disk.space', 'onset' => '1759400000']],
             'unread' => [],
             ...$changed,
@@ -611,7 +611,7 @@ function theNewestThatStackNamed(bool $updatesRead = true): TheNewestNamed
 {
     return new TheNewestNamed(
         $updatesRead ? WhatTheStackListed::these(AReleaseNamed::versioned('2.5.0'), AReleaseNamed::versioned('2.4.0')) : WhatTheStackListed::unread(),
-        WhatTheStackListed::these(RequestId::numbered(12), RequestId::numbered(9)),
+        WhatTheStackListed::these(RequestId::named('12'), RequestId::named('9')),
         WhatTheStackListed::these(new AProblemNamed(Check::of('disk.space'), Instant::atEpochSeconds(1_759_400_000))),
     );
 }
@@ -630,7 +630,7 @@ function whatWasNamedAsAWord(WhatWasHeard $heard): string
             }
 
             foreach ($newest->requests() as $request) {
-                $requests[] = (string) $request->number();
+                $requests[] = $request->reference();
             }
 
             foreach ($newest->problems() as $problem) {
@@ -706,8 +706,8 @@ it('cannot hear a newest it cannot read, and says so as an answer it could not r
     'updates that are not a list' => [['updates' => 'all of them']],
     'a version that is not words' => [['updates' => [7]]],
     'a blank version' => [['updates' => [' ']]],
-    'a request that is not a number' => [['requests' => ['twelve']]],
-    'a request numbered nought' => [['requests' => [0]]],
+    'a request that is not words' => [['requests' => [12]]],
+    'a request named by nothing' => [['requests' => ['']]],
     'a problem that is not one' => [['problems' => ['disk.space']]],
     'a problem with no check' => [['problems' => [['onset' => '1759400000']]]],
     'an onset in words' => [['problems' => [['check' => 'disk.space', 'onset' => 'this morning']]]],

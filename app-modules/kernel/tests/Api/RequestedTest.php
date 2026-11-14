@@ -11,6 +11,7 @@ use function iterator_to_array;
 
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
@@ -22,7 +23,7 @@ use Tests\Support\WhatARequestIsCalledAsAWord;
 /** One request, named so a case can say which row it expects back. */
 function aWant(int $number, string $forWhat, Waiting $standing): Wanted
 {
-    return Wanted::of($number, 'Robin', $forWhat, Size::unknown(), HowARequestStands::said($standing));
+    return Wanted::of(RequestId::named(sprintf('%d', $number)), 'Robin', $forWhat, Size::unknown(), HowARequestStands::said($standing));
 }
 
 it('holds what it was given, in the order it was given', function (): void {

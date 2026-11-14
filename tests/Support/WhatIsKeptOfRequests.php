@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Noted;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\Size;
@@ -47,11 +48,11 @@ final readonly class WhatIsKeptOfRequests
     public static function aReadingWithEveryPart(): Requested
     {
         return Requested::of(
-            Wanted::of(1, 'Mira', 'Dune', Size::measured(4_200_000_000), HowARequestStands::said(Waiting::ForApproval)),
-            Wanted::of(2, 'Joost', 'Severance', Size::guessedAt(30_000_000_000), HowARequestStands::said(Waiting::Getting)),
-            Wanted::turnedDown(3, 'Mira', 'Cats', Size::unknown(), TurnedDown::at('2026-09-30 21:04', 'We have it already')),
-            Wanted::turnedDown(4, 'Joost', 'The Room', Size::measured(700_000_000), TurnedDown::because('Not in this house')),
-            Wanted::of(5, 'Joost', 'Twin Peaks', Size::unknown(), HowARequestStands::unnamed()),
+            Wanted::of(RequestId::named('1'), 'Mira', 'Dune', Size::measured(4_200_000_000), HowARequestStands::said(Waiting::ForApproval)),
+            Wanted::of(RequestId::named('2'), 'Joost', 'Severance', Size::guessedAt(30_000_000_000), HowARequestStands::said(Waiting::Getting)),
+            Wanted::turnedDown(RequestId::named('3'), 'Mira', 'Cats', Size::unknown(), TurnedDown::at('2026-09-30 21:04', 'We have it already')),
+            Wanted::turnedDown(RequestId::named('4'), 'Joost', 'The Room', Size::measured(700_000_000), TurnedDown::because('Not in this house')),
+            Wanted::of(RequestId::named('5'), 'Joost', 'Twin Peaks', Size::unknown(), HowARequestStands::unnamed()),
         );
     }
 
@@ -60,8 +61,8 @@ final readonly class WhatIsKeptOfRequests
     public static function aReadingNotYetNamed(): Requested
     {
         return Requested::of(
-            Wanted::notYetNamed(6, 'Mira', KindOfRequest::Film, Size::guessedAt(5_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
-            Wanted::turnedDownNotYetNamed(7, 'Joost', KindOfRequest::Series, Size::unknown(), TurnedDown::because('Not now')),
+            Wanted::notYetNamed(RequestId::named('6'), 'Mira', KindOfRequest::Film, Size::guessedAt(5_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
+            Wanted::turnedDownNotYetNamed(RequestId::named('7'), 'Joost', KindOfRequest::Series, Size::unknown(), TurnedDown::because('Not now')),
         );
     }
 

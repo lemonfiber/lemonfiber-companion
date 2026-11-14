@@ -20,8 +20,8 @@ use Traversable;
  * Every item of one kind a stack holds, newest first, as the stack listed them.
  *
  * It answers what is newer than an item, by the order its kind is newer by: an
- * update by its place in this list, and a request or a problem by its own
- * number or onset.
+ * update or a request by its place in this list, which is the stack's order,
+ * and a problem by its onset.
  *
  * @implements IteratorAggregate<int, AnItem>
  */
@@ -51,13 +51,13 @@ final readonly class TheItems implements Countable, IteratorAggregate
     /**
      * Every item newer than the one seen.
      *
-     * An update the stack no longer lists leaves only its newest release new:
-     * whatever came between is out of the record, and a list of every release
+     * An update or a request the stack no longer lists leaves only the newest
+     * new: whatever came between is out of the list, and a count of everything
      * would bury the one that matters.
      */
     public function newerThan(AnItem $seen): WhatIsNew
     {
-        if ($this->kind !== KindOfNews::Update) {
+        if ($this->kind === KindOfNews::Problem) {
             return WhatIsNew::these(...array_filter($this->items, static fn(AnItem $item): bool => $item->order() > $seen->order()));
         }
 
@@ -69,7 +69,7 @@ final readonly class TheItems implements Countable, IteratorAggregate
     /** Whether one item is newer than another, both of this kind. */
     public function isNewer(AnItem $item, AnItem $than): bool
     {
-        if ($this->kind !== KindOfNews::Update) {
+        if ($this->kind === KindOfNews::Problem) {
             return $item->order() > $than->order();
         }
 

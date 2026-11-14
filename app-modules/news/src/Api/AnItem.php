@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace Modules\News\Api;
 
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\RequestId;
 
-use function sprintf;
 use function trim;
 
 /**
  * One update, request or problem, by what tells it from the others of its kind.
  *
- * An update is named by its version and has no order of its own: it is newer by
- * its place in the stack's record, which {@see TheItems} holds. A request is
- * named and ordered by its number. A problem is named by its check and ordered
- * by when it began, so one that clears and comes back is a newer problem.
+ * An update is named by its version and a request by its reference, and
+ * neither has an order of its own: each is newer by its place in the stack's
+ * list, which {@see TheItems} holds, newest first. A problem is named by its
+ * check and ordered by when it began, so one that clears and comes back is a
+ * newer problem.
  */
 final readonly class AnItem
 {
@@ -31,14 +32,10 @@ final readonly class AnItem
         return new self(KindOfNews::Update, $version, 0);
     }
 
-    /** A household request, by its number. */
-    public static function aRequest(int $number): self
+    /** A household request, by the reference the household list names it with. */
+    public static function aRequest(RequestId $id): self
     {
-        if ($number < 1) {
-            throw NotAnItem::numbered($number);
-        }
-
-        return new self(KindOfNews::Request, sprintf('%d', $number), $number);
+        return new self(KindOfNews::Request, $id->reference(), 0);
     }
 
     /** A check found wrong, by the check and when it began. */
@@ -57,13 +54,13 @@ final readonly class AnItem
         return $this->kind;
     }
 
-    /** What names it among the others of its kind: a version, a number or a check. */
+    /** What names it among the others of its kind: a version, a reference or a check. */
     public function named(): string
     {
         return $this->named;
     }
 
-    /** Where it falls among the others of its kind, higher being newer; nothing for an update. */
+    /** Where a problem falls among the others, later being newer; nothing for an update or a request. */
     public function order(): int
     {
         return $this->order;

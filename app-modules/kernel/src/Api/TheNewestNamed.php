@@ -37,7 +37,7 @@ final readonly class TheNewestNamed
     }
 
     /**
-     * The household's newest requests, highest number first.
+     * The household's newest requests, by reference, newest asked first.
      *
      * @return WhatTheStackListed<RequestId>
      */

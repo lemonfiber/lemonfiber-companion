@@ -18,6 +18,7 @@ use function json_decode;
 use const JSON_THROW_ON_ERROR;
 
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\RequestId;
 use Modules\News\Api\AnItem;
 use Modules\News\Api\HowMuchIsNew;
 use Modules\News\Api\WhatIsNew;
@@ -99,7 +100,7 @@ it('gives What\'s new and the two settings an icon each platform has, and a labe
 it('counts what is new of every kind as digits, and draws no count where nothing is new', function (): void {
     $new = HowMuchIsNew::holding(
         WhatIsNew::these(AnItem::anUpdate('2.4.0')),
-        WhatIsNew::these(AnItem::aRequest(12), AnItem::aRequest(11)),
+        WhatIsNew::these(AnItem::aRequest(RequestId::named('12')), AnItem::aRequest(RequestId::named('11'))),
         WhatIsNew::these(AnItem::aProblem('vpn.leak', Instant::atEpochSeconds(1_790_000_600))),
     );
 

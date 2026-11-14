@@ -3,7 +3,7 @@
 What is new on each stack, against the newest of each kind the operator has
 seen there. There are three kinds, `KindOfNews`: an update, a request and a
 problem. Each is newer by an order the stack vouches for. An update is newer by
-its place in the stack's record, a request by its number, and a problem by when
+its place in the stack's record, a request by its place in the household list, and a problem by when
 it began.
 
 | | |

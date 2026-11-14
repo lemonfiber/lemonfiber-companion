@@ -67,8 +67,8 @@ function theSessionTheHouseholdIsAskedWith(): Session
 function theSameRequests(): Requested
 {
     return Requested::of(
-        Wanted::of(41, 'Sam', 'A film nobody has seen', Size::guessedAt(4_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
-        Wanted::of(42, 'Robin', 'A series somebody has', Size::unknown(), HowARequestStands::said(Waiting::Here)),
+        Wanted::of(RequestId::named('41'), 'Sam', 'A film nobody has seen', Size::guessedAt(4_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('42'), 'Robin', 'A series somebody has', Size::unknown(), HowARequestStands::said(Waiting::Here)),
     );
 }
 
@@ -103,7 +103,7 @@ function whatAHouseholdThatAskedSends(): array
                     'standing' => 'active',
                     'to_hand_over' => [],
                     'requests' => [[
-                        'id' => 41,
+                        'id' => '41',
                         'title' => 'A film nobody has seen',
                         'state' => 'waiting-for-approval',
                         'estimate' => ['bytes' => 4_000_000_000, 'measured' => false],
@@ -119,7 +119,7 @@ function whatAHouseholdThatAskedSends(): array
                     // which is answered with *we do not know* rather
                     // than a guess of nothing.
                     'requests' => [[
-                        'id' => 42,
+                        'id' => '42',
                         'title' => 'A series somebody has',
                         'state' => 'here',
                     ]],
@@ -212,7 +212,7 @@ function whatCameOfDeciding(Wanting $wanting, Decided $decided): string
 }
 
 it('takes an approval and comes away with a name to ask about', function (): void {
-    $decided = Decided::toApprove(RequestId::numbered(41));
+    $decided = Decided::toApprove(RequestId::named('41'));
 
     foreach (everyWayOfAskingTheHousehold(aDecidedAnswer()) as $which => $make) {
         expect(whatCameOfDeciding($make(), $decided))->toBe(AHouseholdThatAsked::THE_JOB, $which);
@@ -223,7 +223,7 @@ it('takes a refusal, which carries the sentence it owes', function (): void {
     // The other of the two decisions, and the one that carries something extra. A
     // port taking only the approval would have a screen turning a request down
     // by leaving it alone, which is exactly what may not happen.
-    $decided = Decided::toDecline(RequestId::numbered(41), 'No room this month');
+    $decided = Decided::toDecline(RequestId::named('41'), 'No room this month');
 
     foreach (everyWayOfAskingTheHousehold(aDecidedAnswer()) as $which => $make) {
         expect(whatCameOfDeciding($make(), $decided))->toBe(AHouseholdThatAsked::THE_JOB, $which);
@@ -239,7 +239,7 @@ it('tells a refused session from a stack that did not answer, where a decision c
 
     foreach ($table as [$answered, $met]) {
         foreach (everyWayOfAskingTheHousehold($answered, $met) as $which => $make) {
-            expect(whatCameOfDeciding($make(), Decided::toApprove(RequestId::numbered(41))))
+            expect(whatCameOfDeciding($make(), Decided::toApprove(RequestId::named('41'))))
                 ->toBe($met->kind()->value, $which);
         }
     }
@@ -283,16 +283,16 @@ function whatTheWireCarriedForADecision(Decided $decided): array
 }
 
 it('an approval names the request and nothing else', function (): void {
-    expect(whatTheWireCarriedForADecision(Decided::toApprove(RequestId::numbered(41))))
-        ->toBe(['request' => 41]);
+    expect(whatTheWireCarriedForADecision(Decided::toApprove(RequestId::named('41'))))
+        ->toBe(['request' => '41']);
 });
 
 it('a refusal names the request and carries the sentence with it', function (): void {
-    // Both keys, and the number among them: a refusal sent without its reason
+    // Both keys, and the reference among them: a refusal sent without its reason
     // is the wire half of a refusal that says nothing, and one sent with the
-    // wrong number turns somebody else's request down.
-    expect(whatTheWireCarriedForADecision(Decided::toDecline(RequestId::numbered(41), 'No room this month')))
-        ->toBe(['request' => 41, 'reason' => 'No room this month']);
+    // wrong reference turns somebody else's request down.
+    expect(whatTheWireCarriedForADecision(Decided::toDecline(RequestId::named('41'), 'No room this month')))
+        ->toBe(['request' => '41', 'reason' => 'No room this month']);
 });
 
 /** What a household answered, as a word, whichever arm it took. */
@@ -329,7 +329,7 @@ function everyRequestIn(Wanting $wanting): string
             $rows = [];
 
             foreach ($wanted as $one) {
-                $rows[] = sprintf('%d/%s/%s/%s', $one->number(), $one->by(), WhatARequestIsCalledAsAWord::of($one), theStandingOf($one));
+                $rows[] = sprintf('%s/%s/%s/%s', $one->id()->reference(), $one->by(), WhatARequestIsCalledAsAWord::of($one), theStandingOf($one));
             }
 
             return new TheWordCarriedOut(implode(' | ', $rows));

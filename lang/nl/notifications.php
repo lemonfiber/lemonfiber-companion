@@ -39,6 +39,7 @@ return [
         'backup' => 'Geslaagde back-ups',
         'request' => 'Verzoeken die op je wachten',
         'member' => 'Uitnodigingen aangenomen, afgeslagen of verlopen',
+        'ready' => 'Iets waar een lid om vroeg is binnen',
     ],
     'floor' => [
         'advisory' => 'Advies',

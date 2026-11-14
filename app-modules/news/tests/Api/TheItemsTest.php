@@ -10,6 +10,7 @@ use function it;
 use function iterator_to_array;
 
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\RequestId;
 use Modules\News\Api\AnItem;
 use Modules\News\Api\KindOfNews;
 use Modules\News\Api\NotAnItem;
@@ -41,7 +42,7 @@ it('holds items of one kind, newest first', function (): void {
 });
 
 it('refuses an item of another kind', function (): void {
-    expect(static fn(): TheItems => TheItems::of(KindOfNews::Update, AnItem::anUpdate('0.17.0'), AnItem::aRequest(3)))
+    expect(static fn(): TheItems => TheItems::of(KindOfNews::Update, AnItem::anUpdate('0.17.0'), AnItem::aRequest(RequestId::named('3'))))
         ->toThrow(NotAnItem::class, 'A list of update items was handed an item of the kind request.');
 });
 
@@ -58,27 +59,43 @@ it('leaves only the newest release new where the one seen is no longer in the re
 });
 
 it('finds the requests numbered above the one seen, and the problems begun after it', function (): void {
-    $requests = TheItems::of(KindOfNews::Request, AnItem::aRequest(9), AnItem::aRequest(7), AnItem::aRequest(4));
+    $requests = TheItems::of(KindOfNews::Request, AnItem::aRequest(RequestId::named('9')), AnItem::aRequest(RequestId::named('7')), AnItem::aRequest(RequestId::named('4')));
     $problems = TheItems::of(
         KindOfNews::Problem,
         AnItem::aProblem('service.gluetun', Instant::atEpochSeconds(300)),
         AnItem::aProblem('storage.full', Instant::atEpochSeconds(200)),
     );
 
-    expect(namedIn($requests->newerThan(AnItem::aRequest(7))))->toBe(['9'])
-        ->and(namedIn($requests->newerThan(AnItem::aRequest(9))))->toBe([])
-        ->and(namedIn($problems->newerThan(AnItem::aProblem('storage.full', Instant::atEpochSeconds(200)))))->toBe(['service.gluetun']);
+    expect(namedIn($requests->newerThan(AnItem::aRequest(RequestId::named('7')))))->toBe(['9'])
+        ->and(namedIn($requests->newerThan(AnItem::aRequest(RequestId::named('9')))))->toBe([])
+        ->and(namedIn($problems->newerThan(AnItem::aProblem('storage.full', Instant::atEpochSeconds(200)))))->toBe(['service.gluetun'])
+        ->and(namedIn($problems->newerThan(AnItem::aProblem('disk.slow', Instant::atEpochSeconds(100)))))->toBe(['service.gluetun', 'storage.full']);
 });
 
 it('says which of two items is newer by the order of their kind', function (): void {
-    $requests = TheItems::of(KindOfNews::Request, AnItem::aRequest(9), AnItem::aRequest(7));
+    $requests = TheItems::of(KindOfNews::Request, AnItem::aRequest(RequestId::named('9')), AnItem::aRequest(RequestId::named('7')));
 
     expect(threeReleases()->isNewer(AnItem::anUpdate('0.17.0'), AnItem::anUpdate('0.16.0')))->toBeTrue()
         ->and(threeReleases()->isNewer(AnItem::anUpdate('0.16.0'), AnItem::anUpdate('0.17.0')))->toBeFalse()
         ->and(threeReleases()->isNewer(AnItem::anUpdate('0.16.0'), AnItem::anUpdate('0.16.0')))->toBeFalse()
         ->and(threeReleases()->isNewer(AnItem::anUpdate('0.15.0'), AnItem::anUpdate('0.9.0')))->toBeTrue()
         ->and(threeReleases()->isNewer(AnItem::anUpdate('0.9.0'), AnItem::anUpdate('0.15.0')))->toBeFalse()
-        ->and($requests->isNewer(AnItem::aRequest(9), AnItem::aRequest(7)))->toBeTrue()
-        ->and($requests->isNewer(AnItem::aRequest(7), AnItem::aRequest(7)))->toBeFalse()
-        ->and($requests->isNewer(AnItem::aRequest(12), AnItem::aRequest(7)))->toBeTrue();
+        ->and($requests->isNewer(AnItem::aRequest(RequestId::named('9')), AnItem::aRequest(RequestId::named('7'))))->toBeTrue()
+        ->and($requests->isNewer(AnItem::aRequest(RequestId::named('7')), AnItem::aRequest(RequestId::named('7'))))->toBeFalse()
+        ->and($requests->isNewer(AnItem::aRequest(RequestId::named('7')), AnItem::aRequest(RequestId::named('9'))))->toBeFalse()
+        ->and($requests->isNewer(AnItem::aRequest(RequestId::named('9')), AnItem::aRequest(RequestId::named('12'))))->toBeTrue()
+        ->and($requests->isNewer(AnItem::aRequest(RequestId::named('12')), AnItem::aRequest(RequestId::named('7'))))->toBeFalse();
+});
+
+it('says which of two problems is newer by when each began, listed or not', function (): void {
+    $problems = TheItems::of(
+        KindOfNews::Problem,
+        AnItem::aProblem('service.gluetun', Instant::atEpochSeconds(300)),
+        AnItem::aProblem('storage.full', Instant::atEpochSeconds(200)),
+    );
+
+    expect($problems->isNewer(AnItem::aProblem('service.gluetun', Instant::atEpochSeconds(300)), AnItem::aProblem('storage.full', Instant::atEpochSeconds(200))))->toBeTrue()
+        ->and($problems->isNewer(AnItem::aProblem('storage.full', Instant::atEpochSeconds(200)), AnItem::aProblem('service.gluetun', Instant::atEpochSeconds(300))))->toBeFalse()
+        ->and($problems->isNewer(AnItem::aProblem('storage.full', Instant::atEpochSeconds(200)), AnItem::aProblem('storage.full', Instant::atEpochSeconds(200))))->toBeFalse()
+        ->and($problems->isNewer(AnItem::aProblem('disk.slow', Instant::atEpochSeconds(400)), AnItem::aProblem('service.gluetun', Instant::atEpochSeconds(300))))->toBeTrue();
 });

@@ -4,46 +4,45 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function trim;
+
 /**
  * What a stack calls one thing somebody in the house asked for.
  *
- * A number rather than a name, because that is what the wire carries and what
- * an action is asked with. A value object over it for {@see ServiceId}'s
- * reason: an integer travelling through three signatures is an integer any of
- * them could have swapped for another integer, and the two on this screen are a
- * request and a size.
+ * The reference the household list names it by: the request service's number
+ * (`42`), or `music-3` or `books-1` for an ask the core keeps itself. It is
+ * carried as the stack wrote it and never taken apart, because what it is made
+ * of is the stack's to decide. A value object over it for {@see ServiceId}'s
+ * reason: a string travelling through three signatures is a string any of them
+ * could have swapped for another.
  *
- * **Zero and below are refused here rather than at each caller.** A stack
- * numbers what it holds from one, so a request numbered zero is a reading that
- * went wrong or a template that sent nothing — and the decision is one
- * where acting on the wrong subject is the whole harm.
+ * **A blank reference, or one with space around it, is refused here rather
+ * than at each caller**, since the decision is one where acting on the wrong
+ * subject is the whole harm.
  */
 final readonly class RequestId
 {
-    /** The lowest number a stack gives anything it holds. */
-    private const int THE_FIRST = 1;
+    private function __construct(private string $reference) {}
 
-    private function __construct(private int $number) {}
-
-    /** One request, numbered as the stack numbers it. */
-    public static function numbered(int $number): self
+    /** One request, by the reference its stack gives it. */
+    public static function named(string $reference): self
     {
-        if ($number < self::THE_FIRST) {
-            throw RequestIsUnnumbered::atNumber($number);
+        if ($reference === '' || trim($reference) !== $reference) {
+            throw RequestIsUnnamed::as($reference);
         }
 
-        return new self($number);
+        return new self($reference);
     }
 
-    /** The number, for asking with — which is the only thing it is for. */
-    public function number(): int
+    /** The reference, for asking with, which is the only thing it is for. */
+    public function reference(): string
     {
-        return $this->number;
+        return $this->reference;
     }
 
     /** Whether this is the same request as that one. */
     public function is(self $other): bool
     {
-        return $this->number === $other->number;
+        return $this->reference === $other->reference;
     }
 }

@@ -13,7 +13,7 @@ use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\CheckIsUnnamed;
 use Modules\Kernel\Api\ReadingNews;
-use Modules\Kernel\Api\RequestIsUnnumbered;
+use Modules\Kernel\Api\RequestIsUnnamed;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\VersionIsBlank;
@@ -44,7 +44,7 @@ final readonly class Newsreaders implements ReadingNews
             return WhatWasFoundOfTheNews::found(WhatIsListedAsNew::in($envelope));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatWasFoundOfTheNews::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|NewsIsUnreadable|VersionIsBlank|RequestIsUnnumbered|CheckIsUnnamed $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|NewsIsUnreadable|VersionIsBlank|RequestIsUnnamed|CheckIsUnnamed $why) {
             return WhatWasFoundOfTheNews::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

@@ -94,7 +94,7 @@ final readonly class TheNewsAsItems
         $said = [];
 
         foreach ($this->news->requests() as $request) {
-            $said[] = WhatAnItemSays::ofARequest(AnItem::aRequest($request->id()->number()), $request->title());
+            $said[] = WhatAnItemSays::ofARequest(AnItem::aRequest($request->id()), $request->title());
         }
 
         return $said;

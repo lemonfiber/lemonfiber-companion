@@ -11,6 +11,7 @@ use function implode;
 use function it;
 
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\Unsealed;
 use Modules\News\Api\AnItem;
@@ -40,8 +41,8 @@ it('reads back the kinds switched off and the newest of each kind seen that it w
 });
 
 it('writes only what names and orders each item, and an empty record as one', function (): void {
-    expect(TheNewsAsKept::written(WhatIsKeptOfNews::nothing()->seeing(AnItem::aRequest(42)))->inTheClear())
-        ->toBe('{"off":[],"seen":{"request":{"known_as":"42","order":42}}}')
+    expect(TheNewsAsKept::written(WhatIsKeptOfNews::nothing()->seeing(AnItem::aRequest(RequestId::named('42'))))->inTheClear())
+        ->toBe('{"off":[],"seen":{"request":{"known_as":"42","order":0}}}')
         ->and(TheNewsAsKept::written(WhatIsKeptOfNews::nothing())->inTheClear())->toBe('{"off":[],"seen":[]}');
 });
 
@@ -58,6 +59,6 @@ it('reads what does not read as nothing switched off and nothing seen, part by p
     'a marker with no order' => ['{"seen":{"request":{"known_as":"1"}}}', 'off[] seen[]'],
     'a marker named by a number' => ['{"seen":{"request":{"known_as":1,"order":1}}}', 'off[] seen[]'],
     'a marker ordered by text' => ['{"seen":{"request":{"known_as":"1","order":"1"}}}', 'off[] seen[]'],
-    'a request numbered nothing' => ['{"seen":{"request":{"known_as":"0","order":0}}}', 'off[] seen[]'],
-    'an update named by nothing, beside one that reads' => ['{"seen":{"update":{"known_as":"","order":0},"request":{"known_as":"3","order":3}}}', 'off[] seen[request=3:3]'],
+    'a request named by nothing' => ['{"seen":{"request":{"known_as":" ","order":0}}}', 'off[] seen[]'],
+    'an update named by nothing, beside one that reads' => ['{"seen":{"update":{"known_as":"","order":0},"request":{"known_as":"3","order":3}}}', 'off[] seen[request=3:0]'],
 ]);

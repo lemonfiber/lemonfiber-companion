@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 /**
  * Everything a stack lists that could be new, each kind newest first.
  *
- * A release by its place in the stack's record, a request by its number, and a
+ * A release by its place in the stack's record, a request by its place in the household list, and a
  * check found wrong by when it went wrong: the orders the stack keeps, so the
  * phone compares nothing the stack did not order. A kind the stack could not
  * read says so rather than arriving empty.
@@ -36,7 +36,7 @@ final readonly class TheNewsOfAStack
     }
 
     /**
-     * What the household asked for, highest number first.
+     * What the household asked for, newest asked first.
      *
      * @return WhatTheStackListed<ARequestListed>
      */

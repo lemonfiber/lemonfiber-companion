@@ -26,6 +26,7 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class WhatOneRequestSays
 {
     /**
+     * @param string $reference     the reference the stack names it by, which approving or turning it down sends
      * @param string $title         what was asked for, which is what a decision is made about, or empty where nothing has named it yet
      * @param string $untitled      the key for the kind of thing it is, where nothing has named it yet, or empty
      * @param string $by            who asked, so a decline can reach them by name
@@ -51,7 +52,7 @@ final readonly class WhatOneRequestSays
      * twice, with thresholds that had to agree and nothing holding them to it.
      */
     public function __construct(
-        public int $number,
+        public string $reference,
         public string $title,
         public string $by,
         public string $standing,

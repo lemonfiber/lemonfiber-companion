@@ -17,6 +17,7 @@ use function json_encode;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\TurnedDown;
@@ -100,7 +101,7 @@ final readonly class TheRequestsAsKept
         )->held;
 
         return [
-            'number' => $wanted->number(),
+            'id' => $wanted->id()->reference(),
             'by' => $wanted->by(),
             ...$called,
             'size' => $wanted->size()->either(
@@ -128,33 +129,33 @@ final readonly class TheRequestsAsKept
     /** @param array<array-key, mixed> $fields */
     private static function wantedIn(array $fields): Wanted
     {
-        $number = self::numberAt($fields, 'number');
+        $id = RequestId::named(self::textAt($fields, 'id'));
         $by = self::textAt($fields, 'by');
         $size = self::sizeIn(self::fieldsIn(self::at($fields, 'size')));
 
         if (array_key_exists(self::NOT_YET_NAMED, $fields)) {
-            return self::notYetNamedIn($fields, $number, $by, $size);
+            return self::notYetNamedIn($fields, $id, $by, $size);
         }
 
         $for = self::textAt($fields, 'for');
 
         foreach (self::listAt($fields, 'refused') as $refused) {
-            return Wanted::turnedDown($number, $by, $for, $size, self::turnedDownIn(self::fieldsIn($refused)));
+            return Wanted::turnedDown($id, $by, $for, $size, self::turnedDownIn(self::fieldsIn($refused)));
         }
 
-        return Wanted::of($number, $by, $for, $size, self::standingIn(self::listAt($fields, 'standing')));
+        return Wanted::of($id, $by, $for, $size, self::standingIn(self::listAt($fields, 'standing')));
     }
 
     /** @param array<array-key, mixed> $fields */
-    private static function notYetNamedIn(array $fields, int $number, string $by, Size $size): Wanted
+    private static function notYetNamedIn(array $fields, RequestId $id, string $by, Size $size): Wanted
     {
         $kind = KindOfRequest::tryFrom(self::textAt($fields, self::NOT_YET_NAMED)) ?? throw KeptRequestsDoNotRead::at(self::NOT_YET_NAMED);
 
         foreach (self::listAt($fields, 'refused') as $refused) {
-            return Wanted::turnedDownNotYetNamed($number, $by, $kind, $size, self::turnedDownIn(self::fieldsIn($refused)));
+            return Wanted::turnedDownNotYetNamed($id, $by, $kind, $size, self::turnedDownIn(self::fieldsIn($refused)));
         }
 
-        return Wanted::notYetNamed($number, $by, $kind, $size, self::standingIn(self::listAt($fields, 'standing')));
+        return Wanted::notYetNamed($id, $by, $kind, $size, self::standingIn(self::listAt($fields, 'standing')));
     }
 
     /** @param array<array-key, mixed> $fields */

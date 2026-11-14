@@ -52,6 +52,18 @@ enum WhatLemonfiberAsksFor: string
     /** Waking a phone that asked to be woken when this stack has something to say. */
     case Waking = 'waking';
 
+    /** Delivering an alert to an ntfy topic. */
+    case Ntfy = 'ntfy';
+
+    /** Delivering an alert to a gotify server. */
+    case Gotify = 'gotify';
+
+    /** Posting an alert to a webhook. */
+    case Webhook = 'webhook';
+
+    /** Delivering an alert to an Apprise API. */
+    case Apprise = 'apprise';
+
     /** The catalogue key for this request's name, as an operator reads it. */
     public function saidOnTheScreen(): string
     {

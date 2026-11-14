@@ -182,6 +182,21 @@ it('shows every title on the page with its year, kind and standing, under the co
         ]);
 });
 
+it('names music and books by their own kind on the page', function (): void {
+    $screen = theSearchTab(AStackThatFindsTitles::finding(WhatASearchFound::lastly(
+        'What you ask for now waits for a yes.',
+        AFoundTitle::listed('7', KindOfTitle::Music, 'Dune: Original Soundtrack', WhenItCameOut::in(2021), WhereAFoundTitleStands::Askable),
+        AFoundTitle::listed('8', KindOfTitle::Books, 'Dune', WhenItCameOut::unstated(), WhereAFoundTitleStands::Here),
+    )));
+    $screen->typed = 'dune';
+    $screen->search();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(
+        aSearchLine('household.search.line', ['year' => '2021', 'kind' => aSearchLine('household.search.kind.music'), 'stands' => aSearchLine('household.search.askable')]),
+        aSearchLine('household.search.line_undated', ['kind' => aSearchLine('household.search.kind.books'), 'stands' => aSearchLine('household.search.already_here')]),
+    );
+});
+
 it('reads the next page as the member reaches the end, from the place the last page named, and adds it beneath', function (): void {
     $finding = AStackThatFindsTitles::finding(aFirstPage(), aLastPage());
     $screen = theSearchTab($finding);
