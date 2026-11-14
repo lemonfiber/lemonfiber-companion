@@ -186,8 +186,8 @@ final readonly class Screens
             // remembering to add it — and a case that needs one and is asked
             // for the other refuses rather than handing back a path with
             // `{service}` still in it.
-            $paths[sprintf('AStacksScreen::%s', $screen->name)] = $screen->alsoNeedsAService()
-                ? $screen->forTheStacksService(
+            $paths[sprintf('AStacksScreen::%s', $screen->name)] = $screen->isAboutOneThing()
+                ? $screen->forTheStacks(
                     StackId::rememberedAs(self::aStackInTheUri()),
                     ServiceId::called('gluetun'),
                 )

@@ -20,7 +20,7 @@ use function trim;
  * for by it is every one of those the same operation made, which is what the
  * record lists under it.
  */
-final readonly class ARun
+final readonly class ARun implements WhatAScreenIsAbout
 {
     /** The stamp the stack writes where its clock would not answer. */
     private const string UNDATED = '0';
@@ -64,5 +64,10 @@ final readonly class ARun
     public function holds(Change $change): bool
     {
         return self::madeAt($change->when())->stamp === $this->stamp;
+    }
+
+    public function namedInAPath(): string
+    {
+        return $this->stamp;
     }
 }

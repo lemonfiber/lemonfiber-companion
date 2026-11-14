@@ -107,7 +107,7 @@ function thePageAboutWhatItWaitsFor(AStackThatTunesItsSettings $tuning, string $
 }
 
 it('is registered under the route the services page sends it to', function (): void {
-    $resolved = NativeRouter::resolve(AStacksScreen::Waiting->forTheStacksService(theMachineHoldingTheGuardBack()->id(), ServiceId::called('gluetun')));
+    $resolved = NativeRouter::resolve(AStacksScreen::Waiting->forTheStacks(theMachineHoldingTheGuardBack()->id(), ServiceId::called('gluetun')));
 
     expect($resolved['class'] ?? null)->toBe(WhatThisServiceWaitsFor::class);
 });

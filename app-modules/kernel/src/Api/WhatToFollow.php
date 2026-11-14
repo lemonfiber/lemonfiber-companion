@@ -9,7 +9,7 @@ use Closure;
 use function trim;
 
 /** What a trace is asked to follow: an item, by the name somebody knows it by. */
-final readonly class WhatToFollow
+final readonly class WhatToFollow implements WhatAScreenIsAbout
 {
     /** @param int<0, max>|null $season the one season it is narrowed to, or null across every one */
     private function __construct(private string $term, private ?int $season) {}
@@ -53,6 +53,11 @@ final readonly class WhatToFollow
     }
 
     public function term(): string
+    {
+        return $this->term;
+    }
+
+    public function namedInAPath(): string
     {
         return $this->term;
     }

@@ -97,7 +97,7 @@ it('offers running a check that disturbs on Health, and leads to what it disturb
 
     expect($runnable)->toBe([THE_KILLSWITCH, ''])
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('health.disturbs.run_this', ['title' => 'Traffic stops when the tunnel drops']))
-        ->and($screen->goes()->running(THE_KILLSWITCH))->toBe(AStacksScreen::Run->forTheStacksCheck(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id(), Check::of(THE_KILLSWITCH)));
+        ->and($screen->goes()->running(THE_KILLSWITCH))->toBe(AStacksScreen::Run->forTheStacks(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id(), Check::of(THE_KILLSWITCH)));
 });
 
 it('says what running it disturbs and the bound the stack gives before anything is sent, never as a rehearsal', function (): void {

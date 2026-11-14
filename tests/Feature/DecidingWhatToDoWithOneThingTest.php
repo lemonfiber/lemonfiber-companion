@@ -626,7 +626,7 @@ it('refuses a named thing that is not text', function (): void {
 });
 
 it('the screen is registered under the route that reaches it', function (): void {
-    $resolved = NativeRouter::resolve(AStacksScreen::Doing->forTheStacksService(
+    $resolved = NativeRouter::resolve(AStacksScreen::Doing->forTheStacks(
         theMachineTheseVerbsReach()->id(),
         ServiceId::called('sonarr'),
     ));

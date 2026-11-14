@@ -77,7 +77,7 @@ it('opens a screen of one stack from every item, and no two items open the same 
     expect($opened)->toBe(array_values(array_unique($opened)));
 
     foreach (TheMenu::cases() as $item) {
-        expect($item->screen()->alsoNeedsAService())->toBeFalse();
+        expect($item->screen()->isAboutOneThing())->toBeFalse();
     }
 });
 

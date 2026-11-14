@@ -11,7 +11,7 @@ namespace Modules\Kernel\Api;
  * rehearsal says what every client is doing and names the offer the yes quotes,
  * so what is paused is what was shown.
  */
-enum WhatToDoWithTheDownloads: string implements AnAction
+enum WhatToDoWithTheDownloads: string implements AnAction, WhatAScreenIsAbout
 {
     /** Stop every client fetching. */
     case Pause = 'pause';
@@ -26,5 +26,10 @@ enum WhatToDoWithTheDownloads: string implements AnAction
             self::Pause => 'downloads-pause',
             self::Resume => 'downloads-resume',
         };
+    }
+
+    public function namedInAPath(): string
+    {
+        return $this->value;
     }
 }

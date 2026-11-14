@@ -178,7 +178,7 @@ it('shows every title on the page with its year, kind and standing, under the co
         'Dune: Prophecy',
         aSearchLine('household.search.line_undated', ['kind' => aSearchLine('household.medium.series'), 'stands' => aSearchLine('household.asked.getting')]),
     )
-        ->and($screen->goes()->found(theRowsFound($screen)[0]->found))->toBe(AStacksScreen::Found->forTheStacksFoundTitle(theHouseSearchedFrom()->id(), dune()))
+        ->and($screen->goes()->found(theRowsFound($screen)[0]->found))->toBe(AStacksScreen::Found->forTheStacks(theHouseSearchedFrom()->id(), dune()))
         ->and(theRowsFound($screen)[0]->carries)->toBe([
             WhatAFoundTitleIsOpenedWith::Kind->value => 'movies',
             WhatAFoundTitleIsOpenedWith::Unit->value => '',

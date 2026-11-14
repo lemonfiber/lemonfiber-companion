@@ -238,7 +238,7 @@ it('offers to invite somebody with no account, with their name already typed', f
     expect($drawn)->toContain('Nobody called Sam has an account yet.')
         ->and($drawn)->not->toContain(__('stacks.handoff.on_their_device'))
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('stacks.handoff.invite_them'))
-        ->and($screen->goes()->inviting('Sam'))->toBe(AStacksScreen::InviteNamed->forTheStacksMember($stack, SomebodyInTheHousehold::called('Sam')))
+        ->and($screen->goes()->inviting('Sam'))->toBe(AStacksScreen::InviteNamed->forTheStacks($stack, SomebodyInTheHousehold::called('Sam')))
         ->and(NativeRouter::resolve($screen->goes()->inviting('a/b')))->not->toBeNull();
 });
 

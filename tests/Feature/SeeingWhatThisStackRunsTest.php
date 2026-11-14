@@ -436,7 +436,7 @@ it('folds what no running form asked for away at the foot, counted, quiet and wi
     expect($opened)->toContain('Caddy')
         ->and($opened)->toContain('Navidrome')
         ->and($screen->goes()->doingWith($answer->notInstalled()[0]->id))
-        ->toBe(AStacksScreen::Doing->forTheStacksService(theStackWhoseServicesAreRead()->id(), ServiceId::called('caddy')));
+        ->toBe(AStacksScreen::Doing->forTheStacks(theStackWhoseServicesAreRead()->id(), ServiceId::called('caddy')));
 
     $screen->showWhatIsNotInstalled();
 

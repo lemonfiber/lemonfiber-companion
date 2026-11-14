@@ -153,9 +153,9 @@ it('asks once per frame, and again when told to', function (): void {
 
 it('is under Home, with a way back, and registered under the route its poster names', function (): void {
     $screen = thePageOfAnAsk(AMemberWhoIsOwed::asking(whatTheyAskedOfMusicAndBooks()), 'music-3');
-    $resolved = NativeRouter::resolve(AStacksScreen::Asked->forTheStacksRequest(theHouseAnAskIsIn()->id(), RequestId::named('music-3')));
+    $resolved = NativeRouter::resolve(AStacksScreen::Asked->forTheStacks(theHouseAnAskIsIn()->id(), RequestId::named('music-3')));
 
     expect($screen->itsTab())->toBe(TheHouseholdsTabs::Home)
         ->and($resolved['class'] ?? null)->toBe(WhereYourAskStands::class)
-        ->and(AStacksScreen::Asked->forTheStacksRequest(theHouseAnAskIsIn()->id(), RequestId::named('a b')))->toEndWith('/asked/a%20b');
+        ->and(AStacksScreen::Asked->forTheStacks(theHouseAnAskIsIn()->id(), RequestId::named('a b')))->toEndWith('/asked/a%20b');
 });

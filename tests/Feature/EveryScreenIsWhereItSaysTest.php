@@ -3,9 +3,6 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\AWordInUse;
-use Modules\Kernel\Api\Check;
-use Modules\Kernel\Api\Form;
-use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatARunCovers;
@@ -171,7 +168,7 @@ it('every way this app asks where a machine is hands back a path the router know
     $asked = 0;
 
     foreach (AStacksScreen::cases() as $screen) {
-        if ($screen->alsoNeedsAService()) {
+        if ($screen->isAboutOneThing()) {
             continue;
         }
 
@@ -227,7 +224,7 @@ function everyWayToAsk(ReflectionMethod $accessor): array
 
     return array_map(
         static fn(AStacksScreen $screen): array => [$screen, ...array_map(aSampleOf(...), array_slice($parameters, 1))],
-        array_values(array_filter(AStacksScreen::cases(), static fn(AStacksScreen $screen): bool => $screen->alsoNeedsAService())),
+        array_values(array_filter(AStacksScreen::cases(), static fn(AStacksScreen $screen): bool => $screen->isAboutOneThing())),
     );
 }
 
@@ -392,69 +389,25 @@ function destinationsPresentersHandOut(): array
     return array_values(array_unique($named));
 }
 
-it('a screen that needs a service refuses to be asked for with only a stack', function (): void {
-    // `str_replace` handed a pattern with a placeholder it was not given leaves
-    // the placeholder in the string, and `/stacks/abc/logs/{service}` resolves
-    // to nothing — a button that does nothing, on a handset, with no error
-    // anywhere. That is the exact failure this enum was written to end,
-    // arriving by a new road, so it is a refusal rather than a comment.
+it('a screen about one thing refuses to be asked for with only a stack', function (): void {
     expect(fn(): string => AStacksScreen::Logs->forTheStack(StackId::rememberedAs(Screens::aStackInTheUri())))
         ->toThrow(AScreenNeedsMoreThanAStack::class, 'naming a machine is not enough');
 });
 
-it('a screen that needs only a stack refuses to be handed a service', function (): void {
-    // The other mistake, and it is not harmless either: a caller holding a
-    // service name the path does not carry has a screen that opens on whatever
-    // it likes.
-    expect(fn(): string => AStacksScreen::Health->forTheStacksService(
+it('a screen about only a stack refuses to be handed one thing', function (): void {
+    expect(fn(): string => AStacksScreen::Health->forTheStacks(
         StackId::rememberedAs(Screens::aStackInTheUri()),
         ServiceId::called('gluetun'),
     ))
-        ->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
+        ->toThrow(AScreenNeedsMoreThanAStack::class, 'names only the machine');
 });
 
-it('a screen that needs only a stack refuses to be handed a form either', function (): void {
-    // The same mistake by the other road. A form and a service fill the same
-    // segment and are different things, which is why there are two builders —
-    // and a case with nowhere to put either has to refuse both, or the one it
-    // does not refuse is the one somebody reaches for.
-    expect(fn(): string => AStacksScreen::Health->forTheStacksForm(
-        StackId::rememberedAs(Screens::aStackInTheUri()),
-        Form::called('arr'),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-});
-
-it('a screen that needs only a stack refuses to be handed a check as well', function (): void {
-    expect(fn(): string => AStacksScreen::Health->forTheStacksCheck(
-        StackId::rememberedAs(Screens::aStackInTheUri()),
-        Check::of('vpn.contained'),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-});
-
-it('a screen that needs only a stack refuses to be handed a run of checks as well', function (): void {
-    expect(fn(): string => AStacksScreen::Health->forTheStacksChecks(
-        StackId::rememberedAs(Screens::aStackInTheUri()),
-        WhatARunCovers::everyCheck(),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-});
-
-it('a screen that needs only a stack refuses to be handed a request as well', function (): void {
-    expect(fn(): string => AStacksScreen::Health->forTheStacksRequest(
-        StackId::rememberedAs(Screens::aStackInTheUri()),
-        RequestId::named('music-3'),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-});
-
-it('which builder a screen needs is read off its own pattern', function (): void {
-    // Read rather than listed, so a case added with a second placeholder is
-    // covered by both refusals without anybody remembering to add it to a list
-    // — which is the failure mode a hand-kept list has, and the one this whole
-    // type exists to close.
-    $needingAService = array_values(array_filter(
+it('which screens are about one thing is read off their own patterns', function (): void {
+    $aboutOneThing = array_values(array_filter(
         AStacksScreen::cases(),
-        static fn(AStacksScreen $screen): bool => $screen->alsoNeedsAService(),
+        static fn(AStacksScreen $screen): bool => $screen->isAboutOneThing(),
     ));
 
-    expect(array_map(static fn(AStacksScreen $screen): string => $screen->name, $needingAService))
+    expect(array_map(static fn(AStacksScreen $screen): string => $screen->name, $aboutOneThing))
         ->toBe(['Doing', 'Logs', 'Waiting', 'Title', 'Found', 'Asked', 'RunBack', 'PutBack', 'LetGo', 'Downloads', 'InviteNamed', 'TakeOut', 'Device', 'PluginSettings', 'WordAbout', 'Trace', 'Accept', 'Run', 'RunChecks']);
 });

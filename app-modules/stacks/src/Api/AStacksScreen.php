@@ -4,22 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Stacks\Api;
 
-use Modules\Kernel\Api\ACopy;
-use Modules\Kernel\Api\ADownloadHeld;
-use Modules\Kernel\Api\AFoundTitle;
-use Modules\Kernel\Api\APluginId;
-use Modules\Kernel\Api\ARun;
-use Modules\Kernel\Api\AWordInUse;
-use Modules\Kernel\Api\Check;
-use Modules\Kernel\Api\Form;
-use Modules\Kernel\Api\HoldingId;
-use Modules\Kernel\Api\RequestId;
-use Modules\Kernel\Api\ServiceId;
-use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\WhatARunCovers;
-use Modules\Kernel\Api\WhatToDoWithTheDownloads;
-use Modules\Kernel\Api\WhatToFollow;
+use Modules\Kernel\Api\WhatAScreenIsAbout;
 
 use function rawurlencode;
 use function str_contains;
@@ -28,35 +14,10 @@ use function str_replace;
 /**
  * Every screen a stack has, and the one place each one's path is written.
  *
- * The provider registers these and {@see WhereAStackIs} builds from them, so
- * the pattern and the path that has to match it are the same string. Before
- * this they were not: the provider declared `/stacks/{stack}/repairs` and seven
- * other places spelled it again, and nothing compared the two.
- *
- * **That gap could not fail a test.** The screens' tests hold a *third* copy —
- * a test asserting `sprintf('/stacks/%s/requests',...)` against a screen that
- * builds the same `sprintf` compares two spellings and never asks what was
- * registered. So renaming a route in the provider alone left the whole suite
- * green and every button on the hub pointing at a path nothing serves. It
- * surfaced as an operator tapping and nothing happening, on a handset, at
- * runtime.
- *
- * The registrations are unnamed — `Router::native()` takes a pattern and a
- * class and nothing else — so there is no `route()` to ask, which is why this
- * exists rather than a lookup.
- *
- * **In a capability module because two surfaces need it and neither may name
- * the other.** A stack's screens are rendered from both `Modules\Operator` and
- * `Modules\Household`: the operator reads the machine and the member reads what
- * they are owed by it, and each has to be able to send somebody to the other.
- * A surface may depend on a kernel, a design and a capability module and never
- * on a second surface, so a path spelled in both would be the one drift this
- * type cannot watch — the failure it was written to end, arriving by the only
- * road left open to it.
- *
- * `Api` rather than `Internal`, and that is the whole of the move: the two
- * surfaces reach it through this module's published surface, which is the only
- * way either of them reaches anything here at all.
+ * The providers register these patterns and every builder fills them, so a
+ * path and the pattern it has to match are one string. Both the operator's
+ * and the member's surfaces send people here, which is why it is published by
+ * a capability module neither surface owns.
  */
 enum AStacksScreen: string
 {
@@ -197,8 +158,7 @@ enum AStacksScreen: string
     /**
      * Putting back one run the record shows, agreed to before anything is asked.
      *
-     * The second segment is the one {@see self::Logs} fills with a service;
-     * here it is the stamp the record keeps the run under.
+     * The second segment is the stamp the record keeps the run under.
      */
     case RunBack = '/stacks/{stack}/record/{service}';
 
@@ -239,8 +199,7 @@ enum AStacksScreen: string
     /**
      * Putting one copy back, rehearsed before anything is agreed to.
      *
-     * The second segment is the one {@see self::Logs} fills with a service;
-     * here it is the name a copy was written under.
+     * The second segment is the name a copy was written under.
      */
     case PutBack = '/stacks/{stack}/copies/{service}';
 
@@ -253,16 +212,14 @@ enum AStacksScreen: string
     /**
      * Stopping seeding one completed download, with what it costs before anything is agreed to.
      *
-     * The second segment is the one {@see self::Logs} fills with a service;
-     * here it is the name the account of the disk gave a download.
+     * The second segment is the name the account of the disk gave a download.
      */
     case LetGo = '/stacks/{stack}/room/{service}';
 
     /**
      * Pausing every download client, or letting them fetch again, rehearsed before anything is agreed to.
      *
-     * The second segment is the one {@see self::Logs} fills with a service;
-     * here it is which of the two, as this app names it.
+     * The second segment is which of the two, as this app names it.
      */
     case Downloads = '/stacks/{stack}/downloads/{service}';
 
@@ -296,8 +253,7 @@ enum AStacksScreen: string
     /**
      * Asking somebody in with their name already typed, opened where handing over a device found no account.
      *
-     * The second segment is the one {@see self::Logs} fills with a service;
-     * here it is the name they were asked for by.
+     * The second segment is the name they were asked for by.
      */
     case InviteNamed = '/stacks/{stack}/invite/{service}';
 
@@ -307,17 +263,15 @@ enum AStacksScreen: string
     /**
      * Taking one member out of the household, said as what it would cost before it is agreed to.
      *
-     * The second segment is the one {@see self::Logs} fills with a service;
-     * here it is the name the member's account is held under.
+     * The second segment is the name the member's account is held under.
      */
     case TakeOut = '/stacks/{stack}/household/{service}';
 
     /**
      * Connecting one member's device: the code that points it at the media server, and whether it has signed in.
      *
-     * The second segment is the one {@see self::Logs} fills with a service;
-     * here it is the name the member's account is held under. It is not under
-     * {@see self::TakeOut}'s path, whose name takes the rest of it.
+     * The second segment is the name the member's account is held under. It is
+     * not under {@see self::TakeOut}'s path, whose name takes the rest of it.
      */
     case Device = '/stacks/{stack}/device/{service}';
 
@@ -345,8 +299,7 @@ enum AStacksScreen: string
     /**
      * What one of lemonfiber's words means, opened where another screen drew it.
      *
-     * The second segment is the one {@see self::Logs} fills with a service and
-     * {@see self::Doing} with a service or a form; here it is a word.
+     * The second segment is the word.
      */
     case WordAbout = '/stacks/{stack}/words/{service}';
 
@@ -371,256 +324,31 @@ enum AStacksScreen: string
     /** What the router holds a machine under. */
     public const string NAMED = '{stack}';
 
-    /** What it holds one of that machine's services under. */
+    /** What it holds the one thing a screen is about under. */
     public const string ABOUT = '{service}';
 
-    /**
-     * This screen's path, for one machine.
-     *
-     * Built by replacing the router's own placeholder rather than by a second
-     * format string, so there is no way for the pattern and the path to be
-     * spelled differently — which is the whole of what this type is for.
-     *
-     * **It refuses a case that needs more than a machine.** A path still
-     * carrying `{service}` resolves to nothing and would be a button that does
-     * nothing on a handset — the exact failure this type was written to end,
-     * arriving by a new road. {@see self::forTheStacksService()} is the one for
-     * those, and a caller that used the wrong one finds out here rather than in
-     * somebody's hand.
-     */
+    /** This screen's path, for one machine; a case that also names what it is about is refused. */
     public function forTheStack(StackId $stack): string
     {
-        if ($this->alsoNeedsAService()) {
+        if ($this->isAboutOneThing()) {
             throw AScreenNeedsMoreThanAStack::toBeReached($this);
         }
 
         return str_replace(self::NAMED, $stack->stored(), $this->value);
     }
 
-    /**
-     * This screen's path, for one service on one machine.
-     *
-     * The other half, and it refuses the other mistake: a case with no
-     * `{service}` in it would silently ignore the second argument, which is a
-     * caller holding a service name the path does not carry and a screen that
-     * opens on whatever it likes.
-     */
-    public function forTheStacksService(StackId $stack, ServiceId $service): string
+    /** This screen's path, for one thing on one machine, encoded; a case that names only the machine is refused. */
+    public function forTheStacks(StackId $stack, WhatAScreenIsAbout $about): string
     {
-        if (! $this->alsoNeedsAService()) {
+        if (! $this->isAboutOneThing()) {
             throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
         }
 
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), $service->named()], $this->value);
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($about->namedInAPath())], $this->value);
     }
 
-    /**
-     * This screen's path, for one whole form on one machine.
-     *
-     * The same segment {@see self::forTheStacksService()} fills and a different
-     * thing filling it, which is why it is a second method rather than a wider
-     * first one. The screen at the other end reads a service first and a form
-     * second, so the path carries a name and not a kind — and a single builder
-     * taking `string` would undo the types: a form name and a service name are
-     * both text, and passing one where the other belongs would compile and
-     * ship.
-     */
-    public function forTheStacksForm(StackId $stack, Form $form): string
-    {
-        if (! $this->alsoNeedsAService()) {
-            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
-        }
-
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), $form->named()], $this->value);
-    }
-
-    /**
-     * This screen's path, for one of lemonfiber's words on one machine.
-     *
-     * A third filling of the segment, typed for the reason
-     * {@see self::forTheStacksForm()} gives. Encoded, because a word can hold
-     * a space or a slash, which a path segment cannot; the router decodes it.
-     */
-    public function forTheStacksWord(StackId $stack, AWordInUse $word): string
-    {
-        if (! $this->alsoNeedsAService()) {
-            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
-        }
-
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($word->said())], $this->value);
-    }
-
-    /**
-     * This screen's path, for one check on one machine.
-     *
-     * Encoded for {@see self::forTheStacksWord()}'s reason: a check is named by the stack.
-     */
-    public function forTheStacksCheck(StackId $stack, Check $check): string
-    {
-        if (! $this->alsoNeedsAService()) {
-            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
-        }
-
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($check->shown())], $this->value);
-    }
-
-    /** This screen's path, for a run of every check, or of one family's, on one machine. */
-    public function forTheStacksChecks(StackId $stack, WhatARunCovers $covers): string
-    {
-        if (! $this->alsoNeedsAService()) {
-            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
-        }
-
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), $covers->word()], $this->value);
-    }
-
-    /**
-     * This screen's path, for one title a member may watch on one machine.
-     *
-     * Encoded for {@see self::forTheStacksWord()}'s reason: the identifier is
-     * the core's spelling, and this app does not decide which characters it
-     * holds.
-     */
-    public function forTheStacksTitle(StackId $stack, HoldingId $title): string
-    {
-        if (! $this->alsoNeedsAService()) {
-            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
-        }
-
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($title->named())], $this->value);
-    }
-
-    /**
-     * This screen's path, for one title a member's search found on one machine.
-     *
-     * Encoded for {@see self::forTheStacksTitle()}'s reason.
-     */
-    public function forTheStacksFoundTitle(StackId $stack, AFoundTitle $title): string
-    {
-        if (! $this->alsoNeedsAService()) {
-            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
-        }
-
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($title->id())], $this->value);
-    }
-
-    /**
-     * This screen's path, for one of a member's asks on one machine, by the reference the core names it by.
-     *
-     * Encoded for {@see self::forTheStacksTitle()}'s reason.
-     */
-    public function forTheStacksRequest(StackId $stack, RequestId $request): string
-    {
-        if (! $this->alsoNeedsAService()) {
-            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
-        }
-
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($request->reference())], $this->value);
-    }
-
-    /**
-     * This screen's path, for one item to follow on one machine.
-     *
-     * Encoded for {@see self::forTheStacksWord()}'s reason: a title can hold
-     * a space or a slash.
-     */
-    public function forTheStacksItem(StackId $stack, WhatToFollow $item): string
-    {
-        if (! $this->alsoNeedsAService()) {
-            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
-        }
-
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($item->term())], $this->value);
-    }
-
-    /**
-     * This screen's path, for one copy on one machine.
-     *
-     * Encoded for {@see self::forTheStacksWord()}'s reason: nothing about a
-     * name the stack wrote promises it is a path segment.
-     */
-    public function forTheStacksCopy(StackId $stack, ACopy $copy): string
-    {
-        if (! $this->alsoNeedsAService()) {
-            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
-        }
-
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($copy->name())], $this->value);
-    }
-
-    /** The path to a screen about one of the stack's plugins, by its id, encoded for {@see self::forTheStacksTitle()}'s reason. */
-    public function forTheStacksPlugin(StackId $stack, APluginId $plugin): string
-    {
-        if (! $this->alsoNeedsAService()) {
-            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
-        }
-
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($plugin->named())], $this->value);
-    }
-
-    /**
-     * This screen's path, for one run on one machine's record.
-     *
-     * Encoded for {@see self::forTheStacksCopy()}'s reason.
-     */
-    public function forTheStacksRun(StackId $stack, ARun $run): string
-    {
-        if (! $this->alsoNeedsAService()) {
-            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
-        }
-
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($run->stamp())], $this->value);
-    }
-
-    /**
-     * This screen's path, for one completed download on one machine.
-     *
-     * Encoded for {@see self::forTheStacksWord()}'s reason: a download's name
-     * is whatever the torrent was called, spaces and slashes included.
-     */
-    public function forTheStacksDownload(StackId $stack, ADownloadHeld $download): string
-    {
-        if (! $this->alsoNeedsAService()) {
-            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
-        }
-
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($download->name())], $this->value);
-    }
-
-    /** This screen's path, for pausing or resuming one machine's downloads. */
-    public function forTheStacksDownloads(StackId $stack, WhatToDoWithTheDownloads $asked): string
-    {
-        if (! $this->alsoNeedsAService()) {
-            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
-        }
-
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), $asked->value], $this->value);
-    }
-
-    /**
-     * This screen's path, for one member of the household on one machine.
-     *
-     * Encoded for {@see self::forTheStacksWord()}'s reason: nothing about the
-     * name an account is held under promises it is a path segment.
-     */
-    public function forTheStacksMember(StackId $stack, SomebodyInTheHousehold $member): string
-    {
-        if (! $this->alsoNeedsAService()) {
-            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
-        }
-
-        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($member->name())], $this->value);
-    }
-
-    /**
-     * Whether naming a machine is enough to reach this screen.
-     *
-     * Read off the pattern rather than listed, so a case added with a second
-     * placeholder is covered by both refusals above without anybody
-     * remembering to add it to a list — which is the failure mode a hand-kept
-     * list has, and the one this whole type exists to close.
-     */
-    public function alsoNeedsAService(): bool
+    /** Whether the pattern names one thing on the machine as well as the machine. */
+    public function isAboutOneThing(): bool
     {
         return str_contains($this->value, self::ABOUT);
     }
