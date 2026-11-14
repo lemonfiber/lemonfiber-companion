@@ -11,16 +11,16 @@ use function trim;
 /** How far a back-end is proven: never delivered, proven at a moment, or held for a reason. */
 final readonly class HowFarItIsProven
 {
-    private function __construct(private ?Instant $proven, private string $held) {}
+    private function __construct(private ?Instant $proven, private ?string $held) {}
 
     public static function unproven(): self
     {
-        return new self(null, '');
+        return new self(null, null);
     }
 
     public static function provenAt(Instant $at): self
     {
-        return new self($at, '');
+        return new self($at, null);
     }
 
     public static function held(string $why): self
@@ -48,6 +48,6 @@ final readonly class HowFarItIsProven
             return $proven($this->proven);
         }
 
-        return $this->held === '' ? $unproven() : $held($this->held);
+        return $this->held === null ? $unproven() : $held($this->held);
     }
 }

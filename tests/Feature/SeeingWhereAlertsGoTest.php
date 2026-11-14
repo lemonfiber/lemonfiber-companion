@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Design\View\Tone;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ADelivery;
 use Modules\Kernel\Api\AlertBackEndId;
@@ -191,6 +192,7 @@ it('draws a refused read as what stood in the way, never as no back-ends', funct
         ->and($screen->answer()->backEnds)->toBe([])
         ->and($screen->answer()->unread)->toBe([])
         ->and($screen->answer()->notSetUp)->toBeFalse()
+        ->and($screen->answer()->stateTone)->toBe(Tone::Unknown->value)
         ->and($drawn)->not->toContain(__('alerts.state.unconfigured'))
         ->and($drawn)->not->toContain(__('alerts.none_readable'))
         ->and($alerts->askings)->toBe(1);
@@ -202,6 +204,10 @@ it('asks nothing where this phone holds no session for the machine', function ()
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($screen->answer()->backEnds)->toBe([])
+        ->and($screen->answer()->unread)->toBe([])
+        ->and($screen->answer()->notSetUp)->toBeFalse()
+        ->and($screen->answer()->stateSaid)->toBe('')
+        ->and($screen->answer()->stateTone)->toBe(Tone::Unknown->value)
         ->and($alerts->askings)->toBe(0);
 });
 
@@ -221,7 +227,8 @@ it('opens each back-end\'s own page, which lists every failure since the last co
     $page = oneBackEndDrawn($alerts, 'gotify/cloud');
     $drawn = WhatTheDeviceWouldDraw::by($page)->said();
 
-    expect($list->answer()->backEnds[0]->goes)->toBe(AStacksScreen::AlertBackEnd->forTheStacks(theStackWhoseBackEndsAreRead()->id(), AlertBackEndId::called('gotify/cloud')))
+    expect(WhatTheDeviceWouldDraw::by($list)->said())->toContain(__('alerts.open', ['where' => 'push.example.com/application']))
+        ->and($list->answer()->backEnds[0]->goes)->toBe(AStacksScreen::AlertBackEnd->forTheStacks(theStackWhoseBackEndsAreRead()->id(), AlertBackEndId::called('gotify/cloud')))
         ->and($page->answer()->backEnds)->toHaveCount(1)
         ->and($drawn)->toContain(__('alerts.failures'))
         ->and($drawn)->toContain(__('alerts.ended.failed', ['ago' => trans_choice('health.ago.minutes', 10), 'reason' => 'timed out']))
@@ -254,4 +261,32 @@ it('asks nothing on a back-end\'s own page where this phone holds no session', f
 it('is in the stack\'s menu beside its alerts', function (): void {
     expect(TheMenu::WhereAlertsGo->screen())->toBe(AStacksScreen::Alerts)
         ->and(TheMenu::WhereAlertsGo->group())->toBe(TheMenu::Alerts->group());
+});
+
+it('draws how delivery stands in the tone it calls for', function (HowDeliveryStands $stands, Tone $tone): void {
+    $answer = whereAlertsGoDrawn(AStackThatSaysWhereAlertsGo::saying(WhereAlertsGo::read($stands, AlertBackEnds::these(), UnreadBackEnds::these())))->answer();
+
+    expect($answer->stateSaid)->toBe($stands->saidOnTheScreen())
+        ->and($answer->stateTone)->toBe($tone->value);
+})->with([
+    'delivering' => [HowDeliveryStands::Ready, Tone::Fine],
+    'some failing' => [HowDeliveryStands::Degraded, Tone::Attention],
+    'nothing delivered' => [HowDeliveryStands::Unreachable, Tone::Trouble],
+    'not set up' => [HowDeliveryStands::Unconfigured, Tone::Quiet],
+]);
+
+it('hands its template nothing to fill where a back-end has no member, host, reason or retry to say', function (): void {
+    $proven = HowFarItIsProven::provenAt(Instant::atEpochSeconds(WHEN_ALERTS_ARE_READ - 60));
+    $answer = whereAlertsGoDrawn(AStackThatSaysWhereAlertsGo::saying(whereAlertsGo(
+        aBackEndThat('never', HowFarItIsProven::unproven(), HowItsDeliveriesWent::nothingYet()),
+        aBackEndThat('confirmed', $proven, HowItsDeliveriesWent::lastly(new ADelivery(Instant::atEpochSeconds(WHEN_ALERTS_ARE_READ - 60), KindOfNotification::Backup, HowADeliveryEnded::confirmed()))),
+        aBackEndThat('sent', HowFarItIsProven::held('refused'), HowItsDeliveriesWent::lastly(new ADelivery(Instant::atEpochSeconds(WHEN_ALERTS_ARE_READ - 60), KindOfNotification::Backup, HowADeliveryEnded::sent()))),
+    )))->answer();
+    [$never, $confirmed, $sent] = $answer->backEnds;
+
+    expect([$never->chosen->filling, $never->hosted->host, $never->hosted->leaves, $never->proof->filling, $never->proof->ago->said])->toBe(['', '', [], '', ''])
+        ->and([$never->last->ended->filling, $never->last->ended->ago->said, $never->last->kindSaid])->toBe(['', '', ''])
+        ->and([$never->retry->said, $never->retry->in->said, $never->retry->attempt, $never->retry->of])->toBe(['', '', 0, 0])
+        ->and([$confirmed->proof->filling, $confirmed->last->ended->filling])->toBe(['', ''])
+        ->and([$sent->proof->ago->said, $sent->last->ended->filling])->toBe(['', '']);
 });

@@ -11,16 +11,16 @@ use function trim;
 /** How one delivery ended: confirmed by the back-end, sent with no confirmation, or failed for its reason. */
 final readonly class HowADeliveryEnded
 {
-    private function __construct(private bool $confirmed, private string $failed) {}
+    private function __construct(private bool $confirmed, private ?string $failed) {}
 
     public static function confirmed(): self
     {
-        return new self(confirmed: true, failed: '');
+        return new self(confirmed: true, failed: null);
     }
 
     public static function sent(): self
     {
-        return new self(confirmed: false, failed: '');
+        return new self(confirmed: false, failed: null);
     }
 
     public static function failed(string $reason): self
@@ -48,6 +48,6 @@ final readonly class HowADeliveryEnded
             return $confirmed();
         }
 
-        return $this->failed === '' ? $sent() : $failed($this->failed);
+        return $this->failed === null ? $sent() : $failed($this->failed);
     }
 }
