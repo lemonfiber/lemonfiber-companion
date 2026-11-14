@@ -65,12 +65,12 @@ function whatAStackSaysOfEndingAGrant(array $revoked = []): array
     return ['api_version' => 1, 'kind' => 'credentials', 'data' => [
         'rehearsed' => false,
         'held' => [],
-        'grants' => [['plugin' => 'tdarr', 'credential' => 'plex.token', 'of' => 'plex', 'for' => 'library-scan', 'at' => '1761321600']],
+        'grants' => [['plugin' => 'tdarr', 'credential' => 'plex.token', 'of' => 'plex', 'for' => 'library-scan', 'at' => 1_761_321_600]],
         'protection' => ['summary' => 'Plain files', 'against' => [], 'not_against' => []],
         'revoked' => [
             'agreement' => 'credentials-revoke:tdarr:plex.token:3',
             'ended' => false,
-            'grant' => ['plugin' => 'tdarr', 'credential' => 'plex.token', 'of' => 'plex', 'for' => 'library-scan', 'at' => '1761321600'],
+            'grant' => ['plugin' => 'tdarr', 'credential' => 'plex.token', 'of' => 'plex', 'for' => 'library-scan', 'at' => 1_761_321_600],
             'restarts' => ['tdarr'],
             ...$revoked,
         ],

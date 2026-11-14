@@ -188,7 +188,7 @@ it('refuses a word it has no case for, naming the field, the entry and every wor
  */
 function aGrantOnTheCredentialsRead(): array
 {
-    return ['plugin' => 'tdarr', 'credential' => 'plex.token', 'of' => 'plex', 'for' => 'library-scan', 'at' => '1761321600'];
+    return ['plugin' => 'tdarr', 'credential' => 'plex.token', 'of' => 'plex', 'for' => 'library-scan', 'at' => 1_761_321_600];
 }
 
 /** Every grant a payload lists, as lines. */
