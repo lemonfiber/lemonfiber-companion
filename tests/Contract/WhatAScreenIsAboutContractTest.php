@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\AFoundTitle;
+use Modules\Kernel\Api\AlertBackEndId;
 use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\AWordInUse;
@@ -51,6 +52,7 @@ function everythingAScreenCanBeAbout(): array
         'pausing the downloads' => [WhatToDoWithTheDownloads::Pause],
         'resuming the downloads' => [WhatToDoWithTheDownloads::Resume],
         'a member' => [SomebodyInTheHousehold::called('Anna Maria/2')],
+        'a back-end alerts go to' => [AlertBackEndId::called('ntfy home/2')],
     ];
 }
 

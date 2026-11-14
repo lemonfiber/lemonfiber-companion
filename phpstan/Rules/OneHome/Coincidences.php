@@ -24,6 +24,7 @@ use Modules\Kernel\Api\ARatio;
 use Modules\Kernel\Api\AtAGlance;
 use Modules\Kernel\Api\HowFarADownloadIs;
 use Modules\Kernel\Api\Nonce;
+use Modules\Sdk\Api\Fields\NotifyField;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 use Modules\Vault\Internal\KeptInAShape;
@@ -89,6 +90,10 @@ final readonly class Coincidences
             'LABELLED' => "the prop EDGE carries a control's words on",
         ],
         WhereAnExpressionPoints::class => ['PAYLOAD' => 'the property an SDK envelope carries its payload on'],
+        NotifyField::class => [
+            'Last' => "the notify envelope's field for a back-end's newest delivery",
+            'ChosenBy' => "the notify envelope's field for who chose a back-end",
+        ],
         TheTheme::class => ['THE_FACE_WHERE_NONE_IS_NAMED' => "mobile-ui's alias for the face a text that names none is set in"],
     ];
 

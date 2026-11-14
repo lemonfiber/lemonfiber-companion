@@ -17,8 +17,6 @@ enum PlayingField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** The member a session plays for, by name. */
-    case Member = 'member';
 
     /** Whether a session is paused. */
     case Paused = 'paused';

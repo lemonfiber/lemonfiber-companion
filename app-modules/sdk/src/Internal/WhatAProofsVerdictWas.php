@@ -43,11 +43,11 @@ final readonly class WhatAProofsVerdictWas
 
         foreach (InTheOrderSent::rows($install[PluginsField::Proofs->value]) as $position => $row) {
             if (! is_array($row)) {
-                throw PluginsAreUnreadable::entry(PluginsField::Proofs, PluginsField::Proof, $position);
+                throw PluginsAreUnreadable::entry(PluginsField::Proofs, WireField::Proof, $position);
             }
 
             $found[] = AProof::of(
-                self::text($row, PluginsField::Proof, $position),
+                self::text($row, WireField::Proof, $position),
                 self::text($row, PluginsField::Establishes, $position),
                 self::text($row, PluginsField::Asks, $position),
                 self::text($row, WireField::Why, $position),

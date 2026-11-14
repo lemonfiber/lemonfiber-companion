@@ -53,8 +53,6 @@ enum PluginsField: string implements NamesAWireField
     /** Every proof that has to hold before a plugin is installed. */
     case Proofs = 'proofs';
 
-    /** A proof's id, which its verdict is reported against; and, on the envelope, what proving a plugin again came to. */
-    case Proof = 'proof';
 
     /** Whether proving a plugin again cleared every answer kept against it. */
     case Cleared = 'cleared';
@@ -108,8 +106,6 @@ enum PluginsField: string implements NamesAWireField
     /** Whether everything the version put back placed is on the machine again. */
     case Placed = 'placed';
 
-    /** Every capability a removal would leave with nothing filling it. */
-    case Leaves = 'leaves';
 
     /** The plugin filling a capability now, which is the one going. */
     case FilledBy = 'filled_by';
