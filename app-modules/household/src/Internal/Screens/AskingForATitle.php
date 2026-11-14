@@ -152,9 +152,13 @@ final class AskingForATitle extends NativeComponent
     {
         $shown = $this->shown();
 
-        return $shown instanceof AFoundTitleAsShown
-            ? WhatOnePosterSays::ofATitle($shown->titled, $shown->kind, $shown->year === '' ? null : $shown->year)->pictured($this->pictured())
-            : null;
+        if (! $shown instanceof AFoundTitleAsShown) {
+            return null;
+        }
+
+        $year = $shown->year === '' ? null : $shown->year;
+
+        return WhatOnePosterSays::ofATitle($shown->titled, $shown->kind, $year)->pictured($this->pictured());
     }
 
     /** What asking would come to, asked once per frame where the title may be asked for. */
