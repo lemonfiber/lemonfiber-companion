@@ -131,8 +131,7 @@ trait WakesThisPhoneForTheStack
     {
         foreach ($installed->onlyThe($asked) as $chosen) {
             $this->wakers->choose($chosen);
-
-            return $this->turnedOnThrough($chosen);
+            $this->turnedOnThrough($chosen);
         }
 
         return HowThisPhoneIsWoken::off();

@@ -215,6 +215,8 @@ it('asks which distributor where several are installed and none is chosen, and w
     $notInstalled = WhatTheDeviceWouldDraw::by($page);
     $page->wakingTurned(on: true);
     $page->wakeThrough(DistributorsOnAPhone::nextPush()->package());
+    $chosen = WhatTheDeviceWouldDraw::by($page);
+    $heldOnceChosen = $keeping->holds($loft, 'galaxy-a51-7f3a');
     $page->wakingTurned(on: false);
     $page->wakingTurned(on: true);
 
@@ -225,6 +227,8 @@ it('asks which distributor where several are installed and none is chosen, and w
         ->and($notInstalled->said())->not->toContain(__('waking.choose'))
         ->and($asking->offers())->toContain('NextPush')
         ->and($asking->offers())->toContain('ntfy')
+        ->and($chosen->said())->toContain(__('waking.on', ['distributor' => 'NextPush']))
+        ->and($heldOnceChosen)->toContain(DistributorsOnAPhone::nextPush()->package())
         ->and($keeping->holds($loft, 'galaxy-a51-7f3a'))->toContain(DistributorsOnAPhone::nextPush()->package())
         ->and(WhatTheDeviceWouldDraw::by($page)->said())->toContain(__('waking.on', ['distributor' => 'NextPush']))
         ->and(WhatTheDeviceWouldDraw::by($page)->said())->not->toContain(__('waking.choose'));

@@ -35,7 +35,7 @@ final readonly class HowWakingReads
     /** Nothing drawn: an iPhone, an Android too old to keep the key, or a member's session. */
     public function notDrawn(): HowWakingIsShown
     {
-        return new HowWakingIsShown(drawn: false, on: false, usable: false, line: '', distributor: '', choice: $this->choice(TheDistributors::of(), ''), install: null);
+        return new HowWakingIsShown(drawn: false, on: false, usable: false, line: '', distributor: '', choice: $this->nothingToChoose(), install: null);
     }
 
     /**
@@ -51,7 +51,7 @@ final readonly class HowWakingReads
                 usable: true,
                 line: 'waking.on',
                 distributor: $through->called(),
-                choice: $this->choice(TheDistributors::of(), ''),
+                choice: $this->nothingToChoose(),
                 install: null,
             ),
             owed: fn(): HowWakingIsShown => $this->whenOff($who, $install, owed: true),
@@ -63,29 +63,10 @@ final readonly class HowWakingReads
     {
         return $who->either(
             through: fn(ADistributor $through, TheDistributors $installed): ASettingAsShown => $this->choice($installed, $through->package()),
-            toChoose: fn(TheDistributors $installed): ASettingAsShown => $this->choice($installed, ''),
-            noneInstalled: fn(): ASettingAsShown => $this->choice(TheDistributors::of(), ''),
-            notHere: fn(): ASettingAsShown => $this->choice(TheDistributors::of(), ''),
+            toChoose: fn(TheDistributors $installed): ASettingAsShown => $this->choice($installed, null),
+            noneInstalled: fn(): ASettingAsShown => $this->nothingToChoose(),
+            notHere: fn(): ASettingAsShown => $this->nothingToChoose(),
         );
-    }
-
-    /** The distributors to choose among, `$chosen` marked, with none offered where fewer than two are installed. */
-    public function choice(TheDistributors $installed, string $chosen): ASettingAsShown
-    {
-        if (count($installed) < self::A_CHOICE) {
-            return new ASettingAsShown(said: '', offered: []);
-        }
-
-        $offered = [];
-        $said = '';
-
-        foreach ($installed as $distributor) {
-            $isChosen = $distributor->package() === $chosen;
-            $offered[] = new AChoiceOfASettingAsShown(said: $distributor->called(), word: $distributor->package(), chosen: $isChosen);
-            $said = $isChosen ? $distributor->called() : $said;
-        }
-
-        return new ASettingAsShown(said: $said, offered: $offered);
     }
 
     /** Why waking stayed off, in the stack's words where it refused, and in this app's everywhere else. */
@@ -106,6 +87,30 @@ final readonly class HowWakingReads
         );
     }
 
+    /** The distributors to choose among, `$chosen` marked where one is, with none offered where fewer than two are installed. */
+    private function choice(TheDistributors $installed, ?string $chosen): ASettingAsShown
+    {
+        if (count($installed) < self::A_CHOICE) {
+            return $this->nothingToChoose();
+        }
+
+        $offered = [];
+        $said = '';
+
+        foreach ($installed as $distributor) {
+            $isChosen = $distributor->package() === $chosen;
+            $offered[] = new AChoiceOfASettingAsShown(said: $distributor->called(), word: $distributor->package(), chosen: $isChosen);
+            $said = $isChosen ? $distributor->called() : $said;
+        }
+
+        return new ASettingAsShown(said: $said, offered: $offered);
+    }
+
+    private function nothingToChoose(): ASettingAsShown
+    {
+        return new ASettingAsShown(said: '', offered: []);
+    }
+
     private function whenOff(WhoWakesThisPhone $who, ALinkWithItsCode $install, bool $owed = false): HowWakingIsShown
     {
         $line = $owed ? 'waking.owed' : 'waking.off';
@@ -117,7 +122,7 @@ final readonly class HowWakingReads
                 usable: true,
                 line: $line,
                 distributor: $through->called(),
-                choice: $this->choice(TheDistributors::of(), ''),
+                choice: $this->nothingToChoose(),
                 install: null,
             ),
             toChoose: fn(TheDistributors $installed): HowWakingIsShown => new HowWakingIsShown(
@@ -126,7 +131,7 @@ final readonly class HowWakingReads
                 usable: true,
                 line: $owed ? $line : 'waking.off_choosing',
                 distributor: '',
-                choice: $this->choice($installed, ''),
+                choice: $this->choice($installed, null),
                 install: null,
             ),
             noneInstalled: fn(): HowWakingIsShown => new HowWakingIsShown(
@@ -135,7 +140,7 @@ final readonly class HowWakingReads
                 usable: false,
                 line: $owed ? $line : 'waking.none_installed',
                 distributor: '',
-                choice: $this->choice(TheDistributors::of(), ''),
+                choice: $this->nothingToChoose(),
                 install: $install,
             ),
             notHere: fn(): HowWakingIsShown => $this->notDrawn(),
