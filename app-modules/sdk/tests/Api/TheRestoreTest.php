@@ -34,7 +34,7 @@ use Tests\Support\WhatTheContractAccepts;
 function aManifestSaying(array $changed = []): array
 {
     return [
-        'created_at' => '2026-09-24T03:00:00Z',
+        'created_at' => 1_790_218_800,
         'data_root' => '/srv/old',
         'members' => [
             ['archive_path' => 'config', 'label' => 'lemonfiber configuration'],

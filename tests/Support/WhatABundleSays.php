@@ -152,7 +152,7 @@ final readonly class WhatABundleSays
                 ['name' => 'services.txt', 'body' => 'sonarr running'],
             ],
             'missing' => ['the container engine could not be reached'],
-            'taken' => ['at' => '2026-09-26T10:00:00Z', 'lemonfiber' => '1.4.0', 'stack' => '2026.09'],
+            'taken' => ['at' => 1_790_416_800, 'lemonfiber' => '1.4.0', 'stack' => '2026.09'],
             'terms' => ['window' => 'the last 200 lines of each service', 'filenames' => false, 'revealed' => ['SONARR_URL']],
         ];
     }

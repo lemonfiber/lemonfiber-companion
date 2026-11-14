@@ -491,7 +491,7 @@ it('reads the reason a request was refused, and when', function (): void {
             'id' => '1',
             'title' => 'A film',
             'state' => 'declined',
-            'refused' => ['at' => '2026-09-14T04:00:00Z', 'reason' => 'The disk is nearly full'],
+            'refused' => ['at' => 1_789_358_400, 'reason' => 'The disk is nearly full'],
         ]]),
     ]])), preserve_keys: false);
 

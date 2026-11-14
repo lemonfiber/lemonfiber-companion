@@ -71,7 +71,7 @@ function whatAStackAnswersACodeWith(array $changed = []): array
         ],
         'written' => THE_LINE,
         'compare' => '22VK-KPHH-NKH9-TUWA',
-        'until' => '2026-10-01T00:10:00',
+        'until' => 1_790_813_400,
         'replacing' => WHAT_REPLACING_THE_CERTIFICATE_COSTS,
         'caution' => 'That address is a number.',
         ...$changed,

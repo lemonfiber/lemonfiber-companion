@@ -82,7 +82,7 @@ final readonly class Lines
         $service = ServiceId::called(self::text($row, WireField::Service, $position));
         $stream = self::stream($row, $position);
 
-        $said = ! array_key_exists(WireField::At->value, $row) || $row[WireField::At->value] === null
+        $said = ! array_key_exists(LogField::Stamped->value, $row) || $row[LogField::Stamped->value] === null
             ? Said::whenever($line, $service, $stream)
             : Said::at(self::moment($row, $position), $line, $service, $stream);
 
@@ -174,7 +174,7 @@ final readonly class Lines
      */
     private static function moment(array $row, int $position): string
     {
-        $said = $row[WireField::At->value];
+        $said = $row[LogField::Stamped->value];
 
         if (! Required::isText($said)) {
             throw LineIsUnreadable::moment(is_string($said) ? $said : '', $position);

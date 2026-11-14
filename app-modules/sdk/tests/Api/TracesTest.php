@@ -114,7 +114,7 @@ it('refuses a stage, a moment, a season or an episode that is not one', function
     'a stage that is not a table' => ['stages', ['monitored'], 'stages'],
     'a stage with no service' => ['stages', [['stage' => 'grabbed', 'at' => null]], 'service'],
     'a stage with a blank time' => ['stages', [['stage' => 'grabbed', 'service' => 'sonarr', 'at' => ' ']], 'at'],
-    'a moment that is no outcome' => ['history', [['outcome' => 'lost', 'at' => '2026-09-19']], 'outcome'],
+    'a moment that is no outcome' => ['history', [['outcome' => 'lost', 'at' => 1_789_776_000]], 'outcome'],
     'a moment with no time' => ['history', [['outcome' => 'grabbed']], 'at'],
     'a season that is not a table' => ['coverage', ['have' => 0, 'wanted' => 1, 'unmonitored' => 0, 'seasons' => [1]], 'seasons'],
     'a season with no count' => ['coverage', ['have' => 0, 'wanted' => 1, 'unmonitored' => 0, 'seasons' => [['season' => 1, 'wanted' => 1, 'unmonitored' => 0, 'outstanding' => []]]], 'have'],

@@ -86,13 +86,13 @@ final readonly class TracesToFollow
             'stall' => 'No peers have been seen for two days',
             'stages' => [
                 ['stage' => 'monitored', 'service' => 'sonarr', 'at' => null],
-                ['stage' => 'grabbed', 'service' => 'sonarr', 'at' => '2026-09-20T10:00:00Z'],
-                ['stage' => 'downloading', 'service' => 'qbittorrent', 'at' => '2026-09-20T10:01:00Z'],
+                ['stage' => 'grabbed', 'service' => 'sonarr', 'at' => 1_789_898_400],
+                ['stage' => 'downloading', 'service' => 'qbittorrent', 'at' => 1_789_898_460],
             ],
             'history' => [
-                ['outcome' => 'grabbed', 'at' => '2026-09-19T09:00:00Z'],
-                ['outcome' => 'download-failed', 'at' => '2026-09-19T21:00:00Z'],
-                ['outcome' => 'grabbed', 'at' => '2026-09-20T10:00:00Z'],
+                ['outcome' => 'grabbed', 'at' => 1_789_808_400],
+                ['outcome' => 'download-failed', 'at' => 1_789_851_600],
+                ['outcome' => 'grabbed', 'at' => 1_789_898_400],
             ],
             'findings' => ['Jellyfin holds an episode no service is watching for'],
             'coverage' => [

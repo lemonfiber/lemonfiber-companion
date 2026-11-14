@@ -80,7 +80,7 @@ function aWindowOf(string $service, int $bound, array $rows): LogWindow
  */
 function aLogRow(string $line, string $service, string $stream, ?string $at = null): array
 {
-    return ['at' => $at, 'line' => $line, 'service' => $service, 'stream' => $stream];
+    return ['stamped' => $at, 'line' => $line, 'service' => $service, 'stream' => $stream];
 }
 
 /** Every line of a window, folded to one string, so the order can be read. */
@@ -200,7 +200,7 @@ it('a moment that is not text at all is refused, and quoted as nothing', functio
     // Written as a row rather than through `aLogRow()`, whose `at` is typed
     // `?string` — which is exactly why nothing had reached this arm.
     expect(fn(): Scrollback => Lines::in(aWindowOf('gluetun', 10, [
-        ['at' => 7, 'line' => 'tunnel up', 'service' => 'gluetun', 'stream' => 'stdout'],
+        ['stamped' => 7, 'line' => 'tunnel up', 'service' => 'gluetun', 'stream' => 'stdout'],
     ])))->toThrow(LineIsUnreadable::class, 'happened at ``,');
 });
 

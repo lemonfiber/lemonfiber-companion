@@ -75,12 +75,11 @@ final class HistoryIsUnreadable extends InvalidArgumentException
      * at, because a guessed moment is a record shown out of the order it
      * happened in.
      */
-    public static function at(string $said, int $position): self
+    public static function at(int $position): self
     {
         return new self(sprintf(
-            'Change %d in the history envelope says it was made at `%s`, and this app reads seconds since the epoch, written as digits. Guessing what else was meant is how a record gets shown out of the order it happened in.',
+            'Change %d in the history envelope says it was made at no moment this app reads as whole seconds since the epoch. Guessing what was meant is how a record gets shown out of the order it happened in.',
             $position,
-            $said,
         ));
     }
 

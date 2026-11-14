@@ -6,7 +6,6 @@ namespace Modules\Sdk\Internal;
 
 use function array_is_list;
 use function array_key_exists;
-use function filter_var;
 use function is_array;
 use function is_string;
 
@@ -14,8 +13,6 @@ use Modules\Kernel\Api\Instant;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\NewsIsUnreadable;
 use Modules\Sdk\Api\WireField;
-
-use function preg_match;
 
 /**
  * How both news envelopes are read, field by field: what a stack lists as new,
@@ -94,22 +91,17 @@ final readonly class WhatANewsListHolds
     }
 
     /**
-     * When a check in a list went wrong.
-     *
-     * Digits and nothing else, as `Records` reads a change's `at`, and within
-     * an integer, which a long enough run of digits is not.
+     * When a check in a list went wrong, in whole seconds since the epoch, as
+     * `Records` reads a change's `at`; a count before the epoch is refused.
      *
      * @param array<array-key, mixed> $item
      */
     public static function onset(array $item, int $position): Instant
     {
-        $onset = self::text($item, WireField::Problems, WireField::Onset, $position);
-        $seconds = filter_var($onset, FILTER_VALIDATE_INT);
+        $seconds = Required::number($item, WireField::Onset, NewsIsUnreadable::item(WireField::Problems, WireField::Onset, $position));
 
-        if (preg_match('/^\d+$/', $onset) !== 1 || $seconds === false) {
-            throw NewsIsUnreadable::item(WireField::Problems, WireField::Onset, $position);
-        }
-
-        return Instant::atEpochSeconds($seconds);
+        return $seconds < Instant::UNDATED
+            ? throw NewsIsUnreadable::item(WireField::Problems, WireField::Onset, $position)
+            : Instant::atEpochSeconds($seconds);
     }
 }

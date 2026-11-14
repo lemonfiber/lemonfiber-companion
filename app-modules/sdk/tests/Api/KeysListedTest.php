@@ -21,7 +21,7 @@ use Modules\Sdk\Api\KeysListed;
  */
 function aKeyListedWith(array $change = []): array
 {
-    return [...['name' => 'den', 'scope' => 'act', 'purpose' => 'home-assistant', 'state' => 'active', 'minted' => '2026-10-01T09:00:00', 'used' => null, 'member_minted' => false, 'revoked' => null], ...$change];
+    return [...['name' => 'den', 'scope' => 'act', 'purpose' => 'home-assistant', 'state' => 'active', 'minted' => 1_790_845_200, 'used' => null, 'member_minted' => false, 'revoked' => null], ...$change];
 }
 
 /**
