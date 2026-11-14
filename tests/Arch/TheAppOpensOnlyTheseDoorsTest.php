@@ -19,6 +19,7 @@ use Modules\Kernel\Api\ConnectingADevice;
 use Modules\Kernel\Api\ExtendingIt;
 use Modules\Kernel\Api\ForgettingWhatIsKept;
 use Modules\Kernel\Api\Forms;
+use Modules\Kernel\Api\GivingBackTheRoom;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowServicesTookIt;
@@ -263,6 +264,9 @@ const VERBS_THE_APP_ASKS_FOR = [
     // download go. There is no blanket yes: the offer's own name is the only
     // one the stack takes.
     'stop-seeding' => 'says what stopping seeding one download would cost, and stops it only against that offer',
+    // The offer is the account of the disk Storage already read; the yes
+    // quotes it by name and narrows it to the one category agreed to.
+    'space' => 'gives back one category of what the disk\'s offer holds as costing nothing, only against that offer and only that category',
     'downloads-pause' => 'rehearses pausing every download client, and pauses them only against that rehearsal',
     // A member's own ask for a title their search found, rehearsed first and
     // sent under a key so a retry is one ask.
@@ -617,6 +621,7 @@ it('every action this app asks for has a reason, and every reason an action', fu
         ...array_map(static fn(CheckingWhatDisturbs $checking): string => $checking->asked(), CheckingWhatDisturbs::cases()),
         ...array_map(static fn(RevokingAGrant $revoking): string => $revoking->asked(), RevokingAGrant::cases()),
         ...array_map(static fn(ReplacingACertificate $replacing): string => $replacing->asked(), ReplacingACertificate::cases()),
+        ...array_map(static fn(GivingBackTheRoom $giving): string => $giving->asked(), GivingBackTheRoom::cases()),
         ...array_map(static fn(SearchingTheIndexers $searching): string => $searching->asked(), SearchingTheIndexers::cases()),
         ...array_map(static fn(ForgettingWhatIsKept $forgetting): string => $forgetting->asked(), ForgettingWhatIsKept::cases()),
         ...array_map(static fn(SwitchingTheForms $switching): string => $switching->asked(), SwitchingTheForms::cases()),

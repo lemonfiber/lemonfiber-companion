@@ -7,9 +7,8 @@ namespace Modules\Kernel\Api;
 /**
  * How full a machine is, where the room went, and what is on its disk to weigh.
  *
- * Read and never acted on. The stack decides where each volume stands and what
- * getting a line back would cost; nothing here decides anything about
- * removing.
+ * The stack decides where each volume stands, what getting a line back would
+ * cost and which categories it offers back as costing nothing.
  */
 final readonly class WhereTheRoomWent
 {
@@ -18,6 +17,7 @@ final readonly class WhereTheRoomWent
         private WhereTheRoomStands $stands,
         private TheAccount $account,
         private TheDownloadsOnDisk $downloads,
+        private TheRoomOnOffer $offer,
         private bool $halted,
     ) {}
 
@@ -27,9 +27,10 @@ final readonly class WhereTheRoomWent
         WhereTheRoomStands $stands,
         TheAccount $account,
         TheDownloadsOnDisk $downloads,
+        TheRoomOnOffer $offer,
         bool $halted,
     ): self {
-        return new self($volumes, $stands, $account, $downloads, $halted);
+        return new self($volumes, $stands, $account, $downloads, $offer, $halted);
     }
 
     /** The volumes watched. */
@@ -54,6 +55,12 @@ final readonly class WhereTheRoomWent
     public function account(): TheAccount
     {
         return $this->account;
+    }
+
+    /** The room offered back as costing nothing, by category. */
+    public function offer(): TheRoomOnOffer
+    {
+        return $this->offer;
     }
 
     /** The completed downloads, each with where it stands. */

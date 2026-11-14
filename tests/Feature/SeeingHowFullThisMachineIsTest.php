@@ -26,6 +26,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheAccount;
 use Modules\Kernel\Api\TheDownloadsOnDisk;
 use Modules\Kernel\Api\TheGlossary;
+use Modules\Kernel\Api\TheRoomOnOffer;
 use Modules\Kernel\Api\TheVolumes;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAVolumeHolds;
@@ -89,6 +90,7 @@ function aFillingLoft(bool $halted = false): WhereTheRoomWent
             ADownloadOnDisk::seeding('Old.Film.1999', 4_000_000_000, ARatio::none(), 'Your ratio on that tracker stops growing'),
             ADownloadOnDisk::leftAlone('Kept.Show.S02', 1_000_000_000),
         ),
+        TheRoomOnOffer::named('space-3f9a'),
         halted: $halted,
     );
 }
@@ -254,7 +256,7 @@ it('opens stopping seeding on the download whose row it is on, by its own screen
 });
 
 it('says so where no volume is watched, nothing takes room and no download is on the machine', function (): void {
-    $empty = WhereTheRoomWent::measured(TheVolumes::of(), WhereTheRoomStands::Ample, TheAccount::of(), TheDownloadsOnDisk::of(), halted: false);
+    $empty = WhereTheRoomWent::measured(TheVolumes::of(), WhereTheRoomStands::Ample, TheAccount::of(), TheDownloadsOnDisk::of(), TheRoomOnOffer::named('space-3f9a'), halted: false);
     $drawn = WhatTheDeviceWouldDraw::by(theRoomScreen(AStackThatMeasuresItsRoom::with($empty)))->said();
 
     expect($drawn)->toContain(__('stacks.room.no_volumes'))

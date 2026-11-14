@@ -36,6 +36,7 @@ use Modules\Kernel\Api\FetchingArtwork;
 use Modules\Kernel\Api\FindingTitles;
 use Modules\Kernel\Api\FollowingWhatIsPlaying;
 use Modules\Kernel\Api\Forgetting;
+use Modules\Kernel\Api\GivingBackRoom;
 use Modules\Kernel\Api\Granting;
 use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\HandingOverADevice;
@@ -160,6 +161,7 @@ use Modules\Sdk\Api\Resetters;
 use Modules\Sdk\Api\Restarts;
 use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Reversers;
+use Modules\Sdk\Api\RoomGivers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Searchers;
@@ -415,6 +417,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // How full the machine is, read beside the rest and bound for the
         // same reason.
         $this->app->bind(Measuring::class, Surveyors::class);
+        $this->app->bind(GivingBackRoom::class, RoomGivers::class);
 
         // Stopping seeding one download, beside how full the machine is and
         // bound for the same reason.

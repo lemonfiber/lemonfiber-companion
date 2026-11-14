@@ -20,6 +20,7 @@ use Modules\Kernel\Api\ExtendingIt;
 use Modules\Kernel\Api\ForgettingWhatIsKept;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
+use Modules\Kernel\Api\GivingBackTheRoom;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowServicesTookIt;
@@ -70,7 +71,7 @@ use Modules\Sdk\Api\EveryRequestThisAppSends;
 function everyActionNamed(): array
 {
     return [
-        ...AcceptingAChoice::cases(), ...CheckingWhatDisturbs::cases(), ...RevokingAGrant::cases(), ...ReplacingACertificate::cases(), ...SearchingTheIndexers::cases(), ...AskingThemIn::cases(), ...ChangingASetting::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...ForgettingWhatIsKept::cases(), ...HandingOver::cases(), ...MovingInBy::cases(),
+        ...AcceptingAChoice::cases(), ...CheckingWhatDisturbs::cases(), ...RevokingAGrant::cases(), ...ReplacingACertificate::cases(), ...GivingBackTheRoom::cases(), ...SearchingTheIndexers::cases(), ...AskingThemIn::cases(), ...ChangingASetting::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...ForgettingWhatIsKept::cases(), ...HandingOver::cases(), ...MovingInBy::cases(),
         ...AskingForIt::cases(), ...ChoosingHowToBeTold::cases(), ...SwitchingTheForms::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
         ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
         ...WhatToDoWithADownload::cases(), ...WhatToDoWithTheDownloads::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(), ...WhatWasDecided::cases(), ...WhatThePlayerAsks::cases(),
