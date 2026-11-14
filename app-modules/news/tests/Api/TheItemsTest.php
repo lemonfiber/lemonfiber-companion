@@ -86,3 +86,16 @@ it('says which of two items is newer by the order of their kind', function (): v
         ->and($requests->isNewer(AnItem::aRequest(RequestId::named('9')), AnItem::aRequest(RequestId::named('12'))))->toBeTrue()
         ->and($requests->isNewer(AnItem::aRequest(RequestId::named('12')), AnItem::aRequest(RequestId::named('7'))))->toBeFalse();
 });
+
+it('says which of two problems is newer by when each began, listed or not', function (): void {
+    $problems = TheItems::of(
+        KindOfNews::Problem,
+        AnItem::aProblem('service.gluetun', Instant::atEpochSeconds(300)),
+        AnItem::aProblem('storage.full', Instant::atEpochSeconds(200)),
+    );
+
+    expect($problems->isNewer(AnItem::aProblem('service.gluetun', Instant::atEpochSeconds(300)), AnItem::aProblem('storage.full', Instant::atEpochSeconds(200))))->toBeTrue()
+        ->and($problems->isNewer(AnItem::aProblem('storage.full', Instant::atEpochSeconds(200)), AnItem::aProblem('service.gluetun', Instant::atEpochSeconds(300))))->toBeFalse()
+        ->and($problems->isNewer(AnItem::aProblem('storage.full', Instant::atEpochSeconds(200)), AnItem::aProblem('storage.full', Instant::atEpochSeconds(200))))->toBeFalse()
+        ->and($problems->isNewer(AnItem::aProblem('disk.slow', Instant::atEpochSeconds(400)), AnItem::aProblem('service.gluetun', Instant::atEpochSeconds(300))))->toBeTrue();
+});
