@@ -61,7 +61,8 @@ it('offers nothing of a kind of music or books that lists no unit', function ():
 it('starts on the first choice offered, and on films and series where nothing is offered', function (): void {
     expect(WhatCanBeAskedFor::listing()->and(KindOfTitle::Music, UnitOfTitle::Artist)->offered()->first()->word())->toBe('music/artist')
         ->and(WhatCanBeAskedFor::listing()->offered()->first()->word())->toBe('films-and-series')
-        ->and(WhatCanBeAskedFor::filmsAndSeriesAlone()->offered()->first()->word())->toBe('films-and-series');
+        ->and(WhatCanBeAskedFor::filmsAndSeriesAlone()->offered()->first()->word())->toBe('films-and-series')
+        ->and(theWords(WhatCanBeAskedFor::filmsAndSeriesAlone()->offered()))->toBe(['films-and-series']);
 });
 
 it('tells films and series from a unit of music or books, and one choice from another', function (): void {

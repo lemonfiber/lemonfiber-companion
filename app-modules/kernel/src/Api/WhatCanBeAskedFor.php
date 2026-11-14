@@ -62,7 +62,7 @@ final readonly class WhatCanBeAskedFor
             $kinds[$choice->kindWord()] ??= $choice;
         }
 
-        return ChoicesOfTitles::of(...array_values($kinds));
+        return ChoicesOfTitles::of(...$kinds);
     }
 
     /**
