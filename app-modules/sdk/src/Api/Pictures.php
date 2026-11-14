@@ -22,6 +22,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Whose;
 use Modules\Sdk\Internal\AsTheHouseholdsDefaults;
 use Modules\Sdk\Internal\GatedClient;
+use Modules\Sdk\Internal\TheQuery;
 use Modules\Sdk\Internal\WhatAPosterIsAskedWith;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Override;
@@ -66,7 +67,7 @@ final readonly class Pictures implements FetchingArtwork
     public function posterOfAFoundTitle(Stack $stack, Session $session, AFoundTitle $title): HowArtworkCame
     {
         try {
-            return $this->arrived(GatedClient::of($this->clients, $stack, $session)->askablePoster($title->id(), ['kind' => $title->kind()->value]));
+            return $this->arrived(GatedClient::of($this->clients, $stack, $session)->askablePoster($title->id(), [WireField::Kind->value => $title->kind()->value, ...TheQuery::among($title->among())]));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return HowArtworkCame::refused(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|ConfigurationProblem|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|ArtworkSaysNothing $why) {

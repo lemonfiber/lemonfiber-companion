@@ -38,16 +38,12 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'The words searched for, as the core trimmed them. The app sent them and holds them already.',
         ],
         [
-            'path' => 'AskableEnvelope.titles[].by',
-            'because' => 'The artist or author of a title, which only music and books carry. This app searches for films and series alone, so no title it is handed has one.',
-        ],
-        [
             'path' => 'AskableEnvelope.titles[].cover',
             'because' => 'Where a cover of music or books is published. The app loads nothing that is not the core\'s own answer (`N1-R16`): a cover reaches it through the core\'s poster read or not at all.',
         ],
         [
-            'path' => 'AskableEnvelope.titles[].unit',
-            'because' => 'What a title of music or books is within its kind. This app searches for films and series alone, which carry none.',
+            'path' => 'AskableKindsEnvelope.member',
+            'because' => 'Whose list this is, which is the member signed in: the core answered the session that asked.',
         ],
         [
             'path' => 'AskedEnvelope.kind',
@@ -74,11 +70,11 @@ final readonly class UnreadOnEnvelopesAToL
         ],
         [
             'path' => 'AskedEnvelope.request',
-            'because' => 'The reference the household list names an ask the core keeps by, which only music and books have. This app asks for films and series alone, and points the member at Requests, which lists every ask.',
+            'because' => 'The reference the household list names an ask the core keeps by, which only music and books have. An answered ask points the member at Requests, which lists every ask, rather than at one by its reference.',
         ],
         [
             'path' => 'AskedEnvelope.unit',
-            'because' => 'What an ask for music or books is within its kind. This app asks for films and series alone, which carry none.',
+            'because' => 'What an ask for music or books is within its kind. The page that asked holds the title it asked for, unit and all, so the answer\'s copy of it is not read again.',
         ],
         [
             'path' => 'AskedEnvelope.title',

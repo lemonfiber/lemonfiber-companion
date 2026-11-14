@@ -10,7 +10,7 @@ use Modules\Sdk\Api\SaysWhereItSits;
 /**
  * What the wire calls each field of the `askable` envelope that no other envelope this module reads carries.
  *
- * The rest — `id`, `kind`, `title`, `year`, `approval` and `next` — are shared, and
+ * The rest — `id`, `kind`, `title`, `by`, `year`, `approval` and `next` — are shared, and
  * named once in {@see \Modules\Sdk\Api\WireField}.
  */
 enum AskableField: string implements NamesAWireField
@@ -22,4 +22,7 @@ enum AskableField: string implements NamesAWireField
 
     /** Where one title stands in the house. */
     case Stands = 'stands';
+
+    /** What a title of music or books is within its kind. */
+    case Unit = 'unit';
 }

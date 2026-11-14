@@ -16,6 +16,7 @@ use Modules\Household\Internal\ThePicturesItDraws;
 use Modules\Household\Internal\ViewModels\AFoundTitleAsShown;
 use Modules\Household\Internal\ViewModels\TheAskAnswered;
 use Modules\Household\Internal\ViewModels\WhatAskingShows;
+use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
 use Modules\Household\Internal\WhatAFoundTitleIsOpenedWith;
 use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\AskingForTitles;
@@ -31,6 +32,7 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Kernel\Api\WhatAnAskCameTo;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhenItCameOut;
@@ -98,10 +100,15 @@ final class AskingForATitle extends NativeComponent
             return null;
         }
 
-        $year = $this->carried(WhatAFoundTitleIsOpenedWith::Year);
+        $carried = $this->carried(WhatAFoundTitleIsOpenedWith::Year);
+        $year = $carried === '' ? WhenItCameOut::unstated() : WhenItCameOut::in((int) $carried);
+        $title = $this->carried(WhatAFoundTitleIsOpenedWith::Title);
+        $unit = UnitOfTitle::tryFrom($this->carried(WhatAFoundTitleIsOpenedWith::Unit));
 
         try {
-            return AFoundTitle::listed($id, $kind, $this->carried(WhatAFoundTitleIsOpenedWith::Title), $year === '' ? WhenItCameOut::unstated() : WhenItCameOut::in((int) $year), $stands);
+            return $unit instanceof UnitOfTitle
+                ? AFoundTitle::curated($id, $kind, $unit, $title, $this->carried(WhatAFoundTitleIsOpenedWith::By), $year, $stands)
+                : AFoundTitle::listed($id, $kind, $title, $year, $stands);
         } catch (FoundTitleSaysNothing) {
             return null;
         }
@@ -138,6 +145,20 @@ final class AskingForATitle extends NativeComponent
             held: fn(Session $session): InWordsOrNone => new InWordsOrNone($this->pictures->ofAFoundTitle($stack, $session, $title)),
             notHeld: static fn(): InWordsOrNone => new InWordsOrNone(null),
         )->said;
+    }
+
+    /** The title's poster, lettered with its name and drawn over with its picture where there is one, or none where there is no title. */
+    public function poster(): ?WhatOnePosterSays
+    {
+        $shown = $this->shown();
+
+        if (! $shown instanceof AFoundTitleAsShown) {
+            return null;
+        }
+
+        $year = $shown->year === '' ? null : $shown->year;
+
+        return WhatOnePosterSays::ofATitle($shown->titled, $shown->kind, $year)->pictured($this->pictured());
     }
 
     /** What asking would come to, asked once per frame where the title may be asked for. */

@@ -12,11 +12,17 @@ namespace Modules\Household\Internal;
  */
 enum WhatAFoundTitleIsOpenedWith: string
 {
-    /** Whether it is a film or a series, as the search named it. */
+    /** Whether it is a film, a series, music or books, as the search named it. */
     case Kind = 'found-kind';
+
+    /** What a title of music or books is within its kind, empty for a film or a series. */
+    case Unit = 'found-unit';
 
     /** Its name. */
     case Title = 'found-title';
+
+    /** Who made it, empty where the core named nobody. */
+    case By = 'found-by';
 
     /** The year it came out, empty where the core knew none. */
     case Year = 'found-year';

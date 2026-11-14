@@ -66,7 +66,7 @@ final readonly class WhatIsTold
     {
         $kinds = [];
 
-        foreach (InTheOrderSent::rows(Required::rows($data, AlertsField::Kinds, AlertsAreUnreadable::missing(AlertsField::Kinds))) as $position => $said) {
+        foreach (InTheOrderSent::rows(Required::rows($data, WireField::Kinds, AlertsAreUnreadable::missing(WireField::Kinds))) as $position => $said) {
             $kinds[] = (is_string($said) ? KindOfNotification::tryFrom($said) : null)
                 ?? throw AlertsAreUnreadable::kind(is_string($said) ? $said : '', $position);
         }

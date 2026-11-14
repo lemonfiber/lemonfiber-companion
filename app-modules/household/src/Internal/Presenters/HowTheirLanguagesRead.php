@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal\Presenters;
 
-use Modules\Household\Internal\ViewModels\ALanguageAsShown;
+use Modules\Household\Internal\ViewModels\AChoiceAsShown;
 use Modules\Household\Internal\ViewModels\TheirLanguagesAsShown;
 use Modules\Kernel\Api\HearIn;
 use Modules\Kernel\Api\ReadIn;
@@ -24,13 +24,13 @@ final readonly class HowTheirLanguagesRead
         $hear = [];
 
         foreach (HearIn::cases() as $case) {
-            $hear[] = new ALanguageAsShown(said: $this->heard($case), word: $case->value, chosen: $case === $chosen->hear());
+            $hear[] = new AChoiceAsShown(said: $this->heard($case), word: $case->value, chosen: $case === $chosen->hear());
         }
 
         $read = [];
 
         foreach (ReadIn::cases() as $case) {
-            $read[] = new ALanguageAsShown(said: $this->read($case), word: $case->value, chosen: $case === $chosen->read());
+            $read[] = new AChoiceAsShown(said: $this->read($case), word: $case->value, chosen: $case === $chosen->read());
         }
 
         return new TheirLanguagesAsShown(hear: $hear, read: $read);

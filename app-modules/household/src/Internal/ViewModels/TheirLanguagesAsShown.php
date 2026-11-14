@@ -10,8 +10,8 @@ namespace Modules\Household\Internal\ViewModels;
 final readonly class TheirLanguagesAsShown
 {
     /**
-     * @param list<ALanguageAsShown> $hear every language to hear titles in, the one chosen now marked
-     * @param list<ALanguageAsShown> $read every language to read subtitles in, and none, the one chosen now marked
+     * @param list<AChoiceAsShown> $hear every language to hear titles in, the one chosen now marked
+     * @param list<AChoiceAsShown> $read every language to read subtitles in, and none, the one chosen now marked
      */
     public function __construct(
         public array $hear,

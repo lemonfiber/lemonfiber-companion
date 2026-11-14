@@ -10,6 +10,7 @@ use Modules\Kernel\Api\HowAnAskWent;
 use Modules\Kernel\Api\IdempotencyKey;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\WhichTitles;
 
 use function sprintf;
 
@@ -34,14 +35,14 @@ final class AStackThatTakesAsks implements AskingForTitles
 
     public function rehearse(Stack $stack, Session $session, AFoundTitle $title): HowAnAskWent
     {
-        $this->rehearsed[] = sprintf('%s %s', $title->kind()->value, $title->id());
+        $this->rehearsed[] = sprintf('%s %s', $this->named($title), $title->id());
 
         return $this->rehearsal;
     }
 
     public function ask(Stack $stack, Session $session, AFoundTitle $title, IdempotencyKey $key): HowAnAskWent
     {
-        $this->asked[] = sprintf('%s %s under %s', $title->kind()->value, $title->id(), $key->sent());
+        $this->asked[] = sprintf('%s %s under %s', $this->named($title), $title->id(), $key->sent());
 
         return $this->ask;
     }
@@ -62,5 +63,11 @@ final class AStackThatTakesAsks implements AskingForTitles
     public function asked(): array
     {
         return $this->asked;
+    }
+
+    /** A title as its kind, or as its kind and unit where it is music or books. */
+    private function named(AFoundTitle $title): string
+    {
+        return $title->among()->word() === WhichTitles::FILMS_AND_SERIES ? $title->kind()->value : $title->among()->word();
     }
 }

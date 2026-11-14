@@ -411,6 +411,7 @@ final readonly class EveryAdapterCallThatReads
                 => new Askers($clients, $entropy)->rehearse($stack, $session, self::aFoundTitleToSpoilTheAnswerTo()),
             'Askers::ask' => static fn(): object
                 => new Askers($clients, $entropy)->ask($stack, $session, self::aFoundTitleToSpoilTheAnswerTo(), IdempotencyKey::of('an-ask')),
+            'Finders::whatCanBeAskedFor' => static fn(): object => new Finders($clients)->whatCanBeAskedFor($stack, $session),
             'Finders::firstPage' => static fn(): object
                 => new Finders($clients)->firstPage($stack, $session, WhatToLookFor::typed('dune')),
             'Finders::pageAfter' => static fn(): object

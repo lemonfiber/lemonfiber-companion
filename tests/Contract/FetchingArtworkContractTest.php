@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\Whose;
@@ -102,17 +103,18 @@ it('fetches a held title\'s poster and backdrop and a found title\'s poster, byt
     }
 });
 
-it('asks a held title\'s pictures as the member, the household\'s defaults for the operator, and a found title\'s poster by its kind', function (): void {
+it('asks a held title\'s pictures as the member, the household\'s defaults for the operator, and a found title\'s poster by its kind and unit', function (): void {
     $png = static fn(): MockResponse => MockResponse::make(A_POSTERS_BYTES, 200, ['Content-Type' => 'image/png']);
     $asked = [];
     MockClient::destroyGlobal();
-    $client = MockClient::global([$png(), $png(), $png(), $png()]);
+    $client = MockClient::global([$png(), $png(), $png(), $png(), $png()]);
     $pictures = new Pictures(new PinnedClients());
 
     $pictures->posterOfAHolding(aHouseWithPosters(), aSessionPostersAreDrawnFor(), Whose::member('sanne'), HoldingId::called('a1'));
     $pictures->posterOfAHolding(aHouseWithPosters(), aSessionPostersAreDrawnFor(), Whose::theOperator(), HoldingId::called('a1'));
     $pictures->backdropOfAHolding(aHouseWithPosters(), aSessionPostersAreDrawnFor(), Whose::member('sanne'), HoldingId::called('a1'));
     $pictures->posterOfAFoundTitle(aHouseWithPosters(), aSessionPostersAreDrawnFor(), aFoundTitleWithAPoster());
+    $pictures->posterOfAFoundTitle(aHouseWithPosters(), aSessionPostersAreDrawnFor(), AFoundTitle::curated('mb-1', KindOfTitle::Music, UnitOfTitle::Album, 'Rumours', 'Fleetwood Mac', WhenItCameOut::in(1977), WhereAFoundTitleStands::Askable));
 
     foreach ($client->getRecordedResponses() as $response) {
         $request = $response->getPendingRequest();
@@ -124,6 +126,7 @@ it('asks a held title\'s pictures as the member, the household\'s defaults for t
         '/api/held/a1/poster?defaults=true',
         '/api/held/a1/backdrop?member=sanne',
         '/api/askable/438631/poster?kind=movies',
+        '/api/askable/mb-1/poster?kind=music&unit=album',
     ]);
 });
 

@@ -14,6 +14,7 @@ use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAnAskCameTo;
@@ -50,6 +51,10 @@ final readonly class HowAFoundTitleReads
 
     /** A title that is a book. */
     public const string BOOKS = 'household.search.kind.books';
+
+    public const string MADE = 'household.search.line_by';
+
+    public const string MADE_UNDATED = 'household.search.line_by_undated';
 
     /** One page, each title a row leading to its page. */
     public function found(WhatToLookFor $words, WhatASearchFound $page): WhatTheSearchShows
@@ -111,21 +116,39 @@ final readonly class HowAFoundTitleReads
     public function shown(AFoundTitle $title): AFoundTitleAsShown
     {
         $year = $title->year()->either(dated: static fn(int $year): InWords => new InWords((string) $year), unstated: static fn(): InWords => new InWords(''))->said;
+        $by = $title->by(named: static fn(string $by): InWords => new InWords($by), unnamed: static fn(): InWords => new InWords(''))->said;
+        $unit = $title->among()->either(filmsAndSeries: static fn(): InWords => new InWords(''), of: static fn(KindOfTitle $kind, UnitOfTitle $unit): InWords => new InWords($unit->value))->said;
 
         return new AFoundTitleAsShown(
             found: $title,
             titled: $title->title(),
-            line: $year === '' ? self::UNDATED : self::DATED,
+            line: $this->line($by, $year),
+            by: $by,
             year: $year,
-            kind: $this->kind($title->kind()),
+            kind: $title->among()->either(
+                filmsAndSeries: fn(): InWords => new InWords($this->kind($title->kind())),
+                of: static fn(KindOfTitle $kind, UnitOfTitle $unit): InWords => new InWords($unit->saidToTheMember()),
+            )->said,
             stands: $this->stands($title->stands()),
             carries: [
                 WhatAFoundTitleIsOpenedWith::Kind->value => $title->kind()->value,
+                WhatAFoundTitleIsOpenedWith::Unit->value => $unit,
                 WhatAFoundTitleIsOpenedWith::Title->value => $title->title(),
+                WhatAFoundTitleIsOpenedWith::By->value => $by,
                 WhatAFoundTitleIsOpenedWith::Year->value => $year,
                 WhatAFoundTitleIsOpenedWith::Stands->value => $title->stands()->value,
             ],
         );
+    }
+
+    /** The catalogue key for a row's line, by whether it names who made it and when it came out. */
+    private function line(string $by, string $year): string
+    {
+        if ($by === '') {
+            return $year === '' ? self::UNDATED : self::DATED;
+        }
+
+        return $year === '' ? self::MADE_UNDATED : self::MADE;
     }
 
     private function became(WhatAnAskBecame $became): string

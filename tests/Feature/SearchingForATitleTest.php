@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowAnAskWent;
 use Modules\Kernel\Api\HowArtworkCame;
 use Modules\Kernel\Api\HowASearchWent;
+use Modules\Kernel\Api\HowTheKindsWent;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\Nonce;
@@ -24,9 +25,11 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAnAskCameTo;
 use Modules\Kernel\Api\WhatASearchFound;
+use Modules\Kernel\Api\WhatCanBeAskedFor;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhereTheNextPageBegins;
@@ -109,7 +112,9 @@ function theFoundPage(AStackThatTakesAsks $asking, AFoundTitle $title, bool $car
     if ($carried) {
         $screen->setData([
             WhatAFoundTitleIsOpenedWith::Kind->value => $title->kind()->value,
+            WhatAFoundTitleIsOpenedWith::Unit->value => $title->among()->unitWord(),
             WhatAFoundTitleIsOpenedWith::Title->value => $title->title(),
+            WhatAFoundTitleIsOpenedWith::By->value => $title->by(named: static fn(string $by): TheWordCarriedOut => new TheWordCarriedOut($by), unnamed: static fn(): TheWordCarriedOut => new TheWordCarriedOut(''))->said,
             WhatAFoundTitleIsOpenedWith::Year->value => $title->year()->either(dated: static fn(int $year): TheWordCarriedOut => new TheWordCarriedOut((string) $year), unstated: static fn(): TheWordCarriedOut => new TheWordCarriedOut(''))->said,
             WhatAFoundTitleIsOpenedWith::Stands->value => $title->stands()->value,
         ]);
@@ -176,7 +181,9 @@ it('shows every title on the page with its year, kind and standing, under the co
         ->and($screen->goes()->found(theRowsFound($screen)[0]->found))->toBe(AStacksScreen::Found->forTheStacksFoundTitle(theHouseSearchedFrom()->id(), dune()))
         ->and(theRowsFound($screen)[0]->carries)->toBe([
             WhatAFoundTitleIsOpenedWith::Kind->value => 'movies',
+            WhatAFoundTitleIsOpenedWith::Unit->value => '',
             WhatAFoundTitleIsOpenedWith::Title->value => 'Dune',
+            WhatAFoundTitleIsOpenedWith::By->value => '',
             WhatAFoundTitleIsOpenedWith::Year->value => '2021',
             WhatAFoundTitleIsOpenedWith::Stands->value => 'askable',
         ]);
@@ -415,4 +422,88 @@ it('draws each title\'s poster again once back on view, after the lock let go of
     expect($held->howMany())->toBe(2)
         ->and($posters->asked())->toBe(4)
         ->and($untouched->shown)->toBeNull();
+});
+
+/** An album the member may ask for, by the band that made it. */
+function rumours(): AFoundTitle
+{
+    return AFoundTitle::curated('mb-1', KindOfTitle::Music, UnitOfTitle::Album, 'Rumours', 'Fleetwood Mac', WhenItCameOut::in(1977), WhereAFoundTitleStands::Askable);
+}
+
+/** What a house with curators for music and books lets a member ask for. */
+function everythingAskable(): HowTheKindsWent
+{
+    return HowTheKindsWent::listed(WhatCanBeAskedFor::listing()
+        ->and(KindOfTitle::Series)
+        ->and(KindOfTitle::Film)
+        ->and(KindOfTitle::Music, UnitOfTitle::Album, UnitOfTitle::Artist)
+        ->and(KindOfTitle::Books, UnitOfTitle::Book, UnitOfTitle::Author, UnitOfTitle::Series));
+}
+
+it('draws a chip for each kind the core lists, and the units of the one chosen, asking for the list once', function (): void {
+    $finding = AStackThatFindsTitles::finding(aFirstPage())->listing(everythingAskable());
+    $screen = theSearchTab($finding);
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->offers())->toContain(__('household.search.among.films-and-series'), __('household.search.among.music'), __('household.search.among.books'))
+        ->and($drawn->offers())->not->toContain(__('household.search.unit.album'))
+        ->and($drawn->said())->toContain(__('household.search.explained_everything'));
+
+    $screen->choose('music');
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('household.search.unit.album'), __('household.search.unit.artist'))
+        ->and($finding->listed())->toBe(1)
+        ->and($finding->asked())->toBe([]);
+});
+
+it('searches among what was chosen, and searches the words last searched for again at once when the member chooses again', function (): void {
+    $herbert = AFoundTitle::curated('ol-1', KindOfTitle::Books, UnitOfTitle::Author, 'Frank Herbert', 'Frank Herbert', WhenItCameOut::unstated(), WhereAFoundTitleStands::OnItsWay);
+    $finding = AStackThatFindsTitles::finding(WhatASearchFound::lastly('Asks wait for a yes.', rumours(), $herbert))->listing(everythingAskable());
+    $screen = theSearchTab($finding);
+    $screen->choose('music');
+    $screen->typed = 'rumours';
+    $screen->search();
+    $screen->typed = 'tusk';
+    $screen->choose('music/artist');
+    $screen->choose('films-and-series');
+
+    expect($finding->asked())->toBe(['rumours among music/album', 'rumours among music/artist', 'rumours'])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(
+            'Rumours',
+            aSearchLine('household.search.line_by', ['by' => 'Fleetwood Mac', 'kind' => aSearchLine('household.unit.album'), 'year' => '1977', 'stands' => aSearchLine('household.search.askable')]),
+            aSearchLine('household.search.line_by_undated', ['by' => 'Frank Herbert', 'kind' => aSearchLine('household.unit.author'), 'stands' => aSearchLine('household.asked.getting')]),
+        );
+});
+
+it('searches films and series alone, with no chip, where the list could not be read or there is no session to ask on', function (): void {
+    $refused = AStackThatFindsTitles::finding(aFirstPage())->listing(HowTheKindsWent::refused(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
+    $screen = theSearchTab($refused);
+    $screen->choose('music');
+    $screen->typed = 'dune';
+    $screen->search();
+    $signedOut = AStackThatFindsTitles::finding(aFirstPage())->listing(everythingAskable());
+    $nobody = theSearchTab($signedOut, AKeychainInMemory::working());
+
+    expect($refused->asked())->toBe(['dune'])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('household.search.among.music'))
+        ->and(theSearchTab($refused)->choices()->explained)->toBe('household.search.explained')
+        ->and($nobody->choices()->kinds)->toBe([])
+        ->and($signedOut->listed())->toBe(0);
+});
+
+it('opens an album with its unit and maker, lettered with its name, and asks for it with its unit', function (): void {
+    $asking = AStackThatTakesAsks::answering(aRehearsalSaid('Asking for Rumours waits for a yes.'), HowAnAskWent::answered(WhatAnAskCameTo::answered(WhatAnAskBecame::Waiting, WhetherItWasRehearsed::CarriedOut, 'Rumours is asked for.')));
+    $page = theFoundPage($asking, rumours());
+    $drawn = WhatTheDeviceWouldDraw::by($page);
+    $page->ask();
+
+    expect($page->title()?->named())->toBe(rumours()->named())
+        ->and($drawn->said())->toContain('Rumours', 'Asking for Rumours waits for a yes.', aSearchLine('household.search.line_by', ['by' => 'Fleetwood Mac', 'kind' => aSearchLine('household.unit.album'), 'year' => '1977', 'stands' => aSearchLine('household.search.askable')]))
+        ->and($page->poster()?->titled)->toBe('Rumours')
+        ->and($page->poster()?->pictured)->toBeNull()
+        ->and($page->poster()?->filling)->toBe(['title' => 'Rumours', 'year' => '1977'])
+        ->and(theFoundPage($asking, AFoundTitle::curated('mb-2', KindOfTitle::Music, UnitOfTitle::Artist, 'Fleetwood Mac', '', WhenItCameOut::unstated(), WhereAFoundTitleStands::Askable))->poster()?->filling)->toBe(['title' => 'Fleetwood Mac'])
+        ->and($asking->rehearsed())->toBe(['music/album mb-1'])
+        ->and($asking->asked())->toHaveCount(1)
+        ->and(theFoundPage($asking, rumours(), carried: false)->poster())->toBeNull();
 });

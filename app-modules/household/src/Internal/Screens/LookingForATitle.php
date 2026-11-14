@@ -6,9 +6,12 @@ namespace Modules\Household\Internal\Screens;
 
 use Closure;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Household\Internal\OffersTheAppsSettings;
 use Modules\Household\Internal\Presenters\HowAFoundTitleReads;
+use Modules\Household\Internal\Presenters\HowWhatCanBeAskedForReads;
 use Modules\Household\Internal\ThePicturesItDraws;
+use Modules\Household\Internal\ViewModels\WhatCanBeSearchedAsShown;
 use Modules\Household\Internal\ViewModels\WhatTheSearchShows;
 use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\Concealed;
@@ -21,9 +24,11 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatASearchFound;
+use Modules\Kernel\Api\WhatCanBeAskedFor;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToLookFor;
 use Modules\Kernel\Api\WhereTheNextPageBegins;
+use Modules\Kernel\Api\WhichTitles;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
@@ -43,13 +48,15 @@ use Override;
  *
  * **The core decides what is shown.** A title the member's limits keep from
  * them is not on any page, so nothing here filters, and the sentence on
- * approval is the core's own.
+ * approval is the core's own. What can be searched among is the core's list
+ * too: a chip is drawn for each kind and unit it lists, and none other.
  */
 #[Lazy]
 #[Concealed]
 #[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
 final class LookingForATitle extends NativeComponent
 {
+    use WritesItsTaps;
     use OffersTheAppsSettings;
     use FindsItsWayAroundTheHouse;
     use LetsGoOfARefusedSession;
@@ -62,6 +69,12 @@ final class LookingForATitle extends NativeComponent
 
     /** What the search has shown so far. */
     public ?WhatTheSearchShows $shown = null;
+
+    /** What the member chose to search among, by the word its chip hands back; the first offered until they choose. */
+    public ?string $among = null;
+
+    /** What the member can search among, read once on the tab's first frame. */
+    public ?WhatCanBeAskedFor $askable = null;
 
     public function __construct(
         private readonly FindingTitles $finding,
@@ -83,16 +96,31 @@ final class LookingForATitle extends NativeComponent
         return WhatToLookFor::typed($this->typed)->isEnough();
     }
 
-    /** Search for what is typed, from its first page. */
+    /** What the member can search among, as the chips that offer it. */
+    public function choices(): WhatCanBeSearchedAsShown
+    {
+        return new HowWhatCanBeAskedForReads()->chips($this->askable(), $this->which());
+    }
+
+    /** Search among this from now on, and search the words last searched for again at once, from the first page, where there were any. */
+    public function choose(string $word): void
+    {
+        $this->among = $word;
+        $searched = $this->shown?->found?->words;
+
+        if ($searched instanceof WhatToLookFor) {
+            $this->searchFor($searched->among($this->which()));
+        }
+    }
+
+    /** Search for what is typed, among what was chosen, from its first page. */
     public function search(): void
     {
-        $words = WhatToLookFor::typed($this->typed);
+        $words = WhatToLookFor::typed($this->typed)->among($this->which());
 
-        if (! $words->isEnough()) {
-            return;
+        if ($words->isEnough()) {
+            $this->searchFor($words);
         }
-
-        $this->shown = $this->asked($words, fn(Stack $stack, Session $session): HowASearchWent => $this->finding->firstPage($stack, $session, $words));
     }
 
     /** Read the page after the last one shown, where there is one. */
@@ -129,6 +157,60 @@ final class LookingForATitle extends NativeComponent
             held: fn(Session $session): WhatTheSearchShows => $this->pictured($shown, $stack, $session),
             notHeld: static fn(): WhatTheSearchShows => $shown,
         );
+    }
+
+    /**
+     * What the member can search among, asked of the core once and kept.
+     *
+     * Films and series alone where it could not be asked or read: nothing is
+     * said of why until the member searches, and the search meets the same
+     * thing in the core's words.
+     */
+    private function askable(): WhatCanBeAskedFor
+    {
+        if ($this->askable instanceof WhatCanBeAskedFor) {
+            return $this->askable;
+        }
+
+        $stack = $this->stack();
+
+        return $this->askable = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): WhatCanBeAskedFor => $this->finding->whatCanBeAskedFor($stack, $session)->either(
+                listed: static fn(WhatCanBeAskedFor $askable): WhatCanBeAskedFor => $askable,
+                refused: static fn(): WhatCanBeAskedFor => WhatCanBeAskedFor::filmsAndSeriesAlone(),
+            ),
+            notHeld: static fn(): WhatCanBeAskedFor => WhatCanBeAskedFor::filmsAndSeriesAlone(),
+        );
+    }
+
+    /**
+     * What the search looks among now: what the member chose, or the first of the kind they chose, or the first offered.
+     *
+     * A choice made before the list changed never searches what the core no longer lists.
+     */
+    private function which(): WhichTitles
+    {
+        $askable = $this->askable();
+
+        foreach ($askable->offered() as $choice) {
+            if ($choice->word() === $this->among) {
+                return $choice;
+            }
+        }
+
+        foreach ($askable->kinds() as $choice) {
+            if ($choice->kindWord() === $this->among) {
+                return $choice;
+            }
+        }
+
+        return $askable->offered()->first();
+    }
+
+    /** Search for these words from their first page. */
+    private function searchFor(WhatToLookFor $words): void
+    {
+        $this->shown = $this->asked($words, fn(Stack $stack, Session $session): HowASearchWent => $this->finding->firstPage($stack, $session, $words));
     }
 
     /** What the search shows, each title drawn with its poster. */

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Modules\Household\Internal\ViewModels;
 
 /**
- * One language a member can choose, as the chip that offers it.
+ * One thing a member can choose among, as the chip that offers it.
  */
-final readonly class ALanguageAsShown
+final readonly class AChoiceAsShown
 {
     /**
      * @param string $said   the catalogue key for the chip's words

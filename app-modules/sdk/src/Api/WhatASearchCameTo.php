@@ -14,12 +14,14 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\AskableEnvelope;
 use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\KindOfTitle;
+use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Kernel\Api\WhatASearchFound;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhereTheNextPageBegins;
 use Modules\Sdk\Api\Fields\AskableField;
 use Modules\Sdk\Internal\APath;
+use Modules\Sdk\Internal\Optional;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -89,13 +91,31 @@ final readonly class WhatASearchCameTo
             throw SearchIsUnreadable::missing($where);
         }
 
-        return AFoundTitle::listed(
-            self::text($row, APath::beneath($where, WireField::Id->value), WireField::Id),
-            self::kind($row, $where),
-            self::text($row, APath::beneath($where, WireField::Title->value), WireField::Title),
-            self::year($row, $where),
-            self::stands($row, $where),
-        );
+        $id = self::text($row, APath::beneath($where, WireField::Id->value), WireField::Id);
+        $kind = self::kind($row, $where);
+        $title = self::text($row, APath::beneath($where, WireField::Title->value), WireField::Title);
+        $unit = self::unit($row, $where);
+
+        return $unit instanceof UnitOfTitle
+            ? AFoundTitle::curated($id, $kind, $unit, $title, Optional::text($row, WireField::By, SearchIsUnreadable::missing(APath::beneath($where, WireField::By->value))), self::year($row, $where), self::stands($row, $where))
+            : AFoundTitle::listed($id, $kind, $title, self::year($row, $where), self::stands($row, $where));
+    }
+
+    /**
+     * What a title of music or books is within its kind, or null for a film or a series, which carries none.
+     *
+     * @param array<mixed> $row
+     */
+    private static function unit(array $row, string $where): ?UnitOfTitle
+    {
+        $said = Optional::text($row, AskableField::Unit, SearchIsUnreadable::missing(APath::beneath($where, AskableField::Unit->value)));
+
+        if ($said === '') {
+            return null;
+        }
+
+        return UnitOfTitle::tryFrom($said)
+            ?? throw SearchIsUnreadable::word(AskableField::Unit->value, $said, ...array_map(static fn(UnitOfTitle $case): string => $case->value, UnitOfTitle::cases()));
     }
 
     /** @param array<mixed> $row */

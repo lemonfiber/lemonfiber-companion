@@ -17,8 +17,10 @@ use Modules\Kernel\Api\Entropy;
 use Modules\Kernel\Api\FoundTitleSaysNothing;
 use Modules\Kernel\Api\HowAnAskWent;
 use Modules\Kernel\Api\IdempotencyKey;
+use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Override;
@@ -27,8 +29,8 @@ use Override;
  * Asking for a title through the core's `ask` action, which answers at once rather than with a job.
  *
  * No `name` is sent, so the core asks as the member the session belongs to.
- * No season is named either, which asks for every season not already here or
- * on its way. The rehearsal sends nothing and carries a key of its own, since a
+ * No season is named either, which asks for every season of a series not
+ * already here or on its way. Music and books are asked for with their unit. The rehearsal sends nothing and carries a key of its own, since a
  * rehearsal sent twice still changes nothing.
  */
 final readonly class Askers implements AskingForTitles
@@ -49,7 +51,10 @@ final readonly class Askers implements AskingForTitles
 
     private function askFor(AFoundTitle $title): AskAction
     {
-        return new AskAction(id: $title->id(), kind: $title->kind()->value);
+        return $title->among()->either(
+            filmsAndSeries: static fn(): AskAction => new AskAction(id: $title->id(), kind: $title->kind()->value),
+            of: static fn(KindOfTitle $kind, UnitOfTitle $unit): AskAction => new AskAction(id: $title->id(), kind: $kind->value, unit: $unit->value),
+        );
     }
 
     private function act(Stack $stack, Session $session, AskAction $action, IdempotencyKey $key): HowAnAskWent

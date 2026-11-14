@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Household\Internal\Presenters\HowTheirLanguagesRead;
-use Modules\Household\Internal\ViewModels\ALanguageAsShown;
+use Modules\Household\Internal\ViewModels\AChoiceAsShown;
 use Modules\Kernel\Api\HearIn;
 use Modules\Kernel\Api\ReadIn;
 use Modules\Kernel\Api\TheirLanguages;
@@ -15,13 +15,13 @@ uses(TestCase::class);
 /**
  * Each language offered, as the word it is kept under, marked where chosen. Named for this file.
  *
- * @param list<ALanguageAsShown> $offered
+ * @param list<AChoiceAsShown> $offered
  *
  * @return list<string>
  */
 function theLanguagesItOffers(array $offered): array
 {
-    return array_map(static fn(ALanguageAsShown $language): string => sprintf('%s%s', $language->word, $language->chosen ? '*' : ''), $offered);
+    return array_map(static fn(AChoiceAsShown $language): string => sprintf('%s%s', $language->word, $language->chosen ? '*' : ''), $offered);
 }
 
 it('offers every language to hear and to read, and marks the ones chosen', function (): void {
