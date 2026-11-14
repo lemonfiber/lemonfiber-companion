@@ -185,7 +185,7 @@ it('offers each title as a control that opens it, and Play', function (): void {
 it('opens each title on its own screen on this machine', function (): void {
     $poster = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()))->answer()->rows[0]->posters[1];
 
-    expect($poster->goes)->toBe(AStacksScreen::Title->forTheStacksTitle(theStackAShelfIsReadFrom()->id(), HoldingId::called('b2')));
+    expect($poster->goes)->toBe(AStacksScreen::Title->forTheStacks(theStackAShelfIsReadFrom()->id(), HoldingId::called('b2')));
 });
 
 it('draws the newest title in the house across the screen, with Play and More', function (): void {

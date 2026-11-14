@@ -123,7 +123,7 @@ it('offers running every check on Health, and a family\'s checks while that fami
     expect(WhatTheDeviceWouldDraw::by($health)->offers())->toContain($everyOffer)
         ->and(WhatTheDeviceWouldDraw::by($health)->offers())->toContain($familyOffer)
         ->and(array_map(static fn(ARunOffered $run): string => $run->covers->word(), $health->runsOffered()))->toBe([WhatARunCovers::EVERY, 'vpn'])
-        ->and($health->goes()->runningChecks(WhatARunCovers::theFamily(Category::Vpn)))->toBe(AStacksScreen::RunChecks->forTheStacksChecks($stack, WhatARunCovers::theFamily(Category::Vpn)))
+        ->and($health->goes()->runningChecks(WhatARunCovers::theFamily(Category::Vpn)))->toBe(AStacksScreen::RunChecks->forTheStacks($stack, WhatARunCovers::theFamily(Category::Vpn)))
         ->and(NativeRouter::resolve($health->goes()->runningChecks(WhatARunCovers::theFamily(Category::Vpn))))->not->toBeNull()
         ->and(NativeRouter::resolve($health->goes()->runningChecks(WhatARunCovers::everyCheck())))->not->toBeNull();
 });

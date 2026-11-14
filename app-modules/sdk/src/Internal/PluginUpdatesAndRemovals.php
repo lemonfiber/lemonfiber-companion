@@ -110,9 +110,9 @@ final readonly class PluginUpdatesAndRemovals
     {
         $found = [];
 
-        foreach (InTheOrderSent::rows(self::table($removal, PluginsField::Leaves)) as $position => $row) {
+        foreach (InTheOrderSent::rows(self::table($removal, WireField::Leaves)) as $position => $row) {
             if (! is_array($row)) {
-                throw PluginsAreUnreadable::entry(PluginsField::Leaves, WireField::Capability, $position);
+                throw PluginsAreUnreadable::entry(WireField::Leaves, WireField::Capability, $position);
             }
 
             $found[] = ACapabilityLeftUnfilled::of(self::text($row, WireField::Capability), self::text($row, PluginsField::FilledBy));

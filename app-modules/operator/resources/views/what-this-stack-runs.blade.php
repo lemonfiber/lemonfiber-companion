@@ -39,7 +39,7 @@
             <x-operator::heading>{{ __('plugins.waiting.heading') }}</x-operator::heading>
         @endif
         <x-operator::a-service-waiting :waiting="$waiting" />
-        <x-design::link :label="__('plugins.waiting.open', ['service' => $waiting->service])" :goes="$this->goes()->aboutItsService(AStacksScreen::Waiting, $waiting->id)" />
+        <x-design::link :label="__('plugins.waiting.open', ['service' => $waiting->service])" :goes="$this->goes()->about(AStacksScreen::Waiting, $waiting->id)" />
     @empty
     @endforelse
 

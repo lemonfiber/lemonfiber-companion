@@ -40,7 +40,7 @@ it('every screen of one stack is a tab, a menu item, or a step named with where 
     $stranded = [];
 
     foreach (AStacksScreen::cases() as $screen) {
-        if ($screen->alsoNeedsAService() || in_array($screen->name, $covered, strict: true)) {
+        if ($screen->isAboutOneThing() || in_array($screen->name, $covered, strict: true)) {
             continue;
         }
 

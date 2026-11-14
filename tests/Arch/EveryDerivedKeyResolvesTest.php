@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HowADownloadComes;
 use Modules\Kernel\Api\HowAServiceRuns;
+use Modules\Kernel\Api\HowDeliveryStands;
 use Modules\Kernel\Api\HowFarAHolderWasReached;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
@@ -39,6 +40,7 @@ use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowTheTunnelCameBack;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
+use Modules\Kernel\Api\KindOfAlertBackEnd;
 use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\LockAfter;
@@ -257,13 +259,21 @@ function everyDerivedKey(): array
             HowTheTunnelCameBack::cases(),
             static fn(HowTheTunnelCameBack $came): array => [$came->saidOnTheScreen()],
         ),
+        HowDeliveryStands::class => aPairPerCase(
+            HowDeliveryStands::cases(),
+            static fn(HowDeliveryStands $stands): array => [$stands->saidOnTheScreen()],
+        ),
+        KindOfAlertBackEnd::class => aPairPerCase(
+            KindOfAlertBackEnd::cases(),
+            static fn(KindOfAlertBackEnd $kind): array => [$kind->saidOnTheScreen()],
+        ),
         KindOfNotification::class => aPairPerCase(
             KindOfNotification::cases(),
             static fn(KindOfNotification $kind): array => [$kind->saidOnTheScreen()],
         ),
         HowLongAgo::class => aPairPerCase(
             HowLongAgo::cases(),
-            static fn(HowLongAgo $unit): array => [$unit->saidOnTheScreen(), $unit->heldOnTheScreen()],
+            static fn(HowLongAgo $unit): array => [$unit->saidOnTheScreen(), $unit->heldOnTheScreen(), $unit->comingOnTheScreen()],
         ),
         HowItStopped::class => aPairPerCase(
             HowItStopped::cases(),

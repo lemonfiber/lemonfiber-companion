@@ -13,7 +13,7 @@ use function trim;
  * its account of the disk printed, so the name is the one thing a phone can ask
  * about. Carried exactly as the account listed it.
  */
-final readonly class ADownloadHeld
+final readonly class ADownloadHeld implements WhatAScreenIsAbout
 {
     private function __construct(private string $name) {}
 
@@ -29,6 +29,11 @@ final readonly class ADownloadHeld
 
     /** The name, for showing and for asking with. */
     public function name(): string
+    {
+        return $this->name;
+    }
+
+    public function namedInAPath(): string
     {
         return $this->name;
     }

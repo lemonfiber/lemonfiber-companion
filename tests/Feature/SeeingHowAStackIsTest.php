@@ -698,7 +698,7 @@ it('a finding about a service offers what that service said', function (): void 
 
     expect($rows[0]->service)->toBe('gluetun')
         ->and($screen->logsOf($rows[0]->service))
-        ->toBe(AStacksScreen::Logs->forTheStacksService(
+        ->toBe(AStacksScreen::Logs->forTheStacks(
             TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id(),
             ServiceId::called('gluetun'),
         ))

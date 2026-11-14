@@ -29,7 +29,7 @@ use function trim;
  * title-cased — the same argument {@see ServiceId} makes, and for the same
  * reason: it is what an action is asked for by.
  */
-final readonly class Form
+final readonly class Form implements WhatAScreenIsAbout
 {
     private function __construct(private string $named) {}
 
@@ -61,5 +61,10 @@ final readonly class Form
     public function isTheSameAs(self $other): bool
     {
         return $this->named === $other->named;
+    }
+
+    public function namedInAPath(): string
+    {
+        return $this->named;
     }
 }

@@ -165,7 +165,7 @@ $outcome->either(
 | D5 | No bare `true`/`false` at a call site — name the argument or split the method | phpstan: own rule |
 | D6 | No unnamed numeric literal in a method body | phpstan: own rule + SonarCloud |
 | D8 | A closed set of strings is an enum: no class compares a value against three or more of its own string constants, and no lookup asks a list of three or more strings, but where an outside vocabulary is read in its own words | phpstan: own rule, over what ships; arch: every file it leaves alone is there, and the list only shrinks |
-| D9 | One value has one home: a value two classes declare as constants is declared once and referred to, unless the two only mean different things | phpstan: own rule with a collector, over what ships and `tests/Support`; arch: every constant it leaves alone is still declared, and the list only shrinks |
+| D9 | One value has one home: a value two classes that can refer to each other declare as constants is declared once and referred to, unless the two only mean different things. Two classes can refer to each other in one module, or in a module and one it requires; the composition root and the suites' support reach every module, and the bridge reaches none. Equal values out of each other's reach only coincide | phpstan: own rule with a collector, over what ships and `tests/Support`; arch: every constant it leaves alone is still declared |
 
 D2's payoff is concrete: a stack id and a service id are both strings, and
 nothing stops you passing one where the other belongs. `StackId` and `ServiceId`

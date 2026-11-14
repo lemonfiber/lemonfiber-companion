@@ -59,6 +59,15 @@ enum WireField: string implements NamesAWireField
     /** The rows of a diagnostic run, in the order the checks produced them. */
     case Findings = 'findings';
 
+    /** The member a session plays for, or who chose a back-end alerts go to, by name. */
+    case Member = 'member';
+
+    /** A proof's id, which its verdict is reported against; what proving a plugin again came to; or how far a back-end alerts go to is proven. */
+    case Proof = 'proof';
+
+    /** Every capability a removal would leave with nothing filling it, or what is sent to use a hosted back-end. */
+    case Leaves = 'leaves';
+
     /** The figure inside an estimate. */
     case Bytes = 'bytes';
 

@@ -21,6 +21,7 @@ use Modules\Operator\Internal\Screens\HowThisStackIs;
 use Modules\Operator\Internal\Screens\JoiningAHouse;
 use Modules\Operator\Internal\Screens\LettingADownloadGo;
 use Modules\Operator\Internal\Screens\Locked;
+use Modules\Operator\Internal\Screens\OneWayAlertsGo;
 use Modules\Operator\Internal\Screens\PairByScanning;
 use Modules\Operator\Internal\Screens\PairByTyping;
 use Modules\Operator\Internal\Screens\PairingAPhone;
@@ -63,6 +64,7 @@ use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Operator\Internal\Screens\WhatWasChangedHere;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Operator\Internal\Screens\WhatYouAreToldAbout;
+use Modules\Operator\Internal\Screens\WhereAlertsGoHere;
 use Modules\Operator\Internal\Screens\WhereTheHouseholdComesIn;
 use Modules\Operator\Internal\Screens\WhereThisComesFrom;
 use Modules\Operator\Internal\Screens\WhereThisGotTo;
@@ -301,6 +303,8 @@ final class OperatorServiceProvider extends ServiceProvider
             // *will this wake me* is asked before a night away and not while
             // reading what the machine sends.
             Router::native(AStacksScreen::Told->value, WhatYouAreToldAbout::class);
+            Router::native(AStacksScreen::Alerts->value, WhereAlertsGoHere::class);
+            Router::native(AStacksScreen::AlertBackEnd->value, OneWayAlertsGo::class)->where('service', '.+');
             Router::native(AStacksScreen::Playing->value, WhatIsPlayingNow::class);
 
             // How the line is shared, and changing it. Its own screen, because

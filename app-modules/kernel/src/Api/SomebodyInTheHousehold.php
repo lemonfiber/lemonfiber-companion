@@ -12,7 +12,7 @@ use function trim;
  * All a password is taken off by: the stack finds the account, and a name it
  * cannot find is its refusal to say, naming the name.
  */
-final readonly class SomebodyInTheHousehold
+final readonly class SomebodyInTheHousehold implements WhatAScreenIsAbout
 {
     private function __construct(private string $name) {}
 
@@ -28,6 +28,11 @@ final readonly class SomebodyInTheHousehold
 
     /** The name their account is held under. */
     public function name(): string
+    {
+        return $this->name;
+    }
+
+    public function namedInAPath(): string
     {
         return $this->name;
     }

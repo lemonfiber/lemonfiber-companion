@@ -82,6 +82,7 @@ final readonly class WhereAScreenCanSendYou
      */
     private const array ROADS_A_PRESENTER_BUILDS = [
         'household::what-you-can-watch' => ['$this->goes()->title($holding->id())', '$this->goes()->asked($wanted->id())'],
+        'operator::where-alerts-go-here' => ['$this->goes()->about(AStacksScreen::AlertBackEnd, $backEnd->id())'],
     ];
 
     /**
@@ -415,7 +416,7 @@ final readonly class WhereAScreenCanSendYou
      *
      * A screen reached by naming the machine alone is named by its case, handed
      * to `WhereAStackIs::to()`, or with one of its services to
-     * `WhereAStackIs::aboutItsService()`; a screen another surface draws is built from its
+     * `WhereAStackIs::about()`; a screen another surface draws is built from its
      * case directly, because the accessors here are this surface's own screens.
      *
      * @return list<string>

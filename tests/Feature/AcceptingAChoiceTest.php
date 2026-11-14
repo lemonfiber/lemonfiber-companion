@@ -84,7 +84,7 @@ it('offers accepting a warning on Health and leads to what it costs, and offers 
     expect($accepting)->toContain(THE_CHOICE, 'nothing to accept')
         ->and(array_count_values($accepting)[THE_CHOICE])->toBe(1)
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('health.choice.accept_this', ['title' => 'Torrents run inside a VPN']))
-        ->and($screen->goes()->accepting(THE_CHOICE))->toBe(AStacksScreen::Accept->forTheStacksCheck(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id(), Check::of(THE_CHOICE)));
+        ->and($screen->goes()->accepting(THE_CHOICE))->toBe(AStacksScreen::Accept->forTheStacks(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id(), Check::of(THE_CHOICE)));
 });
 
 it('draws an accepted warning on Health as accepted and still a warning, and offers accepting it no more', function (): void {
@@ -205,7 +205,7 @@ it('says the session ended where it went while the acceptance was followed', fun
 });
 
 it('is where the accept route goes', function (): void {
-    $path = AStacksScreen::Accept->forTheStacksCheck(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id(), Check::of(THE_CHOICE));
+    $path = AStacksScreen::Accept->forTheStacks(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id(), Check::of(THE_CHOICE));
 
     expect(NativeRouter::resolve($path)['class'] ?? null)->toBe(WhatAcceptingItCosts::class)
         ->and(theAcceptingScreen(AStackThatWasAsked::saying(aReportWith()), anAcceptanceThatTakes())->render()->name())->toBe('operator::what-accepting-it-costs');

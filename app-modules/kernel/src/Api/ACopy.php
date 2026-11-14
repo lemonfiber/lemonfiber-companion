@@ -13,7 +13,7 @@ use function trim;
  * keeps copies in and nowhere else, so a name is the one thing a phone can
  * ask to have put back. Carried exactly as the stack listed it.
  */
-final readonly class ACopy
+final readonly class ACopy implements WhatAScreenIsAbout
 {
     private function __construct(private string $name) {}
 
@@ -29,6 +29,11 @@ final readonly class ACopy
 
     /** The name, for showing and for asking with. */
     public function name(): string
+    {
+        return $this->name;
+    }
+
+    public function namedInAPath(): string
     {
         return $this->name;
     }

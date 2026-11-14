@@ -18,10 +18,12 @@ use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\KindOfTitle;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatARunCovers;
+use Modules\Kernel\Api\WhatAScreenIsAbout;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhenItCameOut;
@@ -32,17 +34,6 @@ use Modules\Stacks\Api\AStacksScreen;
 use function sprintf;
 use function str_contains;
 
-/**
- * The paths themselves, asserted where the enum is rather than through a screen.
- *
- * Every other test of these goes through a builder or a router, which proves
- * that the two agree and not that either is right: a builder putting the
- * machine in the service's segment and the service in the machine's would
- * resolve — each pattern matches any single segment — and open somebody else's
- * service. What is asserted here is which segment each value lands in.
- */
-
-/** A stack identifier and a service, spelled so neither could be read as the other. */
 const A_MACHINE = 'the-machine';
 
 const A_SERVICE = 'the-service';
@@ -54,71 +45,31 @@ it('puts the machine in the machine\'s segment and nothing else', function (): v
         ->toBe(sprintf('/stacks/%s/yours', A_MACHINE));
 });
 
-it('puts the machine and the service each in their own segment', function (): void {
-    // Both, and in that order. A builder that substituted one and left the
-    // other would hand back a path with a placeholder still in it, which
-    // resolves to nothing; one that swapped them resolves and opens the wrong
-    // thing.
-    expect(AStacksScreen::Logs->forTheStacksService(
-        StackId::rememberedAs(A_MACHINE),
-        ServiceId::called(A_SERVICE),
-    ))->toBe(sprintf('/stacks/%s/logs/%s', A_MACHINE, A_SERVICE));
-
-    expect(AStacksScreen::Doing->forTheStacksService(
-        StackId::rememberedAs(A_MACHINE),
-        ServiceId::called(A_SERVICE),
-    ))->toBe(sprintf('/stacks/%s/do/%s', A_MACHINE, A_SERVICE));
-});
-
-it('puts a whole form where a service would go, and the machine where it belongs', function (): void {
-    // The same segment filled by a different thing, which is why it is a second
-    // builder. A form and a service are both text, and a single builder taking
-    // one string for either is the mistake that compiles.
-    expect(AStacksScreen::Doing->forTheStacksForm(
-        StackId::rememberedAs(A_MACHINE),
-        Form::called('arr'),
-    ))->toBe(sprintf('/stacks/%s/do/arr', A_MACHINE));
-});
-
-it('puts one of lemonfiber\'s words where a service would go, encoded', function (): void {
-    expect(AStacksScreen::WordAbout->forTheStacksWord(
-        StackId::rememberedAs(A_MACHINE),
-        AWordInUse::named('ratio'),
-    ))->toBe(sprintf('/stacks/%s/words/ratio', A_MACHINE))
-        ->and(AStacksScreen::WordAbout->forTheStacksWord(StackId::rememberedAs(A_MACHINE), AWordInUse::named('down/up ratio')))
-        ->toBe(sprintf('/stacks/%s/words/down%%2Fup%%20ratio', A_MACHINE));
-});
-
-it('puts one check where a service would go, encoded', function (): void {
-    expect(AStacksScreen::Run->forTheStacksCheck(StackId::rememberedAs(A_MACHINE), Check::of('disk/free space')))
-        ->toBe(sprintf('/stacks/%s/run/disk%%2Ffree%%20space', A_MACHINE));
-});
-
-it('puts a run of every check, or of one family\'s, where a service would go', function (): void {
-    expect(AStacksScreen::RunChecks->forTheStacksChecks(StackId::rememberedAs(A_MACHINE), WhatARunCovers::theFamily(Category::Storage)))
-        ->toBe(sprintf('/stacks/%s/run-every/storage', A_MACHINE));
-});
-
-it('puts one title a member\'s search found where a service would go, encoded', function (): void {
-    expect(AStacksScreen::Found->forTheStacksFoundTitle(StackId::rememberedAs(A_MACHINE), AFoundTitle::listed('tmdb:1 2/3', KindOfTitle::Film, 'Alien', WhenItCameOut::unstated(), WhereAFoundTitleStands::Askable)))
-        ->toBe(sprintf('/stacks/%s/found/tmdb%%3A1%%202%%2F3', A_MACHINE));
-});
-
-it('puts one title a member may watch where a service would go, encoded', function (): void {
-    expect(AStacksScreen::Title->forTheStacksTitle(
-        StackId::rememberedAs(A_MACHINE),
-        HoldingId::called('a1 b/2'),
-    ))->toBe(sprintf('/stacks/%s/watch/a1%%20b%%2F2', A_MACHINE));
-});
+it('puts the machine and what the screen is about each in their own segment, encoded', function (AStacksScreen $screen, WhatAScreenIsAbout $about, string $path): void {
+    expect($screen->forTheStacks(StackId::rememberedAs(A_MACHINE), $about))
+        ->toBe(sprintf('/stacks/%s/%s', A_MACHINE, $path));
+})->with([
+    'a service' => [AStacksScreen::Logs, ServiceId::called(A_SERVICE), 'logs/the-service'],
+    'a whole form' => [AStacksScreen::Doing, Form::called('arr'), 'do/arr'],
+    'a word' => [AStacksScreen::WordAbout, AWordInUse::named('down/up ratio'), 'words/down%2Fup%20ratio'],
+    'a check' => [AStacksScreen::Run, Check::of('disk/free space'), 'run/disk%2Ffree%20space'],
+    'a run of one family' => [AStacksScreen::RunChecks, WhatARunCovers::theFamily(Category::Storage), 'run-every/storage'],
+    'a title on the shelf' => [AStacksScreen::Title, HoldingId::called('a1 b/2'), 'watch/a1%20b%2F2'],
+    'a title a search found' => [AStacksScreen::Found, AFoundTitle::listed('tmdb:1 2/3', KindOfTitle::Film, 'Alien', WhenItCameOut::unstated(), WhereAFoundTitleStands::Askable), 'found/tmdb%3A1%202%2F3'],
+    'an ask' => [AStacksScreen::Asked, RequestId::named('ask 1/2'), 'asked/ask%201%2F2'],
+    'an item to follow' => [AStacksScreen::Trace, WhatToFollow::called('AC/DC Live'), 'trace/AC%2FDC%20Live'],
+    'a copy' => [AStacksScreen::PutBack, ACopy::named('lemonfiber 2026/09/24'), 'copies/lemonfiber%202026%2F09%2F24'],
+    'a plugin' => [AStacksScreen::PluginSettings, APluginId::called('a plugin/2'), 'plugins/a%20plugin%2F2'],
+    'a run on the record' => [AStacksScreen::RunBack, ARun::stamped('17 90'), 'record/17%2090'],
+    'a download' => [AStacksScreen::LetGo, ADownloadHeld::named('Show Season1/Extras'), 'room/Show%20Season1%2FExtras'],
+    'pausing the downloads' => [AStacksScreen::Downloads, WhatToDoWithTheDownloads::Pause, 'downloads/pause'],
+    'a member' => [AStacksScreen::TakeOut, SomebodyInTheHousehold::called('Anna Maria/2'), 'household/Anna%20Maria%2F2'],
+]);
 
 it('leaves no placeholder in anything it hands out', function (): void {
-    // The failure every one of these exists to prevent, asserted over the whole
-    // enum rather than case by case: a path still carrying `{stack}` or
-    // `{service}` resolves to nothing, and a control pointing at it does
-    // nothing on a handset with no error anywhere.
     foreach (AStacksScreen::cases() as $screen) {
-        $path = $screen->alsoNeedsAService()
-            ? $screen->forTheStacksService(StackId::rememberedAs(A_MACHINE), ServiceId::called(A_SERVICE))
+        $path = $screen->isAboutOneThing()
+            ? $screen->forTheStacks(StackId::rememberedAs(A_MACHINE), ServiceId::called(A_SERVICE))
             : $screen->forTheStack(StackId::rememberedAs(A_MACHINE));
 
         expect(str_contains($path, AStacksScreen::NAMED))->toBeFalse($screen->name)
@@ -128,97 +79,7 @@ it('leaves no placeholder in anything it hands out', function (): void {
 
 it('refuses a case that needs more than a machine, and one that needs less', function (): void {
     expect(fn(): string => AStacksScreen::Logs->forTheStack(StackId::rememberedAs(A_MACHINE)))
-        ->toThrow(AScreenNeedsMoreThanAStack::class, 'naming a machine is not enough');
-
-    expect(fn(): string => AStacksScreen::Health->forTheStacksService(
-        StackId::rememberedAs(A_MACHINE),
-        ServiceId::called(A_SERVICE),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-
-    expect(fn(): string => AStacksScreen::Health->forTheStacksForm(
-        StackId::rememberedAs(A_MACHINE),
-        Form::called('arr'),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-
-    expect(fn(): string => AStacksScreen::Health->forTheStacksWord(
-        StackId::rememberedAs(A_MACHINE),
-        AWordInUse::named('ratio'),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-    expect(fn(): string => AStacksScreen::Health->forTheStacksTitle(
-        StackId::rememberedAs(A_MACHINE),
-        HoldingId::called('a1'),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-    expect(fn(): string => AStacksScreen::Health->forTheStacksFoundTitle(
-        StackId::rememberedAs(A_MACHINE),
-        AFoundTitle::listed('438631', KindOfTitle::Film, 'Dune', WhenItCameOut::in(2021), WhereAFoundTitleStands::Askable),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-    expect(fn(): string => AStacksScreen::Health->forTheStacksItem(
-        StackId::rememberedAs(A_MACHINE),
-        WhatToFollow::called('Dune'),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-    expect(fn(): string => AStacksScreen::Health->forTheStacksCopy(
-        StackId::rememberedAs(A_MACHINE),
-        ACopy::named('lemonfiber-20260924-0300-full'),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-    expect(fn(): string => AStacksScreen::Room->forTheStacksDownload(
-        StackId::rememberedAs(A_MACHINE),
-        ADownloadHeld::named('Show.Season1'),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-    expect(fn(): string => AStacksScreen::Room->forTheStacksDownloads(
-        StackId::rememberedAs(A_MACHINE),
-        WhatToDoWithTheDownloads::Pause,
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-    expect(fn(): string => AStacksScreen::Health->forTheStacksRun(
-        StackId::rememberedAs(A_MACHINE),
-        ARun::stamped('1790150000'),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-    expect(fn(): string => AStacksScreen::Health->forTheStacksMember(
-        StackId::rememberedAs(A_MACHINE),
-        SomebodyInTheHousehold::called('anna'),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-    expect(fn(): string => AStacksScreen::Plugins->forTheStacksPlugin(
-        StackId::rememberedAs(A_MACHINE),
-        APluginId::called('gluetun'),
-    ))->toThrow(AScreenNeedsMoreThanAStack::class, 'names no service');
-});
-
-it('puts a plugin where a service would go, encoded, beneath the plugins', function (): void {
-    expect(AStacksScreen::PluginSettings->forTheStacksPlugin(StackId::rememberedAs(A_MACHINE), APluginId::called('a plugin/2')))
-        ->toBe(sprintf('/stacks/%s/plugins/a%%20plugin%%2F2', A_MACHINE));
-});
-
-it('puts a member of the household where a service would go, encoded', function (): void {
-    expect(AStacksScreen::TakeOut->forTheStacksMember(StackId::rememberedAs(A_MACHINE), SomebodyInTheHousehold::called('Anna Maria/2')))
-        ->toBe(sprintf('/stacks/%s/household/Anna%%20Maria%%2F2', A_MACHINE));
-});
-
-it('puts a copy where a service would go, encoded, and taking a copy under the machine alone', function (): void {
-    expect(AStacksScreen::PutBack->forTheStacksCopy(StackId::rememberedAs(A_MACHINE), ACopy::named('lemonfiber 2026/09/24')))
-        ->toBe(sprintf('/stacks/%s/copies/lemonfiber%%202026%%2F09%%2F24', A_MACHINE))
-        ->and(AStacksScreen::Copy->forTheStack(StackId::rememberedAs(A_MACHINE)))
-        ->toBe(sprintf('/stacks/%s/copy', A_MACHINE));
-});
-
-it('puts a run where a service would go, under the record', function (): void {
-    expect(AStacksScreen::RunBack->forTheStacksRun(StackId::rememberedAs(A_MACHINE), ARun::stamped('1790150000')))
-        ->toBe(sprintf('/stacks/%s/record/1790150000', A_MACHINE))
-        ->and(AStacksScreen::RunBack->forTheStacksRun(StackId::rememberedAs(A_MACHINE), ARun::stamped('17 90')))
-        ->toBe(sprintf('/stacks/%s/record/17%%2090', A_MACHINE));
-});
-
-it('puts a download where a service would go, encoded, beneath how full the machine is', function (): void {
-    expect(AStacksScreen::LetGo->forTheStacksDownload(StackId::rememberedAs(A_MACHINE), ADownloadHeld::named('Show Season1/Extras')))
-        ->toBe(sprintf('/stacks/%s/room/Show%%20Season1%%2FExtras', A_MACHINE));
-});
-
-it('puts pausing or resuming where a service would go, by the word the stack is asked with', function (): void {
-    expect(AStacksScreen::Downloads->forTheStacksDownloads(StackId::rememberedAs(A_MACHINE), WhatToDoWithTheDownloads::Pause))
-        ->toBe(sprintf('/stacks/%s/downloads/pause', A_MACHINE))
-        ->and(AStacksScreen::Downloads->forTheStacksDownloads(StackId::rememberedAs(A_MACHINE), WhatToDoWithTheDownloads::Resume))
-        ->toBe(sprintf('/stacks/%s/downloads/resume', A_MACHINE));
-});
-
-it('puts an item to follow where a service would go, encoded', function (): void {
-    expect(AStacksScreen::Trace->forTheStacksItem(StackId::rememberedAs(A_MACHINE), WhatToFollow::called('AC/DC Live')))
-        ->toBe(sprintf('/stacks/%s/trace/AC%%2FDC%%20Live', A_MACHINE));
+        ->toThrow(AScreenNeedsMoreThanAStack::class, 'naming a machine is not enough')
+        ->and(fn(): string => AStacksScreen::Health->forTheStacks(StackId::rememberedAs(A_MACHINE), ServiceId::called(A_SERVICE)))
+        ->toThrow(AScreenNeedsMoreThanAStack::class, 'names only the machine');
 });

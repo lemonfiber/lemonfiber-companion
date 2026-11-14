@@ -47,6 +47,7 @@ enum TheMenu: string
     case Bandwidth = 'bandwidth';
     case OutgoingTraffic = 'outgoing_traffic';
     case Alerts = 'alerts';
+    case WhereAlertsGo = 'where_alerts_go';
     case History = 'history';
     case Sources = 'sources';
     case GetHelp = 'get_help';
@@ -66,7 +67,7 @@ enum TheMenu: string
             self::Requests, self::Allowance, self::ViewAsMember, self::PlayingNow, self::StuckDownloads, self::FollowADownload => WhereInTheMenu::Household,
             self::InviteSomeone, self::FrontDoor, self::WatchApps, self::Passwords, self::AppKeys, self::PairAPhone => WhereInTheMenu::Access,
             self::Storage, self::Backups, self::AfterARestart, self::WhileNobodyWasLooking, self::AlreadyInstalled, self::OtherPrograms, self::About, self::Uninstall => WhereInTheMenu::Machine,
-            self::General, self::OwnSettings, self::Quality, self::Connections, self::Plugins, self::Bandwidth, self::OutgoingTraffic, self::Alerts, self::History, self::Sources => WhereInTheMenu::Settings,
+            self::General, self::OwnSettings, self::Quality, self::Connections, self::Plugins, self::Bandwidth, self::OutgoingTraffic, self::Alerts, self::WhereAlertsGo, self::History, self::Sources => WhereInTheMenu::Settings,
             self::GetHelp, self::Glossary, self::ServicesExplained => WhereInTheMenu::Help,
         };
     }
@@ -103,6 +104,7 @@ enum TheMenu: string
             self::Bandwidth => AStacksScreen::Line,
             self::OutgoingTraffic => AStacksScreen::Leaving,
             self::Alerts => AStacksScreen::Told,
+            self::WhereAlertsGo => AStacksScreen::Alerts,
             self::History => AStacksScreen::Record,
             self::Sources => AStacksScreen::Origins,
             self::GetHelp => AStacksScreen::Help,
@@ -159,6 +161,7 @@ enum TheMenu: string
             self::Bandwidth => ['speed', 'speedometer'],
             self::OutgoingTraffic => ['upload', 'arrow.up.forward'],
             self::Alerts => ['notifications', 'bell'],
+            self::WhereAlertsGo => ['notifications_active', 'bell.badge'],
             self::History => ['history', 'clock.arrow.2.circlepath'],
             self::Sources => ['source', 'shippingbox.circle'],
             self::GetHelp => ['support', 'lifepreserver'],

@@ -15,6 +15,7 @@ use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\WhatARunCovers;
+use Modules\Kernel\Api\WhatAScreenIsAbout;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Stacks\Api\AStacksScreen;
@@ -76,27 +77,21 @@ final readonly class WhereAStackIs
         return $screen->forTheStack($this->stack);
     }
 
+    /** One of this machine's screens about one thing; a case whose path names only the machine is refused. */
+    public function about(AStacksScreen $screen, WhatAScreenIsAbout $about): string
+    {
+        return $screen->forTheStacks($this->stack, $about);
+    }
+
     /** Where one item got to on this machine. */
     public function traceOf(WhatToFollow $item): string
     {
-        return AStacksScreen::Trace->forTheStacksItem($this->stack, $item);
+        return AStacksScreen::Trace->forTheStacks($this->stack, $item);
     }
 
-    /**
-     * One of this machine's screens about one of its services: what it has been saying, or everything it waits for while held back.
-     *
-     * A case whose path carries no service is refused by
-     * {@see AStacksScreen::forTheStacksService()}.
-     */
-    public function aboutItsService(AStacksScreen $screen, ServiceId $service): string
-    {
-        return $screen->forTheStacksService($this->stack, $service);
-    }
-
-    /** One service of this machine, and the verbs about it. */
     public function doingWith(ServiceId $service): string
     {
-        return AStacksScreen::Doing->forTheStacksService($this->stack, $service);
+        return AStacksScreen::Doing->forTheStacks($this->stack, $service);
     }
 
     /**
@@ -114,13 +109,13 @@ final readonly class WhereAStackIs
      */
     public function doingWithTheForm(string $named): string
     {
-        return AStacksScreen::Doing->forTheStacksForm($this->stack, Form::called($named));
+        return AStacksScreen::Doing->forTheStacks($this->stack, Form::called($named));
     }
 
     /** What one of lemonfiber's words means, opened on its own. */
     public function wordAbout(AWordInUse $word): string
     {
-        return AStacksScreen::WordAbout->forTheStacksWord($this->stack, $word);
+        return AStacksScreen::WordAbout->forTheStacks($this->stack, $word);
     }
 
     /**
@@ -132,66 +127,66 @@ final readonly class WhereAStackIs
      */
     public function takingOut(string $named): string
     {
-        return AStacksScreen::TakeOut->forTheStacksMember($this->stack, SomebodyInTheHousehold::called($named));
+        return AStacksScreen::TakeOut->forTheStacks($this->stack, SomebodyInTheHousehold::called($named));
     }
 
     /** Where accepting the warning this check raises is weighed, before anything is sent. */
     public function accepting(string $check): string
     {
-        return AStacksScreen::Accept->forTheStacksCheck($this->stack, Check::of($check));
+        return AStacksScreen::Accept->forTheStacks($this->stack, Check::of($check));
     }
 
     /** Where running this check, which disturbs something, is weighed before anything is sent. */
     public function running(string $check): string
     {
-        return AStacksScreen::Run->forTheStacksCheck($this->stack, Check::of($check));
+        return AStacksScreen::Run->forTheStacks($this->stack, Check::of($check));
     }
 
     /** Where running every check, or every check of one family, is weighed before anything is sent. */
     public function runningChecks(WhatARunCovers $covers): string
     {
-        return AStacksScreen::RunChecks->forTheStacksChecks($this->stack, $covers);
+        return AStacksScreen::RunChecks->forTheStacks($this->stack, $covers);
     }
 
     /** Where somebody is asked in with their name already typed. */
     public function inviting(string $named): string
     {
-        return AStacksScreen::InviteNamed->forTheStacksMember($this->stack, SomebodyInTheHousehold::called($named));
+        return AStacksScreen::InviteNamed->forTheStacks($this->stack, SomebodyInTheHousehold::called($named));
     }
 
     /** Where one member's device is connected, by the name their account is held under. */
     public function connecting(string $named): string
     {
-        return AStacksScreen::Device->forTheStacksMember($this->stack, SomebodyInTheHousehold::called($named));
+        return AStacksScreen::Device->forTheStacks($this->stack, SomebodyInTheHousehold::called($named));
     }
 
     /** Putting one of this machine's copies back, by the name it was listed under. */
     public function puttingBack(string $named): string
     {
-        return AStacksScreen::PutBack->forTheStacksCopy($this->stack, ACopy::named($named));
+        return AStacksScreen::PutBack->forTheStacks($this->stack, ACopy::named($named));
     }
 
     /** One plugin's settings and secrets, by the id it is installed under. */
     public function aPluginsSettings(string $plugin): string
     {
-        return AStacksScreen::PluginSettings->forTheStacksPlugin($this->stack, APluginId::called($plugin));
+        return AStacksScreen::PluginSettings->forTheStacks($this->stack, APluginId::called($plugin));
     }
 
     /** Putting back one run the record shows, by the stamp it keeps it under. */
     public function puttingARunBack(string $stamp): string
     {
-        return AStacksScreen::RunBack->forTheStacksRun($this->stack, ARun::stamped($stamp));
+        return AStacksScreen::RunBack->forTheStacks($this->stack, ARun::stamped($stamp));
     }
 
     /** Pausing this machine's downloads, or letting them fetch again. */
     public function downloads(WhatToDoWithTheDownloads $asked): string
     {
-        return AStacksScreen::Downloads->forTheStacksDownloads($this->stack, $asked);
+        return AStacksScreen::Downloads->forTheStacks($this->stack, $asked);
     }
 
     /** Stopping seeding one of this machine's completed downloads, by the name the account gave it. */
     public function lettingGo(string $named): string
     {
-        return AStacksScreen::LetGo->forTheStacksDownload($this->stack, ADownloadHeld::named($named));
+        return AStacksScreen::LetGo->forTheStacks($this->stack, ADownloadHeld::named($named));
     }
 }
