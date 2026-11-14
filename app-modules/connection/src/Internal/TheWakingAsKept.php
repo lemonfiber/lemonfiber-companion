@@ -114,11 +114,7 @@ final readonly class TheWakingAsKept
 
     private static function inBase64(string $bytes): string
     {
-        try {
-            return sodium_bin2base64($bytes, SODIUM_BASE64_VARIANT_ORIGINAL);
-        } catch (SodiumException) {
-            return '';
-        }
+        return sodium_bin2base64($bytes, SODIUM_BASE64_VARIANT_ORIGINAL);
     }
 
     /** @param array<string, string> $fields */
