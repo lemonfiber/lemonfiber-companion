@@ -7,6 +7,8 @@ namespace Modules\Household\Internal\Presenters;
 use Modules\Household\Internal\ViewModels\WhatAShelfRowSays;
 use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
 use Modules\Household\Internal\ViewModels\WhatTheirOwnTitlesTurnedOutToBe;
+use Modules\Household\Internal\WhereAnAskIsKept;
+use Modules\Household\Internal\WhereTheHouseIs;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
@@ -14,7 +16,7 @@ use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
 
 /**
- * A member's own requests, as the rows Home leads with: *Ready for you*, what
+ * A member's own requests, as the rows Home leads with, a music or book ask opening its own page: *Ready for you*, what
  * has arrived in whole or in part, and *On its way*, what is waiting for a
  * yes, being fetched or partly here.
  *
@@ -33,13 +35,13 @@ final readonly class HowTheirOwnTitlesRead
     private const string ON_ITS_WAY = 'household.shelf.on_its_way';
 
     /** The house answered, and this is what they asked for. */
-    public function these(Requested $wanted): WhatTheirOwnTitlesTurnedOutToBe
+    public function these(Requested $wanted, WhereTheHouseIs $house): WhatTheirOwnTitlesTurnedOutToBe
     {
         $ready = [];
         $coming = [];
 
         foreach ($wanted as $one) {
-            $poster = $this->posterFor($one);
+            $poster = $this->posterFor($one, $house);
 
             if ($one->standing()->isReadyForYou()) {
                 $ready[] = $poster;
@@ -83,16 +85,23 @@ final readonly class HowTheirOwnTitlesRead
      * on: it says what the Requests tab says of a request whose standing
      * nobody named, though such a request is in neither row.
      */
-    private function posterFor(Wanted $wanted): WhatOnePosterSays
+    private function posterFor(Wanted $wanted, WhereTheHouseIs $house): WhatOnePosterSays
     {
         $standing = $wanted->standing()->either(
             said: static fn(Waiting $said): InWords => new InWords($said->saidToTheMember()),
             unnamed: static fn(): InWords => new InWords(HowWhatAMemberAskedForReads::UNNAMED),
         )->said;
 
-        return $wanted->called()->either(
-            named: static fn(string $title): WhatOnePosterSays => WhatOnePosterSays::ofARequest($title, $standing),
-            notYet: static fn(KindOfRequest $kind): WhatOnePosterSays => WhatOnePosterSays::ofARequestNotYetNamed(HowWhatAMemberAskedForReads::notYetNamed($kind), $standing),
+        $kind = $wanted->called()->kind();
+        $keptElsewhere = WhereAnAskIsKept::forThe($kind) !== '';
+
+        $poster = $wanted->called()->either(
+            named: static fn(string $title): WhatOnePosterSays => $keptElsewhere
+                ? WhatOnePosterSays::ofAnAskKeptElsewhere($title, $standing, $kind->saidToTheMember())
+                : WhatOnePosterSays::ofARequest($title, $standing),
+            notYet: static fn(KindOfRequest $notYet): WhatOnePosterSays => WhatOnePosterSays::ofARequestNotYetNamed(HowWhatAMemberAskedForReads::notYetNamed($notYet), $standing),
         );
+
+        return $keptElsewhere ? $poster->opening($house->asked($wanted->id())) : $poster;
     }
 }

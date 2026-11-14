@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Household\Internal\ViewModels;
 
 /**
- * One request a member made, as the three things they read about it.
+ * One request a member made, as what they read about it: its name, its kind, where it stands and why it was refused.
  *
  * The member's counterpart to the operator's own row type, and shorter than it by
  * everything an operator needs in order to decide: there is no requester here, no
@@ -28,12 +28,20 @@ final readonly class WhatOneOfTheirRequestsSays
      * @param string|ALineAsShown $title what they asked for, in the stack's words, or the line for the kind of thing it is where nothing has named it yet
      * @param string $standing where it stands, as a key in the member's words
      * @param string $reason why it was refused, or empty where it was not
+     * @param string $kind what kind of thing it is, as a key in the member's words, or empty where the title already says it or the core said none
      */
     public function __construct(
         public string|ALineAsShown $title,
         public string $standing,
         public string $reason,
+        public string $kind,
     ) {}
+
+    /** Whether there is a kind to draw beneath the title. */
+    public function saysWhatItIs(): bool
+    {
+        return $this->kind !== '';
+    }
 
     /**
      * Whether there is a reason to draw beneath the state.

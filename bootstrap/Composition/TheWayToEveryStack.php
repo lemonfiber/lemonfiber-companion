@@ -23,6 +23,7 @@ use Modules\Kernel\Api\AskingHowItCameBack;
 use Modules\Kernel\Api\AskingTheIndexers;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\ChoosingAFiller;
+use Modules\Kernel\Api\ChoosingHowTheyAreTold;
 use Modules\Kernel\Api\ChoosingQuality;
 use Modules\Kernel\Api\ChoosingWhatTheHouseholdMayAsk;
 use Modules\Kernel\Api\Clock;
@@ -170,6 +171,7 @@ use Modules\Sdk\Api\Tuners;
 use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
+use Modules\Sdk\Api\WaysOfBeingTold;
 use Modules\Sdk\Api\Wirers;
 use Modules\Sdk\Internal\WhatEachStackOffers;
 use Psr\Log\LoggerInterface;
@@ -291,6 +293,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // the operator's read flattens the house and loses the member, and a
         // member's read is nothing but the member.
         $this->app->bind(Owing::class, TheirOwn::class);
+        $this->app->bind(ChoosingHowTheyAreTold::class, WaysOfBeingTold::class);
         $this->app->bind(Watching::class, Shelves::class);
 
         // A grant for this device to play a member's titles, asked of the core

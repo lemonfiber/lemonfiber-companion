@@ -81,7 +81,7 @@ final readonly class WhereAScreenCanSendYou
      * it is not here.
      */
     private const array ROADS_A_PRESENTER_BUILDS = [
-        'household::what-you-can-watch' => ['$this->goes()->title($holding->id())'],
+        'household::what-you-can-watch' => ['$this->goes()->title($holding->id())', '$this->goes()->asked($wanted->id())'],
     ];
 
     /**

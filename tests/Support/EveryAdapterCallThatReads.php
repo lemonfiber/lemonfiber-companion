@@ -132,6 +132,7 @@ use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\ThisDevice;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\WaysChosen;
 use Modules\Kernel\Api\WhatAChoiceMayBeMadeFrom;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
@@ -259,6 +260,7 @@ use Modules\Sdk\Api\Tuners;
 use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
+use Modules\Sdk\Api\WaysOfBeingTold;
 use Modules\Sdk\Api\Wirers;
 use Psr\Log\NullLogger;
 
@@ -411,6 +413,8 @@ final readonly class EveryAdapterCallThatReads
                 => new Askers($clients, $entropy)->rehearse($stack, $session, self::aFoundTitleToSpoilTheAnswerTo()),
             'Askers::ask' => static fn(): object
                 => new Askers($clients, $entropy)->ask($stack, $session, self::aFoundTitleToSpoilTheAnswerTo(), IdempotencyKey::of('an-ask')),
+            'WaysOfBeingTold::offered' => static fn(): object => new WaysOfBeingTold($clients, $entropy)->offered($stack, $session),
+            'WaysOfBeingTold::choose' => static fn(): object => new WaysOfBeingTold($clients, $entropy)->choose($stack, $session, WaysChosen::byId('mail')),
             'Finders::whatCanBeAskedFor' => static fn(): object => new Finders($clients)->whatCanBeAskedFor($stack, $session),
             'Finders::firstPage' => static fn(): object
                 => new Finders($clients)->firstPage($stack, $session, WhatToLookFor::typed('dune')),

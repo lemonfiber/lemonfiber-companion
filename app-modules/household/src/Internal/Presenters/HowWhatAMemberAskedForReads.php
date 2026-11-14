@@ -74,11 +74,19 @@ final readonly class HowWhatAMemberAskedForReads
     /** The catalogue key for a request of theirs nothing has named yet, by its kind. */
     public static function notYetNamed(KindOfRequest $kind): string
     {
-        return sprintf(self::NOT_YET_NAMED, $kind->value);
+        return sprintf(self::NOT_YET_NAMED, $kind->word());
+    }
+
+    /** What kind of thing a named request is, in the member's words, or nothing where the core said no kind. */
+    private static function kindOf(Wanted $wanted): string
+    {
+        $kind = $wanted->called()->kind();
+
+        return $kind->wasSaid() ? $kind->saidToTheMember() : '';
     }
 
     /**
-     * One request, as the three things a member reads about it.
+     * One request, as what a member reads about it.
      *
      * Built inside the arms of what it is called, so a row holds the title or
      * the key for its kind and never both.
@@ -115,8 +123,8 @@ final readonly class HowWhatAMemberAskedForReads
         $reason = $wanted->refusal(was: static fn(TurnedDown $why): InWords => new InWords($why->reason()), wasNot: static fn(): InWords => new InWords(''))->said;
 
         return $wanted->called()->either(
-            named: static fn(string $named): WhatOneOfTheirRequestsSays => new WhatOneOfTheirRequestsSays($named, $standing, $reason),
-            notYet: static fn(KindOfRequest $kind): WhatOneOfTheirRequestsSays => new WhatOneOfTheirRequestsSays(new ALineAsShown(self::notYetNamed($kind), []), $standing, $reason),
+            named: static fn(string $named): WhatOneOfTheirRequestsSays => new WhatOneOfTheirRequestsSays($named, $standing, $reason, self::kindOf($wanted)),
+            notYet: static fn(KindOfRequest $kind): WhatOneOfTheirRequestsSays => new WhatOneOfTheirRequestsSays(new ALineAsShown(self::notYetNamed($kind), []), $standing, $reason, ''),
         );
     }
 }

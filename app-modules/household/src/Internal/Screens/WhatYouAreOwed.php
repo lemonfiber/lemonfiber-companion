@@ -4,14 +4,22 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal\Screens;
 
+use Closure;
+use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Design\Api\WritesItsTaps;
 use Modules\Household\Internal\OffersTheAppsSettings;
+use Modules\Household\Internal\Presenters\HowBeingToldReads;
 use Modules\Household\Internal\Presenters\HowWhatAMemberAskedForReads;
 use Modules\Household\Internal\Presenters\HowWhatAMemberIsOwedReads;
+use Modules\Household\Internal\ViewModels\HowTheyAreToldAsShown;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeOwed;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToHaveAsked;
+use Modules\Household\Internal\ViewModels\WhatStoppedAMember;
 use Modules\Household\Internal\ViewModels\WhatTheirRequestsTurnedOutToBe;
+use Modules\Kernel\Api\ChoosingHowTheyAreTold;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HowBeingToldCameBack;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
@@ -21,15 +29,19 @@ use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\WaysChosen;
+use Modules\Kernel\Api\WaysToBeTold;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheyAreOwed;
 use Modules\Kernel\Api\WhatTheyAsked;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
-use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
+use Modules\Wayfinding\Api\Screens\ReadsAStackOnceAFrame;
 use Modules\Wayfinding\Api\TheWayAround;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
+
+use function view;
 
 /**
  * What this machine says the person holding the session is owed.
@@ -72,10 +84,11 @@ use Native\Mobile\Edge\NativeComponent;
 final class WhatYouAreOwed extends NativeComponent
 {
     use AsksTheStackAgain;
+    use WritesItsTaps;
     use OffersTheAppsSettings;
     use FindsItsWayAroundTheHouse;
     use LetsGoOfARefusedSession;
-    use DrawsItsTemplate;
+    use ReadsAStackOnceAFrame;
 
     public const string TEMPLATE = 'household::what-you-are-owed';
 
@@ -90,8 +103,12 @@ final class WhatYouAreOwed extends NativeComponent
      */
     public ?WhatTheirRequestsTurnedOutToBe $readings = null;
 
+    /** The ways they may be told something they asked for has arrived, once read or chosen. */
+    public ?HowTheyAreToldAsShown $told = null;
+
     public function __construct(
         private readonly Owing $owing,
+        private readonly ChoosingHowTheyAreTold $telling,
         private readonly SecureStorage $storage,
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
@@ -111,6 +128,43 @@ final class WhatYouAreOwed extends NativeComponent
     public function again(): void
     {
         $this->readings = null;
+        $this->told = null;
+    }
+
+    public function render(): View
+    {
+        $this->aFrameBegins();
+
+        return view(self::TEMPLATE);
+    }
+
+    /** The ways the operator offered the household to be told something they asked for has arrived, read on a frame of their own and held. */
+    public function waysToBeTold(): HowTheyAreToldAsShown
+    {
+        if ($this->told instanceof HowTheyAreToldAsShown) {
+            return $this->told;
+        }
+
+        if (! $this->mayReadItsStack()) {
+            return HowTheyAreToldAsShown::nothingOffered();
+        }
+
+        return $this->told = $this->toldBy(
+            fn(Stack $stack, Session $session): HowBeingToldCameBack => $this->telling->offered($stack, $session),
+            HowTheyAreToldAsShown::nothingOffered(),
+        );
+    }
+
+    /** Be told on the way pressed, or no longer told on it; the core's answer is what is drawn after. */
+    public function tellMeOn(string $id): void
+    {
+        $was = $this->waysToBeTold();
+        $chosen = $was->afterPressing($id);
+
+        $this->told = $this->toldBy(
+            fn(Stack $stack, Session $session): HowBeingToldCameBack => $this->telling->choose($stack, $session, WaysChosen::byId(...$chosen)),
+            $was,
+        );
     }
 
     /** What they are owed, from the one reading a frame takes. */
@@ -140,7 +194,34 @@ final class WhatYouAreOwed extends NativeComponent
      */
     private function readings(): WhatTheirRequestsTurnedOutToBe
     {
-        return $this->readings ??= $this->ask();
+        if (! $this->readings instanceof WhatTheirRequestsTurnedOutToBe) {
+            $this->readsItsStack();
+            $this->readings = $this->ask();
+        }
+
+        return $this->readings;
+    }
+
+    /**
+     * What the core said of the ways to be told, or what was drawn before, marked with what stopped it where it was drawn at all.
+     *
+     * @param Closure(Stack, Session): HowBeingToldCameBack $asked
+     */
+    private function toldBy(Closure $asked, HowTheyAreToldAsShown $was): HowTheyAreToldAsShown
+    {
+        $stack = $this->stack();
+
+        return $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): HowTheyAreToldAsShown => $asked($stack, $session)->either(
+                told: static fn(WaysToBeTold $ways): HowTheyAreToldAsShown => new HowBeingToldReads()->these($ways),
+                refused: function (Obstacle $why) use ($stack, $was): HowTheyAreToldAsShown {
+                    $this->letGoOfTheSession($why, $stack);
+
+                    return $was->isOffered() ? $was->stoppedBy(WhatStoppedAMember::by($why)) : $was;
+                },
+            ),
+            notHeld: static fn(): HowTheyAreToldAsShown => $was,
+        );
     }
 
     /** Resume the session, ask the stack, and flatten both halves of what came back. */

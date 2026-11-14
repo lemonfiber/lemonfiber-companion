@@ -40,6 +40,12 @@ final readonly class WhatOnePosterSays
     /** What one of their own requests says to a screen reader: its name and where it stands. */
     private const string READS_STANDING = 'household.poster.reads_standing';
 
+    /** The line at the top of an ask no video shelf holds: where it stands and its kind. */
+    private const string ABOVE_STANDING_KIND = 'household.poster.above_standing_kind';
+
+    /** What such an ask says to a screen reader: its name, its kind and where it stands. */
+    private const string READS_STANDING_KIND = 'household.poster.reads_standing_kind';
+
     /**
      * @param array<string, string> $filling what the two lines are filled with, as written
      * @param array<string, string> $keyed   what the two lines are filled with that is a catalogue key
@@ -65,6 +71,12 @@ final readonly class WhatOnePosterSays
     public function pictured(?string $source): self
     {
         return new self($this->titled, $this->lettered, $this->above, $this->reads, $this->filling, $this->keyed, $this->goes, $this->plays, $this->tap, $source);
+    }
+
+    /** The same poster, opening the screen at this path. */
+    public function opening(string $goes): self
+    {
+        return new self($this->titled, $this->lettered, $this->above, $this->reads, $this->filling, $this->keyed, $goes, $this->plays, $this->tap, $this->pictured);
     }
 
     /**
@@ -123,6 +135,24 @@ final readonly class WhatOnePosterSays
             reads: self::READS_STANDING,
             filling: ['title' => $titled],
             keyed: ['standing' => $standing],
+        );
+    }
+
+    /**
+     * One of their own music or book asks: where it stands and its kind at the top, and its name, kind and standing to a screen reader.
+     *
+     * @param string $standing where it stands, as a catalogue key in the member's words
+     * @param string $kind     what it is, as a catalogue key in the member's words
+     */
+    public static function ofAnAskKeptElsewhere(string $titled, string $standing, string $kind): self
+    {
+        return new self(
+            titled: $titled,
+            lettered: HowAPosterIsLettered::for($titled),
+            above: self::ABOVE_STANDING_KIND,
+            reads: self::READS_STANDING_KIND,
+            filling: ['title' => $titled],
+            keyed: ['standing' => $standing, 'kind' => $kind],
         );
     }
 

@@ -43,13 +43,44 @@ return [
         'theirs' => [
             'film' => 'Een film waar je om vroeg',
             'series' => 'Een serie waar je om vroeg',
+            'album' => 'Een album waar je om vroeg',
+            'artist' => 'Een artiest waar je om vroeg',
+            'book' => 'Een boek waar je om vroeg',
+            'author' => 'Een auteur waar je om vroeg',
+            'book_series' => 'Een boekenreeks waar je om vroeg',
             'something' => 'Iets waar je om vroeg',
         ],
         'anybodys' => [
             'film' => 'Een film, nog zonder naam',
             'series' => 'Een serie, nog zonder naam',
+            'album' => 'Een album, nog zonder naam',
+            'artist' => 'Een artiest, nog zonder naam',
+            'book' => 'Een boek, nog zonder naam',
+            'author' => 'Een auteur, nog zonder naam',
+            'book_series' => 'Een boekenreeks, nog zonder naam',
             'something' => 'Iets, nog zonder naam',
         ],
+    ],
+    // Wat een verzoek van een lid is, in huishoudwoorden, uit het `media`-woord van de kern.
+    'request_kind' => [
+        'film' => 'Film',
+        'series' => 'Serie',
+        'album' => 'Album',
+        'artist' => 'Artiest',
+        'book' => 'Boek',
+        'author' => 'Auteur',
+        'book_series' => 'Boekenreeks',
+    ],
+    'told' => [
+        'heading' => "Laat het me weten als het klaar is",
+        'phone_woken' => 'Deze telefoon krijgt het ook te horen.',
+        'phone_not_woken' => 'Deze telefoon krijgt het niet te horen.',
+    ],
+    'your_ask' => [
+        'heading' => 'Wat je vroeg',
+        'not_among' => 'Dit staat niet meer tussen wat je vroeg.',
+        'in_the_music' => "In de muziek van het huis. Speel het af waar het huis zijn muziek bewaart.",
+        'in_the_books' => "In de boeken van het huis. Lees het waar het huis zijn boeken bewaart.",
     ],
     'nothing_asked_for' => 'Je hebt nog niets aangevraagd.',
     'waiting_count' => '{0} Niets wacht op je akkoord|{1} Eén verzoek wacht op je akkoord|[2,*] :count verzoeken wachten op je akkoord',
@@ -297,6 +328,8 @@ return [
         'reads' => ':title, :kind, :year',
         'reads_undated' => ':title, :kind',
         'reads_standing' => ':title, :standing',
+        'above_standing_kind' => ':standing · :kind',
+        'reads_standing_kind' => ':title, :kind, :standing',
     ],
 
     'hero' => [

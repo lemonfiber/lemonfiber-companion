@@ -15,6 +15,7 @@ use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\HowArtworkCame;
 use Modules\Kernel\Api\KindOfObstacle;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Medium;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -234,7 +235,7 @@ function theHeroLabel(): string
 function whatTheyAskedFor(): Requested
 {
     $asked = static fn(int $number, string $title, Waiting $standing): Wanted
-        => Wanted::of(RequestId::named(sprintf('%d', $number)), 'ada', $title, Size::unknown(), HowARequestStands::said($standing));
+        => Wanted::of(RequestId::named(sprintf('%d', $number)), 'ada', $title, KindOfRequest::Something, Size::unknown(), HowARequestStands::said($standing));
 
     return Requested::of(
         $asked(1, 'Dune', Waiting::Here),
@@ -243,7 +244,7 @@ function whatTheyAskedFor(): Requested
         $asked(4, 'Alien', Waiting::ForApproval),
         $asked(5, 'Gone Girl', Waiting::Gone),
         $asked(6, 'Nobody Knows', Waiting::Failed),
-        Wanted::of(RequestId::named('7'), 'ada', 'Unsaid', Size::unknown(), HowARequestStands::unnamed()),
+        Wanted::of(RequestId::named('7'), 'ada', 'Unsaid', KindOfRequest::Something, Size::unknown(), HowARequestStands::unnamed()),
     );
 }
 
@@ -254,6 +255,27 @@ it('leads with what is theirs: what arrived for them, then what is on its way, i
     expect(array_map(static fn(object $row): string => $row->heading, $rows))->toBe(['household.shelf.ready_for_you', 'household.shelf.on_its_way'])
         ->and(array_map(static fn(WhatOnePosterSays $poster): string => $poster->titled, $rows[0]->posters))->toBe(['Dune', 'Severance'])
         ->and(array_map(static fn(WhatOnePosterSays $poster): string => $poster->titled, $rows[1]->posters))->toBe(['Heat', 'Severance', 'Alien']);
+});
+
+it('draws a music or book ask with its kind, opening its own page, named or not, and a film ask opening nothing', function (): void {
+    $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), owing: AMemberWhoIsOwed::asking(Requested::of(
+        Wanted::of(RequestId::named('music-3'), 'Robin', 'Rumours', KindOfRequest::Album, Size::unknown(), HowARequestStands::said(Waiting::Here)),
+        Wanted::of(RequestId::named('books-1'), 'Robin', 'Discworld', KindOfRequest::BookSeries, Size::unknown(), HowARequestStands::said(Waiting::Getting)),
+        Wanted::of(RequestId::named('7'), 'Robin', 'Heat', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::Getting)),
+        Wanted::notYetNamed(RequestId::named('books-2'), 'Robin', KindOfRequest::Author, Size::unknown(), HowARequestStands::said(Waiting::Getting)),
+    )));
+    $rows = $screen->theirOwn()->rows;
+    $stack = theStackAShelfIsReadFrom()->id()->stored();
+
+    expect(array_map(static fn(WhatOnePosterSays $poster): array => [$poster->titled, $poster->above, $poster->keyed, $poster->goes], [...$rows[0]->posters, ...$rows[1]->posters]))->toBe([
+        ['Rumours', 'household.poster.above_standing_kind', ['standing' => 'household.asked.here', 'kind' => 'household.request_kind.album'], sprintf('/stacks/%s/asked/music-3', $stack)],
+        ['Discworld', 'household.poster.above_standing_kind', ['standing' => 'household.asked.getting', 'kind' => 'household.request_kind.book_series'], sprintf('/stacks/%s/asked/books-1', $stack)],
+        ['Heat', 'household.asked.getting', ['standing' => 'household.asked.getting'], null],
+        ['household.not_yet_named.theirs.author', 'household.asked.getting', ['title' => 'household.not_yet_named.theirs.author', 'standing' => 'household.asked.getting'], sprintf('/stacks/%s/asked/books-2', $stack)],
+    ])
+        ->and($rows[0]->posters[0]->plays)->toBeNull()
+        ->and($rows[0]->posters[0]->filling)->toBe(['title' => 'Rumours'])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Here · Album');
 });
 
 it('draws each request as a poster saying where it stands, opening nothing, ahead of the house\'s own', function (): void {

@@ -32,6 +32,10 @@
             <x-design::card>
                 <x-design::strong>{{ is_string($request->title) ? $request->title : __($request->title->key, $request->title->filling) }}</x-design::strong>
 
+                @if ($request->saysWhatItIs())
+                    <x-design::note>{{ __($request->kind) }}</x-design::note>
+                @endif
+
                 {{-- The state in the member's words rather than the operator's, and
                      a state rather than a stage: no queue position, no percentage,
                      no service doing the fetching. None of it is an answer to
@@ -63,6 +67,27 @@
         </x-design::notice>
     @endif
 
+    {{-- Drawn only where the operator offered a way, each by the name the
+         household reads it by. Pressing one sends the whole choice, and the
+         core's answer is what is drawn after. --}}
+    @if ($this->waysToBeTold()->isOffered())
+        <x-design::heading>{{ __('household.told.heading') }}</x-design::heading>
+        <x-design::chips>
+            @forelse ($this->waysToBeTold()->ways as $way)
+                <x-design::chip :label="$way->name" :tap="$this->tapping('tellMeOn', $way->id)" :chosen="$way->receiving" />
+            @empty
+                {{-- Nothing: the heading is drawn only where a way is offered. --}}
+            @endforelse
+        </x-design::chips>
+        <x-design::note>{{ __($this->waysToBeTold()->phone) }}</x-design::note>
+
+        @if ($this->waysToBeTold()->stopped !== null)
+            <x-design::notice tone="unknown">
+                <x-household::what-stood-in-the-way :stopped="$this->waysToBeTold()->stopped->withoutTheRemedy()" />
+            </x-design::notice>
+        @endif
+    @endif
+
     {{-- Tonal, because the reading is what this frame is for. A filled bar
          would make asking again look like the thing to do. --}}
     <x-design::action :label="__('household.ask_again')" tap="askAgain()" tone="tonal" />
@@ -90,6 +115,10 @@
          report. The remedy is a screen rather than a sentence. --}}
     <x-design::body>{{ __('household.signed_out') }}</x-design::body>
     <x-design::action :label="__('connection.sign_in')" :goes="$this->signIn()" />
+@endif
+
+@if ($this->waitsForTheNextFrame())
+    <x-design::the-next-frame />
 @endif
 </x-operator::content>
 

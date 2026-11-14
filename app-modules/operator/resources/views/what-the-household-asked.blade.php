@@ -66,6 +66,9 @@
     @forelse ($this->answer()->requests as $request)
         <x-design::card>
             <x-design::strong>{{ $request->title !== '' ? $request->title : __($request->untitled) }}</x-design::strong>
+            @if ($request->saysWhatItIs())
+                <x-design::note>{{ __($request->kind) }}</x-design::note>
+            @endif
             <x-design::note>{{ __('household.asked_by', ['who' => $request->by]) }}</x-design::note>
             <x-design::note>{{ __('household.reference', ['reference' => $request->reference]) }}</x-design::note>
 

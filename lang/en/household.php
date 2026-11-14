@@ -43,13 +43,44 @@ return [
         'theirs' => [
             'film' => 'A film you asked for',
             'series' => 'A series you asked for',
+            'album' => 'An album you asked for',
+            'artist' => 'An artist you asked for',
+            'book' => 'A book you asked for',
+            'author' => 'An author you asked for',
+            'book_series' => 'A book series you asked for',
             'something' => 'Something you asked for',
         ],
         'anybodys' => [
             'film' => 'A film, not named yet',
             'series' => 'A series, not named yet',
+            'album' => 'An album, not named yet',
+            'artist' => 'An artist, not named yet',
+            'book' => 'A book, not named yet',
+            'author' => 'An author, not named yet',
+            'book_series' => 'A book series, not named yet',
             'something' => 'Something, not named yet',
         ],
+    ],
+    // What a member's request is, in household words, from the core's `media` word.
+    'request_kind' => [
+        'film' => 'Film',
+        'series' => 'Series',
+        'album' => 'Album',
+        'artist' => 'Artist',
+        'book' => 'Book',
+        'author' => 'Author',
+        'book_series' => 'Book series',
+    ],
+    'told' => [
+        'heading' => "Tell me when it's ready",
+        'phone_woken' => 'This phone is told too.',
+        'phone_not_woken' => 'This phone is not told.',
+    ],
+    'your_ask' => [
+        'heading' => 'What you asked for',
+        'not_among' => 'This is not among what you asked for any more.',
+        'in_the_music' => "In the house's music. Play it where the house keeps its music.",
+        'in_the_books' => "In the house's books. Read it where the house keeps its books.",
     ],
     'nothing_asked_for' => 'You have not asked for anything yet.',
     'waiting_count' => '{0} Nothing is waiting for you|{1} One request is waiting for you|[2,*] :count requests are waiting for you',
@@ -313,6 +344,8 @@ return [
         'reads' => ':title, :kind, :year',
         'reads_undated' => ':title, :kind',
         'reads_standing' => ':title, :standing',
+        'above_standing_kind' => ':standing · :kind',
+        'reads_standing_kind' => ':title, :kind, :standing',
     ],
 
     // The newest title in the house, drawn across Home with Play and More.

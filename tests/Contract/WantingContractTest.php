@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
@@ -67,8 +68,8 @@ function theSessionTheHouseholdIsAskedWith(): Session
 function theSameRequests(): Requested
 {
     return Requested::of(
-        Wanted::of(RequestId::named('41'), 'Sam', 'A film nobody has seen', Size::guessedAt(4_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
-        Wanted::of(RequestId::named('42'), 'Robin', 'A series somebody has', Size::unknown(), HowARequestStands::said(Waiting::Here)),
+        Wanted::of(RequestId::named('41'), 'Sam', 'A film nobody has seen', KindOfRequest::Something, Size::guessedAt(4_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('42'), 'Robin', 'A series somebody has', KindOfRequest::Something, Size::unknown(), HowARequestStands::said(Waiting::Here)),
     );
 }
 

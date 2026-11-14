@@ -30,6 +30,7 @@ use Lemonfiber\Sdk\Generated\HouseholdAllowAction;
 use Lemonfiber\Sdk\Generated\HouseholdEnvelope;
 use Lemonfiber\Sdk\Generated\KeysEnvelope;
 use Lemonfiber\Sdk\Generated\LifecycleEnvelope;
+use Lemonfiber\Sdk\Generated\NotifyMineEnvelope;
 use Lemonfiber\Sdk\Generated\PartWayEnvelope;
 use Lemonfiber\Sdk\Generated\RefusalCode;
 use Lemonfiber\Sdk\Generated\RestoreAction;
@@ -41,6 +42,7 @@ use Lemonfiber\Sdk\Generated\SwitchAction;
 use Lemonfiber\Sdk\Generated\WatchedEnvelope;
 use Modules\Dx\Api\AStandInStack;
 use Modules\Kernel\Api\AskingForIt;
+use Modules\Kernel\Api\ChoosingHowToBeTold;
 use Modules\Kernel\Api\WhatThePlayerAsks;
 use Modules\Kernel\Api\WhatToChange;
 use Modules\Kernel\Api\WhatToDoWithADownload;
@@ -421,6 +423,7 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Api::WATCHING_ENDPOINT => WhereTheyLeftOffAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(PartWayEnvelope::KIND->value))),
             $endpoint === Api::action(WhatThePlayerAsks::Watched->value) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(WatchedEnvelope::KIND->value)),
             $endpoint === Api::action(AskingForIt::AskForIt->asked()) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(AskedEnvelope::KIND->value)),
+            $endpoint === Api::action(ChoosingHowToBeTold::Choose->asked()) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(NotifyMineEnvelope::KIND->value)),
             str_starts_with($endpoint, Api::JOBS_ENDPOINT) => self::oneEnvelope(self::WHAT_WORK_BECOMES),
             default => self::oneEnvelope(self::whateverTheContractSaysAbout($endpoint, ...$asked)),
         };

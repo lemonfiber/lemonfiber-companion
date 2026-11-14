@@ -45,6 +45,8 @@ final readonly class TheRequestsAsKept
 {
     private const string NOT_YET_NAMED = 'not_yet_named';
 
+    private const string KIND = 'kind_of_request';
+
     /**
      * The reading as a value to seal, or nothing where it cannot be written.
      *
@@ -96,7 +98,7 @@ final readonly class TheRequestsAsKept
     {
         /** @var array<string, string> $called */
         $called = $wanted->called()->either(
-            named: static fn(string $title): Written => new Written(['for' => $title]),
+            named: static fn(string $title): Written => new Written(['for' => $title, self::KIND => $wanted->called()->kind()->value]),
             notYet: static fn(KindOfRequest $kind): Written => new Written([self::NOT_YET_NAMED => $kind->value]),
         )->held;
 
@@ -138,12 +140,27 @@ final readonly class TheRequestsAsKept
         }
 
         $for = self::textAt($fields, 'for');
+        $kind = self::kindIn($fields);
 
         foreach (self::listAt($fields, 'refused') as $refused) {
-            return Wanted::turnedDown($id, $by, $for, $size, self::turnedDownIn(self::fieldsIn($refused)));
+            return Wanted::turnedDown($id, $by, $for, $kind, $size, self::turnedDownIn(self::fieldsIn($refused)));
         }
 
-        return Wanted::of($id, $by, $for, $size, self::standingIn(self::listAt($fields, 'standing')));
+        return Wanted::of($id, $by, $for, $kind, $size, self::standingIn(self::listAt($fields, 'standing')));
+    }
+
+    /**
+     * The kind a named request was kept as, or something asked for where the kept reading names none.
+     *
+     * @param array<array-key, mixed> $fields
+     */
+    private static function kindIn(array $fields): KindOfRequest
+    {
+        if (! array_key_exists(self::KIND, $fields)) {
+            return KindOfRequest::Something;
+        }
+
+        return KindOfRequest::tryFrom(self::textAt($fields, self::KIND)) ?? throw KeptRequestsDoNotRead::at(self::KIND);
     }
 
     /** @param array<array-key, mixed> $fields */

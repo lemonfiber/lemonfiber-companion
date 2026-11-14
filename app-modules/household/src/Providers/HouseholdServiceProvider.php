@@ -12,6 +12,7 @@ use Modules\Household\Internal\Screens\WhatAMemberWouldSee;
 use Modules\Household\Internal\Screens\WhatThisTitleIs;
 use Modules\Household\Internal\Screens\WhatYouAreOwed;
 use Modules\Household\Internal\Screens\WhatYouCanWatch;
+use Modules\Household\Internal\Screens\WhereYourAskStands;
 use Modules\Household\Internal\Screens\YourCornerOfTheHouse;
 use Modules\Stacks\Api\AStacksScreen;
 
@@ -56,6 +57,7 @@ final class HouseholdServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Search->value, LookingForATitle::class);
             Router::native(AStacksScreen::Found->value, AskingForATitle::class);
             Router::native(AStacksScreen::Owed->value, WhatYouAreOwed::class);
+            Router::native(AStacksScreen::Asked->value, WhereYourAskStands::class);
             Router::native(AStacksScreen::Profile->value, YourCornerOfTheHouse::class);
             Router::native(AStacksScreen::AsAMember->value, WhatAMemberWouldSee::class);
         });

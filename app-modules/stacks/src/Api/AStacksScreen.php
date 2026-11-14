@@ -13,6 +13,7 @@ use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\HoldingId;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
@@ -164,6 +165,9 @@ enum AStacksScreen: string
      * search said of it is carried along.
      */
     case Found = '/stacks/{stack}/found/{service}';
+
+    /** One music or book ask of the member's, opened from Home: its name, its kind, and where it stands as the action, not usable. */
+    case Asked = '/stacks/{stack}/asked/{service}';
 
     /** The member's own corner of the app: changing house, the phone's settings and taking the house off the phone. */
     case Profile = '/stacks/{stack}/profile';
@@ -498,6 +502,20 @@ enum AStacksScreen: string
         }
 
         return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($title->id())], $this->value);
+    }
+
+    /**
+     * This screen's path, for one of a member's asks on one machine, by the reference the core names it by.
+     *
+     * Encoded for {@see self::forTheStacksTitle()}'s reason.
+     */
+    public function forTheStacksRequest(StackId $stack, RequestId $request): string
+    {
+        if (! $this->alsoNeedsAService()) {
+            throw AScreenNeedsMoreThanAStack::andThisOneDoesNot($this);
+        }
+
+        return str_replace([self::NAMED, self::ABOUT], [$stack->stored(), rawurlencode($request->reference())], $this->value);
     }
 
     /**

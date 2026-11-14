@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 use Modules\Household\Internal\Screens\WhatYouAreOwed;
 use Modules\Household\Internal\ViewModels\ALineAsShown;
+use Modules\Household\Internal\ViewModels\AWayToBeToldAsShown;
+use Modules\Household\Internal\ViewModels\WhatOneOfTheirRequestsSays;
+use Modules\Household\Internal\ViewModels\WhatStoppedAMember;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AWayToBeTold;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\KindOfObstacle;
@@ -25,11 +29,13 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
+use Modules\Kernel\Api\WaysToBeTold;
 use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\TheHouseholdsTabs;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AHouseThatTellsWhenItsReady;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -84,11 +90,12 @@ function whatThisMemberIsTold(): Sentences
 function whatThisMemberAskedFor(): Requested
 {
     return Requested::of(
-        Wanted::of(RequestId::named('1'), 'Robin', 'The Third Man', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('1'), 'Robin', 'The Third Man', KindOfRequest::Something, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
         Wanted::turnedDown(
             RequestId::named('2'),
             'Robin',
             'Solaris',
+            KindOfRequest::Something,
             Size::unknown(),
             TurnedDown::because('Not for your age limit'),
         ),
@@ -106,6 +113,7 @@ function theOwedScreen(
     ?string $named = null,
     bool $signedIn = true,
     ?Whose $whose = null,
+    ?AHouseThatTellsWhenItsReady $telling = null,
 ): WhatYouAreOwed {
     $stack = theStackAMemberReadsFrom();
     $keychain ??= AKeychainInMemory::working();
@@ -114,7 +122,7 @@ function theOwedScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), $whose ?? Whose::theOperator());
     }
 
-    $screen = new WhatYouAreOwed($owing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
+    $screen = new WhatYouAreOwed($owing, $telling ?? AHouseThatTellsWhenItsReady::offeringNothing(), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -294,7 +302,7 @@ it('shows what they asked for, each with where it stands', function (): void {
 it('shows a request no service has named yet in their words, by its kind, beside the rest', function (): void {
     $screen = theOwedScreen(AMemberWhoIsOwed::asking(Requested::of(
         Wanted::notYetNamed(RequestId::named('3'), 'Robin', KindOfRequest::Series, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
-        Wanted::of(RequestId::named('1'), 'Robin', 'The Third Man', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('1'), 'Robin', 'The Third Man', KindOfRequest::Something, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
     )));
     $rows = $screen->requests()->rows;
 
@@ -302,6 +310,27 @@ it('shows a request no service has named yet in their words, by its kind, beside
         ->and($rows[0]->title)->toEqual(new ALineAsShown('household.not_yet_named.theirs.series', []))
         ->and($rows[1]->title)->toBe('The Third Man')
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.not_yet_named.theirs.series'), 'The Third Man');
+});
+
+it('names what each request is in household words, and draws no kind where the title already says it or the core said none', function (): void {
+    $screen = theOwedScreen(AMemberWhoIsOwed::asking(Requested::of(
+        Wanted::of(RequestId::named('music-3'), 'Robin', 'Rumours', KindOfRequest::Album, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('books-1'), 'Robin', 'Discworld', KindOfRequest::BookSeries, Size::unknown(), HowARequestStands::said(Waiting::Getting)),
+        Wanted::of(RequestId::named('1'), 'Robin', 'The Third Man', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::Here)),
+        Wanted::of(RequestId::named('2'), 'Robin', 'Solaris', KindOfRequest::Something, Size::unknown(), HowARequestStands::said(Waiting::Here)),
+        Wanted::notYetNamed(RequestId::named('3'), 'Robin', KindOfRequest::Author, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+    )));
+    $rows = $screen->requests()->rows;
+
+    expect(array_map(static fn(WhatOneOfTheirRequestsSays $row): array => [$row->kind, $row->saysWhatItIs()], $rows))->toBe([
+        ['household.request_kind.album', true],
+        ['household.request_kind.book_series', true],
+        ['household.request_kind.film', true],
+        ['', false],
+        ['', false],
+    ])
+        ->and($rows[4]->title)->toEqual(new ALineAsShown('household.not_yet_named.theirs.author', []))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Album', 'Book series', 'Film', 'An author you asked for');
 });
 
 it('says where a request stands in their words, not the operator\'s', function (): void {
@@ -328,6 +357,7 @@ it('carries no requester on a member\'s own row', function (): void {
             'title' => $row->title,
             'standing' => $row->standing,
             'reason' => $row->reason,
+            'kind' => $row->kind,
         ]);
     }
 });
@@ -409,4 +439,119 @@ it('a refused credential met on the requests read lets the session go too', func
 
     expect(WhatTheKeychainStillHolds::forThe($keychain, $stack)->held)->toBeFalse()
         ->and($screen->requests()->isSignedIn)->toBeFalse();
+});
+
+function twoWaysToBeTold(): AHouseThatTellsWhenItsReady
+{
+    return AHouseThatTellsWhenItsReady::offering(WaysToBeTold::wakingThisPhone(
+        AWayToBeTold::offered('house-ntfy', 'The house app', receiving: true),
+        AWayToBeTold::offered('mail', 'Email', receiving: false),
+    ));
+}
+
+it('offers each way the operator offered by the name the household reads, chosen where they are told on it, and says whether this phone is told', function (): void {
+    $screen = theOwedScreen(AMemberWhoIsOwed::owedNothing(), telling: twoWaysToBeTold());
+
+    expect($screen->waysToBeTold()->isOffered())->toBeTrue()
+        ->and($screen->waysToBeTold()->ways)->toEqual([new AWayToBeToldAsShown('The house app', 'house-ntfy', receiving: true), new AWayToBeToldAsShown('Email', 'mail', receiving: false)])
+        ->and($screen->waysToBeTold()->phone)->toBe('household.told.phone_woken')
+        ->and($screen->waysToBeTold()->stopped)->toBeNull()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.told.heading'), 'The house app', 'Email', __('household.told.phone_woken'));
+});
+
+it('says a phone that is not woken is not told', function (): void {
+    $screen = theOwedScreen(AMemberWhoIsOwed::owedNothing(), telling: AHouseThatTellsWhenItsReady::offering(WaysToBeTold::notWakingThisPhone(AWayToBeTold::offered('mail', 'Email', receiving: true))));
+
+    expect($screen->waysToBeTold()->phone)->toBe('household.told.phone_not_woken')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.told.phone_not_woken'));
+});
+
+it('draws no choice where nothing is offered, or the house would not say', function (AHouseThatTellsWhenItsReady $telling): void {
+    $screen = theOwedScreen(AMemberWhoIsOwed::owedNothing(), telling: $telling);
+
+    expect($screen->waysToBeTold()->isOffered())->toBeFalse()
+        ->and($screen->waysToBeTold()->ways)->toBe([])
+        ->and($screen->waysToBeTold()->phone)->toBe('')
+        ->and($screen->waysToBeTold()->stopped)->toBeNull()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('household.told.heading'));
+})->with([
+    'nothing offered' => [AHouseThatTellsWhenItsReady::offeringNothing()],
+    'a house that would not say' => [AHouseThatTellsWhenItsReady::refusing(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork))],
+]);
+
+it('sends the whole choice when a way is pressed, and draws what the core answered', function (): void {
+    $telling = twoWaysToBeTold();
+    $screen = theOwedScreen(AMemberWhoIsOwed::owedNothing(), telling: $telling);
+
+    $screen->tellMeOn('mail');
+
+    expect($telling->chosen)->toBe([['house-ntfy', 'mail']])
+        ->and($screen->waysToBeTold()->ways)->toEqual([new AWayToBeToldAsShown('The house app', 'house-ntfy', receiving: true), new AWayToBeToldAsShown('Email', 'mail', receiving: true)]);
+
+    $screen->tellMeOn('house-ntfy');
+
+    expect($telling->chosen)->toBe([['house-ntfy', 'mail'], ['mail']])
+        ->and($screen->waysToBeTold()->ways)->toEqual([new AWayToBeToldAsShown('The house app', 'house-ntfy', receiving: false), new AWayToBeToldAsShown('Email', 'mail', receiving: true)])
+        ->and($telling->readings)->toBe(1);
+});
+
+it('keeps the ways drawn and says what stopped a choice the house would not take, without the remedy', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $screen = theOwedScreen(AMemberWhoIsOwed::owedNothing(), $keychain, telling: twoWaysToBeTold()->refusingChoices(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork)));
+
+    $screen->tellMeOn('mail');
+
+    expect($screen->waysToBeTold()->ways)->toEqual([new AWayToBeToldAsShown('The house app', 'house-ntfy', receiving: true), new AWayToBeToldAsShown('Email', 'mail', receiving: false)])
+        ->and($screen->waysToBeTold()->stopped?->met)->toBe(WhatStoppedAMember::by(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork))->met)
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(WhatStoppedAMember::by(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork))->met))
+        ->and(WhatTheKeychainStillHolds::forThe($keychain, theStackAMemberReadsFrom()->id())->held)->toBeTrue();
+});
+
+it('lets go of the session where the house refuses the credential on the ways or on a choice', function (AHouseThatTellsWhenItsReady $telling, bool $pressed): void {
+    $keychain = AKeychainInMemory::working();
+    $screen = theOwedScreen(AMemberWhoIsOwed::owedNothing(), $keychain, telling: $telling);
+
+    $screen->waysToBeTold();
+
+    if ($pressed) {
+        $screen->tellMeOn('mail');
+    }
+
+    expect(WhatTheKeychainStillHolds::forThe($keychain, theStackAMemberReadsFrom()->id())->held)->toBeFalse();
+})->with([
+    'on the ways' => [AHouseThatTellsWhenItsReady::refusing(Obstacle::of(KindOfObstacle::CredentialWasRefused)), false],
+    'on a choice' => [twoWaysToBeTold()->refusingChoices(Obstacle::of(KindOfObstacle::CredentialWasRefused)), true],
+]);
+
+it('asks nothing about the ways where this device holds no session, and asks again when told to', function (): void {
+    $telling = twoWaysToBeTold();
+
+    expect(theOwedScreen(AMemberWhoIsOwed::owedNothing(), signedIn: false, telling: $telling)->waysToBeTold()->isOffered())->toBeFalse()
+        ->and($telling->readings)->toBe(0);
+
+    $screen = theOwedScreen(AMemberWhoIsOwed::owedNothing(), telling: $telling);
+    $screen->waysToBeTold();
+    $screen->waysToBeTold();
+    $screen->again();
+    $screen->render();
+    $screen->waysToBeTold();
+
+    expect($telling->readings)->toBe(2);
+});
+
+it('reads the ways on a frame of their own, after the frame that read what they asked for, and asks for it at once', function (): void {
+    $telling = twoWaysToBeTold();
+    $screen = theOwedScreen(AMemberWhoIsOwed::owedNothing(), telling: $telling);
+
+    $first = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($telling->readings)->toBe(0)
+        ->and($screen->waitsForTheNextFrame())->toBeTrue()
+        ->and($first)->not->toContain(__('household.told.heading'));
+
+    $second = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($telling->readings)->toBe(1)
+        ->and($screen->waitsForTheNextFrame())->toBeFalse()
+        ->and($second)->toContain(__('household.told.heading'));
 });

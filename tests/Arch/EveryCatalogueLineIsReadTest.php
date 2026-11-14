@@ -128,13 +128,13 @@ function everyKeyADerivationCouldBuild(string $said): array
     // direction: this rule refuses lines, so under-approximating here deletes
     // sentences rather than keeping extra ones.
     preg_match_all("/'([a-z][a-z0-9_.-]*\\.[a-z0-9_-]*)%s([a-z0-9_-]*)'/", $said, $shapes, PREG_SET_ORDER);
-    preg_match_all("/case \\w+ = '([a-z0-9_-]+)'/", $said, $cases);
+    preg_match_all("/case \\w+ = '([a-z0-9 _-]+)'/", $said, $cases);
 
     $built = [];
 
     foreach ($shapes as [, $before, $after]) {
         foreach ($cases[1] as $value) {
-            $built[] = sprintf('%s%s%s', $before, $value, $after);
+            $built[] = sprintf('%s%s%s', $before, str_replace(' ', '_', $value), $after);
         }
     }
 

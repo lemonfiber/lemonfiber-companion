@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Modules\Requests\Tests\Api;
 
+use function array_map;
 use function expect;
 use function implode;
 use function it;
+use function iterator_to_array;
 
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Noted;
 use Modules\Kernel\Api\Requested;
@@ -141,6 +144,31 @@ it('keeps a request no service has named yet by the kind of thing it is', functi
     );
 });
 
+/** The kind of each request a kept reading holds, or nothing where none was kept. */
+function theKindsKept(WhatWasKeptOfWhatWasAsked $kept): string
+{
+    return $kept->either(
+        kept: static fn(Requested $requested): Code => Code::of(implode(' | ', array_map(static fn(Wanted $one): string => $one->called()->kind()->value, iterator_to_array($requested, preserve_keys: false)))),
+        nothing: static fn(): Code => Code::of('nothing'),
+    )->shown();
+}
+
+it('keeps the kind of thing each named request is', function (): void {
+    $kept = aPhoneKeepingRequests();
+    $kept->keeping->keep(theStackTheRequestsAreKeptFor(), Requested::of(
+        Wanted::of(RequestId::named('music-3'), 'Mira', 'Rumours', KindOfRequest::Album, Size::unknown(), HowARequestStands::said(Waiting::Getting)),
+        Wanted::turnedDown(RequestId::named('books-1'), 'Joost', 'Discworld', KindOfRequest::BookSeries, Size::unknown(), TurnedDown::because('Not now')),
+    ));
+
+    expect(theKindsKept($kept->keeping->lastKept(theStackTheRequestsAreKeptFor())))->toBe('album | book series');
+});
+
+it('reads a named request kept with no kind as something asked for', function (): void {
+    $kept = aPhoneKeepingRequests()->holdsSealed('{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[]}]}', theStackTheRequestsAreKeptFor(), Instant::atEpochSeconds(WHEN_THE_REQUESTS_WERE_READ));
+
+    expect(theKindsKept($kept->keeping->lastKept(theStackTheRequestsAreKeptFor())))->toBe('something');
+});
+
 it('keeps a household that asked for nothing as one that asked for nothing', function (): void {
     $kept = aPhoneKeepingRequests();
     $kept->keeping->keep(theStackTheRequestsAreKeptFor(), WhatIsKeptOfRequests::aReadingOfNothing());
@@ -191,7 +219,7 @@ it('keeps nothing where nothing can be sealed, or where the store will not keep 
 
 it('keeps nothing where a household\'s words are not text it can write', function (): void {
     $kept = aPhoneKeepingRequests();
-    $garbled = Requested::of(Wanted::of(RequestId::named('1'), "\xB1\x31", 'Dune', Size::unknown(), HowARequestStands::said(Waiting::ForApproval)));
+    $garbled = Requested::of(Wanted::of(RequestId::named('1'), "\xB1\x31", 'Dune', KindOfRequest::Something, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)));
 
     expect(whetherTheRequestsWereKept($kept->keeping->keep(theStackTheRequestsAreKeptFor(), $garbled)))->toBe('not kept')
         ->and($kept->store->forgetEverything()->howMany())->toBe(0);
@@ -247,6 +275,8 @@ it('lets go of a kept reading that opens to something that is not a reading of w
     'a refusal for no reason' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{},"standing":["declined"],"refused":[{"reason":" ","at":[]}]}]}'],
     'a refusal at a moment that is not text' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{},"standing":["declined"],"refused":[{"reason":"No","at":[7]}]}]}'],
     'no refused field' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{},"standing":["getting"]}]}'],
+    'a kind this build does not know' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","kind_of_request":"podcast","size":{},"standing":["getting"],"refused":[]}]}'],
+    'a kind that is not a word' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","kind_of_request":7,"size":{},"standing":["getting"],"refused":[]}]}'],
 ]);
 
 it('lets go of the reading kept for one stack, and of no other\'s', function (): void {

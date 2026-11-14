@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Household\Internal\Screens\AskingForATitle;
+use Modules\Household\Internal\Screens\WhatYouAreOwed;
 use Modules\Operator\Internal\Screens\WhatEachStackMayTellThisPhone;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatIsNewOnEveryStack;
@@ -65,6 +66,7 @@ const WHAT_OFFERS_NOTHING_ON_ITS_OWN_SCREEN = [
     WhatElseIsRunningHere::class => 'reads what else runs on the machine through the port that also starts and stops a service, and offers no verb',
     WhatWouldBePutRight::class => 'its reading is the repair\'s own request, so the gate in front of the reading is the gate in front of its yes',
     WhileNobodyWasLooking::class => 'reads what keeps the stack running through the port that also hands a command over, and leads to the screen that offers handing one over',
+    WhatYouAreOwed::class => 'draws the choice of how a member is told only from the core\'s own answer of the ways offered, read through the same gate, so a stack that does not offer it draws no choice, and a member is never shown the operator\'s road to Updates',
     AskingForATitle::class => 'its reading is the ask\'s own rehearsal through the same gate, so a stack that does not offer asking is told to the member in household words before Ask can be pressed, and a member is never shown the operator\'s road to Updates',
 ];
 

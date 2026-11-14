@@ -6,6 +6,7 @@ namespace Modules\Household\Internal;
 
 use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\HoldingId;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\StackId;
 use Modules\Stacks\Api\AStacksScreen;
 
@@ -36,6 +37,12 @@ final readonly class WhereTheHouseIs
     public function title(HoldingId $title): string
     {
         return AStacksScreen::Title->forTheStacksTitle($this->stack, $title);
+    }
+
+    /** One of a member's music or book asks, on this house. */
+    public function asked(RequestId $request): string
+    {
+        return AStacksScreen::Asked->forTheStacksRequest($this->stack, $request);
     }
 
     /** One title a member's search found, on this house. */

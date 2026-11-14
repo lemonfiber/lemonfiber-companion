@@ -70,6 +70,7 @@ final readonly class Wanted
         RequestId $id,
         string $by,
         string $forWhat,
+        KindOfRequest $kind,
         Size $size,
         HowARequestStands $standing,
     ): self {
@@ -84,7 +85,7 @@ final readonly class Wanted
             throw RequestHasNobodyBehindIt::forNothing($id, $asker);
         }
 
-        return new self($id, $asker, WhatARequestIsCalled::named($title), $size, $standing);
+        return new self($id, $asker, WhatARequestIsCalled::named($title, $kind), $size, $standing);
     }
 
     /**
@@ -146,10 +147,11 @@ final readonly class Wanted
         RequestId $id,
         string $by,
         string $forWhat,
+        KindOfRequest $kind,
         Size $size,
         TurnedDown $why,
     ): self {
-        return self::declined(self::of($id, $by, $forWhat, $size, HowARequestStands::said(Waiting::Declined)), $why);
+        return self::declined(self::of($id, $by, $forWhat, $kind, $size, HowARequestStands::said(Waiting::Declined)), $why);
     }
 
     /** A refused request no service named, by the kind of thing it was. */
