@@ -73,6 +73,7 @@ it('moves a wake to another endpoint and keeps the rest, and prints none of its 
         ->and($moved->name->shown())->toBe('galaxy-a51-7f3a')
         ->and($moved->endpoint->is(aWake()->endpoint))->toBeFalse()
         ->and(str_contains($printed, 'ntfy.sh') || str_contains($printed, 'ssss'))->toBeFalse()
+        ->and(str_contains($printed, 'galaxy-a51-7f3a'))->toBeTrue()
         ->and(str_contains(print_r(AnEndpoint::of('https://ntfy.sh/upAbC?up=1'), return: true), 'ntfy.sh'))->toBeFalse()
         ->and(static fn(): AnEndpoint => AnEndpoint::of(' '))->toThrow(AWakeIsUnfit::class);
 });

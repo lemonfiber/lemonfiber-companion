@@ -226,6 +226,14 @@ it('cannot read an answer that names no endpoint as the one registered or remove
     }
 });
 
+it('cannot read an answer naming no endpoint name as the one registered', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoint', 'data' => ['endpoint' => THE_PHONES_ENDPOINT, 'name' => ' ', 'registered' => '2026-11-08T10:00:00', 'rehearsed' => false]])]);
+
+    expect(whatRegisteringCameTo(new PushEndpointKeepers(new PinnedClients())->registeredOn(aStackThatWakesAPhone(), Session::of('a-session-not-a-secret'), theWakeToRegister())))
+        ->toBe(KindOfObstacle::AnswerCouldNotBeRead->value);
+});
+
 it('says a removal the stack refused for another reason in its words', function (): void {
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make(aWakeRefusedWith('PUSH-1', 'That word cannot name a push endpoint.'), 400)]);

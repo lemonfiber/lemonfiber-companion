@@ -107,7 +107,7 @@ final readonly class TheWakingAsKept
                     AWakingSecret::of(self::bytesIn($written, self::SECRET)),
                 ),
             );
-        } catch (AWakeIsUnfit) {
+        } catch (AWakeIsUnfit|SodiumException) {
             return HowThisPhoneIsWoken::owed($name);
         }
     }
@@ -144,10 +144,6 @@ final readonly class TheWakingAsKept
      */
     private static function bytesIn(array $written, string $name): string
     {
-        try {
-            return sodium_base642bin(self::textIn($written, $name), SODIUM_BASE64_VARIANT_ORIGINAL);
-        } catch (SodiumException) {
-            return '';
-        }
+        return sodium_base642bin(self::textIn($written, $name), SODIUM_BASE64_VARIANT_ORIGINAL);
     }
 }

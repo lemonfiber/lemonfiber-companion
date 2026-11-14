@@ -101,3 +101,8 @@ it('reads whether notifications are on back in the shape it was written in', fun
 it('reads notifications as off where it cannot make them out, as a phone kept before there was a switch', function (string $written): void {
     expect(TheSettingsAsKept::read(Shape::One, Unsealed::of($written))->notifying)->toBe(Notifying::Off);
 })->with(['{"lock_after":"Immediately"}', '{"notifying":true}', '{"notifying":"loudly"}']);
+
+it('reads no distributor where none was chosen or what was written is not text', function (string $written): void {
+    expect(TheSettingsAsKept::read(Shape::One, Unsealed::of($written))->wakeThrough)->toBe('')
+        ->and(ThePhonesSettings::standard()->wakeThrough)->toBe('');
+})->with(['{"lock_after":"OneHour"}', '{"wake_through":null}', '{"wake_through":7}']);

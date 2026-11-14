@@ -37,11 +37,12 @@ it('lists each distributor installed by its package, with what it is called, and
     FakeBridge::enable()->respondTo('Lemonfiber.Waking.Distributors', ['outcome' => 'listed', 'distributors' => [
         ['package' => 'io.heckel.ntfy', 'called' => 'ntfy'],
         ['package' => 'org.unifiedpush.distributor.nextpush'],
+        ['package' => 'org.example.unnamed', 'called' => 7],
         ['called' => 'nameless'],
         'not a row',
     ]]);
 
-    expect(theDistributorsListed(new Waking()->distributors()))->toBe('{"io.heckel.ntfy":"ntfy","org.unifiedpush.distributor.nextpush":""}');
+    expect(theDistributorsListed(new Waking()->distributors()))->toBe('{"io.heckel.ntfy":"ntfy","org.unifiedpush.distributor.nextpush":"","org.example.unnamed":""}');
 });
 
 it('reads a phone that cannot be woken this way, a list that is not one, or no answer as not here', function (array $answered): void {
@@ -60,7 +61,17 @@ it('registers a stack with a distributor, and reads the endpoint and the key as 
 
     expect(theEndpointAnswered(new Waking()->register('the-loft', 'io.heckel.ntfy')))->toBe('https://ntfy.sh/upAbC?up=1 key');
 
-    $bridge->assertCalled('Lemonfiber.Waking.Register');
+    $bridge->assertCalled('Lemonfiber.Waking.Register', static fn(array $params): bool => $params === ['stack' => 'the-loft', 'distributor' => 'io.heckel.ntfy']);
+});
+
+it('asks for the endpoint and lets go by the stack each is about', function (): void {
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Waking.Endpoint', ['outcome' => 'given', 'endpoint' => 'https://ntfy.sh/up', 'p256dh' => 'a2V5'])->respondTo('Lemonfiber.Waking.LetGo', ['outcome' => 'let_go']);
+
+    expect(theEndpointAnswered(new Waking()->endpoint('the-loft')))->toBe('https://ntfy.sh/up key')
+        ->and(new Waking()->letGo('the-loft'))->toBeTrue();
+
+    $bridge->assertCalled('Lemonfiber.Waking.Endpoint', static fn(array $params): bool => $params === ['stack' => 'the-loft'])
+        ->assertCalled('Lemonfiber.Waking.LetGo', static fn(array $params): bool => $params === ['stack' => 'the-loft']);
 });
 
 it('reads no endpoint, no key, a key that is not base64, or a refusal as none given, with the bridge\'s word', function (array $answered, string $read): void {
@@ -70,6 +81,7 @@ it('reads no endpoint, no key, a key that is not base64, or a refusal as none gi
 })->with([
     'refused' => [['outcome' => 'not_given', 'because' => 'dropped'], 'not: dropped'],
     'no key' => [['outcome' => 'given', 'endpoint' => 'https://ntfy.sh/up'], 'not: '],
+    'an empty key' => [['outcome' => 'given', 'endpoint' => 'https://ntfy.sh/up', 'p256dh' => ''], 'not: '],
     'a key that is not base64' => [['outcome' => 'given', 'endpoint' => 'https://ntfy.sh/up', 'p256dh' => '!!'], 'not: '],
     'no endpoint' => [['outcome' => 'given', 'p256dh' => 'a2V5'], 'not: '],
 ]);

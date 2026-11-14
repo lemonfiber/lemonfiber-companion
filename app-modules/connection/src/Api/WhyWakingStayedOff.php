@@ -18,27 +18,27 @@ use Modules\Kernel\Api\WhyNoEndpoint;
  */
 final readonly class WhyWakingStayedOff
 {
-    private function __construct(private WhyNoEndpoint|ARefusalInItsWords|Obstacle|null $why, private bool $named) {}
+    private function __construct(private WhyNoEndpoint|ARefusalInItsWords|Obstacle|null $why, private bool $named = false) {}
 
     /** This phone holds no key on the stack, so there is no name to register under. */
     public static function noKeyName(): self
     {
-        return new self(null, named: false);
+        return new self(null);
     }
 
     public static function noEndpoint(WhyNoEndpoint $why): self
     {
-        return new self($why, named: true);
+        return new self($why);
     }
 
     public static function refused(ARefusalInItsWords $why): self
     {
-        return new self($why, named: true);
+        return new self($why);
     }
 
     public static function met(Obstacle $why): self
     {
-        return new self($why, named: true);
+        return new self($why);
     }
 
     /** The stack keeps the endpoint and this phone could not keep that it does, so the stack was asked to forget it. */

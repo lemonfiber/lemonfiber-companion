@@ -63,5 +63,7 @@ it('reads waking it cannot make out whole as a removal owed where it has the nam
     'a name a stack would refuse' => ['{"push_name":"Galaxy A51"}', 'off'],
     'a name that is not text' => ['{"push_name":7}', 'off'],
     'a name with nothing else' => ['{"push_name":"galaxy-a51-7f3a"}', 'owed galaxy-a51-7f3a'],
+    'what the distributor is called, missing' => ['{"push_name":"galaxy-a51-7f3a","distributor_package":"io.heckel.ntfy","push_endpoint":"https://ntfy.sh/up","webpush_key":"BAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=","webpush_secret":"c3Nzc3Nzc3Nzc3Nzc3Nzcw=="}', sprintf('on io.heckel.ntfy io.heckel.ntfy https://ntfy.sh/up 65 %s', str_repeat('s', 16))],
+    'what the distributor is called, not text' => ['{"push_name":"galaxy-a51-7f3a","distributor_package":"io.heckel.ntfy","distributor_called":7,"push_endpoint":"https://ntfy.sh/up","webpush_key":"BAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=","webpush_secret":"c3Nzc3Nzc3Nzc3Nzc3Nzcw=="}', sprintf('on io.heckel.ntfy io.heckel.ntfy https://ntfy.sh/up 65 %s', str_repeat('s', 16))],
     'keys that do not read' => ['{"push_name":"galaxy-a51-7f3a","distributor_package":"io.heckel.ntfy","distributor_called":"ntfy","push_endpoint":"https://ntfy.sh/up","webpush_key":"!!","webpush_secret":"c3M="}', 'owed galaxy-a51-7f3a'],
 ]);

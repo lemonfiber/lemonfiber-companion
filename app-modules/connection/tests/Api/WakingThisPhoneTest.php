@@ -212,13 +212,16 @@ it('turns waking off where a changed endpoint is refused by the stack', function
 
 it('tells the stack to forget the endpoint as it is removed from the phone, and says where it could not be told', function (): void {
     $stack = AStackThatKeepsWakes::reachable();
-    $waking = AWakingPhone::waking(DistributorsOnAPhone::with(), $stack, aKeyNamedOnTheLoft());
+    $phone = DistributorsOnAPhone::with();
+    $waking = AWakingPhone::waking($phone, $stack, aKeyNamedOnTheLoft());
 
     expect($waking->stillHeldAfterTelling(theLoftWakingThePhone(), aSessionOnTheLoft()))->toBeFalse();
 
     $waking->turnOn(theLoftWakingThePhone(), aSessionOnTheLoft(), DistributorsOnAPhone::ntfy());
 
-    expect($waking->stillHeldAfterTelling(theLoftWakingThePhone(), aSessionOnTheLoft()))->toBeFalse()
+    expect($phone->holdsARegistrationFor(theLoftWakingThePhone()->id()))->toBeTrue()
+        ->and($waking->stillHeldAfterTelling(theLoftWakingThePhone(), aSessionOnTheLoft()))->toBeFalse()
+        ->and($phone->holdsARegistrationFor(theLoftWakingThePhone()->id()))->toBeFalse()
         ->and($stack->holds(theLoftWakingThePhone(), 'galaxy-a51-7f3a'))->toBe('');
 
     $waking->turnOn(theLoftWakingThePhone(), aSessionOnTheLoft(), DistributorsOnAPhone::ntfy());
