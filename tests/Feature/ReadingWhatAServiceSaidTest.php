@@ -121,7 +121,7 @@ function theLogScreen(
     );
     $screen->setParams([
         'stack' => $named ?? $stack->id()->stored(),
-        'service' => $service ?? theServiceOnTheScreen()->named(),
+        'about' => $service ?? theServiceOnTheScreen()->named(),
     ]);
 
     return $screen;
@@ -539,7 +539,7 @@ it('a route naming a stack this device has forgotten is refused', function (): v
 
 it('refuses a route parameter that is not text', function (): void {
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
-    $screen->setParams(['stack' => 42, 'service' => 'gluetun']);
+    $screen->setParams(['stack' => 42, 'about' => 'gluetun']);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
@@ -547,7 +547,7 @@ it('refuses a route parameter that is not text', function (): void {
 it('refuses a route naming no service', function (): void {
     // A window over no service is the whole machine talking at once.
     $screen = theLogScreen(AServiceThatSpoke::saying(aWindowWorthReading()));
-    $screen->setParams(['stack' => theStackWhoseServiceIsRead()->id()->stored(), 'service' => 42]);
+    $screen->setParams(['stack' => theStackWhoseServiceIsRead()->id()->stored(), 'about' => 42]);
 
     expect(fn(): ServiceId => $screen->service())->toThrow(ServiceIsUnnamed::class);
 });
@@ -573,7 +573,7 @@ it('the builder and the router agree about which service a path names', function
     $params = is_array($resolved) && is_array($resolved['params'] ?? null) ? $resolved['params'] : [];
 
     expect($params['stack'] ?? null)->toBe('a-stack')
-        ->and($params['service'] ?? null)->toBe('gluetun');
+        ->and($params['about'] ?? null)->toBe('gluetun');
 });
 
 it('the way back to the machine is a route as well', function (): void {

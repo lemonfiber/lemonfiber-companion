@@ -62,7 +62,7 @@ function thePageOfAnAsk(AMemberWhoIsOwed $owing, string $reference, ?AKeychainIn
     }
 
     $screen = new WhereYourAskStands($owing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain));
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $reference]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $reference]);
 
     return $screen;
 }

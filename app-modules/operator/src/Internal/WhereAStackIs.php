@@ -8,16 +8,11 @@ use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ARun;
-use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Form;
-use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
-use Modules\Kernel\Api\WhatARunCovers;
 use Modules\Kernel\Api\WhatAScreenIsAbout;
-use Modules\Kernel\Api\WhatToDoWithTheDownloads;
-use Modules\Kernel\Api\WhatToFollow;
 use Modules\Stacks\Api\AStacksScreen;
 
 /**
@@ -31,9 +26,9 @@ use Modules\Stacks\Api\AStacksScreen;
  *
  * **One route table.** A screen reached by naming the machine alone is
  * {@see self::to()} with its case, so the next such screen costs no method
- * here. The rest each take the one more thing their path carries, as text from
- * a template or as the value already named, and give it its type on the way
- * through.
+ * here. A screen about one thing is {@see self::about()} with its case and
+ * that thing as the value already named. The rest each take that thing as the
+ * text a template holds, and give it its type on the way through.
  *
  * **It takes what a pairing wrote down and gives it a name here.** Two screens
  * reach this holding only the identifier and nothing else, before anything has
@@ -83,21 +78,10 @@ final readonly class WhereAStackIs
         return $screen->forTheStacks($this->stack, $about);
     }
 
-    /** Where one item got to on this machine. */
-    public function traceOf(WhatToFollow $item): string
-    {
-        return AStacksScreen::Trace->forTheStacks($this->stack, $item);
-    }
-
-    public function doingWith(ServiceId $service): string
-    {
-        return AStacksScreen::Doing->forTheStacks($this->stack, $service);
-    }
-
     /**
      * One whole form of this machine, and the verbs about it.
      *
-     * The same screen as the one above, because what an operator is choosing
+     * The screen a service opens, because what an operator is choosing
      * between is identical and only the name the stack is told differs.
      *
      * Text on the way in and a {@see Form} on the way out. A form reaches a
@@ -110,12 +94,6 @@ final readonly class WhereAStackIs
     public function doingWithTheForm(string $named): string
     {
         return AStacksScreen::Doing->forTheStacks($this->stack, Form::called($named));
-    }
-
-    /** What one of lemonfiber's words means, opened on its own. */
-    public function wordAbout(AWordInUse $word): string
-    {
-        return AStacksScreen::WordAbout->forTheStacks($this->stack, $word);
     }
 
     /**
@@ -140,12 +118,6 @@ final readonly class WhereAStackIs
     public function running(string $check): string
     {
         return AStacksScreen::Run->forTheStacks($this->stack, Check::of($check));
-    }
-
-    /** Where running every check, or every check of one family, is weighed before anything is sent. */
-    public function runningChecks(WhatARunCovers $covers): string
-    {
-        return AStacksScreen::RunChecks->forTheStacks($this->stack, $covers);
     }
 
     /** Where somebody is asked in with their name already typed. */
@@ -176,12 +148,6 @@ final readonly class WhereAStackIs
     public function puttingARunBack(string $stamp): string
     {
         return AStacksScreen::RunBack->forTheStacks($this->stack, ARun::stamped($stamp));
-    }
-
-    /** Pausing this machine's downloads, or letting them fetch again. */
-    public function downloads(WhatToDoWithTheDownloads $asked): string
-    {
-        return AStacksScreen::Downloads->forTheStacks($this->stack, $asked);
     }
 
     /** Stopping seeding one of this machine's completed downloads, by the name the account gave it. */

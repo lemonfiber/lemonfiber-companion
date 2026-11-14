@@ -101,7 +101,7 @@ function thePageAboutWhatItWaitsFor(AStackThatTunesItsSettings $tuning, string $
     }
 
     $screen = new WhatThisServiceWaitsFor($tuning, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening($hearing));
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $service]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $service]);
 
     return $screen;
 }

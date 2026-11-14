@@ -124,9 +124,9 @@
          screen before anything is sent. --}}
     @forelse ($this->runsOffered() as $run)
         @if ($run->familySaid !== null)
-            <x-design::link :label="__($run->said, ['family' => __($run->familySaid)])" :goes="$this->goes()->runningChecks($run->covers)" />
+            <x-design::link :label="__($run->said, ['family' => __($run->familySaid)])" :goes="$this->goes()->about(AStacksScreen::RunChecks, $run->covers)" />
         @else
-            <x-design::link :label="__($run->said)" :goes="$this->goes()->runningChecks($run->covers)" />
+            <x-design::link :label="__($run->said)" :goes="$this->goes()->about(AStacksScreen::RunChecks, $run->covers)" />
         @endif
     @empty
         {{-- Nothing: every check is always offered. --}}

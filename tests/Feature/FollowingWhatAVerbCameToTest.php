@@ -337,7 +337,7 @@ it('does not ask after a handle it holds without the verb it was sent for', func
     // nothing to judge it by.
     $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::stillRunning());
     $screen = TheThingScreenOfTheShed::theScreen($supervising);
-    $screen->setParams(['stack' => TheThingScreenOfTheShed::theMachine()->id()->stored(), 'service' => 'sonarr', 'took' => AStackThatSupervises::THE_JOB]);
+    $screen->setParams(['stack' => TheThingScreenOfTheShed::theMachine()->id()->stored(), 'about' => 'sonarr', 'took' => AStackThatSupervises::THE_JOB]);
     $screen->mountComponent();
 
     expect($screen->took)->toBe(AStackThatSupervises::THE_JOB)

@@ -109,7 +109,7 @@ function oneBackEndDrawn(AStackThatSaysWhereAlertsGo $alerts, string $about, boo
 {
     $stack = theStackWhoseBackEndsAreRead();
     $screen = new OneWayAlertsGo($alerts, aKeychainHolding($stack, $signedIn), FrozenClock::at(Instant::atEpochSeconds(WHEN_ALERTS_ARE_READ)), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $about]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $about]);
 
     return $screen;
 }

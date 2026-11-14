@@ -70,7 +70,7 @@ function theRemovalScreen(
     }
 
     $screen = new TakingSomebodyOut($removing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $member]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $member]);
 
     return $screen;
 }
@@ -363,7 +363,7 @@ it('opened on nobody, asks the stack nothing and says so', function (): void {
         ->and($drawn->offers())->toContain(__('stacks.removal.back_to_who_is_in'))
         ->and($removing->asked())->toBe([]);
 
-    $screen->setParams(['stack' => theStackSomebodyLeaves()->id()->stored(), 'service' => 7]);
+    $screen->setParams(['stack' => theStackSomebodyLeaves()->id()->stored(), 'about' => 7]);
 
     expect($screen->named())->toBe('');
 });

@@ -180,7 +180,7 @@ function theGuardsSettingsScreen(
         new AppsSettingsThatOpen(),
         AroundThePhone::listening($hearing),
     );
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $plugin]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $plugin]);
 
     return $screen;
 }

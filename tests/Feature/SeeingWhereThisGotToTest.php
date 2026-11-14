@@ -82,7 +82,7 @@ function theTraceScreen(AStackThatTraces $tracing, ?AKeychainInMemory $keychain 
     }
 
     $screen = new WhereThisGotTo($tracing, $searching ?? AStackThatSearches::answering(WhatBecameOfTheWork::ended()), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $named]);
 
     return $screen;
 }
@@ -248,11 +248,11 @@ it('a session that has ended asks nothing, and a refused one is let go', functio
 
 it('refuses a route parameter that is not text, and reads a term that is not text as nothing named', function (): void {
     $screen = theTraceScreen(AStackThatTraces::with(aFilmThatArrived()));
-    $screen->setParams(['stack' => 42, 'service' => 'Dune']);
+    $screen->setParams(['stack' => 42, 'about' => 'Dune']);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 
-    $screen->setParams(['stack' => theStackWhoseItemIsFollowed()->id()->stored(), 'service' => 7]);
+    $screen->setParams(['stack' => theStackWhoseItemIsFollowed()->id()->stored(), 'about' => 7]);
 
     expect($screen->answer()->item)->toBe('');
 });
@@ -260,7 +260,7 @@ it('refuses a route parameter that is not text, and reads a term that is not tex
 it('is reached by a route carrying the title as it was drawn, and goes back to health', function (): void {
     $screen = theTraceScreen(AStackThatTraces::with(aFilmThatArrived()));
 
-    expect(NativeRouter::resolve($screen->goes()->traceOf(WhatToFollow::called('AC/DC: Live'))))->toHaveKey('params.service', 'AC/DC: Live')
+    expect(NativeRouter::resolve($screen->goes()->about(AStacksScreen::Trace, WhatToFollow::called('AC/DC: Live'))))->toHaveKey('params.about', 'AC/DC: Live')
         ->and(NativeRouter::resolve($screen->goes()->to(AStacksScreen::Health)))->not->toBeNull()
         ->and($screen->render()->name())->toBe('operator::where-this-got-to');
 });

@@ -39,7 +39,7 @@ function everyScreenAboutAStackWithItsMenu(): array
             continue;
         }
 
-        $screen->setParams($case->isAboutOneThing() ? ['stack' => $stack, 'service' => 'gluetun'] : ['stack' => $stack]);
+        $screen->setParams($case->isAboutOneThing() ? ['stack' => $stack, 'about' => 'gluetun'] : ['stack' => $stack]);
         $screens[$case->name] = [$case, $screen];
     }
 
@@ -49,7 +49,7 @@ function everyScreenAboutAStackWithItsMenu(): array
 /** The path a screen about the stand-in stack is held at. */
 function wherePushedOverAnother(AStacksScreen $case): string
 {
-    return str_replace(['{stack}', '{service}'], [AStandInStack::Answering->asAStack()->id()->stored(), 'gluetun'], $case->value);
+    return str_replace(['{stack}', '{about}'], [AStandInStack::Answering->asAStack()->id()->stored(), 'gluetun'], $case->value);
 }
 
 /** Whether the screen's menu control sits beside a back button, held over this many screens. */

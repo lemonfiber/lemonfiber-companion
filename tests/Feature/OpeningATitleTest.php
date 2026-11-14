@@ -109,7 +109,7 @@ function theTitleScreen(AShelfThatWasRead $watching, bool $signedIn = true, ?The
     }
 
     $screen = new WhatThisTitleIs($watching, $pictures ?? ThePicturesOnScreen::none(), $keychain, TheTitlesOnScreen::over($watching, $keychain), AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => 'a1']);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => 'a1']);
 
     return $screen;
 }

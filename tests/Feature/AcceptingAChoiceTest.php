@@ -66,7 +66,7 @@ function theAcceptingScreen(AStackThatWasAsked $asking, AStackThatAccepts $accep
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
     $screen = new WhatAcceptingItCosts($asking, $accepting, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $check]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $check]);
 
     return $screen;
 }
@@ -192,7 +192,7 @@ it('says the session ended where it went while the acceptance was followed', fun
     $keychain = AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     $screen = new WhatAcceptingItCosts(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), anAcceptanceThatTakes(), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => THE_CHOICE]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => THE_CHOICE]);
     $screen->accept();
     $keychain->forget($stack->id());
     $screen->whileItRuns();

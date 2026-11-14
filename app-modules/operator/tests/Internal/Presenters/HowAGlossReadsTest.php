@@ -14,6 +14,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\TheGlossary;
 use Modules\Operator\Internal\Presenters\HowAGlossReads;
 use Modules\Operator\Internal\WhereAStackIs;
+use Modules\Stacks\Api\AStacksScreen;
 
 use function str_repeat;
 
@@ -28,7 +29,7 @@ it('offers the way to the longer gloss only where the glossary has one', functio
         AWord::explained('grab', 'Taking a release', ''),
     );
 
-    expect(new HowAGlossReads()->of($glossary, AWordInUse::named('pin'), whereTheGlossedStackIs())->goes)->toBe(whereTheGlossedStackIs()->wordAbout(AWordInUse::named('pin')))
+    expect(new HowAGlossReads()->of($glossary, AWordInUse::named('pin'), whereTheGlossedStackIs())->goes)->toBe(whereTheGlossedStackIs()->about(AStacksScreen::WordAbout, AWordInUse::named('pin')))
         ->and(new HowAGlossReads()->of($glossary, AWordInUse::named('grab'), whereTheGlossedStackIs())->goes)->toBeNull();
 });
 
@@ -36,7 +37,7 @@ it('draws a word the glossary does not carry as it came, with no gloss, and the 
     $gloss = new HowAGlossReads()->of(TheGlossary::of(), AWordInUse::named('Grabber'), whereTheGlossedStackIs());
 
     expect([$gloss->word, $gloss->short, $gloss->goes, $gloss->waits])->toBe(['Grabber', null, null, false])
-        ->and($gloss->asks)->toBe(whereTheGlossedStackIs()->wordAbout(AWordInUse::named('Grabber')));
+        ->and($gloss->asks)->toBe(whereTheGlossedStackIs()->about(AStacksScreen::WordAbout, AWordInUse::named('Grabber')));
 });
 
 it('offers no asking for a word the glossary carries', function (): void {

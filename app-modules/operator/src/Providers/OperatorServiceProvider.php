@@ -98,6 +98,9 @@ use Override;
  */
 final class OperatorServiceProvider extends ServiceProvider
 {
+    /** What the one thing a screen is about may be called, a slash included. */
+    private const string ITS_NAME_MAY_HOLD_A_SLASH = '.+';
+
     /** One opening a run: the container holds the one that remembers it has landed. */
     #[Override]
     public function register(): void
@@ -304,7 +307,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // reading what the machine sends.
             Router::native(AStacksScreen::Told->value, WhatYouAreToldAbout::class);
             Router::native(AStacksScreen::Alerts->value, WhereAlertsGoHere::class);
-            Router::native(AStacksScreen::AlertBackEnd->value, OneWayAlertsGo::class)->where('service', '.+');
+            Router::native(AStacksScreen::AlertBackEnd->value, OneWayAlertsGo::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
             Router::native(AStacksScreen::Playing->value, WhatIsPlayingNow::class);
 
             // How the line is shared, and changing it. Its own screen, because
@@ -321,7 +324,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // do before anything is agreed to. A copy's name can hold anything
             // the stack wrote, so it is encoded and takes the rest of the path.
             Router::native(AStacksScreen::Copy->value, TakingACopyHere::class);
-            Router::native(AStacksScreen::PutBack->value, PuttingACopyBack::class)->where('service', '.+');
+            Router::native(AStacksScreen::PutBack->value, PuttingACopyBack::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
 
             // Asking for help. A screen of its own, because a bundle is
             // described before it is written and read before it is handed on.
@@ -336,7 +339,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // cost before anything is agreed to. A download's name is whatever
             // the torrent was called, so it is encoded and takes the rest of
             // the path.
-            Router::native(AStacksScreen::LetGo->value, LettingADownloadGo::class)->where('service', '.+');
+            Router::native(AStacksScreen::LetGo->value, LettingADownloadGo::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
             Router::native(AStacksScreen::Downloads->value, PausingTheDownloads::class);
 
             // Which version of lemonfiber runs, apart from the services' updates,
@@ -356,17 +359,17 @@ final class OperatorServiceProvider extends ServiceProvider
             // Asking somebody in by a name another screen found no account
             // for. A name can hold anything the media server allows, for the
             // reason taking one out gives below.
-            Router::native(AStacksScreen::InviteNamed->value, AskingSomebodyIn::class)->where('service', '.+');
+            Router::native(AStacksScreen::InviteNamed->value, AskingSomebodyIn::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
 
             // Taking one member out. A screen of its own, reached from who is
             // in, because what taking them out would cost is read and drawn
             // before anything is agreed to. A name can hold anything the media
             // server allows, so it is encoded and takes the rest of the path.
-            Router::native(AStacksScreen::TakeOut->value, TakingSomebodyOut::class)->where('service', '.+');
+            Router::native(AStacksScreen::TakeOut->value, TakingSomebodyOut::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
 
             // Connecting one member's device, reached from who is in. Nothing
             // is asked on the way in; the code is shown when it is asked for.
-            Router::native(AStacksScreen::Device->value, ConnectingADeviceForThem::class)->where('service', '.+');
+            Router::native(AStacksScreen::Device->value, ConnectingADeviceForThem::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
 
             // What is already on the machine, before anything is moved in. Its
             // own screen, because the survey is read before any mode is chosen.
@@ -400,13 +403,13 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Words->value, WhatTheWordsMean::class);
             // A word can hold a slash, which the builder encodes and the
             // router decodes before matching, so the segment takes the rest.
-            Router::native(AStacksScreen::WordAbout->value, WhatTheWordsMean::class)->where('service', '.+');
+            Router::native(AStacksScreen::WordAbout->value, WhatTheWordsMean::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
 
             // Where one item got to, from whatever named it. A title can hold
             // a slash, so the segment takes the rest, as a word's does.
-            Router::native(AStacksScreen::Trace->value, WhereThisGotTo::class)->where('service', '.+');
-            Router::native(AStacksScreen::Accept->value, WhatAcceptingItCosts::class)->where('service', '.+');
-            Router::native(AStacksScreen::Run->value, WhatRunningACheckDisturbs::class)->where('service', '.+');
+            Router::native(AStacksScreen::Trace->value, WhereThisGotTo::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
+            Router::native(AStacksScreen::Accept->value, WhatAcceptingItCosts::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
+            Router::native(AStacksScreen::Run->value, WhatRunningACheckDisturbs::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
             Router::native(AStacksScreen::RunChecks->value, WhatRunningChecksDisturbs::class);
 
             // Watching one thing arrive, and the record of what was said about

@@ -89,7 +89,7 @@ function theThingScreen(
 
     $rehearsing ??= AStackThatRehearses::with(WhatStartingItWouldComeTo::rehearsed(Services::none(), TheServicesLeftOut::of(), AFootprint::estimated(0, Services::none()), WhatIsAlreadyRunning::these(Services::none())));
     $screen = new WhatToDoWithThis($supervising, $rehearsing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AStackThatSaysWhatItWaitsOn::saying(), AroundThePhone::listening(), WhatThePhoneKeeps::noListingYet());
-    $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
+    $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $named]);
 
     return $screen;
 }
@@ -612,14 +612,14 @@ it('refuses a route parameter that is not text', function (): void {
     // A parameter arrives as `mixed`, because the navigation stack's own
     // parameter array is untyped. Anything that is not a string names no stack.
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()));
-    $screen->setParams(['stack' => 42, 'service' => 'sonarr']);
+    $screen->setParams(['stack' => 42, 'about' => 'sonarr']);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
 });
 
 it('refuses a named thing that is not text', function (): void {
     $screen = theThingScreen(AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull()));
-    $screen->setParams(['stack' => theMachineTheseVerbsReach()->id()->stored(), 'service' => 42]);
+    $screen->setParams(['stack' => theMachineTheseVerbsReach()->id()->stored(), 'about' => 42]);
 
     expect($screen->thing()->named)->toBe('')
         ->and($screen->thing()->isRun())->toBeFalse();

@@ -74,7 +74,7 @@ final readonly class TheThingScreenOfTheShed
             AroundThePhone::listening(),
             WhatThePhoneKeeps::noListingYet(),
         );
-        $screen->setParams(['stack' => $stack->id()->stored(), 'service' => $named]);
+        $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $named]);
 
         return $screen;
     }

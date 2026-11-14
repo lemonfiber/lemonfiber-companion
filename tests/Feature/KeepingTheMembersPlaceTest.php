@@ -198,7 +198,7 @@ it('tells the place and has the page say why, when the device says the player mo
     $core = AStackThatKeepsThePlace::keeping();
     $titles = TheTitlesOnScreen::over($watching, $keychain, $player, $playing);
     $page = new WhatThisTitleIs($watching, ThePicturesOnScreen::none(), $keychain, $titles, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
-    $page->setParams(['stack' => $stack->id()->stored(), 'service' => 'a1']);
+    $page->setParams(['stack' => $stack->id()->stored(), 'about' => 'a1']);
     $moved = new WhenThePlayerMoves(new KeepsTheMembersPlace($player, $playing, $core, $keychain, $titles));
 
     $page->play();
