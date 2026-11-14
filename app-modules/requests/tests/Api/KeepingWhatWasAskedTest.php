@@ -78,9 +78,9 @@ function everythingTheRequestSays(Wanted $wanted): string
             unnamed: static fn(): Code => Code::of('unnamed'),
         )->shown(),
         $wanted->refusal(
-            was: static fn(TurnedDown $why): Code => Code::of(sprintf('refused "%s" %s', $why->reason(), $why->when(
-                then: static fn(string $when): Code => Code::of(sprintf('at %s', $when)),
-                unstated: static fn(): Code => Code::of('at no stated time'),
+            was: static fn(TurnedDown $why): Code => Code::of(sprintf('refused "%s" %s', $why->reason(), $why->when()->read(
+                read: static fn(Instant $when): Code => Code::of(sprintf('at %d', $when->epochSeconds())),
+                unreadable: static fn(): Code => Code::of('at no stated time'),
             )->shown())),
             wasNot: static fn(): Code => Code::of('not refused'),
         )->shown(),

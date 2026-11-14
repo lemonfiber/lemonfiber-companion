@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\ViewModels;
 
+use Modules\Operator\Internal\Presenters\AgoAsShown;
+
 /**
  * One request the household made, flattened for a template to read.
  *
@@ -37,7 +39,7 @@ final readonly class WhatOneRequestSays
      * @param int    $sizeFigure  the number that key is rendered with, whole and under a thousand
      * @param string $sizeUnit    the key for what the figure counts, or empty where there is none
      * @param string $refusedReason what they were told, where it was refused
-     * @param string $refusedAt     when, in the stack's own words, or empty where it said none
+     * @param AgoAsShown $refusedAt how long ago it was turned down, saying nothing where the stack recorded no moment
      *
      * The refusal is two fields rather than one composed sentence, for the size
      * pair's reason above: the reason is the stack's words and the moment is
@@ -62,7 +64,7 @@ final readonly class WhatOneRequestSays
         public int $sizeFigure,
         public string $sizeUnit,
         public string $refusedReason,
-        public string $refusedAt,
+        public AgoAsShown $refusedAt,
         public string $untitled,
         public string $kind,
     ) {}

@@ -32,9 +32,9 @@ final readonly class HowTheHouseholdsAskingReads
     }
 
     /** The stack answered, and this is what the house has asked for. */
-    public function these(Requested $wanted): WhatTheHouseholdTurnedOutToWant
+    public function these(Requested $wanted, Instant $now): WhatTheHouseholdTurnedOutToWant
     {
-        return $this->read($wanted, HowTheReadingWent::itCameBack(), AgoAsShown::saysNothing(), waits: false);
+        return $this->read($wanted, HowTheReadingWent::itCameBack(), AgoAsShown::saysNothing(), $now, waits: false);
     }
 
     /**
@@ -46,7 +46,7 @@ final readonly class HowTheHouseholdsAskingReads
      */
     public function kept(Requested $wanted, Instant $readAt, Instant $now, HowTheReadingWent $askedNow): WhatTheHouseholdTurnedOutToWant
     {
-        return $this->read($wanted, $askedNow, AgoAsShown::since($readAt, $now), waits: true);
+        return $this->read($wanted, $askedNow, AgoAsShown::since($readAt, $now), $now, waits: true);
     }
 
     /**
@@ -68,12 +68,12 @@ final readonly class HowTheHouseholdsAskingReads
         return $this->nothingRead(HowTheReadingWent::somethingStopped($why));
     }
 
-    private function read(Requested $wanted, HowTheReadingWent $askedNow, AgoAsShown $ago, bool $waits): WhatTheHouseholdTurnedOutToWant
+    private function read(Requested $wanted, HowTheReadingWent $askedNow, AgoAsShown $ago, Instant $now, bool $waits): WhatTheHouseholdTurnedOutToWant
     {
         $rows = [];
 
         foreach ($wanted as $one) {
-            $rows[] = new HowARequestReads()->in($one);
+            $rows[] = new HowARequestReads($now)->in($one);
         }
 
         // The count comes off the collection rather than off the rows, so the

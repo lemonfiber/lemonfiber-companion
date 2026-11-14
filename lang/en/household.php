@@ -108,7 +108,7 @@ return [
     'nothing_asked' => 'Nobody has asked for anything.',
     'nothing_asked_action' => 'What the household asks for shows up here as soon as somebody requests something.',
     'refused_because' => 'Turned down: :reason',
-    'refused_at' => 'Turned down at :when',
+    'refused_at' => 'Turned down :when',
     // A member's four tabs, each also the title of the screen it opens.
     'tabs' => [
         'home' => 'Home',

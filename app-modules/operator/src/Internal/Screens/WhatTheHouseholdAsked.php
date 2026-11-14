@@ -9,6 +9,7 @@ use function count;
 use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
+use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Decided;
 use Modules\Kernel\Api\Instant;
@@ -119,6 +120,7 @@ final class WhatTheHouseholdAsked extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
         private readonly KeepingWhatWasAsked $kept,
+        private readonly Clock $clock,
     ) {}
 
     /**
@@ -363,7 +365,7 @@ final class WhatTheHouseholdAsked extends NativeComponent
             these: function (Requested $wanted) use ($stack): WhatTheHouseholdTurnedOutToWant {
                 $this->kept->keep($stack->id(), $wanted);
 
-                return new HowTheHouseholdsAskingReads()->these($wanted);
+                return new HowTheHouseholdsAskingReads()->these($wanted, $this->clock->now());
             },
             met: function (Obstacle $why) use ($stack): WhatTheHouseholdTurnedOutToWant {
                 $this->letGoOfTheSession($why, $stack);

@@ -14,7 +14,9 @@ use function is_string;
 use function json_decode;
 use function json_encode;
 
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\HowARequestStands;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\RequestId;
@@ -118,9 +120,9 @@ final readonly class TheRequestsAsKept
             'refused' => $wanted->refusal(
                 was: static fn(TurnedDown $why): Written => new Written([[
                     'reason' => $why->reason(),
-                    'at' => $why->when(
-                        then: static fn(string $when): Written => new Written([$when]),
-                        unstated: static fn(): Written => new Written([]),
+                    'at' => $why->when()->read(
+                        read: static fn(Instant $when): Written => new Written([$when->epochSeconds()]),
+                        unreadable: static fn(): Written => new Written([]),
                     )->held,
                 ]]),
                 wasNot: static fn(): Written => new Written([]),
@@ -201,7 +203,11 @@ final readonly class TheRequestsAsKept
         $reason = self::textAt($fields, 'reason');
 
         foreach (self::listAt($fields, 'at') as $when) {
-            return TurnedDown::at(is_string($when) ? $when : throw KeptRequestsDoNotRead::at('at'), $reason);
+            return TurnedDown::at(match (true) {
+                is_int($when) => AMomentAsWritten::byTheStack($when),
+                is_string($when) => AMomentAsWritten::of($when),
+                default => throw KeptRequestsDoNotRead::at('at'),
+            }, $reason);
         }
 
         return TurnedDown::because($reason);

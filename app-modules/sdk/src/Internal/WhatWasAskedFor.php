@@ -10,6 +10,7 @@ use function is_bool;
 use function is_int;
 use function is_string;
 
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\RequestId;
@@ -178,16 +179,7 @@ final readonly class WhatWasAskedFor
             throw HouseholdIsUnreadable::refusal($by, $position);
         }
 
-        $at = self::under($refused, WireField::At);
-
-        // A refusal with no moment is ordinary — the stack records one where it
-        // has one — so this is the one absence here with an answer rather than
-        // a refusal, which is `Size::unknown()`'s argument on the row above.
-        if (! Required::isText($at)) {
-            return TurnedDown::because($reason);
-        }
-
-        return TurnedDown::at($at, $reason);
+        return TurnedDown::at(AMomentAsWritten::byTheStack(Optional::number($refused, WireField::At, HouseholdIsUnreadable::refusal($by, $position))), $reason);
     }
 
     /**

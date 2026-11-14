@@ -108,7 +108,7 @@ return [
     'nothing_asked' => 'Niemand heeft iets gevraagd.',
     'nothing_asked_action' => 'Wat het huishouden vraagt, verschijnt hier zodra iemand iets aanvraagt.',
     'refused_because' => 'Afgewezen: :reason',
-    'refused_at' => 'Afgewezen op :when',
+    'refused_at' => 'Afgewezen :when',
     'tabs' => [
         'home' => 'Thuis',
         'search' => 'Zoeken',

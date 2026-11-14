@@ -86,11 +86,8 @@
             @if ($request->refusedReason !== '')
                 <x-design::note>{{ __('household.refused_because', ['reason' => $request->refusedReason]) }}</x-design::note>
 
-                @if ($request->refusedAt !== '')
-                    {{-- In the stack's own words rather than this phone's
-                         timezone, so two people in the house do not
-                         disagree about when it happened. --}}
-                    <x-design::note>{{ __('household.refused_at', ['when' => $request->refusedAt]) }}</x-design::note>
+                @if ($request->refusedAt->said !== '')
+                    <x-design::note>{{ __('household.refused_at', ['when' => trans_choice($request->refusedAt->said, $request->refusedAt->count)]) }}</x-design::note>
                 @endif
             @endif
 

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\Instant;
@@ -40,6 +41,9 @@ use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheFieldsHold;
 use Tests\Support\WhatThePhoneKeeps;
+
+/** When the screen is drawn. */
+const WHEN_THE_REQUESTS_ARE_READ = 1_790_899_200;
 
 // The requests awaiting a decision are visible from a phone.
 //
@@ -91,7 +95,7 @@ function theRequestsScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatTheHouseholdAsked($wanting, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), $kept ?? WhatThePhoneKeeps::noRequestsYet());
+    $screen = new WhatTheHouseholdAsked($wanting, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), $kept ?? WhatThePhoneKeeps::noRequestsYet(), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_REQUESTS_ARE_READ)));
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -412,7 +416,7 @@ it('a refused request shows the reason on the row', function (): void {
             'A film nobody has seen',
             KindOfRequest::Something,
             Size::unknown(),
-            TurnedDown::at('2026-09-14T04:00:00Z', 'The disk is nearly full'),
+            TurnedDown::at(AMomentAsWritten::of('2026-09-14T04:00:00Z'), 'The disk is nearly full'),
         ),
         Wanted::of(RequestId::named('42'), 'Robin', 'A series somebody has', KindOfRequest::Something, Size::unknown(), HowARequestStands::said(Waiting::Here)),
     )));

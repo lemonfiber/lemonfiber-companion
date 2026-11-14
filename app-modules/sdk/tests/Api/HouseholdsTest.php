@@ -15,6 +15,7 @@ use function json_encode;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\AMember;
 use Modules\Kernel\Api\Code;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\RequestIsUnnamed;
@@ -495,9 +496,9 @@ it('reads the reason a request was refused, and when', function (): void {
     ]])), preserve_keys: false);
 
     $said = $wanted[0]->refusal(
-        was: static fn(TurnedDown $why): Code => Code::of(sprintf('%s/%s', $why->reason(), $why->when(
-            then: static fn(string $when): Code => Code::of($when),
-            unstated: static fn(): Code => Code::of('-'),
+        was: static fn(TurnedDown $why): Code => Code::of(sprintf('%s/%s', $why->reason(), $why->when()->read(
+            read: static fn(Instant $when): Code => Code::of(sprintf('%d', $when->epochSeconds())),
+            unreadable: static fn(): Code => Code::of('-'),
         )->shown())),
         wasNot: static fn(): Code => Code::of('not refused'),
     );
@@ -522,9 +523,9 @@ it('a refusal timed as whitespace is read as one the stack did not time', functi
         ]])), preserve_keys: false);
 
         $said = $wanted[0]->refusal(
-            was: static fn(TurnedDown $why): Code => Code::of($why->when(
-                then: static fn(string $when): Code => Code::of(sprintf('timed as `%s`', $when)),
-                unstated: static fn(): Code => Code::of('unstated'),
+            was: static fn(TurnedDown $why): Code => Code::of($why->when()->read(
+                read: static fn(Instant $when): Code => Code::of(sprintf('timed as `%d`', $when->epochSeconds())),
+                unreadable: static fn(): Code => Code::of('unstated'),
             )->shown()),
             wasNot: static fn(): Code => Code::of('not refused'),
         );
@@ -550,9 +551,9 @@ it('a refusal the stack did not time is read without one', function (): void {
     ]])), preserve_keys: false);
 
     $said = $wanted[0]->refusal(
-        was: static fn(TurnedDown $why): Code => Code::of($why->when(
-            then: static fn(string $when): Code => Code::of($when),
-            unstated: static fn(): Code => Code::of('unstated'),
+        was: static fn(TurnedDown $why): Code => Code::of($why->when()->read(
+            read: static fn(Instant $when): Code => Code::of(sprintf('%d', $when->epochSeconds())),
+            unreadable: static fn(): Code => Code::of('unstated'),
         )->shown()),
         wasNot: static fn(): Code => Code::of('not refused'),
     );
