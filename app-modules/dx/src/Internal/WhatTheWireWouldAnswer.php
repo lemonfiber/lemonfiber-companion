@@ -196,35 +196,32 @@ final readonly class WhatTheWireWouldAnswer
     /**
      * When a stand-in session ends.
      *
-     * One of the two places in this whole surface whose *shape* a reader
+     * One of the two places in this whole surface whose *value* a reader
      * insists on beyond its type ({@see WHEN_A_CHANGE_WAS_MADE} is the other):
-     * {@see \Lemonfiber\Sdk\Admitted::of()} puts `until` through `Stamp`, and
-     * a stamp it cannot read is an `UnreadableResponse` — which arrives at the
-     * sign-in screen as *this stack answered in a way this app cannot read*,
-     * about a door that answered perfectly well. Nearly every other string in a synthesised payload is
-     * free-form and carries its own field name, which is what makes a stand-in
-     * payload obvious on a screen; this one cannot.
+     * {@see \Lemonfiber\Sdk\Admitted::of()} reads `until` as whole seconds
+     * since the epoch, and the integer a synthesised payload carries is a
+     * moment in 1970, so the session would have ended before it began and the
+     * sign-in screen would be told the door turned it away.
      *
      * {@see LongAfterAnyRun}, so it is never a session that has already ended.
      */
-    private const string WHEN_A_SESSION_ENDS = LongAfterAnyRun::WRITTEN;
+    private const int WHEN_A_SESSION_ENDS = LongAfterAnyRun::IN_SECONDS;
 
     /**
      * When every stand-in change was made.
      *
-     * The other field whose shape a reader insists on. The core declares a
-     * change's `at` as seconds since the epoch written in digits, and the
-     * generated type says only `string` — so a synthesised `at` is the word
-     * `at`, `Records` refuses it as it would refuse any stack that wrote one,
-     * and the record screen draws an answer it could not read against a machine
-     * answering everything.
+     * The other field whose value a reader insists on. The core counts a
+     * change's `at` in whole seconds since the epoch, and the integer a
+     * synthesised payload carries is three seconds past it, so the record
+     * screen would date every change to 1970 against a machine answering
+     * everything.
      *
      * In the past, so every change reads with an age rather than as something
      * yet to happen, and written rather than counted from a clock for the same
      * reason {@see LongAfterAnyRun} is. Not `0`, which is how the stack says
      * its clock could not be read.
      */
-    private const string WHEN_A_CHANGE_WAS_MADE = '1700000000';
+    private const int WHEN_A_CHANGE_WAS_MADE = 1_700_000_000;
 
     /**
      * How many lines a stand-in scrollback carries.
