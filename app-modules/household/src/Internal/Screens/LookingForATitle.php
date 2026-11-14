@@ -71,7 +71,7 @@ final class LookingForATitle extends NativeComponent
     public ?WhatTheSearchShows $shown = null;
 
     /** What the member chose to search among, by the word its chip hands back; the first offered until they choose. */
-    public string $among = '';
+    public ?string $among = null;
 
     /** What the member can search among, read once on the tab's first frame. */
     public ?WhatCanBeAskedFor $askable = null;

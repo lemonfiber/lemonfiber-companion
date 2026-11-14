@@ -72,6 +72,12 @@ it('draws no row of one chip, and says the tab is for films and series where tha
     'one album and nothing else' => [WhatCanBeAskedFor::listing()->and(KindOfTitle::Music, UnitOfTitle::Album), 'household.search.explained_everything'],
 ]);
 
+it('draws a row of two chips where two kinds are listed', function (): void {
+    $listed = WhatCanBeAskedFor::listing()->and(KindOfTitle::Film)->and(KindOfTitle::Books, UnitOfTitle::Book);
+
+    expect(theChipsOffered(theChipsFor($listed, '')->kinds))->toBe(['household.search.among.films-and-series=films-and-series*', 'household.search.among.books=books']);
+});
+
 it('says every chip in every language, each in words of its own', function (string $locale): void {
     app()->setLocale($locale);
     $listed = WhatCanBeAskedFor::listing()

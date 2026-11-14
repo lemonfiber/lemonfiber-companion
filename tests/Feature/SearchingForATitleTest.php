@@ -501,6 +501,8 @@ it('opens an album with its unit and maker, lettered with its name, and asks for
         ->and($drawn->said())->toContain('Rumours', 'Asking for Rumours waits for a yes.', aSearchLine('household.search.line_by', ['by' => 'Fleetwood Mac', 'kind' => aSearchLine('household.unit.album'), 'year' => '1977', 'stands' => aSearchLine('household.search.askable')]))
         ->and($page->poster()?->titled)->toBe('Rumours')
         ->and($page->poster()?->pictured)->toBeNull()
+        ->and($page->poster()?->filling)->toBe(['title' => 'Rumours', 'year' => '1977'])
+        ->and(theFoundPage($asking, AFoundTitle::curated('mb-2', KindOfTitle::Music, UnitOfTitle::Artist, 'Fleetwood Mac', '', WhenItCameOut::unstated(), WhereAFoundTitleStands::Askable))->poster()?->filling)->toBe(['title' => 'Fleetwood Mac'])
         ->and($asking->rehearsed())->toBe(['music/album mb-1'])
         ->and($asking->asked())->toHaveCount(1)
         ->and(theFoundPage($asking, rumours(), carried: false)->poster())->toBeNull();

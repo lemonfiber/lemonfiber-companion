@@ -8,6 +8,7 @@ use function count;
 
 use Modules\Household\Internal\ViewModels\AChoiceAsShown;
 use Modules\Household\Internal\ViewModels\WhatCanBeSearchedAsShown;
+use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\WhatCanBeAskedFor;
 use Modules\Kernel\Api\WhichTitles;
 
@@ -55,7 +56,7 @@ final readonly class HowWhatCanBeAskedForReads
         $kinds = [];
 
         foreach ($can->kinds() as $kind) {
-            $kinds[] = new AChoiceAsShown(said: $kind->unitWord() === '' ? self::AMONG_FILMS_AND_SERIES : sprintf(self::AMONG, $kind->kindWord()), word: $kind->kindWord(), chosen: $kind->kindWord() === $chosen->kindWord());
+            $kinds[] = new AChoiceAsShown(said: $kind->either(filmsAndSeries: static fn(): InWords => new InWords(self::AMONG_FILMS_AND_SERIES), of: static fn(KindOfTitle $of): InWords => new InWords(sprintf(self::AMONG, $of->value)))->said, word: $kind->kindWord(), chosen: $kind->kindWord() === $chosen->kindWord());
         }
 
         return $kinds;
