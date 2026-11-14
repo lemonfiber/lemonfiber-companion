@@ -553,7 +553,7 @@ it('refuses a route naming no service', function (): void {
 });
 
 it('the screen is registered under the route that reaches it', function (): void {
-    $resolved = NativeRouter::resolve(AStacksScreen::Logs->forTheStacksService(
+    $resolved = NativeRouter::resolve(AStacksScreen::Logs->forTheStacks(
         theStackWhoseServiceIsRead()->id(),
         ServiceId::called('gluetun'),
     ));
@@ -566,7 +566,7 @@ it('the builder and the router agree about which service a path names', function
     // A builder that put them in the wrong segments would still resolve — each
     // pattern matches any single segment — and would open another machine's
     // service.
-    $resolved = NativeRouter::resolve(AStacksScreen::Logs->forTheStacksService(
+    $resolved = NativeRouter::resolve(AStacksScreen::Logs->forTheStacks(
         StackId::rememberedAs('a-stack'),
         ServiceId::called('gluetun'),
     ));

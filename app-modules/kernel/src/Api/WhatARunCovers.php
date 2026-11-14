@@ -12,7 +12,7 @@ use Closure;
  * Either way the checks that disturb are included; a run narrowed to one
  * check is {@see ACheckThatDisturbs}, which the stack names for its finding.
  */
-final readonly class WhatARunCovers
+final readonly class WhatARunCovers implements WhatAScreenIsAbout
 {
     /** The word a run of every check is spelled with where a family's would be. */
     public const string EVERY = 'every';
@@ -57,5 +57,10 @@ final readonly class WhatARunCovers
     public function either(Closure $every, Closure $family): object
     {
         return $this->family instanceof Category ? $family($this->family) : $every();
+    }
+
+    public function namedInAPath(): string
+    {
+        return $this->word();
     }
 }

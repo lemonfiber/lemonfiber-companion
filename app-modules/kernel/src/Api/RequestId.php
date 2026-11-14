@@ -20,7 +20,7 @@ use function trim;
  * than at each caller**, since the decision is one where acting on the wrong
  * subject is the whole harm.
  */
-final readonly class RequestId
+final readonly class RequestId implements WhatAScreenIsAbout
 {
     private function __construct(private string $reference) {}
 
@@ -44,5 +44,10 @@ final readonly class RequestId
     public function is(self $other): bool
     {
         return $this->reference === $other->reference;
+    }
+
+    public function namedInAPath(): string
+    {
+        return $this->reference;
     }
 }

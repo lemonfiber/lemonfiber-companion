@@ -19,7 +19,7 @@ use function trim;
  * compiles, ships, and shows the operator `vpn.egress-match` where a sentence
  * should be.
  */
-final readonly class Check
+final readonly class Check implements WhatAScreenIsAbout
 {
     private function __construct(private string $check) {}
 
@@ -42,5 +42,10 @@ final readonly class Check
     public function is(self $other): bool
     {
         return $this->check === $other->check;
+    }
+
+    public function namedInAPath(): string
+    {
+        return $this->check;
     }
 }

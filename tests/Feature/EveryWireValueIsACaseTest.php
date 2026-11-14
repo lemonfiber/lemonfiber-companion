@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowAVolumeWasRead;
+use Modules\Kernel\Api\HowDeliveryStands;
 use Modules\Kernel\Api\HowDriftWasJudged;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
@@ -31,6 +32,7 @@ use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheLineWasMeasured;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
+use Modules\Kernel\Api\KindOfAlertBackEnd;
 use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\Medium;
@@ -276,6 +278,25 @@ it('every kind of notification the contract describes has a case', function (): 
 
     expect($kinds)->not->toBe([], 'no notification union was found in the generated alert envelope');
     expect(TheWireUnions::valuesOf(KindOfNotification::cases()))->toBe($kinds);
+});
+
+it('every way delivery can stand, and every kind of back-end, the contract describes has a case', function (): void {
+    $notify = TheGeneratedEnvelopes::theGeneratedEnvelope('NotifyEnvelope');
+    $states = TheWireUnions::unionIn($notify, 'state');
+    $backEnds = [];
+
+    foreach (explode('kind: ', $notify) as $after) {
+        $union = TheWireUnions::unionIn(sprintf('kind: %s', $after), 'kind');
+
+        if ($union !== [] && $union !== TheWireUnions::valuesOf(KindOfNotification::cases())) {
+            $backEnds = $union;
+        }
+    }
+
+    expect($states)->not->toBe([], 'no delivery state was found in the generated notify envelope')
+        ->and($backEnds)->not->toBe([], 'no kind of back-end was found in the generated notify envelope')
+        ->and(TheWireUnions::valuesOf(HowDeliveryStands::cases()))->toBe($states)
+        ->and(TheWireUnions::valuesOf(KindOfAlertBackEnd::cases()))->toBe($backEnds);
 });
 
 it('every settler the contract describes has a case', function (): void {

@@ -13,7 +13,7 @@ use function trim;
  * Its own type rather than text, so a word and a service name cannot be
  * handed to each other's routes.
  */
-final readonly class AWordInUse
+final readonly class AWordInUse implements WhatAScreenIsAbout
 {
     private function __construct(private string $word) {}
 
@@ -37,5 +37,10 @@ final readonly class AWordInUse
     public function is(self $other): bool
     {
         return mb_strtolower($other->word) === mb_strtolower($this->word);
+    }
+
+    public function namedInAPath(): string
+    {
+        return $this->word;
     }
 }

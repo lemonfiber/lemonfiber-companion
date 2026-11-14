@@ -67,7 +67,7 @@ final readonly class PluginInstalls
             self::carries($data, PluginsField::Install) => ThePlugins::about($installed, $sources, $agreement, PluginInstallReports::in(self::table($data, PluginsField::Install))),
             self::carries($data, PluginsField::Update) => ThePlugins::about($installed, $sources, $agreement, PluginUpdatesAndRemovals::update(self::table($data, PluginsField::Update))),
             self::carries($data, WireField::Removal) => ThePlugins::about($installed, $sources, $agreement, PluginUpdatesAndRemovals::removal(self::table($data, WireField::Removal))),
-            self::carries($data, PluginsField::Proof) => ThePlugins::about($installed, $sources, $agreement, self::reproof(self::table($data, PluginsField::Proof))),
+            self::carries($data, WireField::Proof) => ThePlugins::about($installed, $sources, $agreement, self::reproof(self::table($data, WireField::Proof))),
             self::carries($data, PluginsField::Demand) => ThePlugins::about($installed, $sources, $agreement, PluginRecipeRuns::in(self::table($data, PluginsField::Demand))),
             default => ThePlugins::listed($installed, $sources, $outOfContract),
         };

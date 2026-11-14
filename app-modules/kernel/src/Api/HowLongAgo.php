@@ -100,6 +100,12 @@ enum HowLongAgo: string
         return sprintf('health.ago.%s', $this->value);
     }
 
+    /** What a moment this far ahead is called on a screen, as a key: *in three hours*. */
+    public function comingOnTheScreen(): string
+    {
+        return sprintf('health.in.%s', $this->value);
+    }
+
     /** What a span in this unit is called on a screen, as a key: *for three hours*. */
     public function heldOnTheScreen(): string
     {

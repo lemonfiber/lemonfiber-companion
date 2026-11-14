@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\AnAction;
+use Modules\Kernel\Api\WhatAScreenIsAbout;
 use Tests\Support\Module;
 use Tests\Support\Stores;
 
@@ -36,6 +37,7 @@ pest()->group('holds:bootstrap/Composition');
  */
 const WHAT_THE_KERNELS_VALUES_IMPLEMENT = [
     AnAction::class => 'the name the stack serves an action by, which every action the kernel names spells for itself',
+    WhatAScreenIsAbout::class => 'the text a screen\'s path names one thing by, which every value a path can carry spells for itself',
 ];
 
 // G8 — every port in Modules\Kernel, and every port a store answers, is bound, once, in the composition root, and something takes it

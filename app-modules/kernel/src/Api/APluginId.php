@@ -9,7 +9,7 @@ use function trim;
 /**
  * The name a plugin is installed and recorded under, as a screen about that plugin is reached by.
  */
-final readonly class APluginId
+final readonly class APluginId implements WhatAScreenIsAbout
 {
     private function __construct(private string $named) {}
 
@@ -25,6 +25,11 @@ final readonly class APluginId
 
     /** The id, as the record spells it. */
     public function named(): string
+    {
+        return $this->named;
+    }
+
+    public function namedInAPath(): string
     {
         return $this->named;
     }

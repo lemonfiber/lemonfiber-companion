@@ -50,6 +50,7 @@ use Modules\Kernel\Api\KeepingKeysForApps;
 use Modules\Kernel\Api\KeepingPhoneKeys;
 use Modules\Kernel\Api\KeepingThePlace;
 use Modules\Kernel\Api\KnowingWhatAStackOffers;
+use Modules\Kernel\Api\KnowingWhereAlertsGo;
 use Modules\Kernel\Api\Linking;
 use Modules\Kernel\Api\MakingPairingCodes;
 use Modules\Kernel\Api\Measuring;
@@ -95,6 +96,7 @@ use Modules\Sdk\Api\Acceptors;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\Advisers;
+use Modules\Sdk\Api\AlertDeliveries;
 use Modules\Sdk\Api\Allowers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
@@ -294,6 +296,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // member's read is nothing but the member.
         $this->app->bind(Owing::class, TheirOwn::class);
         $this->app->bind(ChoosingHowTheyAreTold::class, WaysOfBeingTold::class);
+        $this->app->bind(KnowingWhereAlertsGo::class, AlertDeliveries::class);
         $this->app->bind(Watching::class, Shelves::class);
 
         // A grant for this device to play a member's titles, asked of the core

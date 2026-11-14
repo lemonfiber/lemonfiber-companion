@@ -28,7 +28,7 @@ use function trim;
  * a name nobody can read is a name that cannot be matched against the stack,
  * and an engine producing one has a fault.
  */
-final readonly class ServiceId
+final readonly class ServiceId implements WhatAScreenIsAbout
 {
     private function __construct(private string $named) {}
 
@@ -60,5 +60,10 @@ final readonly class ServiceId
     public function isTheSameAs(self $other): bool
     {
         return $this->named === $other->named;
+    }
+
+    public function namedInAPath(): string
+    {
+        return $this->named;
     }
 }

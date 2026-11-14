@@ -28,6 +28,14 @@ final readonly class AgoAsShown
         return new self(HowTheRecordReads::CLOCK_UNREADABLE, 0);
     }
 
+    /** How far ahead a moment is, counted from the frame's moment. */
+    public static function until(Instant $then, Instant $now): self
+    {
+        $unit = HowLongAgo::since($now, $then);
+
+        return new self($unit->comingOnTheScreen(), $unit->howManySince($now, $then));
+    }
+
     /** From how long ago it was, counted from the frame's moment. */
     public static function from(HowLongAgo $ago, Instant $taken, Instant $now): self
     {

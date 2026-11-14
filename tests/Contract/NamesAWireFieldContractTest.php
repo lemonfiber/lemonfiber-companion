@@ -38,6 +38,7 @@ use Modules\Sdk\Api\Fields\LogField;
 use Modules\Sdk\Api\Fields\MigrationField;
 use Modules\Sdk\Api\Fields\MusicField;
 use Modules\Sdk\Api\Fields\NewsItemsField;
+use Modules\Sdk\Api\Fields\NotifyField;
 use Modules\Sdk\Api\Fields\NotifyMineField;
 use Modules\Sdk\Api\Fields\OutboundField;
 use Modules\Sdk\Api\Fields\PairingField;
@@ -144,6 +145,7 @@ function everyFieldNamedOnTheWire(): array
         ...PausingField::cases(),
         ...AskableField::cases(),
         ...AskableKindsField::cases(),
+        ...NotifyField::cases(),
         ...NotifyMineField::cases(),
         ...PlayingField::cases(),
         ...StoredField::cases(),

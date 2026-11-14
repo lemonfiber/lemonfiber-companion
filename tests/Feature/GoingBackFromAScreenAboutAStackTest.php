@@ -39,7 +39,7 @@ function everyScreenAboutAStackWithItsMenu(): array
             continue;
         }
 
-        $screen->setParams($case->alsoNeedsAService() ? ['stack' => $stack, 'service' => 'gluetun'] : ['stack' => $stack]);
+        $screen->setParams($case->isAboutOneThing() ? ['stack' => $stack, 'service' => 'gluetun'] : ['stack' => $stack]);
         $screens[$case->name] = [$case, $screen];
     }
 

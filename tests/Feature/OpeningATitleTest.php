@@ -247,7 +247,7 @@ it('is drawn under Home, opened over it, with the bar hidden', function (): void
 });
 
 it('is the screen the router opens at a title\'s path', function (): void {
-    $resolved = NativeRouter::resolve(AStacksScreen::Title->forTheStacksTitle(theStackATitleIsOn()->id(), HoldingId::called('a1')));
+    $resolved = NativeRouter::resolve(AStacksScreen::Title->forTheStacks(theStackATitleIsOn()->id(), HoldingId::called('a1')));
 
     expect($resolved['class'] ?? null)->toBe(WhatThisTitleIs::class);
 });

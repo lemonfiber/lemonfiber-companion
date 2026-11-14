@@ -112,7 +112,7 @@ function whatThisScreenDraws(string $class, array $params): WhatTheDeviceWouldDr
  *
  * Read off the two enums rather than off the paths, because the placeholders
  * are what a screen is handed and the paths have already had them filled in.
- * `alsoNeedsAService()` is the enum's own answer, so a case added with a second
+ * `isAboutOneThing()` is the enum's own answer, so a case added with a second
  * placeholder is covered here without anybody remembering.
  *
  * @return array<string, array<string, string>>
@@ -126,7 +126,7 @@ function everyRouteTheAppServes(string $stack): array
     }
 
     foreach (AStacksScreen::cases() as $case) {
-        $routes[sprintf('AStacksScreen::%s', $case->name)] = $case->alsoNeedsAService()
+        $routes[sprintf('AStacksScreen::%s', $case->name)] = $case->isAboutOneThing()
             ? ['stack' => $stack, 'service' => 'gluetun']
             : ['stack' => $stack];
     }

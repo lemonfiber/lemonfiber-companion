@@ -36,18 +36,18 @@ final readonly class WhereTheHouseIs
     /** One title on this house's shelf, opened from what shows it. */
     public function title(HoldingId $title): string
     {
-        return AStacksScreen::Title->forTheStacksTitle($this->stack, $title);
+        return AStacksScreen::Title->forTheStacks($this->stack, $title);
     }
 
     /** One of a member's music or book asks, on this house. */
     public function asked(RequestId $request): string
     {
-        return AStacksScreen::Asked->forTheStacksRequest($this->stack, $request);
+        return AStacksScreen::Asked->forTheStacks($this->stack, $request);
     }
 
     /** One title a member's search found, on this house. */
     public function found(AFoundTitle $title): string
     {
-        return AStacksScreen::Found->forTheStacksFoundTitle($this->stack, $title);
+        return AStacksScreen::Found->forTheStacks($this->stack, $title);
     }
 }

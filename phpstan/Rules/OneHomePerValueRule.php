@@ -11,6 +11,7 @@ use Lemonfiber\Companion\PHPStan\Collectors\ConstantValues;
 use Lemonfiber\Companion\PHPStan\Rules\OneHome\Clash;
 use Lemonfiber\Companion\PHPStan\Rules\OneHome\Coincidences;
 use Lemonfiber\Companion\PHPStan\Rules\OneHome\Home;
+use Lemonfiber\Companion\PHPStan\Rules\OneHome\Reach;
 use PhpParser\Node;
 use PHPStan\Analyser\Scope;
 use PHPStan\Node\CollectedDataNode;
@@ -49,7 +50,7 @@ final readonly class OneHomePerValueRule implements Rule
     {
         return array_map(
             static fn(Clash $clash): IdentifierRuleError => RuleErrorBuilder::message(sprintf(
-                'D9 — %s holds %s, and so does %s. One value has one home: keep it where it belongs and refer to it from the others. A duration, a limit or a threshold that is a default somebody could tune belongs on a value with a named standard(); where the two only coincide and mean different things, name one in Coincidences with what it means (D9).',
+                'D9 — %s holds %s, and so does %s. One value has one home: keep it where it belongs and refer to it from the others. A duration, a limit or a threshold that is a default somebody could tune belongs on a value with a named standard(); where two that can refer to each other only coincide and mean different things, name one in Coincidences with what it means (D9).',
                 $clash->home->name,
                 $clash->home->value,
                 implode(', ', array_map(static fn(Home $other): string => $other->name, $clash->others)),
@@ -58,7 +59,7 @@ final readonly class OneHomePerValueRule implements Rule
                 ->file($clash->home->file)
                 ->line($clash->home->line)
                 ->build(),
-            Clash::among($node->get(ConstantValues::class), Coincidences::named()),
+            Clash::among($node->get(ConstantValues::class), Coincidences::named(), Reach::declared()),
         );
     }
 }

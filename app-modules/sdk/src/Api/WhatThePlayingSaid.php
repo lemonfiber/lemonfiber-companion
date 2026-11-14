@@ -99,7 +99,7 @@ final readonly class WhatThePlayingSaid
             throw PlayingIsUnreadable::missing($where);
         }
 
-        $member = self::text($row, $where, PlayingField::Member);
+        $member = self::text($row, $where, WireField::Member);
         $title = self::text($row, $where, WireField::Title);
         $device = self::text($row, $where, WireField::Device);
         $paused = self::paused($row, $where);

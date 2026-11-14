@@ -22,6 +22,7 @@ use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HowAServiceRuns;
+use Modules\Kernel\Api\HowDeliveryStands;
 use Modules\Kernel\Api\HowDriftWasJudged;
 use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
@@ -44,6 +45,7 @@ use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
+use Modules\Kernel\Api\KindOfAlertBackEnd;
 use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\Medium;
@@ -126,6 +128,8 @@ final readonly class TheWireUnions
         Severity::class => 'severity',
         HowTheCheckAfterAStartEnded::class => 'outcome',
         KindOfNotification::class => 'notification',
+        HowDeliveryStands::class => 'state',
+        KindOfAlertBackEnd::class => 'kind',
         WhoSettledIt::class => 'whose',
         HowItWasReached::class => 'how',
         HowAServiceRuns::class => 'state',

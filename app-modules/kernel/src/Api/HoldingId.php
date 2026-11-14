@@ -19,7 +19,7 @@ use function trim;
  * would be holding a second copy of how the library works, and would be wrong
  * the first time the route home is not the route it assumed.
  */
-final readonly class HoldingId
+final readonly class HoldingId implements WhatAScreenIsAbout
 {
     private function __construct(private string $named) {}
 
@@ -37,6 +37,11 @@ final readonly class HoldingId
 
     /** The identifier, exactly as the core spelled it. */
     public function named(): string
+    {
+        return $this->named;
+    }
+
+    public function namedInAPath(): string
     {
         return $this->named;
     }

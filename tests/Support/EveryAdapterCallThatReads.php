@@ -189,6 +189,7 @@ use Modules\Kernel\Api\WordsToChooseFrom;
 use Modules\Sdk\Api\Acceptors;
 use Modules\Sdk\Api\Adjustments;
 use Modules\Sdk\Api\Advisers;
+use Modules\Sdk\Api\AlertDeliveries;
 use Modules\Sdk\Api\Allowers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
@@ -415,6 +416,7 @@ final readonly class EveryAdapterCallThatReads
                 => new Askers($clients, $entropy)->ask($stack, $session, self::aFoundTitleToSpoilTheAnswerTo(), IdempotencyKey::of('an-ask')),
             'WaysOfBeingTold::offered' => static fn(): object => new WaysOfBeingTold($clients, $entropy)->offered($stack, $session),
             'WaysOfBeingTold::choose' => static fn(): object => new WaysOfBeingTold($clients, $entropy)->choose($stack, $session, WaysChosen::byId('mail')),
+            'AlertDeliveries::whereAlertsGoOn' => static fn(): object => new AlertDeliveries($clients)->whereAlertsGoOn($stack, $session),
             'Finders::whatCanBeAskedFor' => static fn(): object => new Finders($clients)->whatCanBeAskedFor($stack, $session),
             'Finders::firstPage' => static fn(): object
                 => new Finders($clients)->firstPage($stack, $session, WhatToLookFor::typed('dune')),

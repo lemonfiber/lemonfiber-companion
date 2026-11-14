@@ -16,7 +16,7 @@ use function trim;
  * core again, when it is asked for and when its poster is read. Nothing here
  * says where its artwork lives: the core serves that itself.
  */
-final readonly class AFoundTitle
+final readonly class AFoundTitle implements WhatAScreenIsAbout
 {
     private function __construct(
         private string $id,
@@ -105,5 +105,10 @@ final readonly class AFoundTitle
     public function named(): string
     {
         return sprintf('%s|%s|%s', $this->kind->value, $this->among->word(), $this->id);
+    }
+
+    public function namedInAPath(): string
+    {
+        return $this->id;
     }
 }
