@@ -17,7 +17,7 @@ use Modules\Connection\Internal\NotifyingKept;
 final readonly class NotifyingInTheDatabase implements NotifyingKept
 {
     use KeepsOneRowAStack;
-    private const string TABLE = 'connection_notifying_kept';
+    public const string TABLE = 'connection_notifying_kept';
 
     public function __construct(protected ConnectionInterface $database) {}
 }

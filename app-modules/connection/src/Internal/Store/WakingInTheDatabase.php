@@ -16,7 +16,7 @@ use Modules\Connection\Internal\WakingKept;
 final readonly class WakingInTheDatabase implements WakingKept
 {
     use KeepsOneRowAStack;
-    private const string TABLE = 'connection_waking_kept';
+    public const string TABLE = 'connection_waking_kept';
 
     public function __construct(protected ConnectionInterface $database) {}
 }
