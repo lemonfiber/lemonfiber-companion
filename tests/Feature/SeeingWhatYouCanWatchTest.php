@@ -274,6 +274,7 @@ it('draws a music or book ask with its kind, opening its own page, named or not,
         ['household.not_yet_named.theirs.author', 'household.asked.getting', ['title' => 'household.not_yet_named.theirs.author', 'standing' => 'household.asked.getting'], sprintf('/stacks/%s/asked/books-2', $stack)],
     ])
         ->and($rows[0]->posters[0]->plays)->toBeNull()
+        ->and($rows[0]->posters[0]->filling)->toBe(['title' => 'Rumours'])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Here · Album');
 });
 

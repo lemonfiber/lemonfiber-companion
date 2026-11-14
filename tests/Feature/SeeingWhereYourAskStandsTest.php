@@ -71,7 +71,8 @@ it('draws an arrived album with its kind, here as the action not usable, and whe
     $screen = thePageOfAnAsk(AMemberWhoIsOwed::asking(whatTheyAskedOfMusicAndBooks()), 'music-3');
     $ask = $screen->ask()->ask;
 
-    expect($ask?->title)->toBe('Rumours')
+    expect($screen->ask()->cameBack)->toBeTrue()
+        ->and($ask?->title)->toBe('Rumours')
         ->and($ask?->kind)->toBe('household.request_kind.album')
         ->and($ask?->standing)->toBe('household.asked.here')
         ->and($ask?->foundIn)->toBe(WhereAnAskIsKept::IN_THE_MUSIC)
