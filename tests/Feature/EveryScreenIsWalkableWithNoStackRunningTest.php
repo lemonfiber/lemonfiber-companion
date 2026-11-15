@@ -92,12 +92,18 @@ function whatEachScreenDrewOf(AStandInStack $machine, array $only = []): array
  * A word the second segment of a screen's path can carry.
  *
  * Most name something free, a service, a title or a download, and any name
- * reaches the stack. Pausing names one of two directions, and a word outside
- * them is refused before the stack is asked anything.
+ * reaches the stack. Pausing names one of two directions and a run names whole
+ * seconds since the epoch, and a word outside them is refused before the stack
+ * is asked anything.
  */
 function whatTheSecondSegmentNames(AStacksScreen $case): string
 {
-    return $case === AStacksScreen::Downloads ? WhatToDoWithTheDownloads::Pause->value : 'gluetun';
+    $words = [
+        AStacksScreen::Downloads->name => WhatToDoWithTheDownloads::Pause->value,
+        AStacksScreen::RunBack->name => '1790150000',
+    ];
+
+    return $words[$case->name] ?? 'gluetun';
 }
 
 /**

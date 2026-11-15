@@ -211,6 +211,26 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'What refusing each destination the plugin reaches stops, in the same order. The same account reaches the operator as each request\'s `cost` on the outbound screen (`OutboundEnvelope.on_behalf[].cost`), read and drawn beside the switch that refuses it (`N10-R3`).',
         ],
         [
+            'path' => 'PluginsEnvelope.install.would.forms',
+            'because' => 'The forms the plugin\'s services join, as its manifest names them. No requirement asks for them: the plugins screen draws what a plugin does and what it reaches, and which forms bring its services up is the stack\'s to settle when a form starts.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.installed[].forms',
+            'because' => 'The forms each installed plugin\'s services join, for `PluginsEnvelope.install.would.forms`\'s reason.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.forms',
+            'because' => 'An update\'s account of the forms the plugin joins, for `PluginsEnvelope.install.would.forms`\'s reason.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.install.awaits',
+            'because' => 'The forms whose start brings an installed plugin\'s stopped services up, where none of them was running at the install. No requirement asks for it; the install\'s report draws what changed and what was checked, and its services are read on the stack\'s screens as running or not.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.awaits',
+            'because' => 'The forms an updated plugin waits on, for `PluginsEnvelope.install.awaits`\'s reason.',
+        ],
+        [
             'path' => 'PluginsEnvelope.install.would.description',
             'because' => 'What the plugin does, in its author\'s words. No requirement asks for it here, and its name and version say which plugin it is.',
         ],

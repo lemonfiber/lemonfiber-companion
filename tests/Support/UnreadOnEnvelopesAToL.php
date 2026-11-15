@@ -603,6 +603,10 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'The profiles the verb activated, for `PreviewEnvelope.profiles`\'s reason.',
         ],
         [
+            'path' => 'LifecycleEnvelope.plan.vanished',
+            'because' => 'Each installed plugin naming a form this stack no longer declares, for `PreviewEnvelope.vanished`\'s reason.',
+        ],
+        [
             'path' => 'LifecycleEnvelope.plan.running',
             'because' => 'Which of the services were already running when the verb was asked for. It is drawn '
                 . 'before a start, from the rehearsal (`N18-R10`); after one, `services` says where each ended up '

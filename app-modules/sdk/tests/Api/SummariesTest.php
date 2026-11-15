@@ -298,11 +298,12 @@ it('reads the downloads the stack says are moving, by name, in its order', funct
         ->and(count(Summaries::in(aDashboardSaying(aHealthSummary()))->downloadsMoving()))->toBe(0);
 });
 
-it('names no download where the stack could not say which are moving', function (): void {
-    $unavailable = ['panel' => 'unavailable', 'data' => ['reason' => 'The download client did not answer']];
-
-    expect(count(Summaries::in(aDashboardSaying(aHealthSummary(), transfers: $unavailable))->downloadsMoving()))->toBe(0);
-});
+it('names no download where the stack has not said which are moving', function (array $transfers): void {
+    expect(count(Summaries::in(aDashboardSaying(aHealthSummary(), transfers: $transfers))->downloadsMoving()))->toBe(0);
+})->with([
+    'its source did not answer' => [['panel' => 'unavailable', 'data' => ['reason' => 'The download client did not answer']]],
+    'its source is still being read' => [['panel' => 'pending']],
+]);
 
 it('refuses a summary whose downloads cannot be read, rather than naming fewer', function (mixed $transfers, string $said): void {
     expect(whyTheSummaryWasRefused(aDashboardSaying(aHealthSummary(), transfers: $transfers)))->toContain($said);

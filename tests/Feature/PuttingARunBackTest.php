@@ -333,7 +333,7 @@ it('names no run where it was opened on none, and asks the stack nothing', funct
     expect(everythingTheAgreementShows($screen->answer()))->toBe(nothingOfTheRunShown(['namesARun' => false]))
         ->and($history->askings())->toBe(0)
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.run_back.names_no_run'));
-})->with(['blank' => ['  '], 'not text' => [42]]);
+})->with(['blank' => ['  '], 'not text' => [42], 'not a stamp' => ['gluetun']]);
 
 it('asks for a session rather than the record where this device holds none', function (): void {
     $history = AStackThatKeepsARecord::with(aRecordHoldingTheRun());

@@ -373,6 +373,10 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'screen does not already hold.',
         ],
         [
+            'path' => 'PreviewEnvelope.vanished',
+            'because' => 'Each installed plugin naming a form this stack no longer declares, with those forms. It changes nothing this start does: what the form would start is in `services` and what it would leave out in `filtered` (`N18-R4`), and no requirement asks for the form names a plugin\'s manifest holds.',
+        ],
+        [
             'path' => 'PreviewEnvelope.profiles',
             'because' => 'The profiles a start would bring up. `N18-R4` asks for what would start and what '
                 . 'would be left out, with the reason for each; the services are what would start, and a '

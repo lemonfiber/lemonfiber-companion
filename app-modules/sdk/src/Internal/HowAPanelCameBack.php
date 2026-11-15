@@ -14,4 +14,7 @@ enum HowAPanelCameBack: string
 
     /** The source could not be reached, and the panel's `data` says why. */
     case Unavailable = 'unavailable';
+
+    /** The source has not answered yet, and a snapshot that follows fills the panel. */
+    case Pending = 'pending';
 }
