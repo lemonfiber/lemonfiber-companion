@@ -241,7 +241,24 @@ it('draws a refusal as the stack\'s refusal, with its remedy, and never as room 
         ->and($drawn->said())->toContain(aLineOfGivingBack('stacks.give_back.refused'))
         ->and($drawn->said())->toContain('Nowhere to measure')
         ->and($drawn->said())->toContain(aLineOfGivingBack('stacks.refusal.remedy', ['remedy' => 'Mount it and ask again']))
-        ->and($screen->done()->returned)->toBeNull();
+        ->and($screen->done()->returned)->toBeNull()
+        ->and($screen->done()->went)->toBe(0)
+        ->and($screen->done()->left)->toBe([]);
+});
+
+it('reads the offer afresh when asked again after a yes the stack refused', function (): void {
+    $measuring = AStackThatMeasuresItsRoom::with(aRoomOffering(theOrphansOnOffer()));
+    $refusal = ARefusalInItsWords::said('Nowhere to measure', 'The data volume is not mounted', WhatTheRefusalNamed::nothing());
+    $givingBack = AStackThatGivesBackRoom::sayingAtOnce(WhatBecameOfTheWork::refused($refusal));
+    $screen = theGivingBackScreen($measuring, $givingBack);
+    $screen->answer();
+    $screen->agree();
+    $screen->again();
+
+    expect($screen->wasAgreedTo())->toBeFalse()
+        ->and($screen->answer()->stands->went->cameBack())->toBeTrue()
+        ->and($measuring->askings())->toBe(2)
+        ->and($givingBack->asked())->toBe([sprintf('give-back:%s:orphaned', THE_OFFER_OF_ROOM)]);
 });
 
 it('offers nothing to agree to where the offer no longer holds the category, and sends nothing', function (): void {
@@ -336,6 +353,8 @@ it('has nothing to report for a yes nobody gave', function (): void {
 
     expect($screen->done()->stands->hasEnded())->toBeTrue()
         ->and($screen->done()->returned)->toBeNull()
+        ->and($screen->done()->went)->toBe(0)
+        ->and($screen->done()->left)->toBe([])
         ->and($givingBack->asked())->toBe([]);
 });
 
