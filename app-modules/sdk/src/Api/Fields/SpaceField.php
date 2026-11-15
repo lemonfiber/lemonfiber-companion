@@ -61,4 +61,10 @@ enum SpaceField: string implements NamesAWireField
 
     /** The completed downloads on a machine. */
     case Candidates = 'candidates';
+
+    /** What of the room could be got back, one line per category. */
+    case Reclaimable = 'reclaimable';
+
+    /** What became of an answered cleanup. */
+    case Reclaimed = 'reclaimed';
 }

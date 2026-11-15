@@ -23,6 +23,7 @@ use Modules\Kernel\Api\APluginUpdateAgreed;
 use Modules\Kernel\Api\ARecipeRunAgreed;
 use Modules\Kernel\Api\ARemovalAgreed;
 use Modules\Kernel\Api\AResetAgreed;
+use Modules\Kernel\Api\ARoomGivenBackAgreed;
 use Modules\Kernel\Api\ARunAgreedTo;
 use Modules\Kernel\Api\ASettingChangeAgreed;
 use Modules\Kernel\Api\Confirmed;
@@ -116,6 +117,7 @@ const WHAT_THE_PHONE_MAY_NOT_KEEP = [
     ARecipeRunAgreed::class,
     ACredentialRevokeAgreed::class,
     ACertificateReplacementAgreed::class,
+    ARoomGivenBackAgreed::class,
     ASettingChangeAgreed::class,
     ARemovalAgreed::class,
     AResetAgreed::class,

@@ -35,6 +35,12 @@ enum WhatGettingItBackCosts: string
     /** Not at all, because the operator said so. */
     case YouSaidNot = 'you_said_not';
 
+    /** Whether the stack offers this line back as costing nothing. */
+    public function costsNothing(): bool
+    {
+        return $this === self::TheEasyWin || $this === self::AlreadyHaveIt;
+    }
+
     /** The catalogue key for this, as an operator reads it. */
     public function saidOnTheScreen(): string
     {

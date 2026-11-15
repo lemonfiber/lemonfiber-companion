@@ -224,6 +224,13 @@ enum AStacksScreen: string
     case LetGo = '/stacks/{stack}/room/{about}';
 
     /**
+     * Giving back one category of the room the stack offers as costing nothing, confirmed once before anything is removed.
+     *
+     * The second segment is the category, as the stack names it.
+     */
+    case GiveBack = '/stacks/{stack}/give-back/{about}';
+
+    /**
      * Pausing every download client, or letting them fetch again, rehearsed before anything is agreed to.
      *
      * The second segment is which of the two, as this app names it.

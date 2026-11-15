@@ -13,6 +13,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheAccount;
 use Modules\Kernel\Api\TheDownloadsOnDisk;
+use Modules\Kernel\Api\TheRoomOnOffer;
 use Modules\Kernel\Api\TheVolumes;
 use Modules\Kernel\Api\WhereTheRoomStands;
 use Modules\Kernel\Api\WhereTheRoomWent;
@@ -25,7 +26,7 @@ use Modules\Operator\Internal\Presenters\HowTheRoomReads;
  * without a glyph fails here by name as well as at the match.
  */
 it('draws each way the machine can stand for room with its own tone', function (WhereTheRoomStands $stands, Tone $tone): void {
-    $room = WhereTheRoomWent::measured(TheVolumes::of(), $stands, TheAccount::of(), TheDownloadsOnDisk::of(), halted: false);
+    $room = WhereTheRoomWent::measured(TheVolumes::of(), $stands, TheAccount::of(), TheDownloadsOnDisk::of(), TheRoomOnOffer::named('space-3f9a'), halted: false);
 
     expect(new HowTheRoomReads()->this($room, Instant::atEpochSeconds(0))->tone)->toBe($tone->value);
 })->with([

@@ -6,6 +6,7 @@ namespace Tests\Support;
 
 use Closure;
 use Modules\Kernel\Api\ABundleAsked;
+use Modules\Kernel\Api\ACategoryOffered;
 use Modules\Kernel\Api\ACertificateReplacement;
 use Modules\Kernel\Api\ACertificateReplacementAgreed;
 use Modules\Kernel\Api\AChallengeToSign;
@@ -60,6 +61,7 @@ use Modules\Kernel\Api\ARecipeRunAgreed;
 use Modules\Kernel\Api\ARemoval;
 use Modules\Kernel\Api\ARemovalAgreed;
 use Modules\Kernel\Api\AResetAgreed;
+use Modules\Kernel\Api\ARoomGivenBackAgreed;
 use Modules\Kernel\Api\ARun;
 use Modules\Kernel\Api\ARunAgreedTo;
 use Modules\Kernel\Api\ASettingChange;
@@ -127,6 +129,7 @@ use Modules\Kernel\Api\ThePresetsInForce;
 use Modules\Kernel\Api\TheQualityChosen;
 use Modules\Kernel\Api\TheRecord;
 use Modules\Kernel\Api\TheReset;
+use Modules\Kernel\Api\TheRoomOnOffer;
 use Modules\Kernel\Api\TheRoots;
 use Modules\Kernel\Api\TheSecretsRead;
 use Modules\Kernel\Api\TheServicesSettings;
@@ -144,6 +147,7 @@ use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatAKeyAdmits;
 use Modules\Kernel\Api\WhatAKeyIsFor;
+use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatARunCovers;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatFilenamesShow;
@@ -153,6 +157,7 @@ use Modules\Kernel\Api\WhatIsKept;
 use Modules\Kernel\Api\WhatIsNotLemonfibers;
 use Modules\Kernel\Api\WhatIsStillComing;
 use Modules\Kernel\Api\WhatItCannotTake;
+use Modules\Kernel\Api\WhatItOccupies;
 use Modules\Kernel\Api\WhatItReaches;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
@@ -253,6 +258,7 @@ use Modules\Sdk\Api\Resetters;
 use Modules\Sdk\Api\Restarts;
 use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Reversers;
+use Modules\Sdk\Api\RoomGivers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Searchers;
@@ -547,6 +553,10 @@ final readonly class EveryAdapterCallThatReads
                 => new Reversers($clients, $entropy)->putBack($stack, $session, self::aRunToSpoilTheAnswerTo()),
             'Reversers::whatBecameOf' => static fn(): object
                 => new Reversers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+            'RoomGivers::giveBack' => static fn(): object
+                => new RoomGivers($clients, $entropy)->giveBack($stack, $session, ARoomGivenBackAgreed::to(TheRoomOnOffer::named('space-3f9a', ACategoryOffered::holding(WhatALineIsAbout::Orphaned, WhatItOccupies::counted(1, 1), 1)), WhatALineIsAbout::Orphaned)),
+            'RoomGivers::whatBecameOf' => static fn(): object
+                => new RoomGivers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Resetters::wouldRevert' => static fn(): object => new Resetters($clients, $entropy)->wouldRevert($stack, $session),
             'Resetters::revert' => static fn(): object
                 => new Resetters($clients, $entropy)->revert($stack, $session, AResetAgreed::to(TheReset::previewed(TheStackEdits::these(), ConnectionsReverted::these('sonarr → qbittorrent'), 'reset-1'))),

@@ -27,9 +27,6 @@ enum UninstallField: string implements NamesAWireField
     /** What beneath the data location the stack did not put there. */
     case Foreign = 'foreign';
 
-    /** How many files were found under something that is not lemonfiber's. */
-    case Files = 'files';
-
     /** What is still coming down, which stopping would interrupt. */
     case Coming = 'coming';
 

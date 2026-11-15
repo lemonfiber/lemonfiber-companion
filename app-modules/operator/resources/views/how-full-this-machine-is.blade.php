@@ -65,6 +65,26 @@
         @endforelse
     </x-design::section>
 
+    {{-- The room the stack offers as costing nothing, each category with its
+         size and its own control. Nothing is selected and nothing is given
+         back from here: each opens its own confirmation. --}}
+    <x-design::section :label="__('stacks.room.costs_nothing')">
+        @forelse ($this->answer()->offered as $category)
+            <x-design::row
+                :headline="__($category->aboutSaid)"
+                :trailing="__('stacks.room.occupies', ['figure' => $category->size->figure, 'unit' => __($category->size->unit)])"
+            />
+            <x-design::action
+                :label="__('stacks.room.give_back')"
+                :answers-to="__('stacks.room.give_back_that', ['category' => __($category->aboutSaid)])"
+                :goes="$this->goes()->about(AStacksScreen::GiveBack, $category->about)"
+                tone="tonal"
+            />
+        @empty
+            <x-design::row :headline="__('stacks.room.nothing_costs_nothing')" />
+        @endforelse
+    </x-design::section>
+
     {{-- Each completed download on its card, with where it stands and what
          removing it would cost. Nothing here is selected and nothing is
          proposed: stopping seeding is offered on each card alike, and opens on

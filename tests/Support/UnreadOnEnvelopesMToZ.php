@@ -633,23 +633,20 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'command shown will work for them; the command itself, or why there is none, is what `N14-R2` asks for.',
         ],
         [
-            'path' => 'SpaceEnvelope.agreement',
-            'because' => 'What the offer to reclaim names itself, so that an answer to it can say which offer it '
-                . 'was answering. It exists for the cleanup of what costs nothing, which this app does not ask '
-                . 'for: the SDK\'s `space` endpoint takes nothing, so a caller can neither confirm the cleanup nor '
-                . 'name this offer. Stopping seeding one download is the removal this app offers, and it reads '
-                . 'that offer\'s own name.',
+            'path' => 'SpaceEnvelope.reclaimable[].category.name',
+            'because' => 'A tree\'s name, on a line of what could be got back. A tree is got back only by losing content, so it is never on offer as costing nothing (`N30-R4`), and the account above already names it.',
         ],
         [
-            'path' => 'SpaceEnvelope.reclaimed',
-            'because' => 'What became of a confirmed cleanup. Only a call that confirms fills it in, and this app '
-                . 'makes none, for the reason `agreement` gives, so every reading it asks for leaves it empty.',
+            'path' => 'SpaceEnvelope.reclaimable[].tally.shared',
+            'because' => 'How many of a category\'s names point at a file already counted. Giving a category back is agreed to by its size and how many files it holds (`N30-R12`); the count of shared names answers neither.',
         ],
         [
-            'path' => 'SpaceEnvelope.reclaimable',
-            'because' => 'A second reading of bytes `consumption` already counts, as the stack says itself, and '
-                . 'each line of `consumption` carries what getting it back would cost. Drawing both would show '
-                . 'the same room twice, which is the error the stack arranges its accounting to avoid.',
+            'path' => 'SpaceEnvelope.reclaimed.left[].at',
+            'because' => 'Where an item left behind sits. What came back is said with each item left behind and the stack\'s reason, and never a path (`N30-R12`, `N12-R6`).',
+        ],
+        [
+            'path' => 'SpaceEnvelope.reclaimed.rehearsed',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
             'path' => 'SpaceEnvelope.outsized',

@@ -62,10 +62,31 @@ return [
         // On every download alike, so none is singled out.
         'stop_seeding' => 'Stop seeding this',
         'stop_seeding_that' => 'Stop seeding :download',
-        'at_the_machine' => 'Stopping seeding is offered one download at a time. Anything else is removed at the machine, not from here',
+        'at_the_machine' => 'Stopping seeding is offered one download at a time, and the room that costs nothing one category at a time. Anything else is removed at the machine, not from here',
+        'costs_nothing' => 'Room that costs nothing to give back',
+        'nothing_costs_nothing' => 'Nothing on this machine costs nothing to give back',
+        'give_back' => 'Give back',
+        'give_back_that' => 'Give back :category',
     ],
 
     // Stopping seeding one download: what it costs first, and only then the yes.
+    'give_back' => [
+        'names_no_category' => 'This names nothing the stack offers to give back',
+        'what_goes' => 'What giving this back removes',
+        'files' => '{1} It holds one file|[0,*] It holds :count files',
+        'cannot_be_undone' => 'This cannot be undone.',
+        'give_it_back' => 'Give it back',
+        'not_on_offer' => 'The stack no longer offers this as costing nothing, so there is nothing to give back',
+        'moved' => 'The offer moved, so nothing was removed. Here it is as it stands now.',
+        'giving_back' => 'The stack is giving the room back',
+        'no_outcome' => 'The stack no longer knows what became of giving the room back. How full the machine is says what is still there.',
+        'refused' => 'The stack would not give it back',
+        'returned' => ':figure :unit came back',
+        'went' => '{1} One item went|[0,*] :count items went',
+        'left' => '{1} One item was left behind|[0,*] :count items were left behind',
+        'none_left' => 'Nothing was left behind',
+    ],
+
     'let_go' => [
         'names_no_download' => 'This names no download to stop seeding',
         'see_the_room' => 'See how full the machine is',

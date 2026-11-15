@@ -185,7 +185,7 @@ final readonly class Uninstalls
             $foreign = self::row($entry, UninstallField::Foreign);
             $found[] = SomethingNotLemonfibers::at(
                 self::text($foreign, WireField::At),
-                self::number($foreign, UninstallField::Files),
+                self::number($foreign, WireField::Files),
                 self::number($foreign, WireField::Bytes),
             );
         }

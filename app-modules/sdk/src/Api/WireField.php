@@ -68,8 +68,11 @@ enum WireField: string implements NamesAWireField
     /** Every capability a removal would leave with nothing filling it, or what is sent to use a hosted back-end. */
     case Leaves = 'leaves';
 
-    /** The figure inside an estimate. */
+    /** The figure inside an estimate, and the room an answered cleanup gave back. */
     case Bytes = 'bytes';
+
+    /** How many files were found under something that is not lemonfiber's, and how many a category of the disk holds. */
+    case Files = 'files';
 
     /** What a stack calls one request, for naming it when acting on it, or the id a search listed a title under. */
     case Id = 'id';
@@ -202,15 +205,16 @@ enum WireField: string implements NamesAWireField
 
     /**
      * What is gone: what became of an answered offer to stop seeding, absent
-     * where the offer is all there is, and what taking lemonfiber off removed,
-     * by the name its reading gave it.
+     * where the offer is all there is, what taking lemonfiber off removed,
+     * by the name its reading gave it, and what an answered cleanup took.
      */
     case Gone = 'gone';
 
     /**
      * What was left: what putting a run back did not put back, or could not
-     * promise, each with why, and what taking lemonfiber off could not take,
-     * with how to finish it by hand.
+     * promise, each with why, what taking lemonfiber off could not take,
+     * with how to finish it by hand, and what an answered cleanup could not
+     * take, with why.
      */
     case Left = 'left';
 
@@ -315,7 +319,8 @@ enum WireField: string implements NamesAWireField
      *
      * Only on the `unknown` arm, and required there. A stack is required to
      * say unknown rather than guess, and *unknown* with no reason after it is
-     * read as a default by everyone who sees it.
+     * read as a default by everyone who sees it. Also why an answered cleanup
+     * left one item behind.
      */
     case Why = 'why';
 
@@ -549,8 +554,8 @@ enum WireField: string implements NamesAWireField
 
     /**
      * The name a stack gives one listing, quoted back on a yes: a listing of
-     * repairs, what putting a copy back would do, and what stopping seeding
-     * one download would cost.
+     * repairs, what putting a copy back would do, what stopping seeding
+     * one download would cost, and what costs nothing to give back.
      */
     case Agreement = 'agreement';
 

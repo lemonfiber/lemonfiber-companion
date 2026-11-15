@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\ACategoryOffered;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ADownloadOnDisk;
 use Modules\Kernel\Api\ALineOfTheAccount;
@@ -22,6 +23,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheAccount;
 use Modules\Kernel\Api\TheDownloadsOnDisk;
+use Modules\Kernel\Api\TheRoomOnOffer;
 use Modules\Kernel\Api\TheVolumes;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAVolumeHolds;
@@ -75,6 +77,7 @@ function theSameRoom(): WhereTheRoomWent
             ADownloadOnDisk::seeding('Old.Film.1999', 4_000_000_000, ARatio::none(), 'Your ratio on that tracker stops growing'),
             ADownloadOnDisk::leftAlone('Kept.Show.S02', 1_000_000_000),
         ),
+        TheRoomOnOffer::named('space-3f9a', ACategoryOffered::holding(WhatALineIsAbout::Orphaned, WhatItOccupies::counted(30_000_000_000, 30_000_000_000), 12)),
         halted: false,
     );
 }
@@ -101,7 +104,11 @@ function whatAStackSaysOfItsRoom(string $level = 'warning'): array
                 ['category' => ['of' => 'tree', 'name' => 'movies'], 'reclaim' => 'by_losing_content', 'tally' => ['files' => 900, 'logical' => 2_000_000_000_000, 'physical' => 1_500_000_000_000, 'shared' => 300]],
                 ['category' => ['of' => 'orphaned'], 'reclaim' => 'the_easy_win', 'tally' => ['files' => 12, 'logical' => 30_000_000_000, 'physical' => 30_000_000_000, 'shared' => 0]],
             ],
-            'reclaimable' => [],
+            'reclaimable' => [
+                ['category' => ['of' => 'orphaned'], 'reclaim' => 'the_easy_win', 'tally' => ['files' => 12, 'logical' => 30_000_000_000, 'physical' => 30_000_000_000, 'shared' => 0]],
+                ['category' => ['of' => 'seeding'], 'reclaim' => 'at_the_cost_of_ratio', 'tally' => ['files' => 2, 'logical' => 12_000_000_000, 'physical' => 12_000_000_000, 'shared' => 0]],
+                ['category' => ['of' => 'extracted'], 'reclaim' => 'already_have_it', 'tally' => ['files' => 0, 'logical' => 0, 'physical' => 0, 'shared' => 0]],
+            ],
             'candidates' => [
                 ['name' => 'Some.Show.S01E01', 'bytes' => 2_000_000_000, 'standing' => ['standing' => 'never_imported'], 'consequence' => null],
                 ['name' => 'Some.Film.2024', 'bytes' => 8_000_000_000, 'standing' => ['standing' => 'seeding', 'ratio' => 125], 'consequence' => 'Your ratio on that tracker stops growing'],
@@ -190,6 +197,10 @@ function everythingTheRoomSays(Measuring $measuring): string
                 );
             }
 
+            foreach ($room->offer() as $category) {
+                $said[] = sprintf('offered %s %d/%d %d files under %s', $category->about()->value, $category->occupies()->physical(), $category->occupies()->logical(), $category->files(), $room->offer()->agreement());
+            }
+
             return new TheWordCarriedOut(implode(' | ', $said));
         },
         met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
@@ -209,7 +220,8 @@ it('comes away with the volumes, the account and each download', function (): vo
             . ' | download Some.Show.S01E01 2000000000 never_imported - '
             . ' | download Some.Film.2024 8000000000 seeding 1.25 Your ratio on that tracker stops growing'
             . ' | download Old.Film.1999 4000000000 seeding no ratio Your ratio on that tracker stops growing'
-            . ' | download Kept.Show.S02 1000000000 left_alone - ',
+            . ' | download Kept.Show.S02 1000000000 left_alone - '
+            . ' | offered orphaned 30000000000/30000000000 12 files under space-3f9a',
             $which,
         );
     }

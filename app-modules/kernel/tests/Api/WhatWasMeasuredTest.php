@@ -11,6 +11,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheAccount;
 use Modules\Kernel\Api\TheDownloadsOnDisk;
+use Modules\Kernel\Api\TheRoomOnOffer;
 use Modules\Kernel\Api\TheVolumes;
 use Modules\Kernel\Api\WhatWasMeasured;
 use Modules\Kernel\Api\WhereTheRoomStands;
@@ -26,6 +27,6 @@ it('a machine that could not be asked is never one with room to spare', function
         met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('met:%s', $why->kind()->value)),
     )->said;
 
-    expect($fold(WhatWasMeasured::measured(WhereTheRoomWent::measured(TheVolumes::of(), WhereTheRoomStands::Ample, TheAccount::of(), TheDownloadsOnDisk::of(), halted: false))))->toBe('measured:ample')
+    expect($fold(WhatWasMeasured::measured(WhereTheRoomWent::measured(TheVolumes::of(), WhereTheRoomStands::Ample, TheAccount::of(), TheDownloadsOnDisk::of(), TheRoomOnOffer::named('space-3f9a'), halted: false))))->toBe('measured:ample')
         ->and($fold(WhatWasMeasured::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

@@ -410,5 +410,5 @@ it('which screens are about one thing is read off their own patterns', function 
     ));
 
     expect(array_map(static fn(AStacksScreen $screen): string => $screen->name, $aboutOneThing))
-        ->toBe(['Doing', 'Logs', 'Waiting', 'Title', 'Found', 'Asked', 'RunBack', 'AlertBackEnd', 'PutBack', 'LetGo', 'Downloads', 'InviteNamed', 'TakeOut', 'Device', 'PluginSettings', 'WordAbout', 'Trace', 'Accept', 'Run', 'RunChecks']);
+        ->toBe(['Doing', 'Logs', 'Waiting', 'Title', 'Found', 'Asked', 'RunBack', 'AlertBackEnd', 'PutBack', 'LetGo', 'GiveBack', 'Downloads', 'InviteNamed', 'TakeOut', 'Device', 'PluginSettings', 'WordAbout', 'Trace', 'Accept', 'Run', 'RunChecks']);
 });

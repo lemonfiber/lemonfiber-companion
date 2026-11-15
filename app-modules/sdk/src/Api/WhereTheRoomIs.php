@@ -36,6 +36,7 @@ use Modules\Kernel\Api\WhereTheRoomWent;
 use Modules\Sdk\Api\Fields\SpaceField;
 use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
+use Modules\Sdk\Internal\TheOfferOfRoom;
 use Modules\Sdk\Internal\Wire;
 
 use function sprintf;
@@ -48,7 +49,8 @@ use function sprintf;
  * {@see SpaceIsUnreadable}, never defaulted. A figure the stack could not read
  * arrives as `null` and becomes {@see AnAmountOfRoom::unread()}, never nought.
  *
- * Only what the requirements ask for is read. The rest is recorded in
+ * Only what the requirements ask for is read. The offer of what costs nothing
+ * is read by {@see TheOfferOfRoom}. The rest is recorded in
  * `WhatThisAppDoesNotRead`, each with its reason.
  */
 final readonly class WhereTheRoomIs
@@ -65,7 +67,7 @@ final readonly class WhereTheRoomIs
     public const int NO_RATIO = 4_294_967_295;
 
     /** How a refusal names one entry of a list, the way the contract's paths do. */
-    private const string AN_ENTRY = '%s[%d]';
+    public const string AN_ENTRY = '%s[%d]';
 
     /**
      * How full a machine is, where the room went, and what is on its disk.
@@ -85,6 +87,7 @@ final readonly class WhereTheRoomIs
             self::level($data, WireField::Level->value),
             TheAccount::of(...self::account($data)),
             TheDownloadsOnDisk::of(...self::downloads($data)),
+            TheOfferOfRoom::in($data),
             halted: self::flag($data, SpaceField::Halted->value, SpaceField::Halted),
         );
     }
