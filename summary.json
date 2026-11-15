@@ -1,7 +1,7 @@
 {
     "format": 1,
-    "commit": "8fa4ba8ba40582602666ac3e2090acf21a02855f",
-    "time": "2026-11-15T01:19:55Z",
+    "commit": "88ffb9fa151bc81db6181312eb210ac3b0e7d69b",
+    "time": "2026-11-15T10:19:25Z",
     "verdict": "passed",
     "score": 100.0,
     "trees": [
@@ -121,70 +121,70 @@
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\ControlStructures\\IfNegated",
-            "seconds": 15784.98577108884,
+            "seconds": 15983.352372452935,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Removal\\RemoveArrayItem",
-            "seconds": 13115.549638097069,
+            "seconds": 14291.661137750432,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Logical\\RemoveNot",
-            "seconds": 10570.909865959064,
-            "survived": 0,
-            "killRate": 100.0
-        },
-        {
-            "runner": "pest",
-            "mutator": "Pest\\Mutate\\Mutators\\Equality\\IdenticalToNotIdentical",
-            "seconds": 9245.330751211235,
+            "seconds": 10651.091721144125,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Removal\\RemoveMethodCall",
-            "seconds": 9007.078805754676,
+            "seconds": 10123.999672651466,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
-            "mutator": "Pest\\Mutate\\Mutators\\String\\EmptyStringToNotEmpty",
-            "seconds": 8817.177052863579,
+            "mutator": "Pest\\Mutate\\Mutators\\Equality\\IdenticalToNotIdentical",
+            "seconds": 9422.06254144147,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Logical\\InstanceOfToFalse",
-            "seconds": 8707.06007680479,
+            "seconds": 9263.360527868732,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Logical\\InstanceOfToTrue",
-            "seconds": 8497.45447269527,
+            "seconds": 9086.781948020773,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\String\\EmptyStringToNotEmpty",
+            "seconds": 9020.590541601396,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\ControlStructures\\TernaryNegated",
-            "seconds": 7990.447189505449,
+            "seconds": 8196.16365736603,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Array\\UnwrapArrayValues",
-            "seconds": 6976.373277075724,
+            "seconds": 7000.525512713378,
             "survived": 0,
             "killRate": 100.0
         }
@@ -205,6 +205,7 @@
         {
             "path": "app-modules/connection/src/Api/ChoosingWhoWakesThisPhone.php",
             "score": 100.0,
+            "base": 100.0,
             "notKilled": 0
         },
         {
