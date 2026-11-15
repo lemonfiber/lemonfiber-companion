@@ -29,7 +29,7 @@ final readonly class ARun implements WhatAScreenIsAbout
     /** A run by the stamp a screen was handed; anything but whole seconds since the epoch is refused. */
     public static function stamped(string $stamp): self
     {
-        $seconds = filter_var(trim($stamp), FILTER_VALIDATE_INT, ['options' => ['min_range' => Instant::UNDATED]]);
+        $seconds = filter_var($stamp, FILTER_VALIDATE_INT, ['options' => ['min_range' => Instant::UNDATED]]);
 
         if (trim($stamp) === '') {
             throw UndoSaysNothing::about('at');

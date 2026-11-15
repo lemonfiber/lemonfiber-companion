@@ -6,6 +6,7 @@ namespace Modules\Kernel\Api;
 
 use Closure;
 
+use function is_int;
 use function trim;
 
 /**
@@ -17,8 +18,8 @@ use function trim;
  */
 final readonly class WhatUpgradingItTakes
 {
-    /** @param int<0, max> $bytes */
-    private function __construct(private int $bytes, private string $unknown) {}
+    /** @param int<0, max>|non-empty-string $total the bytes it would take, or why that could not be worked out */
+    private function __construct(private int|string $total) {}
 
     /** The bytes it would take; a count below nothing is refused. */
     public static function bytes(int $bytes): self
@@ -27,7 +28,7 @@ final readonly class WhatUpgradingItTakes
             throw QualitySaysNothing::about('total');
         }
 
-        return new self($bytes, '');
+        return new self($bytes);
     }
 
     /** Why the total could not be worked out; a blank reason is refused. */
@@ -37,7 +38,7 @@ final readonly class WhatUpgradingItTakes
             throw QualitySaysNothing::about('total');
         }
 
-        return new self(0, $why);
+        return new self($why);
     }
 
     /**
@@ -50,6 +51,6 @@ final readonly class WhatUpgradingItTakes
      */
     public function either(Closure $bytes, Closure $unknown): object
     {
-        return $this->unknown === '' ? $bytes($this->bytes) : $unknown($this->unknown);
+        return is_int($this->total) ? $bytes($this->total) : $unknown($this->total);
     }
 }

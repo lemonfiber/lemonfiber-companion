@@ -17,24 +17,25 @@ use function trim;
  */
 final readonly class WhereAServiceKeepsIt
 {
-    private function __construct(private string $at, private string $unread, private string $none) {}
+    /** @param non-empty-string $said the host path, or the stack's reason */
+    private function __construct(private WhatASurveySaysOfAPlace $answer, private string $said) {}
 
     /** The host path it is mounted from; a blank one is refused. */
     public static function at(string $path): self
     {
-        return new self(self::said('at', $path), '', '');
+        return new self(WhatASurveySaysOfAPlace::MountedFrom, self::said('at', $path));
     }
 
     /** It could not be read, and why; a blank reason is refused. */
     public static function unread(string $why): self
     {
-        return new self('', self::said('unread', $why), '');
+        return new self(WhatASurveySaysOfAPlace::Unread, self::said('unread', $why));
     }
 
     /** The service keeps none, and why; a blank reason is refused. */
     public static function none(string $why): self
     {
-        return new self('', '', self::said('none', $why));
+        return new self(WhatASurveySaysOfAPlace::KeepsNone, self::said('none', $why));
     }
 
     /**
@@ -49,13 +50,14 @@ final readonly class WhereAServiceKeepsIt
      */
     public function either(Closure $at, Closure $unread, Closure $none): object
     {
-        return match (true) {
-            $this->at !== '' => $at($this->at),
-            $this->unread !== '' => $unread($this->unread),
-            default => $none($this->none),
+        return match ($this->answer) {
+            WhatASurveySaysOfAPlace::MountedFrom => $at($this->said),
+            WhatASurveySaysOfAPlace::Unread => $unread($this->said),
+            WhatASurveySaysOfAPlace::KeepsNone => $none($this->said),
         };
     }
 
+    /** @return non-empty-string */
     private static function said(string $field, string $word): string
     {
         if (trim($word) === '') {

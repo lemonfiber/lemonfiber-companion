@@ -171,7 +171,15 @@ it('refuses an onset that is not a number of seconds, rather than guessing when'
     MockClient::global([MockResponse::make((string) json_encode($payload))]);
 
     expect(everythingTheNewsSays(new Newsreaders(new PinnedClients())))->toBe(KindOfObstacle::AnswerCouldNotBeRead->value);
-})->with(['yesterday', '1759400000', -1_759_400_000, 1_759_400_000.5]);
+})->with(['yesterday', '1759400000', -1_759_400_000, -1, 1_759_400_000.5]);
+
+it('reads an onset of nought as the moment the stack could not date, not as a refusal', function (): void {
+    $payload = whatAStackListsAsNew(onset: 0);
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make((string) json_encode($payload))]);
+
+    expect(everythingTheNewsSays(new Newsreaders(new PinnedClients())))->toContain("problems read\nservice.sonarr|0|Sonarr is stopped");
+});
 
 it('refuses a list it cannot read whole, rather than showing part of it as everything new', function (array $data): void {
     $payload = whatAStackListsAsNew(replacing: $data);
