@@ -12,7 +12,6 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -24,6 +23,7 @@ use Modules\Operator\Internal\Screens\WhatIsPlayingNow;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Modules\Wayfinding\Internal\WhereInTheMenu;
+use Tests\Support\AnObstacleOnTheWire;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -115,10 +115,15 @@ it('names the series of an episode the media server did not number', function ()
 
 it('says plainly when nothing is playing, and that a media server it could not read is not nothing', function (): void {
     $nothing = whatIsPlayingOpened(AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these())), Whose::theOperator());
-    $unread = whatIsPlayingOpened(AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::unread(Sentence::of('Jellyfin did not answer.')))), Whose::theOperator());
+    $unread = whatIsPlayingOpened(AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::unread(AnObstacleOnTheWire::read('Jellyfin did not answer.')))), Whose::theOperator());
 
     expect(WhatTheDeviceWouldDraw::by($nothing)->said())->toContain(aLinePlaying('stacks.playing.nothing'))
-        ->and(WhatTheDeviceWouldDraw::by($unread)->said())->toContain(aLinePlaying('stacks.playing.unread'), 'Jellyfin did not answer.')
+        ->and(WhatTheDeviceWouldDraw::by($unread)->said())->toContain(
+            aLinePlaying('stacks.playing.unread'),
+            'Jellyfin did not answer.',
+            aLinePlaying('stacks.refusal.remedy', ['remedy' => AnObstacleOnTheWire::A_REMEDY]),
+            aLinePlaying('stacks.obstacle.code', ['code' => AnObstacleOnTheWire::A_CODE]),
+        )
         ->and(WhatTheDeviceWouldDraw::by($unread)->said())->not->toContain(aLinePlaying('stacks.playing.nothing'));
 });
 

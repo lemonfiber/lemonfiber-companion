@@ -88,6 +88,13 @@
                     {{-- Nothing: the stack always says what a change comes to. --}}
                 @endforelse
             </x-design::notice>
+            @forelse ($this->howItIsGoing()->change->inTheWay as $obstacle)
+                <x-design::notice tone="unknown">
+                    <x-operator::obstacle-in-its-words :obstacle="$obstacle" />
+                </x-design::notice>
+            @empty
+                {{-- Nothing: nothing stood in the way of reading the household after it. --}}
+            @endforelse
 
             @if ($this->howItIsGoing()->change->mayBeApplied)
                 <x-operator::offered-action :label="__('stacks.allowance_change.apply')" tap="apply()" :offer="$this->offered(ChoosingWhatIsAllowed::Allow)" />

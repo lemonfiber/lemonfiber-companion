@@ -19,10 +19,14 @@
             <x-design::note>{{ __('stacks.playing.last_heard', ['ago' => trans_choice($this->answer()->hears->heard->ago->said, $this->answer()->hears->heard->ago->count)]) }}</x-design::note>
         @endif
 
-        @if ($this->answer()->hears->heard->unread !== '')
+        @if (! $this->answer()->hears->heard->read)
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.playing.unread') }}</x-design::strong>
-                <x-design::body>{{ $this->answer()->hears->heard->unread }}</x-design::body>
+                @forelse ($this->answer()->hears->heard->unread as $obstacle)
+                    <x-operator::obstacle-in-its-words :obstacle="$obstacle" />
+                @empty
+                    {{-- Nothing: the heading says the media server could not be read. --}}
+                @endforelse
             </x-design::notice>
         @else
             @forelse ($this->answer()->hears->heard->sessions as $session)

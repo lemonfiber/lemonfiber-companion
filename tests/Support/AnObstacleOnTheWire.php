@@ -4,8 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use Modules\Kernel\Api\AnObstacleNamed;
+use Modules\Kernel\Api\Code;
+use Modules\Kernel\Api\Remedy;
+use Modules\Kernel\Api\Sentence;
+
 /**
- * Something in the way of one part of an answer, as a stack writes it: a code, a sentence and a remedy.
+ * Something in the way of one part of an answer, as a stack writes it and as the app reads it: a code, a sentence and a remedy.
  */
 final readonly class AnObstacleOnTheWire
 {
@@ -19,5 +24,11 @@ final readonly class AnObstacleOnTheWire
     public static function saying(string $said): array
     {
         return ['code' => self::A_CODE, 'said' => $said, 'remedy' => self::A_REMEDY];
+    }
+
+    /** The same obstacle, as the app reads it. */
+    public static function read(string $said): AnObstacleNamed
+    {
+        return AnObstacleNamed::of(Code::of(self::A_CODE), Sentence::of($said), Remedy::of(self::A_REMEDY));
     }
 }

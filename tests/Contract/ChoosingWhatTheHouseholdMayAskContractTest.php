@@ -123,6 +123,10 @@ function whatTheAllowanceChangeCameTo(WhatBecameOfTheWork $became): string
         answered: static function (TheAllowanceAsChanged $report): TheWordCarriedOut {
             $said = [];
 
+            foreach ($report->whatStoodInTheWay() as $obstacle) {
+                $said[] = sprintf('%s: %s (%s)', $obstacle->code()->shown(), $obstacle->said()->shown(), $obstacle->remedy()->action());
+            }
+
             foreach ($report->whatItSays() as $sentence) {
                 $said[] = $sentence->shown();
             }
@@ -160,7 +164,7 @@ it('reads a change that was made as made', function (): void {
     $finished = MockResponse::make((string) json_encode(whatAStackSaysOfAnAllowanceChange(['rehearsed' => false, 'findings' => [AnObstacleOnTheWire::saying('the media server is slow to answer')], 'noted' => ['alex now waits for you']])));
 
     expect(whatTheAllowanceChangeCameTo(anAllowerAnswered($finished)->whatBecameOf(aStackWhoseHouseholdIsAllowed(), Session::of('a-session-not-a-secret'), Job::named('a-job'))))
-        ->toBe('carried_out|the media server is slow to answer / alex now waits for you');
+        ->toBe(sprintf('carried_out|%s: the media server is slow to answer (%s) / alex now waits for you', AnObstacleOnTheWire::A_CODE, AnObstacleOnTheWire::A_REMEDY));
 });
 
 it('says a job still running is still underway, and one the stack no longer has is ended', function (): void {
@@ -199,6 +203,8 @@ it('reads work that came back unreadable as an answer it could not read, never a
     'a finding that is not an obstacle' => [['findings' => ['the media server is slow to answer']]],
     'a finding with a blank sentence' => [['findings' => [AnObstacleOnTheWire::saying(' ')]]],
     'a finding with no sentence' => [['findings' => [['code' => AnObstacleOnTheWire::A_CODE, 'remedy' => AnObstacleOnTheWire::A_REMEDY]]]],
+    'a finding with no code' => [['findings' => [['said' => 'the media server is slow to answer', 'remedy' => AnObstacleOnTheWire::A_REMEDY]]]],
+    'a finding with a blank remedy' => [['findings' => [[...AnObstacleOnTheWire::saying('the media server is slow to answer'), 'remedy' => ' ']]]],
     'no notes' => [['noted' => null]],
     'a blank note' => [['noted' => [' ']]],
     'a note that is not a sentence' => [['noted' => [3]]],

@@ -10,7 +10,6 @@ use Modules\Kernel\Api\HowPlayingWasRead;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -112,7 +111,13 @@ function everyWayOfFollowingWhatIsPlaying(array $answered, HowPlayingWasRead $no
 function whatIsPlayingAsAWord(WhatTheHouseholdIsPlaying $playing): string
 {
     if (! $playing->wasRead()) {
-        return sprintf('unread: %s', $playing->whyNot());
+        $why = [];
+
+        foreach ($playing->whatStoodInTheWay() as $obstacle) {
+            $why[] = sprintf('%s %s %s', $obstacle->code()->shown(), $obstacle->said()->shown(), $obstacle->remedy()->action());
+        }
+
+        return sprintf('unread: %s', implode(' / ', $why));
     }
 
     $sessions = [];
@@ -163,7 +168,7 @@ it('reads every session the core says is playing, an episode with its series and
 it('reads no sessions as nothing playing, and a media server it could not read as unread', function (): void {
     $table = [
         [whatTheCoreSaysIsPlaying(['sessions' => []]), WhatTheHouseholdIsPlaying::these(), 'nothing'],
-        [whatTheCoreSaysIsPlaying(['available' => false, 'sessions' => [], 'findings' => [AnObstacleOnTheWire::saying('Jellyfin did not answer.'), AnObstacleOnTheWire::saying('Try again shortly.')]]), WhatTheHouseholdIsPlaying::unread(Sentence::of('Jellyfin did not answer.'), Sentence::of('Try again shortly.')), 'unread: Jellyfin did not answer. Try again shortly.'],
+        [whatTheCoreSaysIsPlaying(['available' => false, 'sessions' => [], 'findings' => [AnObstacleOnTheWire::saying('Jellyfin did not answer.'), AnObstacleOnTheWire::saying('Try again shortly.')]]), WhatTheHouseholdIsPlaying::unread(AnObstacleOnTheWire::read('Jellyfin did not answer.'), AnObstacleOnTheWire::read('Try again shortly.')), sprintf('unread: %1$s Jellyfin did not answer. %2$s / %1$s Try again shortly. %2$s', AnObstacleOnTheWire::A_CODE, AnObstacleOnTheWire::A_REMEDY)],
     ];
 
     foreach ($table as [$payload, $playing, $word]) {
@@ -223,6 +228,9 @@ it('says a refused session as refused, and a report it cannot read as an answer 
         [MockResponse::make(whatTheCoreSaysIsPlaying(['sessions' => [['member' => '  ', 'title' => 'Low Tide', 'device' => 'TV', 'medium' => 'film', 'paused' => false, 'member_id' => 'u-1']]])), KindOfObstacle::AnswerCouldNotBeRead],
         [MockResponse::make(whatTheCoreSaysIsPlaying(['available' => 'yes'])), KindOfObstacle::AnswerCouldNotBeRead],
         [MockResponse::make(whatTheCoreSaysIsPlaying(['available' => false, 'sessions' => [], 'findings' => 'Jellyfin did not answer.'])), KindOfObstacle::AnswerCouldNotBeRead],
+        [MockResponse::make(whatTheCoreSaysIsPlaying(['available' => false, 'sessions' => [], 'findings' => ['Jellyfin did not answer.']])), KindOfObstacle::AnswerCouldNotBeRead],
+        [MockResponse::make(whatTheCoreSaysIsPlaying(['available' => false, 'sessions' => [], 'findings' => [[...AnObstacleOnTheWire::saying('Jellyfin did not answer.'), 'code' => ' ']]])), KindOfObstacle::AnswerCouldNotBeRead],
+        [MockResponse::make(whatTheCoreSaysIsPlaying(['available' => false, 'sessions' => [], 'findings' => [[...AnObstacleOnTheWire::saying('Jellyfin did not answer.'), 'remedy' => null]]])), KindOfObstacle::AnswerCouldNotBeRead],
         [MockResponse::make(whatTheCoreSaysIsPlaying(['sessions' => [['member' => 'Sanne', 'title' => 'Low Tide', 'device' => 'TV', 'medium' => 'film', 'paused' => 'no', 'member_id' => 'u-1']]])), KindOfObstacle::AnswerCouldNotBeRead],
     ];
 

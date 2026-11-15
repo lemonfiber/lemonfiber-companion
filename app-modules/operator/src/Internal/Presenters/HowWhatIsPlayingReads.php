@@ -64,7 +64,7 @@ final readonly class HowWhatIsPlayingReads
             $sessions[] = $this->session($session);
         }
 
-        return new WhatIsPlayingAsShown(HowTheReadingWent::itCameBack(), new WhatTheOperatorHearsPlaying($broke, new WhatWasHeardPlaying($sessions, $playing->whyNot(), $ago)));
+        return new WhatIsPlayingAsShown(HowTheReadingWent::itCameBack(), new WhatTheOperatorHearsPlaying($broke, new WhatWasHeardPlaying($sessions, $playing->wasRead(), new HowAnObstacleReads()->all($playing->whatStoodInTheWay()), $ago)));
     }
 
     private function session(ASessionPlaying $session): ASessionPlayingAsShown

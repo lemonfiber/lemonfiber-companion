@@ -813,16 +813,6 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'applies by default — which `to_hand_over` already says to them in the core\'s own words.',
         ],
         [
-            'path' => 'HouseholdEnvelope.findings[].code',
-            'because' => 'The code that names what stood in the way of reading the household, after a change to '
-                . 'what it may ask for, for `PlayingEnvelope.findings[].code`\'s reason.',
-        ],
-        [
-            'path' => 'HouseholdEnvelope.findings[].remedy',
-            'because' => 'What to do about what stood in the way of reading the household, for '
-                . '`PlayingEnvelope.findings[].remedy`\'s reason.',
-        ],
-        [
             'path' => 'DashboardEnvelope.health.affected[].acknowledged',
             'because' => 'Whether the operator declined the item\'s fix, which the stack remembers so it stops '
                 . 'offering that fix until the fault clears and comes back. The item stands and is counted '

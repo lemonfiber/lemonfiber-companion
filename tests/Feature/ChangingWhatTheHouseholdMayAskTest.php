@@ -28,6 +28,7 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
 use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
+use Tests\Support\AnObstacleOnTheWire;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
@@ -246,6 +247,26 @@ it('rehearses for the member chosen, follows the work, and draws the stack\'s wo
         ->and($drawn->said())->toContain(__('stacks.allowance_change.did.rehearsed'), WHAT_THE_REHEARSAL_SAYS)
         ->and($drawn->offers())->toContain(__('stacks.allowance_change.apply'))
         ->and($choosing->carriedOut())->toBe([]);
+});
+
+it('draws what stood in the way of reading the household after a change, with what to do about it and its code', function (): void {
+    $choosing = aStackThatChangesWhatIsAllowed(WhatBecameOfTheWork::answered(TheAllowanceAsChanged::said(
+        WhetherItWasRehearsed::Rehearsed,
+        Sentences::of(Sentence::of(WHAT_THE_REHEARSAL_SAYS)),
+        AnObstacleOnTheWire::read('The request service did not answer.'),
+    )));
+    $screen = theAllowanceChangeScreen($choosing);
+    $screen->forSomebody('alex');
+    $screen->policyIs(HowTheHouseholdAsks::EverythingWaits->value);
+    $screen->rehearse();
+    $screen->whileItRuns();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(
+        WHAT_THE_REHEARSAL_SAYS,
+        'The request service did not answer.',
+        __('stacks.refusal.remedy', ['remedy' => AnObstacleOnTheWire::A_REMEDY]),
+        __('stacks.obstacle.code', ['code' => AnObstacleOnTheWire::A_CODE]),
+    );
 });
 
 it('makes the change the rehearsal was asked with, not what is chosen when the yes is tapped, and reads the household again', function (): void {
