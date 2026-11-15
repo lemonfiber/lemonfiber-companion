@@ -1,7 +1,7 @@
 {
     "format": 1,
-    "commit": "f98e08070601528c367608f2dea176cba36b64d6",
-    "time": "2026-11-14T20:37:58Z",
+    "commit": "8fa4ba8ba40582602666ac3e2090acf21a02855f",
+    "time": "2026-11-15T01:19:55Z",
     "verdict": "passed",
     "score": 100.0,
     "trees": [
@@ -121,70 +121,70 @@
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\ControlStructures\\IfNegated",
-            "seconds": 15617.883352012497,
+            "seconds": 15784.98577108884,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Removal\\RemoveArrayItem",
-            "seconds": 12876.18422986331,
+            "seconds": 13115.549638097069,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Logical\\RemoveNot",
-            "seconds": 10477.943155220684,
+            "seconds": 10570.909865959064,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Equality\\IdenticalToNotIdentical",
-            "seconds": 9161.988139833664,
-            "survived": 0,
-            "killRate": 100.0
-        },
-        {
-            "runner": "pest",
-            "mutator": "Pest\\Mutate\\Mutators\\String\\EmptyStringToNotEmpty",
-            "seconds": 8764.369529115418,
-            "survived": 0,
-            "killRate": 100.0
-        },
-        {
-            "runner": "pest",
-            "mutator": "Pest\\Mutate\\Mutators\\Logical\\InstanceOfToFalse",
-            "seconds": 8599.028642089586,
-            "survived": 0,
-            "killRate": 100.0
-        },
-        {
-            "runner": "pest",
-            "mutator": "Pest\\Mutate\\Mutators\\Logical\\InstanceOfToTrue",
-            "seconds": 8389.554824426803,
+            "seconds": 9245.330751211235,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Removal\\RemoveMethodCall",
-            "seconds": 8277.406433852391,
+            "seconds": 9007.078805754676,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\String\\EmptyStringToNotEmpty",
+            "seconds": 8817.177052863579,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\Logical\\InstanceOfToFalse",
+            "seconds": 8707.06007680479,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\Logical\\InstanceOfToTrue",
+            "seconds": 8497.45447269527,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\ControlStructures\\TernaryNegated",
-            "seconds": 7926.342891657436,
+            "seconds": 7990.447189505449,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Array\\UnwrapArrayValues",
-            "seconds": 6972.013277946733,
+            "seconds": 6976.373277075724,
             "survived": 0,
             "killRate": 100.0
         }
@@ -200,6 +200,11 @@
             "path": "app-modules/connection/src/Api/ChoosingWhatReachesThePhone.php",
             "score": 100.0,
             "base": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/ChoosingWhoWakesThisPhone.php",
+            "score": 100.0,
             "notKilled": 0
         },
         {
@@ -240,12 +245,6 @@
         },
         {
             "path": "app-modules/connection/src/Api/LetsGoOfARefusedSession.php",
-            "score": 100.0,
-            "base": 100.0,
-            "notKilled": 0
-        },
-        {
-            "path": "app-modules/connection/src/Api/LettingGoOfOldReadings.php",
             "score": 100.0,
             "base": 100.0,
             "notKilled": 0
