@@ -44,6 +44,7 @@ let package = Package(
                 "ArtworkFunctions.swift",
                 "PhoneKeyFunctions.swift",
                 "WakeFunctions.swift",
+                "WakingFunctions.swift",
             ]
         ),
         .testTarget(

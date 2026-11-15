@@ -17,6 +17,7 @@ use Modules\Dx\Internal\WhatTheContractDeclares;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
 use Modules\Household\Internal\Presenters\HowAShelfReads;
 use Modules\Kernel\Api\AMomentAsWritten;
+use Modules\Kernel\Api\APushName;
 use Modules\Kernel\Api\ARatio;
 use Modules\Kernel\Api\AtAGlance;
 use Modules\Kernel\Api\HowFarADownloadIs;
@@ -43,8 +44,8 @@ use Tests\Support\WhereAnExpressionPoints;
  * agree by construction, so a mistake in one would be copied into the other
  * and every test would pass.
  *
- * The list only shrinks. `TheExemptionsOnlyShrinkTest` holds it to a ceiling
- * and refuses an entry naming a constant nothing declares.
+ * `TheExemptionsOnlyShrinkTest` refuses an entry naming a constant nothing
+ * declares, and one that does not say what it means.
  */
 final readonly class Coincidences
 {
@@ -63,6 +64,7 @@ final readonly class Coincidences
             'LAST_SECOND' => 'the highest second a timestamp may write, a leap second included',
         ],
         ARatio::class => ['HUNDREDTHS' => 'the hundredths in a ratio of one'],
+        APushName::class => ['PHONE' => 'the name this phone registers a push endpoint under where its key\'s name holds nothing a stack accepts, which the notify read\'s `phone` field only shares a word with'],
         HowAShelfReads::class => ['NEW_IN_THE_HOUSE' => 'the newest holdings the first row of a member\'s shelf shows'],
         HowFarADownloadIs::class => ['ALL_OF_IT' => 'the percentage a finished download has reached'],
         NotifyingWithinACap::class => ['AT_MOST' => 'how many notifications one stack may raise within a minute'],

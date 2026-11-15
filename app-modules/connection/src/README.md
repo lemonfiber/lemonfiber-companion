@@ -14,6 +14,8 @@ in to it.
 | `ClearingWhatCannotBeRead`, `WhatWasKeptAtOpening` | Everything the phone kept, cleared on opening where the key that sealed it had gone |
 | `LettingGoOfOldReadings` | How long readings are kept, and every reading older than that let go of on opening and when the choice changes |
 | `ChoosingWhatReachesThePhone`, `NotifyingOnlyWhatEachStackLets` | What the operator lets reach the phone from each stack, kept sealed one row a stack, and every notification held to it |
+| `WakingThisPhone`, `WhatTurningWakingOnCameTo`, `WhyWakingStayedOff` | Whether each stack wakes the phone through a UnifiedPush distributor, kept sealed one row a stack, with a removal the stack could not be told of owed until it is |
+| `ChoosingWhoWakesThisPhone` | Which distributor wakes the phone, chosen once among several and kept with the phone's settings |
 | `ThisDeviceKept` | The id this install plays under, drawn once and kept with the phone's settings |
 | `TheGrantForThisDevice` | The grant this device plays with on a stack: the one kept while it stands, a new one where it lapsed or the door refused it |
 

@@ -44,6 +44,7 @@ use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
+use Tests\Support\Fakes\DistributorsOnAPhone;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\ReadingsKeptForInMemory;
@@ -193,12 +194,12 @@ it('clears what the phone kept where its key has gone, and says so once', functi
     $keeping = new KeepingTheLastReading($seal, $store);
     $store->holdsOneALaterBuildWrote($seal->stack(theStackWhoseSummaryWasKept()->id()));
 
-    $launch = theLaunchOver(new ClearingWhatCannotBeRead($seal, $store), $keeping);
+    $launch = theLaunchOver(new ClearingWhatCannotBeRead($seal, $store, DistributorsOnAPhone::notHere()), $keeping);
 
     expect(WhatTheDeviceWouldDraw::by($launch)->said())->toContain(__('connection.saved_data_cleared'))
         ->and($store->forgetEverything()->howMany())->toBe(0);
 
-    $again = theLaunchOver(new ClearingWhatCannotBeRead($seal, $store), $keeping);
+    $again = theLaunchOver(new ClearingWhatCannotBeRead($seal, $store, DistributorsOnAPhone::notHere()), $keeping);
 
     expect(WhatTheDeviceWouldDraw::by($again)->said())->not->toContain(__('connection.saved_data_cleared'));
 });
@@ -208,7 +209,7 @@ it('touches nothing kept while the app is locked, and clears it once the lock is
     $seal = aSealWhoseKeysHaveGone();
     $attic = $seal->stack(theStackWhoseSummaryWasKept()->id());
     $store->holdsOneALaterBuildWrote($attic);
-    $clearing = new ClearingWhatCannotBeRead($seal, $store);
+    $clearing = new ClearingWhatCannotBeRead($seal, $store, DistributorsOnAPhone::notHere());
     $keeping = new KeepingTheLastReading($seal, $store);
 
     // While the lock stands the navigation stack builds the lock screen in

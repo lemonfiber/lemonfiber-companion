@@ -102,6 +102,7 @@ use Modules\Kernel\Api\WhichRemoval;
 use Modules\Kernel\Api\WhichWalk;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSetIt;
+use Modules\Kernel\Api\WhyNoEndpoint;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WhyTheStacksAreHeldBack;
@@ -266,6 +267,10 @@ function everyDerivedKey(): array
         KindOfAlertBackEnd::class => aPairPerCase(
             KindOfAlertBackEnd::cases(),
             static fn(KindOfAlertBackEnd $kind): array => [$kind->saidOnTheScreen()],
+        ),
+        WhyNoEndpoint::class => aPairPerCase(
+            WhyNoEndpoint::cases(),
+            static fn(WhyNoEndpoint $why): array => [$why->saidOnTheScreen()],
         ),
         KindOfNotification::class => aPairPerCase(
             KindOfNotification::cases(),

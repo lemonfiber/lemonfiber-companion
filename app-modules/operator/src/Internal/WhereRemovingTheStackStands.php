@@ -12,4 +12,7 @@ enum WhereRemovingTheStackStands
 
     /** The removal could not begin, and nothing was removed. */
     case Refused;
+
+    /** The stack could not be told to forget this phone's endpoint, and the operator is told it still holds it before the stack is removed. */
+    case StillHoldsTheAddress;
 }

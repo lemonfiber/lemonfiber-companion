@@ -44,6 +44,22 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'The media server\'s identifier for the member watching. `N2-R28` asks for the member, and the name beside it is what the operator recognises; nothing opens a member from this screen.',
         ],
         [
+            'path' => 'PushEndpointEnvelope.registered',
+            'because' => 'When the stack registered the endpoint. The switch says whether the stack wakes this phone (`N4-R26`), and no requirement asks when it began to.',
+        ],
+        [
+            'path' => 'PushEndpointEnvelope.rehearsed',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
+        ],
+        [
+            'path' => 'PushEndpointsEnvelope.endpoints',
+            'because' => 'Every phone the stack wakes, after one was removed. This phone removes only its own endpoint, read back by name from `removed`, and no requirement asks it to list another phone\'s.',
+        ],
+        [
+            'path' => 'PushEndpointsEnvelope.rehearsed',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
+        ],
+        [
             'path' => 'QualityEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],

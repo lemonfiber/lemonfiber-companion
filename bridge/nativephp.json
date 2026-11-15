@@ -270,6 +270,36 @@
             "android": "app.lemonfiber.native.WakeFunctions.Stop",
             "ios": "WakeFunctions.Stop",
             "description": "Stop asking, and take back any wake the platform still holds"
+        },
+        {
+            "name": "Lemonfiber.Waking.Distributors",
+            "android": "app.lemonfiber.native.WakingFunctions.Distributors",
+            "ios": "WakingFunctions.Distributors",
+            "description": "List the UnifiedPush distributors installed, each with what it is called, or say this phone cannot be woken through one"
+        },
+        {
+            "name": "Lemonfiber.Waking.Register",
+            "android": "app.lemonfiber.native.WakingFunctions.Register",
+            "ios": "WakingFunctions.Register",
+            "description": "Make a stack's WebPush key pair in the keystore, ask the distributor for its endpoint, and answer both or why not, leaving nothing behind where there is none"
+        },
+        {
+            "name": "Lemonfiber.Waking.Endpoint",
+            "android": "app.lemonfiber.native.WakingFunctions.Endpoint",
+            "ios": "WakingFunctions.Endpoint",
+            "description": "Answer the endpoint the distributor gives a stack now, with its public key, or that it holds none"
+        },
+        {
+            "name": "Lemonfiber.Waking.LetGo",
+            "android": "app.lemonfiber.native.WakingFunctions.LetGo",
+            "ios": "WakingFunctions.LetGo",
+            "description": "Drop a stack's registration with the distributor and delete its key pair"
+        },
+        {
+            "name": "Lemonfiber.Waking.LetGoOfEvery",
+            "android": "app.lemonfiber.native.WakingFunctions.LetGoOfEvery",
+            "ios": "WakingFunctions.LetGoOfEvery",
+            "description": "Drop every registration with a distributor and delete every key pair made for waking"
         }
     ],
     "components": [
@@ -325,13 +355,28 @@
                 "androidx.media3:media3-exoplayer-dash:1.10.1",
                 "androidx.media3:media3-session:1.10.1",
                 "androidx.media3:media3-ui:1.10.1",
-                "androidx.work:work-runtime:2.10.0"
+                "androidx.work:work-runtime:2.10.0",
+                "org.unifiedpush.android:connector:3.0.10"
             ]
         },
         "receivers": [
             {
                 "name": "app.lemonfiber.native.TellingFunctions$WhenTheTimeComes",
                 "exported": false
+            },
+            {
+                "name": "app.lemonfiber.native.WakingFunctions$Receiver",
+                "exported": true,
+                "intent_filters": [
+                    {
+                        "action": [
+                            "org.unifiedpush.android.connector.MESSAGE",
+                            "org.unifiedpush.android.connector.UNREGISTERED",
+                            "org.unifiedpush.android.connector.NEW_ENDPOINT",
+                            "org.unifiedpush.android.connector.REGISTRATION_FAILED"
+                        ]
+                    }
+                ]
             }
         ],
         "activities": [

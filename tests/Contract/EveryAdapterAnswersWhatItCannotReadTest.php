@@ -111,6 +111,8 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'KeyMinters::registeredOn' => sprintf('%sDeviceKeyEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'KeyMinters::challengedOn' => sprintf('%sDeviceChallengeEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'KeyMinters::claimedOn' => sprintf('%sKeyClaimEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'PushEndpointKeepers::registeredOn' => sprintf('%sPushEndpointEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'PushEndpointKeepers::removedFrom' => sprintf('%sPushEndpointsEnvelope', AN_ENVELOPE_BY_NAME),
         default => $asked,
     };
 }

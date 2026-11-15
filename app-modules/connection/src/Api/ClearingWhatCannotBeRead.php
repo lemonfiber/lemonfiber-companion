@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Connection\Api;
 
 use Modules\Kernel\Api\ForgetsEverythingKept;
+use Modules\Kernel\Api\ReachingADistributor;
 use Modules\Kernel\Api\Sealed;
 use Modules\Kernel\Api\SealStanding;
 
@@ -22,13 +23,17 @@ use Modules\Kernel\Api\SealStanding;
  * outside every store this clears, and the operator is told only that saved
  * data was cleared.
  *
+ * Every distributor registration goes with it: whether a stack wakes the
+ * phone was sealed under the old key too, and the key pairs it was made with
+ * are of no use without it.
+ *
  * Where the key cannot be had at all nothing is cleared: a store that would not
  * open may open next time, and what was sealed under the key it holds is still
  * readable then.
  */
 final readonly class ClearingWhatCannotBeRead
 {
-    public function __construct(private Sealed $seal, private ForgetsEverythingKept $kept) {}
+    public function __construct(private Sealed $seal, private ForgetsEverythingKept $kept, private ReachingADistributor $distributor) {}
 
     /** Clear what the phone kept where its key was made just now, and say whether that happened. */
     public function onOpening(): WhatWasKeptAtOpening
@@ -48,6 +53,8 @@ final readonly class ClearingWhatCannotBeRead
      */
     private function cleared(): WhatWasKeptAtOpening
     {
+        $this->distributor->letGoOfEvery();
+
         return $this->kept->forgetEverything()->howMany() > 0 ? WhatWasKeptAtOpening::Cleared : WhatWasKeptAtOpening::AsItWas;
     }
 }

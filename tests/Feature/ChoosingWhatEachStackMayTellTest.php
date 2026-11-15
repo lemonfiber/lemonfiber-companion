@@ -33,6 +33,7 @@ use Modules\Operator\Internal\ViewModels\WhatAStackMayTellAsShown;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AWakingPhone;
 use Tests\Support\Catalogue;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ANotifierInMemory;
@@ -124,6 +125,7 @@ function theNotificationPageUndrawn(
         $offering ?? AStackThatOffers::everything(),
         $switch,
         new AppsSettingsThatOpen(),
+        AWakingPhone::waking(),
     );
 }
 

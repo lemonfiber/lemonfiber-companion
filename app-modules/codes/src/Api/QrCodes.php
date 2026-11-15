@@ -8,6 +8,7 @@ use BaconQrCode\Common\ErrorCorrectionLevel;
 use BaconQrCode\Encoder\Encoder;
 use BaconQrCode\Exception\WriterException;
 use Modules\Kernel\Api\AClientToHandOver;
+use Modules\Kernel\Api\ADistributorToInstall;
 use Modules\Kernel\Api\AKeyClaim;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\APairingLine;
@@ -28,7 +29,7 @@ use Modules\Kernel\Api\Encoding;
  */
 final readonly class QrCodes implements Encoding
 {
-    public function codeFor(AnAddressToHand|APairingLine|AClientToHandOver|AKeyClaim $handed): AScannableCode
+    public function codeFor(AnAddressToHand|APairingLine|AClientToHandOver|AKeyClaim|ADistributorToInstall $handed): AScannableCode
     {
         try {
             $matrix = Encoder::encode($handed->carried(), ErrorCorrectionLevel::M())->getMatrix();

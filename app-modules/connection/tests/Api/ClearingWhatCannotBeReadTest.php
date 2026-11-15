@@ -14,6 +14,7 @@ use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
 use Modules\Kernel\Api\Shape;
 use Tests\Support\Fakes\ASealInMemory;
+use Tests\Support\Fakes\DistributorsOnAPhone;
 use Tests\Support\Fakes\ReadingsInMemory;
 
 /** A store holding one reading, as a phone that has been used holds one. */
@@ -38,26 +39,26 @@ it('clears every store, and says so, where the key had gone and a new one was ma
     $store = aStoreHoldingAReading();
     $seal = aSealHoldingItsKeys()->losesItsKeys();
 
-    expect(new ClearingWhatCannotBeRead($seal, $store)->onOpening())->toBe(WhatWasKeptAtOpening::Cleared)
+    expect(new ClearingWhatCannotBeRead($seal, $store, DistributorsOnAPhone::notHere())->onOpening())->toBe(WhatWasKeptAtOpening::Cleared)
         ->and($store->forgetEverything()->howMany())->toBe(0);
 });
 
 it('says it once: the next opening finds the new key held', function (): void {
     $store = aStoreHoldingAReading();
-    $clearing = new ClearingWhatCannotBeRead(aSealHoldingItsKeys()->losesItsKeys(), $store);
+    $clearing = new ClearingWhatCannotBeRead(aSealHoldingItsKeys()->losesItsKeys(), $store, DistributorsOnAPhone::notHere());
 
     expect($clearing->onOpening())->toBe(WhatWasKeptAtOpening::Cleared)
         ->and($clearing->onOpening())->toBe(WhatWasKeptAtOpening::AsItWas);
 });
 
 it('says nothing on a first launch, when the key is new and nothing was kept', function (): void {
-    expect(new ClearingWhatCannotBeRead(ASealInMemory::working(), ReadingsInMemory::empty())->onOpening())->toBe(WhatWasKeptAtOpening::AsItWas);
+    expect(new ClearingWhatCannotBeRead(ASealInMemory::working(), ReadingsInMemory::empty(), DistributorsOnAPhone::notHere())->onOpening())->toBe(WhatWasKeptAtOpening::AsItWas);
 });
 
 it('leaves what was kept where the key is held', function (): void {
     $store = aStoreHoldingAReading();
 
-    expect(new ClearingWhatCannotBeRead(aSealHoldingItsKeys(), $store)->onOpening())->toBe(WhatWasKeptAtOpening::AsItWas)
+    expect(new ClearingWhatCannotBeRead(aSealHoldingItsKeys(), $store, DistributorsOnAPhone::notHere())->onOpening())->toBe(WhatWasKeptAtOpening::AsItWas)
         ->and($store->forgetEverything()->howMany())->toBe(1);
 });
 
@@ -65,7 +66,7 @@ it('leaves what was kept where the key cannot be had, since it may be had next t
     foreach ([ASealInMemory::thatWillNotOpen(), ASealInMemory::withNoSecureStorage()] as $seal) {
         $store = aStoreHoldingAReading();
 
-        expect(new ClearingWhatCannotBeRead($seal, $store)->onOpening())->toBe(WhatWasKeptAtOpening::AsItWas)
+        expect(new ClearingWhatCannotBeRead($seal, $store, DistributorsOnAPhone::notHere())->onOpening())->toBe(WhatWasKeptAtOpening::AsItWas)
             ->and($store->forgetEverything()->howMany())->toBe(1);
     }
 });

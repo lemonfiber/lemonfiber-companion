@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 use Bootstrap\Composition\EveryStoreThePhoneKeeps;
 use Lemonfiber\Native\Reorderable;
+use Modules\Connection\Api\ChoosingWhoWakesThisPhone;
 use Modules\Connection\Api\ClearingWhatThePhoneKeeps;
 use Modules\Connection\Api\KeepingReadingsFor;
 use Modules\Connection\Api\LettingGoOfOldReadings;
 use Modules\Connection\Api\LockingAfter;
 use Modules\Connection\Api\TurningNotificationsOn;
+use Modules\Connection\Api\WakingThisPhone;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\APhoneKeysName;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\ForgetsEverythingKept;
 use Modules\Kernel\Api\HowItStands;
@@ -22,29 +25,36 @@ use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\SealedPayload;
 use Modules\Kernel\Api\SealedStack;
 use Modules\Kernel\Api\SecondsIn;
+use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheAppsSettings;
+use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisPhoneIsSet;
 use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
 use Modules\Operator\Internal\WhereAskingForNotificationsStands;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Modules\Wayfinding\Api\WhoTheSettingsSpeakTo;
 use Native\Mobile\Edge\NativeRouter;
+use Tests\Support\AWakingPhone;
 use Tests\Support\Fakes\ADeviceThatKnowsYou;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ANotifierInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\ASealInMemory;
+use Tests\Support\Fakes\AStackThatKeepsWakes;
 use Tests\Support\Fakes\ConnectionSettingsInMemory;
+use Tests\Support\Fakes\DistributorsOnAPhone;
 use Tests\Support\Fakes\FrozenClock;
+use Tests\Support\Fakes\PhoneKeysNamesKeptInMemory;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\Fakes\WakesInMemory;
+use Tests\Support\Fakes\WakingKeptInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatThePhoneKeeps;
@@ -63,19 +73,25 @@ function thePhonesSettingsOver(
     ?TheAppsSettings $apps = null,
     ?WakesInMemory $wakes = null,
     ?LockingAfter $locking = null,
+    ?WakingThisPhone $woken = null,
+    ?ChoosingWhoWakesThisPhone $wakers = null,
 ): HowThisPhoneIsSet {
     $kept ??= ConnectionSettingsInMemory::empty();
     $wakes ??= WakesInMemory::thatWake();
     $locking ??= new LockingAfter(ASealInMemory::working(), $kept, $device, FrozenClock::at(Instant::atEpochSeconds(0)));
+    $woken ??= AWakingPhone::waking();
+    $stacks ??= StacksInMemory::working();
 
     return new HowThisPhoneIsSet(
         $locking,
         $keychain ?? AKeychainInMemory::working(),
         $readings ?? WhatThePhoneKeeps::nothingTooOld(),
-        new ClearingWhatThePhoneKeeps($everything ?? new EveryStoreThePhoneKeeps($kept), $locking, $wakes),
-        $stacks ?? StacksInMemory::working(),
+        new ClearingWhatThePhoneKeeps($everything ?? new EveryStoreThePhoneKeeps($kept), $locking, $wakes, $woken, $stacks),
+        $stacks,
         new TurningNotificationsOn(ASealInMemory::working(), $kept, $notifier ?? ANotifierInMemory::unasked(), FrozenClock::at(Instant::atEpochSeconds(0)), $wakes),
         $apps ?? new AppsSettingsThatOpen(),
+        $wakers ?? AWakingPhone::choosing(),
+        $woken,
     );
 }
 
@@ -573,4 +589,100 @@ it('offers no notifications switch in a member\'s words, and none of what it say
     expect($screen->notificationsAreOn())->toBeTrue()
         ->and($said)->not->toContain(__('settings.notifications_on'))
         ->and($said)->not->toContain(__('settings.notifications_may_be_missing'));
+});
+
+/** A stack the phone may be woken for, on the app's settings. Named for this file. */
+function aStackTheSettingsMoveTheWakeOf(): Stack
+{
+    return Stack::of(
+        StackId::of(Nonce::of(str_repeat('w', Nonce::SHORTEST))),
+        StackName::of('The loft'),
+        Address::of('https://192.168.1.49'),
+        Fingerprint::of(str_repeat('e', Fingerprint::CHARACTERS)),
+    );
+}
+
+/** The app's settings over a phone with these distributors, the loft signed in as `$whose` and woken through ntfy where the phone has it. */
+function theSettingsOfAPhoneWokenThrough(DistributorsOnAPhone $phone, AStackThatKeepsWakes $keeping, ?Whose $whose = null): HowThisPhoneIsSet
+{
+    $loft = aStackTheSettingsMoveTheWakeOf();
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep($loft->id(), Session::of('a-session-not-a-secret'), $whose ?? Whose::theOperator());
+    $names = PhoneKeysNamesKeptInMemory::working();
+    $names->keepTheName($loft->id(), APhoneKeysName::of('Galaxy A51 · 7f3a'));
+    $woken = AWakingPhone::waking($phone, $keeping, $names);
+    $woken->turnOn($loft, Session::of('a-session-not-a-secret'), DistributorsOnAPhone::ntfy());
+
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), keychain: $keychain, stacks: StacksInMemory::holding($loft), woken: $woken, wakers: AWakingPhone::choosing($phone));
+    $screen->notificationsTurned(on: true);
+    $screen->allowNotifications();
+
+    return $screen;
+}
+
+it('offers no choice of distributor where one or none is installed', function (DistributorsOnAPhone $phone): void {
+    expect(WhatTheDeviceWouldDraw::by(theSettingsOfAPhoneWokenThrough($phone, AStackThatKeepsWakes::reachable()))->said())->not->toContain(__('waking.through'));
+})->with([
+    'one' => [DistributorsOnAPhone::with()],
+    'none' => [DistributorsOnAPhone::withNone()],
+    'an iPhone' => [DistributorsOnAPhone::notHere()],
+]);
+
+it('offers the distributors installed where there are several, and registers every stack again through the one chosen', function (): void {
+    $keeping = AStackThatKeepsWakes::reachable();
+    $screen = theSettingsOfAPhoneWokenThrough(DistributorsOnAPhone::with(DistributorsOnAPhone::ntfy(), DistributorsOnAPhone::nextPush()), $keeping);
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    $screen->wakeThroughChosen(DistributorsOnAPhone::nextPush()->package());
+
+    expect($drawn->said())->toContain(__('waking.through'))
+        ->and($drawn->said())->toContain(__('waking.through_explained'))
+        ->and($drawn->offers())->toContain('NextPush')
+        ->and($keeping->holds(aStackTheSettingsMoveTheWakeOf(), 'galaxy-a51-7f3a'))->toContain(DistributorsOnAPhone::nextPush()->package())
+        ->and($screen->wakeThroughChoice()->said)->toBe('NextPush');
+
+    $asked = $keeping->timesAsked();
+    $screen->wakeThroughChosen(DistributorsOnAPhone::nextPush()->package());
+    $screen->wakeThroughChosen('not.installed');
+
+    expect($keeping->timesAsked())->toBe($asked);
+});
+
+it('chooses a distributor without registering a stack a member is signed in to', function (): void {
+    $keeping = AStackThatKeepsWakes::reachable();
+    $screen = theSettingsOfAPhoneWokenThrough(DistributorsOnAPhone::with(DistributorsOnAPhone::ntfy(), DistributorsOnAPhone::nextPush()), $keeping, Whose::member('robin'));
+    $asked = $keeping->timesAsked();
+
+    $screen->wakeThroughChosen(DistributorsOnAPhone::nextPush()->package());
+
+    expect($keeping->timesAsked())->toBe($asked)
+        ->and($screen->wakeThroughChoice()->said)->toBe('NextPush');
+});
+
+it('leaves the old endpoint with a stack that cannot be reached as the choice moves, and does not wake through the new one there', function (): void {
+    $keeping = AStackThatKeepsWakes::reachable();
+    $screen = theSettingsOfAPhoneWokenThrough(DistributorsOnAPhone::with(DistributorsOnAPhone::ntfy(), DistributorsOnAPhone::nextPush()), $keeping);
+    $keeping->goesAway();
+
+    $screen->wakeThroughChosen(DistributorsOnAPhone::nextPush()->package());
+
+    expect($keeping->holds(aStackTheSettingsMoveTheWakeOf(), 'galaxy-a51-7f3a'))->toContain(DistributorsOnAPhone::ntfy()->package());
+});
+
+it('drops every registration as saved data is cleared, and owes each stack that held the endpoint its removal', function (): void {
+    $phone = DistributorsOnAPhone::with();
+    $keeping = AStackThatKeepsWakes::reachable();
+    $loft = aStackTheSettingsMoveTheWakeOf();
+    $names = PhoneKeysNamesKeptInMemory::working();
+    $names->keepTheName($loft->id(), APhoneKeysName::of('Galaxy A51 · 7f3a'));
+    $kept = WakingKeptInMemory::empty();
+    $woken = AWakingPhone::waking($phone, $keeping, $names, $kept);
+    $woken->turnOn($loft, Session::of('a-session-not-a-secret'), DistributorsOnAPhone::ntfy());
+    $screen = thePhonesSettingsOver(ADeviceThatKnowsYou::unlocked(), everything: new EveryStoreThePhoneKeeps($kept), stacks: StacksInMemory::holding($loft), woken: $woken);
+
+    $screen->askToClear();
+    $screen->clearSavedData();
+
+    expect($phone->everyLetGoCount())->toBe(1)
+        ->and($woken->forTheStack($loft->id())->owesARemoval())->toBeTrue();
 });

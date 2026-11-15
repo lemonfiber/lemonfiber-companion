@@ -6,8 +6,10 @@ use Bootstrap\Composition\ArtworkGoesWithTheSession;
 use Bootstrap\Composition\EveryKeeperOfAStack;
 use Bootstrap\Composition\NothingToAsk;
 use Modules\Connection\Api\ChoosingWhatReachesThePhone;
+use Modules\Connection\Api\WakingThisPhone;
 use Modules\Device\Api\PlatformPhoneKeys;
 use Modules\Health\Api\KeepingTheLastReading;
+use Modules\Kernel\Api\APhoneKeysName;
 use Modules\Kernel\Api\ForgetsAStack;
 use Modules\Kernel\Api\HoldingAPhoneKey;
 use Modules\Kernel\Api\Instant;
@@ -34,12 +36,15 @@ use Modules\Vault\Api\PlatformWhereTheOperatorWas;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
 use Modules\Watching\Api\KeepingTheirLanguages;
 use Saloon\Http\Faking\MockClient;
+use Tests\Support\AWakingPhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\APhoneKeyInMemory;
 use Tests\Support\Fakes\APhoneKeyOnAHandset;
 use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ArtworkHeldInMemory;
 use Tests\Support\Fakes\ASealInMemory;
+use Tests\Support\Fakes\AStackThatKeepsWakes;
+use Tests\Support\Fakes\DistributorsOnAPhone;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\GrantsKeptInMemory;
 use Tests\Support\Fakes\NewsKeptInMemory;
@@ -88,6 +93,7 @@ function everyKeeperHoldingTwoStacks(): array
         'what the household asked for' => WhatThePhoneKeeps::noRequestsYet(),
         'the languages members chose' => WhatThePhoneKeeps::noLanguagesYet(),
         'what is new' => whatNoticesNewsOver(ASealInMemory::working()),
+        'whether it wakes the phone' => wakingThePhoneForEveryKeptStack(),
         'what reaches the phone' => new ChoosingWhatReachesThePhone(ASealInMemory::working(), NotifyingKeptInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0))),
         'the platform words' => new PlatformStandings(APlatformStore::working()),
         'the fake words' => StandingsInMemory::working(),
@@ -113,6 +119,24 @@ function everyKeeperHoldingTwoStacks(): array
     }
 
     return [...$keepers, 'every keeper together' => new EveryKeeperOfAStack($pairings, $words)];
+}
+
+/** Whether each stack wakes the phone, over a phone with ntfy and stacks that keep what they are given. */
+function wakingThePhoneForEveryKeptStack(): WakingThisPhone
+{
+    return AWakingPhone::waking(DistributorsOnAPhone::with(), AStackThatKeepsWakes::reachable(), aPhoneKeysNameOnEveryKeptStack());
+}
+
+/** The names this phone's key carries on each stack a keeper keeps something for, so waking can be registered under them. */
+function aPhoneKeysNameOnEveryKeptStack(): PhoneKeysNamesKeptInMemory
+{
+    $names = PhoneKeysNamesKeptInMemory::working();
+
+    foreach (['a', 'b'] as $seed) {
+        $names->keepTheName(WhatEveryKeeperKeeps::aStack($seed)->id(), APhoneKeysName::of('Galaxy A51 · 7f3a'));
+    }
+
+    return $names;
 }
 
 /** What notices what is new on a stack, over this seal and a store of its own. */

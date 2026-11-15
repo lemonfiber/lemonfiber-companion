@@ -48,6 +48,7 @@ use Modules\Sdk\Api\Fields\PlayingField;
 use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
+use Modules\Sdk\Api\Fields\PushEndpointField;
 use Modules\Sdk\Api\Fields\QualityField;
 use Modules\Sdk\Api\Fields\RemovalField;
 use Modules\Sdk\Api\Fields\RepairField;
@@ -106,6 +107,7 @@ function everyFieldNamedOnTheWire(): array
         ...KeysField::cases(),
         ...DeviceChallengeField::cases(),
         ...KeyClaimField::cases(),
+        ...PushEndpointField::cases(),
         ...DashboardField::cases(),
         ...DoctorField::cases(),
         ...GlossaryField::cases(),

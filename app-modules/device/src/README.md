@@ -18,6 +18,7 @@ implements one kernel port over the platform:
 | `PlatformPlayer` | `Playing` |
 | `PlatformArtwork` | `HoldingArtwork` |
 | `PlatformPhoneKeys` | `HoldingAPhoneKey` |
+| `PlatformDistributors` | `ReachingADistributor` |
 
 The phone's features are reached through `nativephp/mobile` and this
 application's `lemonfiber/bridge` plugin. Secure storage is in `vault`.
@@ -28,6 +29,12 @@ it into one app-private directory used for nothing else, grants the chosen app
 read access to that one file, and empties the directory before every new
 handover and on the next launch, so at most one bundle is ever on the device.
 Nothing reports which app was chosen.
+
+`PlatformDistributors` registers each stack with a UnifiedPush distributor
+under the stack's id, with a WebPush key pair the bridge makes in the Android
+Keystore for that stack alone. A push only queues that stack's wake; its
+payload is never decrypted or read. An iPhone answers that it cannot be woken
+this way.
 
 `PlatformArtwork` hands a picture's bytes to the native half under an opaque
 `lemonfiber-art:` key and the stack it came from. Both halves hold pictures in

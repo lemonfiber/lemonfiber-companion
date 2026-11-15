@@ -23,6 +23,7 @@ use function str_repeat;
 
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ASealInMemory;
+use Tests\Support\Fakes\DistributorsOnAPhone;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\ReadingsKeptForInMemory;
@@ -79,7 +80,7 @@ final readonly class WhatThePhoneKeeps
     /** Clearing what the phone kept on opening, with nothing kept to clear. */
     public static function nothingToClear(): ClearingWhatCannotBeRead
     {
-        return new ClearingWhatCannotBeRead(ASealInMemory::working(), ReadingsInMemory::empty());
+        return new ClearingWhatCannotBeRead(ASealInMemory::working(), ReadingsInMemory::empty(), DistributorsOnAPhone::notHere());
     }
 
     /** Clearing what the phone kept on opening, where its key has gone since the launch before and a word was kept. */
@@ -90,7 +91,7 @@ final readonly class WhatThePhoneKeeps
         $kept = StandingsInMemory::working();
         $kept->remember(StackId::of(Nonce::of(str_repeat('f', Nonce::SHORTEST))), HowItStands::Healthy, Instant::atEpochSeconds(0));
 
-        return new ClearingWhatCannotBeRead($seal->losesItsKeys(), $kept);
+        return new ClearingWhatCannotBeRead($seal->losesItsKeys(), $kept, DistributorsOnAPhone::notHere());
     }
 
     /** Removing a stack, with nothing left from a removal before. */
