@@ -47,8 +47,10 @@ const NOT_SENT_BECAUSE = [
  * requirement that says why the app does not.
  */
 const NOT_SENT_YET = [
+    'play',
     'push-woken',
     'space',
+    'tune',
 ];
 
 /**
