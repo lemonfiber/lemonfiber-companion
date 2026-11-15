@@ -89,7 +89,7 @@ final readonly class KeysListed
             self::purpose($row, $position),
             self::state($row, $position),
             AMomentAsWritten::byTheStack(Required::number($row, KeysField::Minted, KeysAreUnreadable::said(KeysField::Minted, $position))),
-            AMomentAsWritten::byTheStack(Optional::number($row, WireField::Used, KeysAreUnreadable::said(WireField::Used, $position))),
+            Optional::moment($row, WireField::Used, KeysAreUnreadable::said(WireField::Used, $position)),
             self::flag($row, KeysField::MemberMinted, $position),
         );
     }

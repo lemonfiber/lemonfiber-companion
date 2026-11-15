@@ -153,6 +153,15 @@ it('says a door was worked out rather than chosen, and a chosen one was chosen',
         ->and($named)->toContain(__(WhereTheFrontDoorStands::Stranded->saidOnTheScreen()));
 });
 
+it('draws no word on how the door was chosen where the stack left it untold', function (): void {
+    $screen = theDoorScreen(AStackWithAFrontDoor::with(aDoorWithNothingAtIt(WhereTheFrontDoorStands::Established, HowTheDoorCameToBe::untold())));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($screen->answer()->chosenSaid)->toBe('')
+        ->and($drawn)->not->toContain(__(HowTheDoorWasChosen::Derived->saidOnTheScreen()))
+        ->and($drawn)->toContain(__(WhereTheFrontDoorStands::Established->saidOnTheScreen()));
+});
+
 it('draws where the door stands with the glyph it reads by', function (WhereTheFrontDoorStands $standing, Tone $tone): void {
     $screen = theDoorScreen(AStackWithAFrontDoor::with(aDoorWithNothingAtIt($standing, HowTheDoorCameToBe::derived())));
 

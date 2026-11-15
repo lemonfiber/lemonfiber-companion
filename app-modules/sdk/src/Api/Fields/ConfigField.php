@@ -29,9 +29,6 @@ enum ConfigField: string implements NamesAWireField
     /** What a change stops running, by service name. */
     case Stops = 'stops';
 
-    /** The library paths the services hold, and what moving the data location does to each. */
-    case Library = 'library';
-
     /** The hand-edit found in the configuration file. */
     case Edited = 'edited';
 

@@ -10,6 +10,7 @@ use Modules\Kernel\Api\AServiceStanding;
 use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheSurvey;
+use Modules\Kernel\Api\WhereAServiceKeepsIt;
 use Modules\Operator\Internal\Listed;
 use Modules\Operator\Internal\ViewModels\ALineOfTheSurvey;
 use Modules\Operator\Internal\ViewModels\AModeAsShown;
@@ -88,7 +89,7 @@ final readonly class HowTheSurveyReads
         return new AProjectAsFound(project: $project->project(), services: $services);
     }
 
-    /** One service, the ports it publishes, whether it runs and whether it could be taken over. */
+    /** One service, the ports it publishes, whether it runs, whether it could be taken over and where it keeps its configuration and library. */
     private function service(AServiceStanding $service): AServiceAsFound
     {
         $ports = [];
@@ -103,6 +104,18 @@ final readonly class HowTheSurveyReads
             portsSaid: $ports === [] ? 'stacks.already_here.no_ports' : 'stacks.already_here.ports',
             runningSaid: $service->isRunning() ? 'stacks.already_here.running' : 'stacks.already_here.stopped',
             adoptableSaid: $service->isAdoptable() ? 'stacks.already_here.adoptable' : 'stacks.already_here.not_adoptable',
+            config: $this->kept($service->config(), 'stacks.already_here.config.at', 'stacks.already_here.config.unread', 'stacks.already_here.config.none'),
+            library: $this->kept($service->library(), 'stacks.already_here.library.at', 'stacks.already_here.library.unread', 'stacks.already_here.library.none'),
+        );
+    }
+
+    /** Where a service keeps something, on the sentence its arm calls for. */
+    private function kept(WhereAServiceKeepsIt $place, string $at, string $unread, string $none): ALineOfTheSurvey
+    {
+        return $place->either(
+            at: static fn(string $path): ALineOfTheSurvey => new ALineOfTheSurvey($at, ['at' => $path]),
+            unread: static fn(string $why): ALineOfTheSurvey => new ALineOfTheSurvey($unread, ['why' => $why]),
+            none: static fn(string $why): ALineOfTheSurvey => new ALineOfTheSurvey($none, ['why' => $why]),
         );
     }
 

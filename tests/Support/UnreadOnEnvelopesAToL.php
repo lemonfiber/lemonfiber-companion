@@ -485,6 +485,22 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'an obstacle, and nothing this app asks for runs a recipe.',
         ],
         [
+            'path' => 'FrontDoorEnvelope.reaches',
+            'because' => WhatThisAppDoesNotRead::REACHED_FROM_HERE,
+        ],
+        [
+            'path' => 'FrontDoorEnvelope.beside[].reaches',
+            'because' => WhatThisAppDoesNotRead::REACHED_FROM_HERE,
+        ],
+        [
+            'path' => 'FrontDoorEnvelope.unaddressed',
+            'because' => WhatThisAppDoesNotRead::WHY_NO_ADDRESS,
+        ],
+        [
+            'path' => 'FrontDoorEnvelope.beside[].unaddressed',
+            'because' => WhatThisAppDoesNotRead::WHY_NO_ADDRESS,
+        ],
+        [
             'path' => 'FormsEnvelope.forms[].name',
             'because' => 'What a form is called, in the stack\'s words. The `id` is what `up`, `down` and '
                 . '`restart` are told, and a control here shows the id so that its label and its request '

@@ -30,6 +30,7 @@ use Modules\Kernel\Api\WhatStandsHere;
 use Modules\Sdk\Api\Fields\MigrationField;
 use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
+use Modules\Sdk\Internal\WhereAFoundServiceKeepsThings;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -129,6 +130,8 @@ final readonly class WhatIsAlreadyHere
                 ThePortsItPublishes::of(...self::ports($row, MigrationIsUnreadable::service($at, $position, WireField::Ports))),
                 Required::flag($row, WireField::Running, MigrationIsUnreadable::service($at, $position, WireField::Running)),
                 Required::flag($row, MigrationField::Adoptable, MigrationIsUnreadable::service($at, $position, MigrationField::Adoptable)),
+                WhereAFoundServiceKeepsThings::in($row, MigrationField::Config, MigrationIsUnreadable::service($at, $position, MigrationField::Config)),
+                WhereAFoundServiceKeepsThings::in($row, WireField::Library, MigrationIsUnreadable::service($at, $position, WireField::Library)),
             );
         }
 

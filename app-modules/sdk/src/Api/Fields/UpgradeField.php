@@ -22,4 +22,10 @@ enum UpgradeField: string implements NamesAWireField
      * is asked for, where it is for one kind rather than everything.
      */
     case MediaType = 'media_type';
+
+    /** What upgrading one kind takes in total, as bytes or as why it could not be worked out. */
+    case Total = 'total';
+
+    /** The arm of a total the stack could not work out, with why. */
+    case Unknown = 'unknown';
 }

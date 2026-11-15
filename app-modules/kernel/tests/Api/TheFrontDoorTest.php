@@ -56,14 +56,20 @@ it('refuses a door that will not say what it means', function (): void {
     expect(fn(): TheFrontDoor => aDoorMeaning(' '))->toThrow(TheDoorSaysNothing::class, 'arrived with its `meaning` blank');
 });
 
-it('says how the door came to be, with what was named and why it was refused', function (): void {
-    $derived = HowTheDoorCameToBe::derived();
-    $named = HowTheDoorCameToBe::byTheOperator('jellyseerr');
-    $refused = HowTheDoorCameToBe::refused('homepage', 'It lists everything');
+/** How a door came to be, as its arm, what was named and why it was refused. */
+function howTheDoorWasTold(HowTheDoorCameToBe $chosen): string
+{
+    return sprintf('%s|%s|%s|%s', $chosen->told(
+        told: static fn(HowTheDoorWasChosen $how): TheWordCarriedOut => new TheWordCarriedOut($how->value),
+        untold: static fn(): TheWordCarriedOut => new TheWordCarriedOut('untold'),
+    )->said, $chosen->named(), $chosen->because(), $chosen->saidOnTheScreen());
+}
 
-    expect([$derived->how(), $derived->named(), $derived->because()])->toBe([HowTheDoorWasChosen::Derived, '', ''])
-        ->and([$named->how(), $named->named(), $named->because()])->toBe([HowTheDoorWasChosen::Named, 'jellyseerr', ''])
-        ->and([$refused->how(), $refused->named(), $refused->because()])->toBe([HowTheDoorWasChosen::Refused, 'homepage', 'It lists everything']);
+it('says how the door came to be, with what was named and why it was refused, and nothing where it went untold', function (): void {
+    expect(howTheDoorWasTold(HowTheDoorCameToBe::derived()))->toBe('derived|||stacks.front_door.chosen.derived')
+        ->and(howTheDoorWasTold(HowTheDoorCameToBe::byTheOperator('jellyseerr')))->toBe('named|jellyseerr||stacks.front_door.chosen.named')
+        ->and(howTheDoorWasTold(HowTheDoorCameToBe::refused('homepage', 'It lists everything')))->toBe('refused|homepage|It lists everything|stacks.front_door.chosen.refused')
+        ->and(howTheDoorWasTold(HowTheDoorCameToBe::untold()))->toBe('untold|||');
 });
 
 it('refuses a named door that names nothing, and a refusal that will not say what or why', function (): void {

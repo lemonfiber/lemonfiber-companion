@@ -28,6 +28,7 @@ use Modules\Kernel\Api\WhatIsUnsupported;
 use Modules\Kernel\Api\WhatLinkingCosts;
 use Modules\Kernel\Api\WhatMayBeDone;
 use Modules\Kernel\Api\WhatStandsHere;
+use Modules\Kernel\Api\WhereAServiceKeepsIt;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
 use Modules\Stacks\Api\AStacksScreen;
@@ -74,8 +75,8 @@ function aSurveyOfAMachineInUse(): TheSurvey
         standing: WhatStandsHere::of(
             AProjectStanding::named(
                 'media',
-                AServiceStanding::found('sonarr', ThePortsItPublishes::of(8989, 9898), running: true, adoptable: true),
-                AServiceStanding::found('tautulli', ThePortsItPublishes::of(), running: false, adoptable: false),
+                AServiceStanding::found('sonarr', ThePortsItPublishes::of(8989, 9898), running: true, adoptable: true, config: WhereAServiceKeepsIt::at('/srv/sonarr/config'), library: WhereAServiceKeepsIt::at('/media/tv')),
+                AServiceStanding::found('tautulli', ThePortsItPublishes::of(), running: false, adoptable: false, config: WhereAServiceKeepsIt::unread('It is mounted from a volume'), library: WhereAServiceKeepsIt::none('It keeps no library')),
             ),
         ),
         conflicts: ThePortsHeld::of(APortHeld::of(8989, 'sonarr', 'media')),
@@ -119,18 +120,25 @@ function theSurveyScreen(
     return $screen;
 }
 
-/** The line under a found service's name: whether it runs, and whether it could be taken over. */
-function howAFoundServiceStands(string $running, string $adoptable): string
+/**
+ * The line under a found service's name: whether it runs, whether it could be taken over, and where it keeps its configuration and library.
+ *
+ * @param array{string, array<string, string>} $config
+ * @param array{string, array<string, string>} $library
+ */
+function howAFoundServiceStands(string $running, string $adoptable, array $config, array $library): string
 {
-    $runs = __($running);
-    $takes = __($adoptable);
+    $parts = [];
 
-    return is_string($runs) && is_string($takes)
-        ? sprintf('%s · %s', $runs, $takes)
-        : throw new LogicException('a key names a group of lines, not a sentence');
+    foreach ([[$running, []], [$adoptable, []], $config, $library] as [$key, $with]) {
+        $part = __($key, $with);
+        $parts[] = is_string($part) ? $part : throw new LogicException('a key names a group of lines, not a sentence');
+    }
+
+    return implode(' · ', $parts);
 }
 
-it('shows every project and service, whether each runs, and whether it could be taken over', function (): void {
+it('shows every project and service, whether each runs, whether it could be taken over and where it keeps its configuration and library', function (): void {
     $screen = theSurveyScreen(AStackWithSomethingAlreadyOnIt::with(aSurveyOfAMachineInUse()));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
     $services = $screen->answer()->projects[0]->services;
@@ -146,8 +154,39 @@ it('shows every project and service, whether each runs, and whether it could be 
         ->and($drawn)->toContain(__('stacks.already_here.no_ports'))
         // Each row says whether it runs and whether it could be taken over on
         // the one line under its name.
-        ->and($drawn)->toContain(howAFoundServiceStands('stacks.already_here.running', 'stacks.already_here.adoptable'))
-        ->and($drawn)->toContain(howAFoundServiceStands('stacks.already_here.stopped', 'stacks.already_here.not_adoptable'));
+        ->and($drawn)->toContain(howAFoundServiceStands('stacks.already_here.running', 'stacks.already_here.adoptable', ['stacks.already_here.config.at', ['at' => '/srv/sonarr/config']], ['stacks.already_here.library.at', ['at' => '/media/tv']]))
+        ->and($drawn)->toContain(howAFoundServiceStands('stacks.already_here.stopped', 'stacks.already_here.not_adoptable', ['stacks.already_here.config.unread', ['why' => 'It is mounted from a volume']], ['stacks.already_here.library.none', ['why' => 'It keeps no library']]));
+});
+
+it('says where each service keeps its configuration and its library, or why that is not said', function (): void {
+    $machine = TheSurvey::reported(
+        looked: true,
+        standing: WhatStandsHere::of(AProjectStanding::named(
+            'media',
+            AServiceStanding::found('sonarr', ThePortsItPublishes::of(), running: true, adoptable: true, config: WhereAServiceKeepsIt::at('/srv/sonarr/config'), library: WhereAServiceKeepsIt::at('/media/tv')),
+            AServiceStanding::found('tautulli', ThePortsItPublishes::of(), running: true, adoptable: true, config: WhereAServiceKeepsIt::unread('It is mounted from a volume'), library: WhereAServiceKeepsIt::none('It keeps no library')),
+            AServiceStanding::found('gluetun', ThePortsItPublishes::of(), running: true, adoptable: true, config: WhereAServiceKeepsIt::none('It is configured by its settings'), library: WhereAServiceKeepsIt::unread('Its mounts could not be inspected')),
+        )),
+        conflicts: ThePortsHeld::of(),
+        unsupported: WhatIsUnsupported::none(),
+        beside: ThePortsMoved::of(),
+        linking: WhatLinkingCosts::nothing(),
+        choices: WhatMayBeDone::offered(theModesOnOffer(), WhatAdoptingWouldDo::of(), WhatIsUnsupported::none()),
+    );
+    $screen = theSurveyScreen(AStackWithSomethingAlreadyOnIt::with($machine));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $said = [];
+
+    foreach ($screen->answer()->projects[0]->services as $service) {
+        $said[] = [$service->config->said, $service->config->with, $service->library->said, $service->library->with];
+    }
+
+    expect($said)->toBe([
+        ['stacks.already_here.config.at', ['at' => '/srv/sonarr/config'], 'stacks.already_here.library.at', ['at' => '/media/tv']],
+        ['stacks.already_here.config.unread', ['why' => 'It is mounted from a volume'], 'stacks.already_here.library.none', ['why' => 'It keeps no library']],
+        ['stacks.already_here.config.none', ['why' => 'It is configured by its settings'], 'stacks.already_here.library.unread', ['why' => 'Its mounts could not be inspected']],
+    ])
+        ->and($drawn)->toContain(howAFoundServiceStands('stacks.already_here.running', 'stacks.already_here.adoptable', ['stacks.already_here.config.none', ['why' => 'It is configured by its settings']], ['stacks.already_here.library.unread', ['why' => 'Its mounts could not be inspected']]));
 });
 
 it('draws what it found before any mode', function (): void {

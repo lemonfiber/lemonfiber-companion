@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use Modules\Kernel\Api\HowBig;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheUpgrade;
 use Modules\Operator\Internal\ViewModels\AnUpgradeAsShown;
@@ -13,9 +14,10 @@ use Modules\Operator\Internal\ViewModels\TheUpgradeTurnedOutToBe;
 /**
  * What asking a stack about upgrading the library produces, as the fields a screen draws.
  *
- * `F2`: data in, view model out. Kind by kind, as the stack listed them, and
- * no figure for the whole: the stack states a cost per hour for each kind and
- * no sum, and a sum worked out here would be a number the stack never said.
+ * `F2`: data in, view model out. Kind by kind, as the stack listed them, each
+ * with what the stack counted it would take or why it could not count, and no
+ * figure for the whole: a sum worked out here would be a number the stack
+ * never said.
  */
 final readonly class HowAnUpgradeReads
 {
@@ -31,12 +33,27 @@ final readonly class HowAnUpgradeReads
         $kinds = [];
 
         foreach ($upgrade as $kind) {
-            $kinds[] = new AnUpgradeAsShown(
-                kind: $kind->kind(),
-                preset: $kind->preset(),
-                sizePerHour: $kind->sizePerHour(),
-                askingSaid: $kind->asking()->saidOnTheScreen(),
-                detail: $kind->asking()->detail(),
+            $kinds[] = $kind->total()->either(
+                bytes: static fn(int $bytes): AnUpgradeAsShown => new AnUpgradeAsShown(
+                    kind: $kind->kind(),
+                    preset: $kind->preset(),
+                    totalSaid: 'quality.upgrade.takes',
+                    figure: HowBig::of($bytes)->figure,
+                    unit: HowBig::of($bytes)->said,
+                    why: '',
+                    askingSaid: $kind->asking()->saidOnTheScreen(),
+                    detail: $kind->asking()->detail(),
+                ),
+                unknown: static fn(string $why): AnUpgradeAsShown => new AnUpgradeAsShown(
+                    kind: $kind->kind(),
+                    preset: $kind->preset(),
+                    totalSaid: 'quality.upgrade.takes_unknown',
+                    figure: 0,
+                    unit: '',
+                    why: $why,
+                    askingSaid: $kind->asking()->saidOnTheScreen(),
+                    detail: $kind->asking()->detail(),
+                ),
             );
         }
 

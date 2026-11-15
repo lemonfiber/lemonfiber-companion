@@ -42,6 +42,9 @@
             <x-design::strong>{{ __('stacks.outbound.on_behalf.for', ['plugin' => $request->plugin]) }}</x-design::strong>
             <x-design::note>{{ $request->purpose }}</x-design::note>
             <x-design::note>{{ __('stacks.outbound.on_behalf.goes_to', ['destination' => $request->destination]) }}</x-design::note>
+            <x-design::body>{{ __($request->allowedSaid) }}</x-design::body>
+            <x-design::note>{{ __('stacks.outbound.on_behalf.switch', ['switch' => $request->switch]) }}</x-design::note>
+            <x-design::note>{{ __('stacks.outbound.on_behalf.cost', ['cost' => $request->cost]) }}</x-design::note>
         </x-design::card>
     @empty
         <x-design::body>{{ __('stacks.outbound.on_behalf.none') }}</x-design::body>

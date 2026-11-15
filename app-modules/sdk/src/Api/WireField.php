@@ -784,6 +784,12 @@ enum WireField: string implements NamesAWireField
     case Number = 'number';
 
     /**
+     * A library: the paths the services hold and what moving the data location
+     * does to each, and where a service found already here keeps its own.
+     */
+    case Library = 'library';
+
+    /**
      * What could not be read: the sources a removal reading did not get an
      * answer from, in the words of whatever refused, and the kinds a stack
      * could not list as new.

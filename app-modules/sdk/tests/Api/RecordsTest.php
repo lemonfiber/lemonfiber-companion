@@ -46,7 +46,7 @@ function historySaying(array $data): Envelope
  *
  * @return array<string, mixed>
  */
-function aRecordedChange(string $did = 'Pointed Sonarr at the new library', string $at = '1790142840'): array
+function aRecordedChange(string $did = 'Pointed Sonarr at the new library', int $at = 1790142840): array
 {
     return [
         'did' => $did,
@@ -100,7 +100,7 @@ function whatARecordedChangeSaysOfItsLimits(Change $change): string
 }
 
 it('reads the record with how far back it goes, keeping the stack\'s order', function (): void {
-    $record = Records::in(aRecordOf([aRecordedChange('Newer'), aRecordedChange('Older', '1790110000')]));
+    $record = Records::in(aRecordOf([aRecordedChange('Newer'), aRecordedChange('Older', 1790110000)]));
 
     $done = [];
 
@@ -231,8 +231,8 @@ it('refuses a row whose word is there and blank, which is the same fault', funct
 it('reads a zero stamp as an unreadable clock, never as 1970', function (): void {
     // Zero is what the stack writes where its clock would not answer. Read as
     // a moment it would put a change in 1970, confidently, on a screen.
-    $unreadable = theFirstChangeIn(Records::in(aRecordOf([aRecordedChange(at: '0')])))->when();
-    $known = theFirstChangeIn(Records::in(aRecordOf([aRecordedChange(at: '1')])))->when();
+    $unreadable = theFirstChangeIn(Records::in(aRecordOf([aRecordedChange(at: 0)])))->when();
+    $known = theFirstChangeIn(Records::in(aRecordOf([aRecordedChange(at: 1)])))->when();
 
     expect($unreadable->isTheSameMomentAs(WhenItWasMade::unreadable()))->toBeFalse()
         ->and($unreadable->either(
@@ -243,20 +243,18 @@ it('reads a zero stamp as an unreadable clock, never as 1970', function (): void
         ->and($known->isTheSameMomentAs(WhenItWasMade::at(Instant::atEpochSeconds(1))))->toBeTrue();
 });
 
-it('refuses a when that is not seconds since the epoch written as digits', function (): void {
-    // Each is something the core does not write. An ISO date would need a
-    // guess at a format; a sign or a space is a conversion being forgiving
-    // about a stamp that came from somewhere else; digits too long to fit are
-    // not a moment at all.
-    foreach (['2026-09-23T03:14:00Z', '+1790142840', ' 1790142840', '1790142840 ', '-5', '00', '99999999999999999999'] as $said) {
+it('refuses a when that counts back from the epoch', function (): void {
+    foreach ([-1, PHP_INT_MIN] as $said) {
         expect(fn(): TheRecord => Records::in(aRecordOf([[...aRecordedChange(), 'at' => $said]])))
             ->toThrow(HistoryIsUnreadable::class, 'seconds since the epoch');
     }
 });
 
-it('refuses a when that arrives as a number rather than as the string the contract describes', function (): void {
-    expect(fn(): TheRecord => Records::in(aRecordOf([[...aRecordedChange(), 'at' => 1790142840]])))
-        ->toThrow(HistoryIsUnreadable::class, '`at`');
+it('refuses a when that arrives as text rather than as the integer the contract describes', function (): void {
+    foreach (['1790142840', '2026-09-23T03:14:00Z', 1790142840.0] as $said) {
+        expect(fn(): TheRecord => Records::in(aRecordOf([[...aRecordedChange(), 'at' => $said]])))
+            ->toThrow(HistoryIsUnreadable::class, '`at`');
+    }
 });
 
 it('a reversal this app does not read names what it does read', function (): void {

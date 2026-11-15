@@ -88,7 +88,7 @@ final readonly class PhoneKeysListed
         $backing = Required::text($row, WireField::Backing, PhoneKeysAreUnreadable::entry(WireField::Backing, $position));
         $lives = WhereAPhoneKeyLives::tryFrom($backing) ?? throw PhoneKeysAreUnreadable::backing($backing, $position);
         $registered = AMomentAsWritten::byTheStack(Required::number($row, WireField::Registered, PhoneKeysAreUnreadable::entry(WireField::Registered, $position)));
-        $used = AMomentAsWritten::byTheStack(Optional::number($row, WireField::Used, PhoneKeysAreUnreadable::entry(WireField::Used, $position)));
+        $used = Optional::moment($row, WireField::Used, PhoneKeysAreUnreadable::entry(WireField::Used, $position));
         $revoked = Optional::number($row, WireField::Revoked, PhoneKeysAreUnreadable::entry(WireField::Revoked, $position));
 
         return $revoked === null

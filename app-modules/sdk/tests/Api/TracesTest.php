@@ -6,6 +6,7 @@ namespace Modules\Sdk\Tests\Api;
 
 use function array_diff_key;
 use function expect;
+use function implode;
 use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
@@ -21,6 +22,7 @@ use function sprintf;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\TracesToFollow;
 use Tests\Support\WhatTheContractAccepts;
+use Tests\Support\WhatTheTimestampNamed;
 
 /**
  * A `trace` envelope holding whatever the case under test is about.
@@ -81,6 +83,28 @@ it('reads a film as a whole item, and a trace with no stall as nothing stopping 
         ->and(theTraceRead(array_diff_key(aTracedSeries(), ['coverage' => true, 'stall' => true])))->toBe('uncertain|downloading||3 stages|3 moments|1 disagreements|whole');
 });
 
+it('reads when each stage and moment happened, and no moment where the stack gave none', function (): void {
+    $data = [...aTracedSeries(), 'history' => [['outcome' => 'grabbed', 'at' => 1_789_808_400], ['outcome' => 'grabbed'], ['outcome' => 'grabbed', 'at' => 0]]];
+    $times = Traces::in(traceSaying($data))->either(
+        nothingAskedFor: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing asked for'),
+        followed: static function (WhatTheTraceFound $found): TheWordCarriedOut {
+            $said = [];
+
+            foreach ($found->got()->stages() as $stage) {
+                $said[] = sprintf('%s@%s', $stage->stage()->value, WhatTheTimestampNamed::in($stage->at())->seconds ?? '-');
+            }
+
+            foreach ($found->history() as $moment) {
+                $said[] = sprintf('%s@%s', $moment->happened()->value, WhatTheTimestampNamed::in($moment->at())->seconds ?? '-');
+            }
+
+            return new TheWordCarriedOut(implode(' ', $said));
+        },
+    )->said;
+
+    expect($times)->toBe('monitored@- grabbed@1789898400 downloading@1789898460 grabbed@1789808400 grabbed@- grabbed@-');
+});
+
 it('reads a trace nothing matched as nobody asking for it, whatever else it carries', function (): void {
     expect(theTraceRead([...aTracedSeries(), 'matched' => false]))->toBe('nothing asked for')
         ->and(theTraceRead(['item' => 'Severance', 'matched' => false]))->toBe('nothing asked for');
@@ -113,9 +137,9 @@ it('refuses a stage, a moment, a season or an episode that is not one', function
 })->with([
     'a stage that is not a table' => ['stages', ['monitored'], 'stages'],
     'a stage with no service' => ['stages', [['stage' => 'grabbed', 'at' => null]], 'service'],
-    'a stage with a blank time' => ['stages', [['stage' => 'grabbed', 'service' => 'sonarr', 'at' => ' ']], 'at'],
+    'a stage with a time written as text' => ['stages', [['stage' => 'grabbed', 'service' => 'sonarr', 'at' => '1789776000']], 'at'],
     'a moment that is no outcome' => ['history', [['outcome' => 'lost', 'at' => 1_789_776_000]], 'outcome'],
-    'a moment with no time' => ['history', [['outcome' => 'grabbed']], 'at'],
+    'a moment with a time written as text' => ['history', [['outcome' => 'grabbed', 'at' => '2026-09-19T00:00:00Z']], 'at'],
     'a season that is not a table' => ['coverage', ['have' => 0, 'wanted' => 1, 'unmonitored' => 0, 'seasons' => [1]], 'seasons'],
     'a season with no count' => ['coverage', ['have' => 0, 'wanted' => 1, 'unmonitored' => 0, 'seasons' => [['season' => 1, 'wanted' => 1, 'unmonitored' => 0, 'outstanding' => []]]], 'have'],
     'an episode that is not a table' => ['coverage', ['have' => 0, 'wanted' => 1, 'unmonitored' => 0, 'seasons' => [['season' => 1, 'have' => 0, 'wanted' => 1, 'unmonitored' => 0, 'outstanding' => ['E1']]]], 'outstanding'],

@@ -13,7 +13,6 @@ use function is_array;
 
 use Modules\Kernel\Api\ACredentialGrant;
 use Modules\Kernel\Api\AGrantAsked;
-use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Sdk\Api\Fields\PluginsField;
@@ -43,7 +42,7 @@ final readonly class GrantRows
             self::text($row, WireField::Credential, $unreadable),
             ServiceId::called(self::text($row, WireField::Of, $unreadable)),
             self::text($row, WireField::For, $unreadable),
-            AMomentAsWritten::byTheStack(Optional::number($row, WireField::At, $unreadable(WireField::At))),
+            Optional::moment($row, WireField::At, $unreadable(WireField::At)),
         );
     }
 

@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use function trim;
 
 /**
- * One kind of media an upgrade covers: the preset in force for it, what an hour of that costs, and what asking its service came to.
+ * One kind of media an upgrade covers: the preset in force for it, what upgrading it takes in total, and what asking its service came to.
  *
  * Per kind rather than one figure for the library, because each kind carries
  * its own preset and so its own cost.
@@ -17,20 +17,20 @@ final readonly class OneKindUpgraded
     private function __construct(
         private string $kind,
         private string $preset,
-        private string $sizePerHour,
+        private WhatUpgradingItTakes $total,
         private WhatBecameOfAskingIt $asking,
     ) {}
 
-    /** What the stack said of one kind; the kind, the preset and the cost are required. */
-    public static function reported(string $kind, string $preset, string $sizePerHour, WhatBecameOfAskingIt $asking): self
+    /** What the stack said of one kind; the kind and the preset are required. */
+    public static function reported(string $kind, string $preset, WhatUpgradingItTakes $total, WhatBecameOfAskingIt $asking): self
     {
-        foreach (['media_type' => $kind, 'preset' => $preset, 'size_per_hour' => $sizePerHour] as $field => $said) {
+        foreach (['media_type' => $kind, 'preset' => $preset] as $field => $said) {
             if (trim($said) === '') {
                 throw QualitySaysNothing::about($field);
             }
         }
 
-        return new self($kind, $preset, $sizePerHour, $asking);
+        return new self($kind, $preset, $total, $asking);
     }
 
     /** The kind of media, as the stack writes it. */
@@ -45,10 +45,10 @@ final readonly class OneKindUpgraded
         return $this->preset;
     }
 
-    /** Roughly what an hour of it costs at that preset, as the stack words it. */
-    public function sizePerHour(): string
+    /** What upgrading it takes in total, or why the stack could not say. */
+    public function total(): WhatUpgradingItTakes
     {
-        return $this->sizePerHour;
+        return $this->total;
     }
 
     /** What became of asking its service to search again, or that nothing was asked. */

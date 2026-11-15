@@ -265,7 +265,7 @@ final readonly class Traces
      */
     private static function when(array $row): AMomentAsWritten
     {
-        return AMomentAsWritten::byTheStack(Optional::number($row, WireField::At, TraceIsUnreadable::missing(WireField::At)));
+        return Optional::moment($row, WireField::At, TraceIsUnreadable::missing(WireField::At));
     }
 
     /** @param array<array-key, mixed> $row */

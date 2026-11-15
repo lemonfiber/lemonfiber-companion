@@ -325,6 +325,7 @@ final readonly class WhatARefusalMeant
         RefusalCode::AnotherPlugin,
         RefusalCode::AnotherSource,
         RefusalCode::Unconforming,
+        RefusalCode::KeyUnreadable,
         RefusalCode::Occupied,
         RefusalCode::SchemeRefused,
         RefusalCode::AddressRefused,

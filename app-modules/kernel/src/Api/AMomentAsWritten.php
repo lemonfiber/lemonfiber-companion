@@ -101,10 +101,10 @@ final readonly class AMomentAsWritten
         return new self(null);
     }
 
-    /** A moment the stack counted in whole seconds since the epoch, or none where it wrote none; `0`, its clock not answering, reads as unreadable. */
-    public static function byTheStack(?int $seconds): self
+    /** A moment the stack counted in whole seconds since the epoch; `0`, its clock not answering, reads as unreadable, and so does a count before it. */
+    public static function byTheStack(int $seconds): self
     {
-        return new self($seconds !== null && $seconds > Instant::UNDATED ? Instant::atEpochSeconds($seconds) : null);
+        return new self($seconds > Instant::UNDATED ? Instant::atEpochSeconds($seconds) : null);
     }
 
     /** A moment written out as whole seconds since the epoch, as a link or a stack's record writes one; anything else it reads as unreadable. */

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use Closure;
+
 use function trim;
 
 /**
@@ -11,11 +13,18 @@ use function trim;
  *
  * `named` is the door the operator named, on both arms that have one, and
  * `because` is why a named door was refused. Each is empty where its arm
- * carries nothing.
+ * carries nothing. A stack says none of it to a household member, and then
+ * there is no arm at all.
  */
 final readonly class HowTheDoorCameToBe
 {
-    private function __construct(private HowTheDoorWasChosen $how, private string $named, private string $because) {}
+    private function __construct(private ?HowTheDoorWasChosen $how, private string $named, private string $because) {}
+
+    /** Not said, as a stack answers a household member. */
+    public static function untold(): self
+    {
+        return new self(null, '', '');
+    }
 
     /** Worked out from what the stack declares. */
     public static function derived(): self
@@ -45,10 +54,25 @@ final readonly class HowTheDoorCameToBe
         return new self(HowTheDoorWasChosen::Refused, $named, $because);
     }
 
-    /** Which of the three it was. */
-    public function how(): HowTheDoorWasChosen
+    /**
+     * Which of the three it was, or that it went untold.
+     *
+     * @template TTold of object
+     * @template TUntold of object
+     *
+     * @param  Closure(HowTheDoorWasChosen): TTold $told
+     * @param  Closure(): TUntold                  $untold
+     * @return TTold|TUntold
+     */
+    public function told(Closure $told, Closure $untold): object
     {
-        return $this->how;
+        return $this->how instanceof HowTheDoorWasChosen ? $told($this->how) : $untold();
+    }
+
+    /** The catalogue key a screen says it with, or empty where it went untold. */
+    public function saidOnTheScreen(): string
+    {
+        return $this->how instanceof HowTheDoorWasChosen ? $this->how->saidOnTheScreen() : '';
     }
 
     /** What the operator named, as they wrote it, or empty where the door was worked out. */

@@ -12,7 +12,9 @@ final readonly class AServiceAsFound
      * @param string $ports         every host port it publishes, as one line, or empty where it publishes none
      * @param string $portsSaid     the catalogue key for the ports it publishes, taking `:ports`
      * @param string $runningSaid   the catalogue key for whether it is running
-     * @param string $adoptableSaid the catalogue key for whether lemonfiber could take it over
+     * @param string            $adoptableSaid the catalogue key for whether lemonfiber could take it over
+     * @param ALineOfTheSurvey  $config        where it reads its configuration from, or why that is not said
+     * @param ALineOfTheSurvey  $library       where its library is, or why that is not said
      */
     public function __construct(
         public string $service,
@@ -20,5 +22,7 @@ final readonly class AServiceAsFound
         public string $portsSaid,
         public string $runningSaid,
         public string $adoptableSaid,
+        public ALineOfTheSurvey $config,
+        public ALineOfTheSurvey $library,
     ) {}
 }

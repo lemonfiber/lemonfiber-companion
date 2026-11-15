@@ -226,11 +226,10 @@ it('stands in for a stack with grants and a revoke the contract would accept', f
 });
 
 it('reads every grant with the plugin, the credential, whose it is, what it fills and when it was approved', function (): void {
-    $unstamped = [...aGrantOnTheCredentialsRead(), 'plugin' => 'bazarr', 'at' => 'yesterday'];
     $absent = array_diff_key([...aGrantOnTheCredentialsRead(), 'plugin' => 'unpackerr'], ['at' => true]);
 
-    expect(theGrantsRead([...aPayloadHolding([]), 'grants' => [aGrantOnTheCredentialsRead(), $unstamped, $absent]]))->toBe(
-        "tdarr|plex.token|plex|library-scan|1761321600\nbazarr|plex.token|plex|library-scan|unsaid\nunpackerr|plex.token|plex|library-scan|unsaid",
+    expect(theGrantsRead([...aPayloadHolding([]), 'grants' => [aGrantOnTheCredentialsRead(), $absent]]))->toBe(
+        "tdarr|plex.token|plex|library-scan|1761321600\nunpackerr|plex.token|plex|library-scan|unsaid",
     )->and(theGrantsRead(aPayloadHolding([])))->toBe('');
 });
 
@@ -248,6 +247,7 @@ it('refuses grants or a revoke that are missing or not what the contract says', 
 })->with([
     'no grants' => [['grants' => null], 'no readable `grants`'],
     'grants not a list' => [['grants' => 'none'], 'no readable `grants`'],
+    'a grant approved at a moment written as text' => [['grants' => [[...aGrantOnTheCredentialsRead(), 'at' => 'yesterday']]], 'no readable `at`'],
     'a grant not a grant' => [['grants' => ['plex.token']], 'Entry 0 of `grants` in the credentials envelope has no readable `plugin`'],
     'a grant to nobody' => [['grants' => [[...aGrantOnTheCredentialsRead(), 'plugin' => ' ']]], 'Entry 0 of `grants` in the credentials envelope has no readable `plugin`'],
     'a grant of nothing' => [['grants' => [aGrantOnTheCredentialsRead(), [...aGrantOnTheCredentialsRead(), 'credential' => '']]], 'Entry 1 of `grants` in the credentials envelope has no readable `credential`'],

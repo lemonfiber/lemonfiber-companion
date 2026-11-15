@@ -11,6 +11,7 @@ use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\AnAddressToHand;
+use Modules\Kernel\Api\HowTheDoorWasChosen;
 use Modules\Kernel\Api\TheFrontDoor;
 use Modules\Kernel\Api\WhatItFaces;
 use Modules\Sdk\Api\FrontDoorIsUnreadable;
@@ -40,6 +41,7 @@ function aPlainDoor(): array
 {
     return [
         'standing' => 'established',
+        'reaches' => 'here',
         'meaning' => 'Send people to Jellyseerr',
         'chosen' => ['chosen' => 'derived'],
         'service' => 'Jellyseerr',
@@ -55,7 +57,7 @@ function aPlainDoor(): array
  */
 function aPlainServiceBeside(): array
 {
-    return ['service' => 'Jellyfin', 'facing' => 'watching', 'because' => 'Nothing can be asked for there'];
+    return ['service' => 'Jellyfin', 'facing' => 'watching', 'because' => 'Nothing can be asked for there', 'reaches' => 'unknown', 'unaddressed' => 'It declares no port'];
 }
 
 /**
@@ -68,7 +70,7 @@ function theDoorRead(array $data): string
     $door = WhereTheDoorIs::in(frontDoorSaying($data));
     $lines = [
         sprintf('%s|%s', $door->standing()->value, $door->meaning()),
-        sprintf('%s|%s|%s', $door->chosen()->how()->value, $door->chosen()->named(), $door->chosen()->because()),
+        sprintf('%s|%s|%s', $door->chosen()->told(told: static fn(HowTheDoorWasChosen $how): TheWordCarriedOut => new TheWordCarriedOut($how->value), untold: static fn(): TheWordCarriedOut => new TheWordCarriedOut('untold'))->said, $door->chosen()->named(), $door->chosen()->because()),
         $door->begins()->either(
             at: static fn(string $service, WhatItFaces $facing, AnAddressToHand $address): TheWordCarriedOut => new TheWordCarriedOut(sprintf('at %s|%s|%s|%s', $service, $facing->value, $address->url(), $address->caution())),
             nowhere: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nowhere'),
@@ -110,6 +112,11 @@ it('reads a door the operator named, and one they named that was refused', funct
         ->and(theDoorRead([...aPlainDoor(), 'chosen' => ['chosen' => 'derived', 'door' => 'homepage']]))->toContain("\nderived||\n");
 });
 
+it('reads a door that does not say how it was chosen, as a stack answers a household member, as untold', function (): void {
+    expect(theDoorRead(array_diff_key(aPlainDoor(), ['chosen' => true])))->toContain("\nuntold||\n")
+        ->and(theDoorRead([...aPlainDoor(), 'chosen' => null]))->toContain("\nuntold||\n");
+});
+
 it('reads every standing and everything a service can face', function (string $standing, string $facing): void {
     expect(theDoorRead([...aPlainDoor(), 'standing' => $standing, 'facing' => $facing]))->toContain(sprintf('%s|', $standing))
         ->and(theDoorRead([...aPlainDoor(), 'standing' => $standing, 'facing' => $facing]))->toContain(sprintf('|%s|', $facing));
@@ -126,7 +133,7 @@ it('refuses a field of the door that is missing, blank or not what the contract 
 
     expect(fn(): TheFrontDoor => WhereTheDoorIs::in(frontDoorSaying($data)))->toThrow(FrontDoorIsUnreadable::class, sprintf('The front-door envelope has no readable `%s`', $field));
 })->with([
-    ['standing', 'absent'], ['meaning', ' '], ['meaning', 7], ['chosen', 'absent'], ['chosen', 'derived'],
+    ['standing', 'absent'], ['meaning', ' '], ['meaning', 7], ['chosen', 'derived'],
     ['service', ' '], ['facing', 'absent'], ['beside', 'absent'], ['beside', 'nothing'], ['address', 'http://loft.local'],
 ]);
 

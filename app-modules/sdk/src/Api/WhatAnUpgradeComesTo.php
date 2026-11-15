@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use function array_key_exists;
+use function count;
 use function is_array;
 use function is_bool;
 
@@ -12,6 +13,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\UpgradeEnvelope;
 use Modules\Kernel\Api\OneKindUpgraded;
 use Modules\Kernel\Api\TheUpgrade;
+use Modules\Kernel\Api\WhatUpgradingItTakes;
 use Modules\Sdk\Api\Fields\UpgradeField;
 use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
@@ -94,12 +96,36 @@ final readonly class WhatAnUpgradeComesTo
             $found[] = OneKindUpgraded::reported(
                 self::inMedia($row, UpgradeField::MediaType, $position),
                 self::inMedia($row, WireField::Preset, $position),
-                self::inMedia($row, WireField::SizePerHour, $position),
+                self::total($row, $position),
                 WhatAQualityAnswerCarries::asking($row, UpgradeEnvelope::KIND->value),
             );
         }
 
         return $found;
+    }
+
+    /**
+     * What upgrading one kind takes in total, on the one arm the stack tagged it with.
+     *
+     * @param array<mixed> $row
+     */
+    private static function total(array $row, int $position): WhatUpgradingItTakes
+    {
+        $refused = QualityIsUnreadable::entry(UpgradeEnvelope::KIND->value, WireField::Media, UpgradeField::Total, $position);
+
+        if (! array_key_exists(UpgradeField::Total->value, $row) || ! is_array($row[UpgradeField::Total->value]) || count($row[UpgradeField::Total->value]) !== 1) {
+            throw $refused;
+        }
+
+        $total = $row[UpgradeField::Total->value];
+
+        if (! array_key_exists(WireField::Bytes->value, $total)) {
+            return WhatUpgradingItTakes::unknown(Required::text($total, UpgradeField::Unknown, $refused));
+        }
+
+        $bytes = Required::number($total, WireField::Bytes, $refused);
+
+        return $bytes < 0 ? throw $refused : WhatUpgradingItTakes::bytes($bytes);
     }
 
     /**

@@ -14,6 +14,16 @@ return [
         'stopped' => 'Present, and stopped',
         'adoptable' => 'lemonfiber could take it over as it stands',
         'not_adoptable' => 'lemonfiber cannot take it over as it stands',
+        'config' => [
+            'at' => 'Configuration in :at',
+            'unread' => 'Where its configuration is could not be read: :why',
+            'none' => 'No configuration: :why',
+        ],
+        'library' => [
+            'at' => 'Library in :at',
+            'unread' => 'Where its library is could not be read: :why',
+            'none' => 'No library: :why',
+        ],
         'ports' => 'Publishes :ports',
         'no_ports' => 'Publishes no port',
         'no_services' => 'It has no services',

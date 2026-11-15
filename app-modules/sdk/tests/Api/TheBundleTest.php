@@ -99,8 +99,9 @@ it('refuses a bundle it cannot show whole, naming what was wrong', function (mix
     'something missing with no name' => [WhatABundleSays::payloadWhoseContents(['missing' => ['']]), 'Entry 0 of the bundle\'s `missing`'],
     'no word on when it was taken' => [WhatABundleSays::payloadWhoseContents(['taken' => 'today']), 'no readable `taken`'],
     'no moment' => [WhatABundleSays::payloadWhoseContents(['taken' => ['lemonfiber' => '1.4.0', 'stack' => '2026.09']]), 'no readable `at`'],
-    'no lemonfiber version' => [WhatABundleSays::payloadWhoseContents(['taken' => ['at' => 'now', 'stack' => '2026.09']]), 'no readable `lemonfiber`'],
-    'a blank stack version' => [WhatABundleSays::payloadWhoseContents(['taken' => ['at' => 'now', 'lemonfiber' => '1.4.0', 'stack' => ' ']]), 'no readable `stack`'],
+    'a moment written as text' => [WhatABundleSays::payloadWhoseContents(['taken' => ['at' => '1790150000', 'lemonfiber' => '1.4.0', 'stack' => '2026.09']]), 'no readable `at`'],
+    'no lemonfiber version' => [WhatABundleSays::payloadWhoseContents(['taken' => ['at' => 1_790_150_000, 'stack' => '2026.09']]), 'no readable `lemonfiber`'],
+    'a blank stack version' => [WhatABundleSays::payloadWhoseContents(['taken' => ['at' => 1_790_150_000, 'lemonfiber' => '1.4.0', 'stack' => ' ']]), 'no readable `stack`'],
 ]);
 
 it('refuses a bundle written to a path that ends in no file it could be fetched by', function (string $path): void {

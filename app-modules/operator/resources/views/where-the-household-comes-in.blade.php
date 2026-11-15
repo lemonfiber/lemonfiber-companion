@@ -8,7 +8,9 @@
 
     {{-- Whether the door was worked out, chosen, or chosen and refused: a
          derived door is never drawn as somebody's decision. --}}
-    <x-design::note>{{ __($this->answer()->chosenSaid, ['named' => $this->answer()->named, 'because' => $this->answer()->refusal]) }}</x-design::note>
+    @if ($this->answer()->chosenSaid !== '')
+        <x-design::note>{{ __($this->answer()->chosenSaid, ['named' => $this->answer()->named, 'because' => $this->answer()->refusal]) }}</x-design::note>
+    @endif
 
     @if ($this->answer()->begins->service !== '')
         <x-design::card>

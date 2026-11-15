@@ -87,13 +87,17 @@ final readonly class WhereTheDoorIs
     }
 
     /**
-     * How the door came to be, on the arm its tag names.
+     * How the door came to be, on the arm its tag names, or untold where the stack left it out.
      *
      * @param array<mixed> $data
      */
     private static function chosen(array $data): HowTheDoorCameToBe
     {
-        if (! array_key_exists(FrontDoorField::Chosen->value, $data) || ! is_array($data[FrontDoorField::Chosen->value])) {
+        if (! array_key_exists(FrontDoorField::Chosen->value, $data) || $data[FrontDoorField::Chosen->value] === null) {
+            return HowTheDoorCameToBe::untold();
+        }
+
+        if (! is_array($data[FrontDoorField::Chosen->value])) {
             throw FrontDoorIsUnreadable::missing(FrontDoorField::Chosen);
         }
 

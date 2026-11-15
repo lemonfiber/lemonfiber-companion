@@ -62,7 +62,7 @@ final readonly class Handoffs
                 TheStepsOnTheirDevice::of(...self::steps($data)),
                 TheClientsToHandOver::of(...self::clients($data)),
             ),
-            AMomentAsWritten::byTheStack(Optional::number($data, HandoffField::Issued, HandoffIsUnreadable::missing(HandoffField::Issued))),
+            Optional::moment($data, HandoffField::Issued, HandoffIsUnreadable::missing(HandoffField::Issued)),
             TheSignedInDevices::of(...self::sessions($data)),
         );
     }
@@ -200,7 +200,7 @@ final readonly class Handoffs
      */
     private static function lastSeen(array $row, int $position): AMomentAsWritten
     {
-        return AMomentAsWritten::byTheStack(Optional::number($row, HandoffField::LastSeen, HandoffIsUnreadable::row(WireField::Sessions, $position)));
+        return Optional::moment($row, HandoffField::LastSeen, HandoffIsUnreadable::row(WireField::Sessions, $position));
     }
 
     /** A yes or a no one app owes. */

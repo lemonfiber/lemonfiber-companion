@@ -10,7 +10,6 @@ use function is_bool;
 use function is_int;
 use function is_string;
 
-use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\RequestId;
@@ -179,7 +178,7 @@ final readonly class WhatWasAskedFor
             throw HouseholdIsUnreadable::refusal($by, $position);
         }
 
-        return TurnedDown::at(AMomentAsWritten::byTheStack(Optional::number($refused, WireField::At, HouseholdIsUnreadable::refusal($by, $position))), $reason);
+        return TurnedDown::at(Optional::moment($refused, WireField::At, HouseholdIsUnreadable::refusedAt($by, $position)), $reason);
     }
 
     /**

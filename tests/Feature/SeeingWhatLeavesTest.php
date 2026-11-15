@@ -74,7 +74,7 @@ function aMachineThatSendsThings(): WhatLeavesThisMachine
             ARequestOfOurs::described(WhatLemonfiberAsksFor::Registry, WhereItGoes::to('ghcr.io', 'lscr.io'), 'To fetch the images the stack runs', 'The name and version of each image', WhetherItIsAllowed::Allowed, 'registry.pull', 'No service can be installed or updated'),
             ARequestOfOurs::described(WhatLemonfiberAsksFor::Updates, WhereItGoes::to(), 'To say when a newer lemonfiber is out', 'Nothing but the request itself', WhetherItIsAllowed::SwitchedOff, 'updates.check', 'Nobody hears that a version came out'),
         ),
-        RequestsOnAPluginsBehalf::of(ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), 'plex.tv', 'To claim the media server')),
+        RequestsOnAPluginsBehalf::of(ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), 'plex.tv', 'To claim the media server', WhetherItIsAllowed::Allowed, 'plugin.plex.reach.plex.tv', 'The server cannot be claimed')),
         TheirRequests::of(
             ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata', WhoPutItThere::bundled()),
             ARequestOfTheirs::recorded(ServiceId::called('gluetun'), '', 'Nothing of its own', WhoPutItThere::bundled()),
@@ -113,12 +113,15 @@ it('lemonfiber\'s requests, those it makes for a plugin, and the services\' come
         ->and($answer->theirs)->toHaveCount(3);
 });
 
-it('a request made for a plugin is drawn under its own heading, naming the plugin, why and where', function (): void {
+it('a request made for a plugin is drawn under its own heading, naming the plugin, why, where, whether it may, what refuses it and its cost', function (): void {
     $screen = theLeavingScreen(AStackThatSaysWhatLeavesIt::with(aMachineThatSendsThings()));
     $plex = $screen->answer()->onBehalf[0];
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect([$plex->plugin, $plex->destination, $plex->purpose])->toBe(['plex', 'plex.tv', 'To claim the media server'])
+    expect([$plex->plugin, $plex->destination, $plex->purpose, $plex->allowedSaid, $plex->switch, $plex->cost])
+        ->toBe(['plex', 'plex.tv', 'To claim the media server', WhetherItIsAllowed::Allowed->saidOnTheScreen(), 'plugin.plex.reach.plex.tv', 'The server cannot be claimed'])
+        ->and($drawn)->toContain(__('stacks.outbound.on_behalf.switch', ['switch' => 'plugin.plex.reach.plex.tv']))
+        ->and($drawn)->toContain(__('stacks.outbound.on_behalf.cost', ['cost' => 'The server cannot be claimed']))
         ->and($drawn)->toContain(__('stacks.outbound.on_behalf.heading'))
         ->and($drawn)->toContain(__('stacks.outbound.on_behalf.for', ['plugin' => 'plex']))
         ->and($drawn)->toContain('To claim the media server')
