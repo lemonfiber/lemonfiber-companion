@@ -8,7 +8,6 @@ use function array_key_exists;
 use function array_map;
 use function count;
 use function is_array;
-use function is_int;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\SpaceEnvelope;
@@ -161,10 +160,6 @@ final readonly class TheOfferOfRoom
      */
     private static function figure(array $data, string $where, NamesAWireField $field): int
     {
-        if (! array_key_exists($field->value, $data) || ! is_int($data[$field->value]) || $data[$field->value] < 0) {
-            throw SpaceIsUnreadable::missing($where);
-        }
-
-        return $data[$field->value];
+        return Required::count($data, $field, SpaceIsUnreadable::missing($where));
     }
 }

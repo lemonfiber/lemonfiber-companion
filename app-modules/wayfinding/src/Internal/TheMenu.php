@@ -35,6 +35,8 @@ enum TheMenu: string
     case Backups = 'backups';
     case AfterARestart = 'after_a_restart';
     case WhileNobodyWasLooking = 'while_nobody_was_looking';
+    case Watcher = 'watcher';
+    case Queue = 'queue';
     case AlreadyInstalled = 'already_installed';
     case OtherPrograms = 'other_programs';
     case About = 'about';
@@ -66,7 +68,7 @@ enum TheMenu: string
         return match ($this) {
             self::Requests, self::Allowance, self::ViewAsMember, self::PlayingNow, self::StuckDownloads, self::FollowADownload => WhereInTheMenu::Household,
             self::InviteSomeone, self::FrontDoor, self::WatchApps, self::Passwords, self::AppKeys, self::PairAPhone => WhereInTheMenu::Access,
-            self::Storage, self::Backups, self::AfterARestart, self::WhileNobodyWasLooking, self::AlreadyInstalled, self::OtherPrograms, self::About, self::Uninstall => WhereInTheMenu::Machine,
+            self::Storage, self::Backups, self::AfterARestart, self::WhileNobodyWasLooking, self::Watcher, self::Queue, self::AlreadyInstalled, self::OtherPrograms, self::About, self::Uninstall => WhereInTheMenu::Machine,
             self::General, self::OwnSettings, self::Quality, self::Connections, self::Plugins, self::Bandwidth, self::OutgoingTraffic, self::Alerts, self::WhereAlertsGo, self::History, self::Sources => WhereInTheMenu::Settings,
             self::GetHelp, self::Glossary, self::ServicesExplained => WhereInTheMenu::Help,
         };
@@ -92,6 +94,8 @@ enum TheMenu: string
             self::Backups => AStacksScreen::Keeps,
             self::AfterARestart => AStacksScreen::Hosting,
             self::WhileNobodyWasLooking => AStacksScreen::WhileNobodyWasLooking,
+            self::Watcher => AStacksScreen::Watcher,
+            self::Queue => AStacksScreen::Queue,
             self::AlreadyInstalled => AStacksScreen::AlreadyHere,
             self::OtherPrograms => AStacksScreen::Elsewhere,
             self::About => AStacksScreen::Itself,
@@ -149,6 +153,8 @@ enum TheMenu: string
             self::Backups => ['backup', 'externaldrive'],
             self::AfterARestart => ['restart_alt', 'arrow.clockwise'],
             self::WhileNobodyWasLooking => ['bedtime', 'moon.zzz'],
+            self::Watcher => ['monitor_heart', 'waveform.path.ecg'],
+            self::Queue => ['healing', 'bandage'],
             self::AlreadyInstalled => ['inventory_2', 'shippingbox'],
             self::OtherPrograms => ['apps', 'square.stack.3d.up'],
             self::About => ['info', 'info.circle'],

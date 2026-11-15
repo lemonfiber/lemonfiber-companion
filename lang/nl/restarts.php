@@ -33,6 +33,8 @@ return [
         'not_every_client' => 'Nog niet elke client gebruikt hem.',
     ],
     'keeps_running' => 'Wat hem draaiende houdt',
+    'from_outside' => 'Van buitenaf',
+    'in_the_queue' => 'In de wachtrij',
     'keeps_running_open' => 'Wat hier blijft draaien',
     'reading_keeps_running' => 'Lezen wat hem draaiende houdt…',
     'keeps_running_unread' => 'Wat hem draaiende houdt kon niet worden gelezen.',

@@ -132,6 +132,13 @@ it('says the check after the latest restart ran, what it came to, what did not c
         ->and($said)->toContain(trans_choice('restarts.failing', 2, ['since' => trans_choice('health.ago.days', 1)]));
 });
 
+it('leads to what the outside watcher sees and to how the queue heals itself, each on a row of its own', function (): void {
+    $said = whatTwoFramesSay(theRestartScreen(AStackThatSaysHowItCameBack::with(noRecordOfARestart())));
+
+    expect($said)->toContain(Catalogue::words()->for('watcher.open'))
+        ->and($said)->toContain(Catalogue::words()->for('queue.open'));
+});
+
 it('says a check that has not run since the last restart has not, and never draws an earlier one as passing for it', function (): void {
     $started = WhenItSays::at(Instant::atEpochSeconds(WHEN_THE_RESTARTS_ARE_READ - 600));
     $said = whatTwoFramesSay(theRestartScreen(AStackThatSaysHowItCameBack::with(WhatTheLastStartCameTo::said($started, TheCheckKept::none(), aCheckThatEnded(HowTheCheckAfterAStartEnded::Passed), 'Autostart is off', HowLongItHasFailed::notFailing()))));

@@ -30,7 +30,6 @@ use Modules\Sdk\Api\Fields\HostingField;
 use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Api\Fields\ImportField;
 use Modules\Sdk\Api\Fields\InvitationField;
-use Modules\Sdk\Api\Fields\JobField;
 use Modules\Sdk\Api\Fields\KeyClaimField;
 use Modules\Sdk\Api\Fields\KeysField;
 use Modules\Sdk\Api\Fields\LifecycleField;
@@ -50,6 +49,7 @@ use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
 use Modules\Sdk\Api\Fields\PushEndpointField;
 use Modules\Sdk\Api\Fields\QualityField;
+use Modules\Sdk\Api\Fields\QueueField;
 use Modules\Sdk\Api\Fields\RemovalField;
 use Modules\Sdk\Api\Fields\RepairField;
 use Modules\Sdk\Api\Fields\ReplacementField;
@@ -62,7 +62,6 @@ use Modules\Sdk\Api\Fields\SpaceField;
 use Modules\Sdk\Api\Fields\StatusField;
 use Modules\Sdk\Api\Fields\StopSeedingField;
 use Modules\Sdk\Api\Fields\StoredField;
-use Modules\Sdk\Api\Fields\StuckField;
 use Modules\Sdk\Api\Fields\SubstitutionField;
 use Modules\Sdk\Api\Fields\TitleField;
 use Modules\Sdk\Api\Fields\TraceField;
@@ -71,6 +70,7 @@ use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\Fields\UpgradeField;
 use Modules\Sdk\Api\Fields\VersionField;
 use Modules\Sdk\Api\Fields\WalkthroughField;
+use Modules\Sdk\Api\Fields\WatcherField;
 use Modules\Sdk\Api\Fields\WiringField;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\WireField;
@@ -122,7 +122,6 @@ function everyFieldNamedOnTheWire(): array
         ...HostingField::cases(),
         ...HouseholdField::cases(),
         ...ImportField::cases(),
-        ...JobField::cases(),
         ...LifecycleField::cases(),
         ...LogField::cases(),
         ...MigrationField::cases(),
@@ -133,6 +132,7 @@ function everyFieldNamedOnTheWire(): array
         ...PreviewField::cases(),
         ...ProvenanceField::cases(),
         ...QualityField::cases(),
+        ...QueueField::cases(),
         ...RemovalField::cases(),
         ...RepairField::cases(),
         ...ReplacementField::cases(),
@@ -152,12 +152,12 @@ function everyFieldNamedOnTheWire(): array
         ...PlayingField::cases(),
         ...StoredField::cases(),
         ...NewsItemsField::cases(),
-        ...StuckField::cases(),
         ...SubstitutionField::cases(),
         ...TraceField::cases(),
         ...UninstallField::cases(),
         ...UpdateField::cases(),
         ...UpgradeField::cases(),
+        ...WatcherField::cases(),
         ...VersionField::cases(),
         ...WalkthroughField::cases(),
         ...WiringField::cases(),

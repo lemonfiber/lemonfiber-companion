@@ -29,9 +29,6 @@ enum TraceField: string implements NamesAWireField
     /** What a search spends, in the stack's words. */
     case Spends = 'spends';
 
-    /** What a search covers: the curator's wanted list at the quality in force. */
-    case Covers = 'covers';
-
     /** The furthest stage the item reached. */
     case Furthest = 'furthest';
 

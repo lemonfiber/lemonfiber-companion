@@ -257,6 +257,7 @@ it('refuses what it cannot read, rather than drawing a check that did not pass a
     'a check against the latest start from a machine that will not say when it started' => [['booted_at' => null]],
     'a service not back that is not a name' => [['verified' => ['at' => 1, 'outcome' => 'failed', 'not_back' => [7], 'tunnel' => ['state' => 'held']]]],
     'a port with no word on its clients' => [['verified' => ['at' => 1, 'outcome' => 'passed', 'port' => ['now' => 1], 'tunnel' => ['state' => 'held']]]],
+    'a start before the epoch' => [['booted_at' => -1]],
 ]);
 
 it('stands in for a stack with a payload the contract would accept', function (): void {

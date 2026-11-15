@@ -20,7 +20,6 @@ use Modules\Kernel\Api\ThePortAfterAStart;
 use Modules\Kernel\Api\TheServicesNamed;
 use Modules\Kernel\Api\TheTunnelAfterAStart;
 use Modules\Kernel\Api\WhatTheLastStartCameTo;
-use Modules\Kernel\Api\WhenItSays;
 use Modules\Sdk\Api\Fields\BootField;
 use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Optional;
@@ -50,7 +49,7 @@ final readonly class WhatTheStartCameTo
         }
 
         return WhatTheLastStartCameTo::said(
-            self::moment($data, BootField::BootedAt),
+            Optional::instant($data, BootField::BootedAt, StartIsUnreadable::missing(BootField::BootedAt)),
             self::check($data, WireField::Verified),
             self::check($data, BootField::LastVerified),
             Optional::text($data, BootField::Declined, StartIsUnreadable::missing(BootField::Declined)),
@@ -71,18 +70,6 @@ final readonly class WhatTheStartCameTo
     }
 
     /**
-     * A moment written in seconds since the Unix epoch, or none where nothing was said.
-     *
-     * @param array<mixed> $table
-     */
-    private static function moment(array $table, NamesAWireField $field): WhenItSays
-    {
-        $seconds = Optional::number($table, $field, StartIsUnreadable::missing($field));
-
-        return $seconds === null ? WhenItSays::unsaid() : WhenItSays::at(Instant::atEpochSeconds($seconds));
-    }
-
-    /**
      * How many starts it has failed to come back after, and since when, or that it is not failing.
      *
      * @param array<mixed> $data
@@ -93,7 +80,7 @@ final readonly class WhatTheStartCameTo
 
         return $starts === null || $starts < 1
             ? HowLongItHasFailed::notFailing()
-            : HowLongItHasFailed::after($starts, self::moment($data, BootField::FailingSince));
+            : HowLongItHasFailed::after($starts, Optional::instant($data, BootField::FailingSince, StartIsUnreadable::missing(BootField::FailingSince)));
     }
 
     /**

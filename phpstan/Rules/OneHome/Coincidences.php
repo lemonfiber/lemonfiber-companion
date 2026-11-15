@@ -22,7 +22,9 @@ use Modules\Kernel\Api\ARatio;
 use Modules\Kernel\Api\AtAGlance;
 use Modules\Kernel\Api\HowFarADownloadIs;
 use Modules\Kernel\Api\Nonce;
+use Modules\News\Internal\TheNewsAsKept;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Vault\Api\PlatformWorkLeftRunning;
 
 use function sprintf;
 
@@ -64,6 +66,8 @@ final readonly class Coincidences
             'LAST_SECOND' => 'the highest second a timestamp may write, a leap second included',
         ],
         ARatio::class => ['HUNDREDTHS' => 'the hundredths in a ratio of one'],
+        TheNewsAsKept::class => ['OFF' => 'the key this phone keeps the kinds of news switched off under, which the queue read\'s healing switch only shares a word with'],
+        PlatformWorkLeftRunning::class => ['JOB_UNDER' => 'the key this phone keeps the job left running under, which the watcher read\'s `job` key only shares a word with'],
         APushName::class => ['PHONE' => 'the name this phone registers a push endpoint under where its key\'s name holds nothing a stack accepts, which the notify read\'s `phone` field only shares a word with'],
         HowAShelfReads::class => ['NEW_IN_THE_HOUSE' => 'the newest holdings the first row of a member\'s shelf shows'],
         HowFarADownloadIs::class => ['ALL_OF_IT' => 'the percentage a finished download has reached'],

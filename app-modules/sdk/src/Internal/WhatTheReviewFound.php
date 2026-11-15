@@ -130,12 +130,12 @@ final readonly class WhatTheReviewFound
     /** @param array<mixed> $found */
     private static function interrupts(array $found, WhatAChangeComesTo $comesTo): WhatAChangeComesTo
     {
-        foreach (InTheOrderSent::rows(Required::rows($found, ConfigField::Active, SettingIsUnreadable::missing(ConfigField::Active))) as $position => $row) {
+        foreach (InTheOrderSent::rows(Required::rows($found, WireField::Active, SettingIsUnreadable::missing(WireField::Active))) as $position => $row) {
             if (! is_array($row)) {
-                throw SettingIsUnreadable::finding(ConfigField::Active, $position);
+                throw SettingIsUnreadable::finding(WireField::Active, $position);
             }
 
-            $refused = SettingIsUnreadable::finding(ConfigField::Active, $position);
+            $refused = SettingIsUnreadable::finding(WireField::Active, $position);
 
             $comesTo = $comesTo->interrupting(ADownloadItWouldInterrupt::of(
                 Required::text($row, WireField::Name, $refused),

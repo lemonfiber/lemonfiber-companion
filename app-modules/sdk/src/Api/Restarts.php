@@ -14,6 +14,7 @@ use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Modules\Kernel\Api\ARestartSaysTooLittle;
 use Modules\Kernel\Api\AskingHowItCameBack;
 use Modules\Kernel\Api\HowItCameBack;
+use Modules\Kernel\Api\InstantIsBeforeTheEpoch;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Sdk\Internal\GatedClient;
@@ -36,7 +37,7 @@ final readonly class Restarts implements AskingHowItCameBack
             return HowItCameBack::said(WhatTheStartCameTo::in($client->read(Api::BOOT_ENDPOINT)));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return HowItCameBack::met(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|StartIsUnreadable|ARestartSaysTooLittle $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|StartIsUnreadable|ARestartSaysTooLittle|InstantIsBeforeTheEpoch $why) {
             return HowItCameBack::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

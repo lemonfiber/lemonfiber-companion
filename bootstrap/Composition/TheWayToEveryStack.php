@@ -21,6 +21,8 @@ use Modules\Kernel\Api\AskingForHelp;
 use Modules\Kernel\Api\AskingForTitles;
 use Modules\Kernel\Api\AskingHowItCameBack;
 use Modules\Kernel\Api\AskingTheIndexers;
+use Modules\Kernel\Api\AskingTheQueue;
+use Modules\Kernel\Api\AskingTheWatcher;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\ChoosingAFiller;
 use Modules\Kernel\Api\ChoosingHowTheyAreTold;
@@ -129,6 +131,7 @@ use Modules\Sdk\Api\GrantEnders;
 use Modules\Sdk\Api\Grantors;
 use Modules\Sdk\Api\Guards;
 use Modules\Sdk\Api\Guides;
+use Modules\Sdk\Api\Healers;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
@@ -177,6 +180,7 @@ use Modules\Sdk\Api\Tuners;
 use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
+use Modules\Sdk\Api\Watchers;
 use Modules\Sdk\Api\WaysOfBeingTold;
 use Modules\Sdk\Api\Wirers;
 use Modules\Sdk\Internal\WhatEachStackOffers;
@@ -377,6 +381,8 @@ final class TheWayToEveryStack extends ServiceProvider
         // the same reason: one place decides whether a certificate is checked.
         $this->app->bind(Telling::class, Heralds::class);
         $this->app->bind(AskingHowItCameBack::class, Restarts::class);
+        $this->app->bind(AskingTheWatcher::class, Watchers::class);
+        $this->app->bind(AskingTheQueue::class, Healers::class);
 
         // How the line is shared, read beside the rest and bound for the same
         // reason: one place decides whether a certificate is checked.

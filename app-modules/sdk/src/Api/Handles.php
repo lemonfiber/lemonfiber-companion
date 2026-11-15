@@ -11,7 +11,6 @@ use function is_string;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\JobEnvelope;
 use Modules\Kernel\Api\Job;
-use Modules\Sdk\Api\Fields\JobField;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -47,7 +46,7 @@ final readonly class Handles
             throw HandleIsUnreadable::missing(WireField::Data);
         }
 
-        return Job::named(self::text($data, JobField::Job));
+        return Job::named(self::text($data, WireField::Job));
     }
 
     /**

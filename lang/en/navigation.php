@@ -49,6 +49,8 @@ return [
         'storage' => 'Storage',
         'backups' => 'Backups',
         'after_a_restart' => 'After a restart',
+        'watcher' => 'Outside watcher',
+        'queue' => 'Queue healing',
         'while_nobody_was_looking' => 'Unwatched hours',
         'already_installed' => 'Already installed',
         'other_programs' => 'Other programs',
