@@ -9,12 +9,12 @@ use function it;
 
 use Modules\Dx\Internal\WhereTheyLeftOffAsItReads;
 
-it('gives each item a reason in place of a location', function (): void {
+it('gives each item an obstacle in place of a location', function (): void {
     $read = WhereTheyLeftOffAsItReads::from(['data' => ['member' => 'ada', 'part_way' => [['id' => 'a1', 'stream_from' => 'Stream from'], 'not an item']]]);
 
     expect($read['data'])->toBe(['member' => 'ada', 'part_way' => [
-        ['id' => 'a1', 'stream_from' => null, 'door' => null, 'unlocated' => 'unlocated'],
-        ['stream_from' => null, 'door' => null, 'unlocated' => 'unlocated'],
+        ['id' => 'a1', 'stream_from' => null, 'door' => null, 'unlocated' => ['code' => 'code', 'said' => 'unlocated', 'remedy' => 'remedy']],
+        ['stream_from' => null, 'door' => null, 'unlocated' => ['code' => 'code', 'said' => 'unlocated', 'remedy' => 'remedy']],
     ]]);
 });
 

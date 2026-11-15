@@ -41,6 +41,7 @@ use Modules\Sdk\Api\Shelves;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
+use Tests\Support\AnObstacleOnTheWire;
 use Tests\Support\Fakes\AShelfThatWasRead;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
@@ -92,7 +93,7 @@ function oneHoldingOnTheWire(string $id, string $title, string $medium = 'film',
  * What a stack sends about one member's shelf.
  *
  * @param  list<array<string, mixed>> $holdings
- * @param  list<string>               $findings
+ * @param  list<array<string, string>> $findings
  * @return array<string, mixed>
  */
 function whatAStackSendsAboutAShelf(array $holdings, bool $available = true, array $findings = []): array
@@ -199,7 +200,7 @@ it('tells a library that could not be read from a shelf with nothing on it', fun
     // rows, and they say opposite things to the person reading: one is *you
     // have nothing here* and the other is *your collection is out of reach*.
     $unread = MockResponse::make((string) json_encode(
-        whatAStackSendsAboutAShelf([], available: false, findings: ['The media server did not answer.']),
+        whatAStackSendsAboutAShelf([], available: false, findings: [AnObstacleOnTheWire::saying('The media server did not answer.')]),
     ));
 
     foreach (everyWayOfReadingAShelf(
@@ -236,7 +237,7 @@ it('tells a refused session from a stack that did not answer, where the shelf co
         // as an answer that never arrived.
         [
             MockResponse::make((string) json_encode(
-                whatAStackSendsAboutAShelf([], available: false, findings: ['   ']),
+                whatAStackSendsAboutAShelf([], available: false, findings: [AnObstacleOnTheWire::saying('   ')]),
             )),
             Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead),
         ],
@@ -280,7 +281,7 @@ it('the payload this suite stands a shelf in with is one a stack would send', fu
     ])))->toBe([], "The payload this suite stands in for a shelf with is not one a stack would send.\n")
         ->and(WhatTheContractAccepts::complaintsAbout(
             'HeldEnvelope',
-            whatAStackSendsAboutAShelf([], available: false, findings: ['The media server did not answer.']),
+            whatAStackSendsAboutAShelf([], available: false, findings: [AnObstacleOnTheWire::saying('The media server did not answer.')]),
         ))->toBe([], "The unreadable-shelf payload this suite stands in with is not one a stack would send.\n");
 });
 
@@ -311,7 +312,7 @@ it('hands over the shelf the household\'s defaults hold, unchanged', function ()
     }
 
     $unread = MockResponse::make((string) json_encode(
-        whatAStackSendsAboutAShelf([], available: false, findings: ['The media server did not answer.']),
+        whatAStackSendsAboutAShelf([], available: false, findings: [AnObstacleOnTheWire::saying('The media server did not answer.')]),
     ));
 
     foreach (everyWayOfReadingAShelf(
@@ -368,7 +369,7 @@ function aSeriesOnTheWire(): array
             'episodes' => [
                 ['id' => 'e1', 'title' => 'Failure\'s Contagious', 'medium' => 'episode', 'number' => 1, 'minutes' => 49,
                     'overview' => 'Lamb.', 'stream_from' => 'https://192.168.1.42:8920/Videos/e1/master.m3u8', 'door' => $door],
-                ['id' => 'e2', 'title' => 'A special', 'medium' => 'episode', 'unlocated' => 'The front door has no certificate yet.'],
+                ['id' => 'e2', 'title' => 'A special', 'medium' => 'episode', 'unlocated' => AnObstacleOnTheWire::saying('The front door has no certificate yet.')],
             ],
         ]],
     ];
@@ -451,6 +452,8 @@ it('says the answer could not be read where a title cannot be read', function (a
     'a season that is not one' => [[...aSeriesOnTheWire(), 'seasons' => ['season']]],
     'an episode that is not one' => [[...aSeriesOnTheWire(), 'seasons' => [['id' => 'x', 'name' => 'Season 1', 'episodes' => ['e']]]]],
     'a runtime that is not a number' => [[...aSeriesOnTheWire(), 'minutes' => 'long']],
+    'a reason for no location that is no obstacle' => [[...aSeriesOnTheWire(), 'medium' => 'film', 'seasons' => [], 'unlocated' => 'The front door has no certificate yet.']],
+    'an obstacle that says nothing' => [[...aSeriesOnTheWire(), 'medium' => 'film', 'seasons' => [], 'unlocated' => AnObstacleOnTheWire::saying(' ')]],
 ]);
 
 it('answers the operator, who has no shelf, as not theirs to ask', function (): void {
@@ -499,7 +502,7 @@ function twoThingsPartWayOnTheWire(): array
     return [
         ['id' => 'a1', 'title' => 'Alien', 'medium' => 'film', 'year' => 1979, 'position' => 1_200, 'length' => 7_020,
             'stream_from' => 'https://192.168.1.42:8920/Videos/a1/master.m3u8', 'door' => ['fingerprint' => str_repeat('d', 64)]],
-        ['id' => 'e1', 'title' => 'Failure\'s Contagious', 'medium' => 'episode', 'position' => 61, 'unlocated' => 'The front door has no certificate yet.'],
+        ['id' => 'e1', 'title' => 'Failure\'s Contagious', 'medium' => 'episode', 'position' => 61, 'unlocated' => AnObstacleOnTheWire::saying('The front door has no certificate yet.')],
     ];
 }
 
@@ -576,6 +579,7 @@ it('says the answer could not be read where what they were part-way through cann
     'a length that is not a number' => [[[...twoThingsPartWayOnTheWire()[0], 'length' => 'long']]],
     'a medium this build does not know' => [[[...twoThingsPartWayOnTheWire()[0], 'medium' => 'podcast']]],
     'a location with no door' => [[[...twoThingsPartWayOnTheWire()[0], 'door' => null]]],
+    'a reason for no location that is no obstacle' => [[[...twoThingsPartWayOnTheWire()[1], 'unlocated' => 'The front door has no certificate yet.']]],
 ]);
 
 it('answers the operator, who watches nothing here, as not theirs to ask', function (): void {

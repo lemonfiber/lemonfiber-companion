@@ -12,7 +12,9 @@ use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\TheAllowanceAsChanged;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
+use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
+use Modules\Sdk\Internal\WhatEachObstacleSaid;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -26,8 +28,12 @@ final readonly class WhatTheAllowanceCameTo
         $data = self::payload($envelope);
         $said = [];
 
-        foreach (Required::rows($data, WireField::Findings, HouseholdIsUnreadable::missing(WireField::Findings)) as $position => $finding) {
-            $said[] = self::sentence($finding, $position);
+        foreach (InTheOrderSent::rows(Required::rows($data, WireField::Findings, HouseholdIsUnreadable::missing(WireField::Findings))) as $position => $obstacle) {
+            $said[] = WhatEachObstacleSaid::of($obstacle, HouseholdIsUnreadable::finding($position));
+        }
+
+        foreach (InTheOrderSent::rows(Required::rows($data, WireField::Noted, HouseholdIsUnreadable::missing(WireField::Noted))) as $position => $note) {
+            $said[] = self::note($note, $position);
         }
 
         return TheAllowanceAsChanged::said(
@@ -57,12 +63,12 @@ final readonly class WhatTheAllowanceCameTo
         return HouseholdEnvelope::in($envelope)->data;
     }
 
-    private static function sentence(mixed $finding, int|string $position): Sentence
+    private static function note(mixed $note, int $position): Sentence
     {
-        if (! Required::isText($finding)) {
-            throw HouseholdIsUnreadable::finding((int) $position);
+        if (! Required::isText($note)) {
+            throw HouseholdIsUnreadable::note($position);
         }
 
-        return Sentence::of($finding);
+        return Sentence::of($note);
     }
 }

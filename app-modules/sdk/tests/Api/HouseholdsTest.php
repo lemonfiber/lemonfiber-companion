@@ -97,7 +97,7 @@ function aMember(string $name, array $requests): array
  */
 function aHouseholdOf(array $members): array
 {
-    return ['rehearsed' => false, 'available' => true, 'findings' => [], 'members' => $members];
+    return ['rehearsed' => false, 'available' => true, 'findings' => [], 'noted' => [], 'members' => $members];
 }
 
 /**
@@ -151,7 +151,7 @@ it('refuses a household the stack says it could not read, rather than an empty o
     //
     // Both entry points, because both would otherwise draw the same empty list
     // from the same payload.
-    $unread = householdSaying(['available' => false, 'findings' => [], 'members' => []]);
+    $unread = householdSaying(['available' => false, 'findings' => [], 'noted' => [], 'members' => []]);
 
     expect(fn(): Requested => Households::in($unread))
         ->toThrow(HouseholdWentUnread::class, 'could not read the household')
@@ -163,7 +163,7 @@ it('reads a household the stack could read as the answer it is', function (): vo
     // The other side of the guard, so it cannot pass by refusing everything: a
     // house that read cleanly and holds nobody is an empty house, and an empty
     // house is an answer.
-    expect(Households::in(householdSaying(['available' => true, 'findings' => [], 'members' => []])))
+    expect(Households::in(householdSaying(['available' => true, 'findings' => [], 'noted' => [], 'members' => []])))
         ->toHaveCount(0);
 });
 

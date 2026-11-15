@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Shelf;
 use Modules\Kernel\Api\WhatTheyMayWatch;
 use Modules\Sdk\Api\Holdings;
 use Modules\Sdk\Api\ShelfIsUnreadable;
+use Tests\Support\AnObstacleOnTheWire;
 use Tests\Support\WhatAShelfReadingCameTo;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -130,7 +131,7 @@ it('reads a library that could not be read as out of reach, not as empty', funct
     $unread = whatAStackSaysAboutAShelf([
         'available' => false,
         'holdings' => [],
-        'findings' => ['The media server did not answer.'],
+        'findings' => [AnObstacleOnTheWire::saying('The media server did not answer.')],
     ]);
 
     expect(whatTheShelfHeld($unread))->toBe(['out-of-reach:The media server did not answer.'])
@@ -179,6 +180,12 @@ it('refuses an unreadable shelf whose sentences it cannot read', function (): vo
         ])))->toThrow(ShelfIsUnreadable::class, 'findings')
         ->and(fn(): object => theShelfIn(whatAStackSaysAboutAShelf([
             'available' => false, 'findings' => [7],
+        ])))->toThrow(ShelfIsUnreadable::class, 'findings')
+        ->and(fn(): object => theShelfIn(whatAStackSaysAboutAShelf([
+            'available' => false, 'findings' => ['The media server did not answer.'],
+        ])))->toThrow(ShelfIsUnreadable::class, 'findings')
+        ->and(fn(): object => theShelfIn(whatAStackSaysAboutAShelf([
+            'available' => false, 'findings' => [AnObstacleOnTheWire::saying('')],
         ])))->toThrow(ShelfIsUnreadable::class, 'findings');
 });
 
@@ -257,7 +264,7 @@ it('the payload this suite reads a shelf from is one a stack would send', functi
             'data' => whatAStackSaysAboutAShelf([
                 'available' => false,
                 'holdings' => [],
-                'findings' => ['The media server did not answer.'],
+                'findings' => [AnObstacleOnTheWire::saying('The media server did not answer.')],
             ]),
         ]))->toBe([], "The unreadable-shelf payload this suite reads is not one a stack would send.\n");
 });

@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -114,7 +115,7 @@ it('names the series of an episode the media server did not number', function ()
 
 it('says plainly when nothing is playing, and that a media server it could not read is not nothing', function (): void {
     $nothing = whatIsPlayingOpened(AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these())), Whose::theOperator());
-    $unread = whatIsPlayingOpened(AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::unread('Jellyfin did not answer.'))), Whose::theOperator());
+    $unread = whatIsPlayingOpened(AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::unread(Sentence::of('Jellyfin did not answer.')))), Whose::theOperator());
 
     expect(WhatTheDeviceWouldDraw::by($nothing)->said())->toContain(aLinePlaying('stacks.playing.nothing'))
         ->and(WhatTheDeviceWouldDraw::by($unread)->said())->toContain(aLinePlaying('stacks.playing.unread'), 'Jellyfin did not answer.')

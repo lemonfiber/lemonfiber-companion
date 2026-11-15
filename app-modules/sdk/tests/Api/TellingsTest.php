@@ -70,6 +70,7 @@ function aHouseholdTellingWhose(array $row): array
     return [
         'available' => true,
         'findings' => [],
+        'noted' => [],
         'members' => [[
             'claimed' => true,
             'standing' => 'active',
@@ -97,6 +98,7 @@ function aHouseholdTelling(array $owed): array
         'rehearsed' => false,
         'available' => true,
         'findings' => [],
+        'noted' => [],
         'members' => [[
             'name' => 'Robin',
             'claimed' => true,
@@ -124,7 +126,7 @@ it('reads an answer that is not one member\'s as nothing owed to anybody', funct
     // The operator's read of the same endpoint. There is nobody in it to be
     // owed anything, so there is nothing to hand over — which is an answer, and
     // not a refusal.
-    expect(whatOneMemberIsTold(['available' => true, 'findings' => [], 'members' => []]))->toBe([]);
+    expect(whatOneMemberIsTold(['available' => true, 'findings' => [], 'noted' => [], 'members' => []]))->toBe([]);
 });
 
 it('refuses a household the stack says it could not read, rather than an empty one', function (): void {
@@ -133,7 +135,7 @@ it('refuses a household the stack says it could not read, rather than an empty o
     // sentences, and the contract carries `available` to tell them apart — a
     // false there is *why* the list is empty. Read as an empty house, it says
     // *there is nothing to tell you* to somebody nobody could find out about.
-    expect(fn(): array => whatOneMemberIsTold(['available' => false, 'findings' => [], 'members' => []]))
+    expect(fn(): array => whatOneMemberIsTold(['available' => false, 'findings' => [], 'noted' => [], 'members' => []]))
         ->toThrow(HouseholdWentUnread::class, 'could not read the household');
 });
 
@@ -154,10 +156,10 @@ it('refuses a household whose members are not rows', function (): void {
     expect(fn(): array => whatOneMemberIsTold(['available' => true, 'findings' => []]))
         ->toThrow(HouseholdIsUnreadable::class);
 
-    expect(fn(): array => whatOneMemberIsTold(['available' => true, 'findings' => [], 'members' => 'Robin']))
+    expect(fn(): array => whatOneMemberIsTold(['available' => true, 'findings' => [], 'noted' => [], 'members' => 'Robin']))
         ->toThrow(HouseholdIsUnreadable::class);
 
-    expect(fn(): array => whatOneMemberIsTold(['available' => true, 'findings' => [], 'members' => ['Robin']]))
+    expect(fn(): array => whatOneMemberIsTold(['available' => true, 'findings' => [], 'noted' => [], 'members' => ['Robin']]))
         ->toThrow(HouseholdIsUnreadable::class);
 });
 
@@ -170,6 +172,7 @@ it('names which member it could not read, counting from the first', function ():
     $third = [
         'available' => true,
         'findings' => [],
+        'noted' => [],
         'members' => [
             ['name' => 'Sam', 'claimed' => true, 'standing' => 'active', 'requests' => [], 'access' => whatAMemberOwedSomethingMayReach(), 'to_hand_over' => []],
             ['name' => 'Robin', 'claimed' => true, 'standing' => 'active', 'requests' => [], 'access' => whatAMemberOwedSomethingMayReach(), 'to_hand_over' => []],

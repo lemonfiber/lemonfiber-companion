@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use function array_key_exists;
-use function array_map;
-use function array_values;
 use function is_array;
 use function is_bool;
 use function is_int;
@@ -18,6 +16,7 @@ use Modules\Kernel\Api\ASessionPlaying;
 use Modules\Kernel\Api\WhatTheHouseholdIsPlaying;
 use Modules\Sdk\Api\Fields\PlayingField;
 use Modules\Sdk\Internal\APath;
+use Modules\Sdk\Internal\WhatEachObstacleSaid;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -46,7 +45,7 @@ final readonly class WhatThePlayingSaid
         }
 
         if (! $data[WireField::Available->value]) {
-            return WhatTheHouseholdIsPlaying::unread(...self::why($data));
+            return WhatTheHouseholdIsPlaying::unread(...WhatEachObstacleSaid::in($data, PlayingIsUnreadable::missing(WireField::Findings->value)));
         }
 
         $sessions = [];
@@ -62,22 +61,6 @@ final readonly class WhatThePlayingSaid
     private static function payload(Envelope $envelope): mixed
     {
         return PlayingEnvelope::in($envelope)->data;
-    }
-
-    /**
-     * @param  array<mixed> $data
-     * @return list<string>
-     */
-    private static function why(array $data): array
-    {
-        if (! array_key_exists(WireField::Findings->value, $data) || ! is_array($data[WireField::Findings->value])) {
-            throw PlayingIsUnreadable::missing(WireField::Findings->value);
-        }
-
-        return array_values(array_map(
-            static fn(mixed $said): string => is_string($said) ? $said : throw PlayingIsUnreadable::missing(WireField::Findings->value),
-            $data[WireField::Findings->value],
-        ));
     }
 
     /**

@@ -781,6 +781,18 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'Why a holding has no location, for `holdings[].stream_from`\'s reason.',
         ],
         [
+            'path' => 'HeldEnvelope.findings[].code',
+            'because' => 'The code that names what stood in the way of reading the shelf. A member is shown the '
+                . 'sentence the core wrote, which is the whole of what Home says, and no requirement asks this '
+                . 'app to word an obstacle again by its code or to show a member a code at all.',
+        ],
+        [
+            'path' => 'HeldEnvelope.findings[].remedy',
+            'because' => 'What to do about what stood in the way of reading the shelf. It is something to do at '
+                . 'the machine, which is the operator\'s, and a member is told only that the shelf could not be '
+                . 'read, in the core\'s sentence.',
+        ],
+        [
             'path' => 'HouseholdEnvelope.allows',
             'because' => 'What the house\'s own policy allows in a period, said about the house. A member is '
                 . 'told what applies to *them* in `to_hand_over`, written to them by the core and rendered '
@@ -799,6 +811,16 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'What happens to what the household asks for where nobody chose otherwise for one '
                 . 'person. The house\'s default, and a member is owed what applies to them rather than what '
                 . 'applies by default — which `to_hand_over` already says to them in the core\'s own words.',
+        ],
+        [
+            'path' => 'HouseholdEnvelope.findings[].code',
+            'because' => 'The code that names what stood in the way of reading the household, after a change to '
+                . 'what it may ask for, for `PlayingEnvelope.findings[].code`\'s reason.',
+        ],
+        [
+            'path' => 'HouseholdEnvelope.findings[].remedy',
+            'because' => 'What to do about what stood in the way of reading the household, for '
+                . '`PlayingEnvelope.findings[].remedy`\'s reason.',
         ],
         [
             'path' => 'DashboardEnvelope.health.affected[].acknowledged',

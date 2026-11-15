@@ -29,6 +29,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\Response;
+use Tests\Support\AnObstacleOnTheWire;
 use Tests\Support\Fakes\AStackThatChoosesWhatIsAllowed;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
@@ -59,8 +60,9 @@ function whatAStackSaysOfAnAllowanceChange(array $changed = []): array
     return ['api_version' => 1, 'kind' => 'household', 'data' => [
         'available' => true,
         'rehearsed' => true,
-        'findings' => ['the household waits for you, and is counted against 5 requests every 7 days — rehearsed, and nothing was written'],
+        'findings' => [],
         'members' => [],
+        'noted' => ['the household waits for you, and is counted against 5 requests every 7 days — rehearsed, and nothing was written'],
         ...$changed,
     ]];
 }
@@ -155,10 +157,10 @@ it('reads what the work came to, the rehearsal labelled as one and the stack\'s 
 });
 
 it('reads a change that was made as made', function (): void {
-    $finished = MockResponse::make((string) json_encode(whatAStackSaysOfAnAllowanceChange(['rehearsed' => false, 'findings' => ['alex now waits for you', 'the media server is slow to answer']])));
+    $finished = MockResponse::make((string) json_encode(whatAStackSaysOfAnAllowanceChange(['rehearsed' => false, 'findings' => [AnObstacleOnTheWire::saying('the media server is slow to answer')], 'noted' => ['alex now waits for you']])));
 
     expect(whatTheAllowanceChangeCameTo(anAllowerAnswered($finished)->whatBecameOf(aStackWhoseHouseholdIsAllowed(), Session::of('a-session-not-a-secret'), Job::named('a-job'))))
-        ->toBe('carried_out|alex now waits for you / the media server is slow to answer');
+        ->toBe('carried_out|the media server is slow to answer / alex now waits for you');
 });
 
 it('says a job still running is still underway, and one the stack no longer has is ended', function (): void {
@@ -194,8 +196,12 @@ it('reads work that came back unreadable as an answer it could not read, never a
     expect(whatTheAllowanceChangeCameTo(anAllowerAnswered($finished)->whatBecameOf(aStackWhoseHouseholdIsAllowed(), Session::of('a-session-not-a-secret'), Job::named('a-job'))))
         ->toBe(KindOfObstacle::AnswerCouldNotBeRead->name);
 })->with([
-    'a blank finding' => [['findings' => [' ']]],
-    'a finding that is not a sentence' => [['findings' => [3]]],
+    'a finding that is not an obstacle' => [['findings' => ['the media server is slow to answer']]],
+    'a finding with a blank sentence' => [['findings' => [AnObstacleOnTheWire::saying(' ')]]],
+    'a finding with no sentence' => [['findings' => [['code' => AnObstacleOnTheWire::A_CODE, 'remedy' => AnObstacleOnTheWire::A_REMEDY]]]],
+    'no notes' => [['noted' => null]],
+    'a blank note' => [['noted' => [' ']]],
+    'a note that is not a sentence' => [['noted' => [3]]],
     'no word on whether it was rehearsed' => [['rehearsed' => 'yes']],
 ]);
 

@@ -26,7 +26,7 @@ final readonly class WhatTheHouseholdIsPlaying implements IteratorAggregate
 {
     /**
      * @param list<ASessionPlaying> $sessions
-     * @param list<string>          $why
+     * @param list<Sentence>        $why
      */
     private function __construct(private array $sessions, private bool $read, private array $why) {}
 
@@ -37,7 +37,7 @@ final readonly class WhatTheHouseholdIsPlaying implements IteratorAggregate
     }
 
     /** The core could not read the media server, and said why. */
-    public static function unread(string ...$why): self
+    public static function unread(Sentence ...$why): self
     {
         return new self([], read: false, why: array_values($why));
     }
@@ -51,7 +51,13 @@ final readonly class WhatTheHouseholdIsPlaying implements IteratorAggregate
     /** What the core said instead, where it could not read the media server; empty where it could. */
     public function whyNot(): string
     {
-        return implode(' ', $this->why);
+        $said = [];
+
+        foreach ($this->why as $sentence) {
+            $said[] = $sentence->shown();
+        }
+
+        return implode(' ', $said);
     }
 
     /** @return Traversable<int, ASessionPlaying> */
