@@ -304,6 +304,41 @@ it('asks for a session rather than the room where this device holds none', funct
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(aLineOfGivingBack('connection.sign_in'));
 });
 
+it('asks for a session where it is gone by the time the yes is sent, or asked after', function (bool $afterTheYes, array $asked): void {
+    $keychain = AKeychainInMemory::working();
+    $givingBack = AStackThatGivesBackRoom::answering(WhatBecameOfTheWork::answered(theRoomCameBack()));
+    $screen = theGivingBackScreen(AStackThatMeasuresItsRoom::with(aRoomOffering(theOrphansOnOffer())), $givingBack, $keychain);
+    $screen->answer();
+
+    if ($afterTheYes) {
+        $screen->agree();
+    }
+
+    $keychain->forget(theStackRoomIsGivenBackOn()->id());
+
+    if (! $afterTheYes) {
+        $screen->agree();
+    }
+
+    $screen->whileItRuns();
+
+    expect($screen->done()->stands->went->isSignedIn)->toBeFalse()
+        ->and($screen->done()->returned)->toBeNull()
+        ->and($givingBack->asked())->toBe($asked);
+})->with([
+    'before the yes' => [false, []],
+    'after it' => [true, [sprintf('give-back:%s:orphaned', THE_OFFER_OF_ROOM)]],
+]);
+
+it('has nothing to report for a yes nobody gave', function (): void {
+    $givingBack = AStackThatGivesBackRoom::answering(WhatBecameOfTheWork::answered(theRoomCameBack()));
+    $screen = theGivingBackScreen(AStackThatMeasuresItsRoom::with(aRoomOffering(theOrphansOnOffer())), $givingBack);
+
+    expect($screen->done()->stands->hasEnded())->toBeTrue()
+        ->and($screen->done()->returned)->toBeNull()
+        ->and($givingBack->asked())->toBe([]);
+});
+
 it('says the stack no longer knows what became of it, and offers the room to see what is still there', function (): void {
     $screen = theGivingBackScreen(AStackThatMeasuresItsRoom::with(aRoomOffering(theOrphansOnOffer())), AStackThatGivesBackRoom::answering(WhatBecameOfTheWork::ended()));
     $screen->answer();
