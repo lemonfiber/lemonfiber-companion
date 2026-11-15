@@ -69,18 +69,16 @@ final class HistoryIsUnreadable extends InvalidArgumentException
     /**
      * When a change was made did not arrive as the stack writes it.
      *
-     * Seconds since the epoch, as digits, is what the core stamps a change
-     * with and what the contract says. Anything else — an ISO date, a signed
-     * number, digits too long to be a moment — is refused rather than guessed
-     * at, because a guessed moment is a record shown out of the order it
-     * happened in.
+     * Whole seconds since the epoch, as an integer, is what the core stamps a
+     * change with and what the contract says. Anything else (text, a count
+     * before the epoch) is refused rather than guessed at, because a guessed
+     * moment is a record shown out of the order it happened in.
      */
-    public static function at(string $said, int $position): self
+    public static function at(int $position): self
     {
         return new self(sprintf(
-            'Change %d in the history envelope says it was made at `%s`, and this app reads seconds since the epoch, written as digits. Guessing what else was meant is how a record gets shown out of the order it happened in.',
+            'Change %d in the history envelope gives an `at` this app does not read as whole seconds since the epoch. Guessing what was meant is how a record gets shown out of the order it happened in.',
             $position,
-            $said,
         ));
     }
 

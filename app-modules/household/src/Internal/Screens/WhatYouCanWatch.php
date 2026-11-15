@@ -21,6 +21,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\PartWays;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Shelf;
@@ -249,7 +250,7 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheirOwnTitlesTurnedOutToBe => $this->owing->theirRequests($stack, $session)->asked()->either(
                 told: fn(Requested $wanted): WhatTheirOwnTitlesTurnedOutToBe
-                    => new HowTheirOwnTitlesRead()->these($wanted, $this->goes()),
+                    => new HowTheirOwnTitlesRead()->these($wanted, $this->goes(), fn(RequestId $ask): ?string => $this->pictures->ofAKeptAsk($stack, $session, $ask)),
                 refused: function (Obstacle $why) use ($stack): WhatTheirOwnTitlesTurnedOutToBe {
                     // Told here as well as on the shelf's read: whichever read
                     // met the refusal is the one holding the obstacle when the

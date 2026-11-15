@@ -55,7 +55,7 @@ function whatWasFoundLeaving(WhatWasFoundLeaving $answer): string
 it('keeps lemonfiber\'s requests, those it makes for a plugin, and its services\' apart', function (): void {
     $leaving = WhatLeavesThisMachine::of(
         OurRequests::of(aRequestOfOursAboutImages()),
-        RequestsOnAPluginsBehalf::of(ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), 'plex.tv', 'To claim the media server')),
+        RequestsOnAPluginsBehalf::of(ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), 'plex.tv', 'To claim the media server', WhetherItIsAllowed::Allowed, 'plugin.plex.reach.plex.tv', 'The server cannot be claimed')),
         TheirRequests::of(ARequestOfTheirs::unrecorded(ServiceId::called('my-fork'), WhoPutItThere::bundled()), ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata', WhoPutItThere::bundled())),
     );
 

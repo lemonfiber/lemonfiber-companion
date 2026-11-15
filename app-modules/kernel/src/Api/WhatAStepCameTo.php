@@ -29,6 +29,9 @@ enum WhatAStepCameTo: string
     /** It would have carried a value nobody approved, so it was not made. */
     case Withheld = 'withheld';
 
+    /** It was not made, because the operator refused its host or one a step it depends on calls. */
+    case Declined = 'declined';
+
     /** It was answered with something it did not expect. */
     case Unexpected = 'unexpected';
 

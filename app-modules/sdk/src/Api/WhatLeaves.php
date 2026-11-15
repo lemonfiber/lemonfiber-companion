@@ -131,6 +131,9 @@ final readonly class WhatLeaves
                 APluginId::called(self::text($row, OutboundField::OnBehalf, WireField::Plugin, $position)),
                 self::text($row, OutboundField::OnBehalf, OutboundField::Destination, $position),
                 self::text($row, OutboundField::OnBehalf, WireField::Purpose, $position),
+                WhetherItIsAllowed::said(allowed: self::flag($row, OutboundField::OnBehalf, OutboundField::Allowed, $position)),
+                self::text($row, OutboundField::OnBehalf, OutboundField::Switch, $position),
+                self::text($row, OutboundField::OnBehalf, WireField::Cost, $position),
             );
         }
 

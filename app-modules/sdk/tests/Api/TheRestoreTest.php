@@ -24,6 +24,7 @@ use function sprintf;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatAScopeSays;
 use Tests\Support\WhatTheContractAccepts;
+use Tests\Support\WhatTheTimestampNamed;
 
 /**
  * The copy's own account of itself, changed where a case says.
@@ -34,7 +35,7 @@ use Tests\Support\WhatTheContractAccepts;
 function aManifestSaying(array $changed = []): array
 {
     return [
-        'created_at' => '2026-09-24T03:00:00Z',
+        'created_at' => 1_790_218_800,
         'data_root' => '/srv/old',
         'members' => [
             ['archive_path' => 'config', 'label' => 'lemonfiber configuration'],
@@ -102,7 +103,7 @@ it('reads every part of the listing', function (): void {
         ->and($listing->agreement())->toBe('restore-the-whole-stack-0.9.0')
         ->and(WhatAScopeSays::of($listing->scope()))->toBe('whole')
         ->and($listing->takenBy())->toBe('0.9.0')
-        ->and($listing->takenAt())->toBe('2026-09-24T03:00:00Z')
+        ->and(WhatTheTimestampNamed::in($listing->takenAt())->seconds)->toBe(1_790_218_800)
         ->and(iterator_to_array($listing->contents(), preserve_keys: false))->toBe(['lemonfiber configuration', 'service configuration'])
         ->and($listing->isOlder())->toBeTrue()
         ->and(whereTheRestoredDataGoes($listing->whereTheDataGoes()))->toBe('/srv/old to /srv/new');
@@ -132,6 +133,7 @@ it('refuses a listing missing a part of it, naming which', function (mixed $data
     'no agreement' => [['would' => aRestoreListingSaying(['agreement' => null])], '`agreement`'],
     'no version' => [['would' => aRestoreListingSaying(['manifest' => aManifestSaying(['product_version' => 9])])], '`product_version`'],
     'no date' => [['would' => aRestoreListingSaying(['manifest' => aManifestSaying(['created_at' => null])])], '`created_at`'],
+    'a date written as text' => [['would' => aRestoreListingSaying(['manifest' => aManifestSaying(['created_at' => '2026-09-24T03:00:00Z'])])], '`created_at`'],
     'no word on the version gap' => [['would' => aRestoreListingSaying(['downgrade' => 'no'])], '`downgrade`'],
     'contents left out' => [['would' => aRestoreListingSaying(['manifest' => array_diff_key(aManifestSaying(), ['members' => true])])], '`members`'],
     'no contents' => [['would' => aRestoreListingSaying(['manifest' => aManifestSaying(['members' => null])])], '`members`'],

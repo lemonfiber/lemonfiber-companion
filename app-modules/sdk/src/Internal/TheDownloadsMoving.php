@@ -18,9 +18,9 @@ use function trim;
 /**
  * Reads the dashboard's `transfers` panel into the downloads moving, each by its name.
  *
- * A panel whose source could not be reached names none, which is what the
- * stack could say about them. Anything the contract would not send refuses the
- * summary, for {@see StoppedRows}' reason.
+ * A panel whose source could not be reached, or has not answered yet, names
+ * none, which is what the stack could say about them. Anything the contract
+ * would not send refuses the summary, for {@see StoppedRows}' reason.
  */
 final readonly class TheDownloadsMoving
 {
@@ -38,7 +38,7 @@ final readonly class TheDownloadsMoving
 
         return match ($came) {
             HowAPanelCameBack::Ready => DownloadsMoving::these(...self::names($panel)),
-            HowAPanelCameBack::Unavailable => DownloadsMoving::these(),
+            HowAPanelCameBack::Unavailable, HowAPanelCameBack::Pending => DownloadsMoving::these(),
             null => throw SummaryIsUnreadable::missing(DashboardField::Panel),
         };
     }

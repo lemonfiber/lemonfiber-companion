@@ -112,7 +112,7 @@ function whatADoorThatOpenedSends(): array
     return [
         'api_version' => 1,
         'kind' => 'admission',
-        'data' => ['token' => 'a-session-not-a-secret', 'until' => '2026-09-14T10:00:00'],
+        'data' => ['token' => 'a-session-not-a-secret', 'until' => 1_789_380_000],
     ];
 }
 
@@ -247,7 +247,7 @@ it('offers a member\'s name beside the credential, and comes away with whose ses
     $mock = MockClient::global([MockResponse::make((string) json_encode([
         'api_version' => 1,
         'kind' => 'admission',
-        'data' => ['member' => 'a7f3', 'token' => 'a-session-not-a-secret', 'until' => '2026-09-14T10:00:00'],
+        'data' => ['member' => 'a7f3', 'token' => 'a-session-not-a-secret', 'until' => 1_789_380_000],
     ]))]);
     $whose = new Admissions(new PinnedDoors(), new PinnedClients())
         ->admitAs(aStackWithADoor(), AMembersName::of('ada'), Credential::of('a-members-password'))

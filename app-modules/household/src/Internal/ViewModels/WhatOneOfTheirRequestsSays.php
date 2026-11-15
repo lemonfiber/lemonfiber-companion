@@ -29,12 +29,14 @@ final readonly class WhatOneOfTheirRequestsSays
      * @param string $standing where it stands, as a key in the member's words
      * @param string $reason why it was refused, or empty where it was not
      * @param string $kind what kind of thing it is, as a key in the member's words, or empty where the title already says it or the core said none
+     * @param WhenTheyAskedAsShown $asked how long ago they asked, or nothing where the core did not say
      */
     public function __construct(
         public string|ALineAsShown $title,
         public string $standing,
         public string $reason,
         public string $kind,
+        public WhenTheyAskedAsShown $asked,
     ) {}
 
     /** Whether there is a kind to draw beneath the title. */

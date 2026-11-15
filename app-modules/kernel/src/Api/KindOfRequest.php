@@ -27,6 +27,8 @@ enum KindOfRequest: string
 
     private const string SAID_TO_THE_MEMBER = 'household.request_kind.%s';
 
+    private const string ALWAYS_WAITS = 'household.always_waits.%s';
+
     /** The core's word as a catalogue key segment, which holds no space. */
     public function word(): string
     {
@@ -37,6 +39,21 @@ enum KindOfRequest: string
     public function wasSaid(): bool
     {
         return $this !== self::Something;
+    }
+
+    /** Whether it is a whole artist, author or series, which waits for the operator whatever the household's policy. */
+    public function isWhole(): bool
+    {
+        return match ($this) {
+            self::Artist, self::Author, self::BookSeries => true,
+            self::Film, self::Series, self::Album, self::Book, self::Something => false,
+        };
+    }
+
+    /** The catalogue key telling the operator a whole one always waits for them, or empty where it is not a whole one. */
+    public function alwaysWaitsOnTheScreen(): string
+    {
+        return $this->isWhole() ? sprintf(self::ALWAYS_WAITS, $this->word()) : '';
     }
 
     /** The catalogue key for what a member calls it. */

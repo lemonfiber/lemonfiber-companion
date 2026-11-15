@@ -6,9 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\AClientToHandOver;
 use Modules\Kernel\Api\AHandoff;
-use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\ASignedInDevice;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatTheHandoffNeedsNext;
@@ -91,7 +89,7 @@ final readonly class HowTheHandoffReads
                 records: $next === WhatTheHandoffNeedsNext::RecordAddress,
                 handing: $this->handing($handoff, $drawn),
                 signedIn: $signedIn,
-                given: $this->ago($handoff->given(), $now),
+                given: AgoAsShown::sinceWritten($handoff->given(), $now),
             ),
         );
     }
@@ -143,15 +141,7 @@ final readonly class HowTheHandoffReads
     /** One device signed in, with how long ago it was last heard from. */
     private function signedIn(ASignedInDevice $device, Instant $now): ASignedInDeviceAsShown
     {
-        return new ASignedInDeviceAsShown($device->device(), $device->client(), $this->ago($device->lastSeen(), $now));
+        return new ASignedInDeviceAsShown($device->device(), $device->client(), AgoAsShown::sinceWritten($device->lastSeen(), $now));
     }
 
-    /** How long before `$now` a moment was, or nothing where it names none. */
-    private function ago(AMomentAsWritten $moment, Instant $now): AgoAsShown
-    {
-        return $moment->read(
-            read: static fn(Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
-            unreadable: AgoAsShown::saysNothing(...),
-        );
-    }
 }

@@ -86,6 +86,8 @@ return [
             'heading' => 'On a plugin\'s behalf',
             'for' => 'For the plugin :plugin',
             'goes_to' => 'To :destination',
+            'switch' => 'Refused by :switch',
+            'cost' => 'Refusing it: :cost',
             'none' => 'lemonfiber sends nothing on a plugin\'s behalf',
         ],
         'theirs' => [

@@ -4,20 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-use function trim;
-
 /** One moment in a traced item's history: what happened, and when the service said it did. */
 final readonly class AMomentInItsHistory
 {
-    private function __construct(private WhatHappenedToIt $happened, private string $at) {}
+    private function __construct(private WhatHappenedToIt $happened, private AMomentAsWritten $at) {}
 
-    /** A moment the service recorded; when is required. */
-    public static function recorded(WhatHappenedToIt $happened, string $at): self
+    /** A moment the service recorded, with when it said, unwritten where it was not timed. */
+    public static function recorded(WhatHappenedToIt $happened, AMomentAsWritten $at): self
     {
-        if (trim($at) === '') {
-            throw TheTraceSaysNothing::about('at');
-        }
-
         return new self($happened, $at);
     }
 
@@ -26,8 +20,8 @@ final readonly class AMomentInItsHistory
         return $this->happened;
     }
 
-    /** When the service said it happened. */
-    public function at(): string
+    /** When the service said it happened, unwritten where it was not timed. */
+    public function at(): AMomentAsWritten
     {
         return $this->at;
     }

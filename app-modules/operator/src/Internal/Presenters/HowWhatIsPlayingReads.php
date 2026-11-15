@@ -6,7 +6,6 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Health\Api\WhatAStreamSaidSoFar;
 use Modules\Kernel\Api\ASessionPlaying;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatTheHouseholdIsPlaying;
@@ -38,7 +37,7 @@ final readonly class HowWhatIsPlayingReads
             none: static fn(): WhatIsPlayingAsShown => new WhatIsPlayingAsShown(HowTheReadingWent::itCameBack(), new WhatTheOperatorHearsPlaying($broke, null)),
             current: fn(WhatTheHouseholdIsPlaying $playing): WhatIsPlayingAsShown => $this->playing($playing, AgoAsShown::saysNothing(), $broke),
             asOf: fn(WhatTheHouseholdIsPlaying $playing, Instant $at): WhatIsPlayingAsShown
-                => $this->playing($playing, AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now), $broke),
+                => $this->playing($playing, AgoAsShown::since($at, $now), $broke),
         );
     }
 

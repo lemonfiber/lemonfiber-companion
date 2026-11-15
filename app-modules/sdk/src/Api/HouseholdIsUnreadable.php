@@ -82,6 +82,15 @@ final class HouseholdIsUnreadable extends InvalidArgumentException
         ));
     }
 
+    public static function refusedAt(string $by, int $position): self
+    {
+        return new self(sprintf(
+            'Request %d belonging to `%s` was declined at a moment this app does not read as whole seconds since the epoch. Guessing when is how a refusal gets told out of the order it happened in.',
+            $position,
+            $by,
+        ));
+    }
+
     public static function standing(string $said): self
     {
         // The accepted list comes from the enum rather than from a sentence

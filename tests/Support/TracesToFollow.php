@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AMomentInItsHistory;
 use Modules\Kernel\Api\AnEpisodeNotHereYet;
 use Modules\Kernel\Api\ASeriesCounted;
@@ -38,16 +39,16 @@ final readonly class TracesToFollow
             HowFarItGot::reached(
                 Stage::Downloading,
                 TheStagesItReached::of(
-                    AStageItReached::recorded(Stage::Monitored, ServiceId::called('sonarr'), ''),
-                    AStageItReached::recorded(Stage::Grabbed, ServiceId::called('sonarr'), '2026-09-20T10:00:00Z'),
-                    AStageItReached::recorded(Stage::Downloading, ServiceId::called('qbittorrent'), '2026-09-20T10:01:00Z'),
+                    AStageItReached::recorded(Stage::Monitored, ServiceId::called('sonarr'), AMomentAsWritten::unwritten()),
+                    AStageItReached::recorded(Stage::Grabbed, ServiceId::called('sonarr'), AMomentAsWritten::of('2026-09-20T10:00:00Z')),
+                    AStageItReached::recorded(Stage::Downloading, ServiceId::called('qbittorrent'), AMomentAsWritten::of('2026-09-20T10:01:00Z')),
                 ),
                 'No peers have been seen for two days',
             ),
             TheMomentsInItsHistory::of(
-                AMomentInItsHistory::recorded(WhatHappenedToIt::Grabbed, '2026-09-19T09:00:00Z'),
-                AMomentInItsHistory::recorded(WhatHappenedToIt::DownloadFailed, '2026-09-19T21:00:00Z'),
-                AMomentInItsHistory::recorded(WhatHappenedToIt::Grabbed, '2026-09-20T10:00:00Z'),
+                AMomentInItsHistory::recorded(WhatHappenedToIt::Grabbed, AMomentAsWritten::of('2026-09-19T09:00:00Z')),
+                AMomentInItsHistory::recorded(WhatHappenedToIt::DownloadFailed, AMomentAsWritten::of('2026-09-19T21:00:00Z')),
+                AMomentInItsHistory::recorded(WhatHappenedToIt::Grabbed, AMomentAsWritten::of('2026-09-20T10:00:00Z')),
             ),
             WhereTheServicesDisagree::of('Jellyfin holds an episode no service is watching for'),
             HowMuchOfItIsHere::inParts(ASeriesCounted::counted(
@@ -85,13 +86,13 @@ final readonly class TracesToFollow
             'stall' => 'No peers have been seen for two days',
             'stages' => [
                 ['stage' => 'monitored', 'service' => 'sonarr', 'at' => null],
-                ['stage' => 'grabbed', 'service' => 'sonarr', 'at' => '2026-09-20T10:00:00Z'],
-                ['stage' => 'downloading', 'service' => 'qbittorrent', 'at' => '2026-09-20T10:01:00Z'],
+                ['stage' => 'grabbed', 'service' => 'sonarr', 'at' => 1_789_898_400],
+                ['stage' => 'downloading', 'service' => 'qbittorrent', 'at' => 1_789_898_460],
             ],
             'history' => [
-                ['outcome' => 'grabbed', 'at' => '2026-09-19T09:00:00Z'],
-                ['outcome' => 'download-failed', 'at' => '2026-09-19T21:00:00Z'],
-                ['outcome' => 'grabbed', 'at' => '2026-09-20T10:00:00Z'],
+                ['outcome' => 'grabbed', 'at' => 1_789_808_400],
+                ['outcome' => 'download-failed', 'at' => 1_789_851_600],
+                ['outcome' => 'grabbed', 'at' => 1_789_898_400],
             ],
             'findings' => ['Jellyfin holds an episode no service is watching for'],
             'coverage' => [

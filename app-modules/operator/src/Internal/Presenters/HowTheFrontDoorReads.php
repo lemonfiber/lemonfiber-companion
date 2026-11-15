@@ -45,7 +45,7 @@ final readonly class HowTheFrontDoorReads
             standingSaid: $door->standing()->saidOnTheScreen(),
             tone: $this->toneOf($door->standing()),
             meaning: $door->meaning(),
-            chosenSaid: $door->chosen()->how()->saidOnTheScreen(),
+            chosenSaid: $door->chosen()->saidOnTheScreen(),
             named: $door->chosen()->named(),
             refusal: $door->chosen()->because(),
             begins: $door->begins()->either(

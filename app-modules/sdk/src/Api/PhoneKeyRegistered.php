@@ -37,7 +37,7 @@ final readonly class PhoneKeyRegistered
         return APhoneKey::standing(
             APhoneKeysName::of(Required::text($data, WireField::Name, MintingIsUnreadable::missing(Kind::DeviceKey, WireField::Name))),
             WhereAPhoneKeyLives::tryFrom($backing) ?? throw MintingIsUnreadable::backing($backing),
-            AMomentAsWritten::byTheStack(Required::text($data, WireField::Registered, MintingIsUnreadable::missing(Kind::DeviceKey, WireField::Registered))),
+            AMomentAsWritten::byTheStack(Required::number($data, WireField::Registered, MintingIsUnreadable::missing(Kind::DeviceKey, WireField::Registered))),
             AMomentAsWritten::unwritten(),
         );
     }

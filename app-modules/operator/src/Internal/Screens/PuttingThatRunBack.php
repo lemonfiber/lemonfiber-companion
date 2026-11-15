@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheRecord;
+use Modules\Kernel\Api\UndoSaysNothing;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -37,8 +38,6 @@ use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
-
-use function trim;
 
 /**
  * Putting back one run the record shows, agreed to against the record's own rows.
@@ -214,16 +213,16 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
     /** Resume the session and read what the record says of the run. */
     private function read(): WhatPuttingARunBackWouldShow
     {
-        $named = $this->stampNamed();
-
-        if (trim($named) === '') {
+        try {
+            $run = ARun::stamped($this->stampNamed());
+        } catch (UndoSaysNothing) {
             return new HowARunBackReads()->namesNoRun();
         }
 
         $stack = $this->stack();
 
         return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): WhatPuttingARunBackWouldShow => $this->theRun($stack, $session, ARun::stamped($named)),
+            held: fn(Session $session): WhatPuttingARunBackWouldShow => $this->theRun($stack, $session, $run),
             notHeld: static fn(): WhatPuttingARunBackWouldShow => new HowARunBackReads()->notAsked(),
         );
     }

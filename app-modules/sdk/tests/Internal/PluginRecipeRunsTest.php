@@ -10,6 +10,7 @@ use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\ThePlugins;
+use Modules\Kernel\Api\WhatAStepCameTo;
 use Modules\Kernel\Api\WhenARecipeRuns;
 use Modules\Sdk\Api\PluginInstalls;
 use Modules\Sdk\Api\PluginsAreUnreadable;
@@ -61,6 +62,11 @@ function aListingWithTheRecipe(array $changed): Envelope
 
     return new Envelope(1, 'plugins', ['installed' => [$plugin], 'rehearsed' => false, 'sources' => [], 'nonconforming' => []]);
 }
+
+it('reads every outcome of a step the contract names', function (string $came): void {
+    expect(WhatAStepCameTo::from($came)->value)->toBe($came)
+        ->and(static fn(): ThePlugins => PluginInstalls::in(anAnswerWithTheStep(['came' => $came])))->not->toThrow(PluginsAreUnreadable::class);
+})->with(['answered', 'skipped', 'not-reached', 'unreachable', 'refused', 'withheld', 'declined', 'unexpected', 'uncaptured', 'oversized']);
 
 it('refuses a run account missing what it is about, or carrying something other than what it ran', function (array $changed, string $refused): void {
     expect(static fn(): ThePlugins => PluginInstalls::in(anAnswerWithTheDemand($changed)))->toThrow(PluginsAreUnreadable::class, $refused);

@@ -49,6 +49,8 @@ return [
         'described' => 'Wat verbeteren zou inhouden. Er is niets opgehaald.',
         'carried_out' => 'Verbeteren: elke dienst is gevraagd opnieuw te zoeken',
         'kind' => ':kind, op :preset',
+        'takes' => 'Kost :figure :unit om opnieuw op te halen',
+        'takes_unknown' => 'Wat het kost kon niet worden uitgerekend: :why',
         'nothing' => 'De stack noemt niets om te verbeteren.',
         'agree' => 'Verbeter wat er al is',
     ],

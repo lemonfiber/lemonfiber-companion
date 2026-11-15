@@ -10,6 +10,10 @@ use function it;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Sdk\Api\QualityIsUnreadable;
 use Modules\Sdk\Api\WhatAnUpgradeComesTo;
+
+use function sprintf;
+
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 /**
@@ -27,12 +31,45 @@ function anUpgradeCovering(array $media): Envelope
 /**
  * One kind an upgrade covers, with its media type replaced.
  *
- * @return array<string, string>
+ * @return array<string, mixed>
  */
-function aKindCovered(string $kind = 'movies'): array
+function aKindCovered(string $kind = 'movies', mixed $total = ['bytes' => 64_000_000_000]): array
 {
-    return ['media_type' => $kind, 'preset' => 'Maximum', 'size_per_hour' => '~15 GB'];
+    return ['media_type' => $kind, 'preset' => 'Maximum', 'total' => $total];
 }
+
+/** What upgrading the first kind takes, as one line. */
+function theTotalRead(mixed $total): string
+{
+    foreach (WhatAnUpgradeComesTo::in(anUpgradeCovering([aKindCovered(total: $total)])) as $kind) {
+        return $kind->total()->either(
+            bytes: static fn(int $bytes): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d bytes', $bytes)),
+            unknown: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('unknown: %s', $why)),
+        )->said;
+    }
+
+    return '';
+}
+
+it('reads what upgrading a kind takes in total, and why where the stack could not work it out', function (): void {
+    expect(theTotalRead(['bytes' => 64_000_000_000]))->toBe('64000000000 bytes')
+        ->and(theTotalRead(['bytes' => 0]))->toBe('0 bytes')
+        ->and(theTotalRead(['unknown' => 'Radarr did not answer']))->toBe('unknown: Radarr did not answer');
+});
+
+it('refuses a total that is neither one count of bytes nor one reason', function (mixed $total): void {
+    expect(static fn(): string => theTotalRead($total))
+        ->toThrow(QualityIsUnreadable::class, 'Entry 0 of `media` in the upgrade envelope has no readable `total`');
+})->with([
+    'none' => [null],
+    'a word' => ['64 GB'],
+    'nothing in it' => [[]],
+    'both arms' => [['bytes' => 1, 'unknown' => 'Both']],
+    'bytes below nothing' => [['bytes' => -1]],
+    'bytes as text' => [['bytes' => '64000000000']],
+    'a blank reason' => [['unknown' => ' ']],
+    'another arm' => [['rate' => '~15 GB']],
+]);
 
 it('refuses a kind whose media type is only spaces, before anything is built from it', function (): void {
     expect(static fn(): mixed => WhatAnUpgradeComesTo::in(anUpgradeCovering([aKindCovered(' ')])))

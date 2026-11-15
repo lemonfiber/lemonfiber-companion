@@ -108,6 +108,9 @@ final readonly class HowWhatLeavesReads
             plugin: $request->plugin()->named(),
             destination: $request->destination(),
             purpose: $request->purpose(),
+            allowedSaid: $request->allowed()->saidOnTheScreen(),
+            switch: $request->switch(),
+            cost: $request->cost(),
         );
     }
 

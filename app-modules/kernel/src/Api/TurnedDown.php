@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-use Closure;
-
 use function trim;
 
 /**
@@ -32,16 +30,16 @@ use function trim;
  */
 final readonly class TurnedDown
 {
-    private function __construct(private string $reason, private ?string $at = null) {}
+    private function __construct(private string $reason, private AMomentAsWritten $at) {}
 
     /** Refused, with the reason and nothing about when. */
     public static function because(string $reason): self
     {
-        return new self(self::said($reason));
+        return new self(self::said($reason), AMomentAsWritten::unwritten());
     }
 
     /** Refused at a moment the stack recorded, with the reason. */
-    public static function at(string $when, string $reason): self
+    public static function at(AMomentAsWritten $when, string $reason): self
     {
         return new self(self::said($reason), $when);
     }
@@ -52,19 +50,10 @@ final readonly class TurnedDown
         return $this->reason;
     }
 
-    /**
-     * Say when, or say that nobody recorded it.
-     *
-     * @template TThen of object
-     * @template TUnstated of object
-     *
-     * @param  Closure(string): TThen $then
-     * @param  Closure(): TUnstated   $unstated
-     * @return TThen|TUnstated
-     */
-    public function when(Closure $then, Closure $unstated): object
+    /** When it was refused, unwritten where nobody recorded it. */
+    public function when(): AMomentAsWritten
     {
-        return $this->at === null ? $unstated() : $then($this->at);
+        return $this->at;
     }
 
     /** The reason, refused when there is none to give. */

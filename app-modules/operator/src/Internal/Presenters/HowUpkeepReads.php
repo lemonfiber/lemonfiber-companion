@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
@@ -49,7 +48,7 @@ final readonly class HowUpkeepReads
      */
     public function kept(Upkeep $upkeep, Instant $readAt, Instant $now, HowTheReadingWent $askedNow): WhatTheUpkeepTurnedOutToBe
     {
-        return $this->read($upkeep, $askedNow, AgoAsShown::from(HowLongAgo::since($readAt, $now), $readAt, $now));
+        return $this->read($upkeep, $askedNow, AgoAsShown::since($readAt, $now));
     }
 
     /**

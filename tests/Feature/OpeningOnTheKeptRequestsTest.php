@@ -20,6 +20,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
 use Modules\Kernel\Api\Whose;
+use Modules\Operator\Internal\Presenters\AgoAsShown;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
 use Modules\Operator\Internal\ViewModels\WhatOneRequestSays;
 use Modules\Requests\Api\KeepingWhatWasAsked;
@@ -28,9 +29,13 @@ use Tests\Support\Fakes\AHouseholdThatAsked;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatIsKeptOfRequests;
 use Tests\Support\WhatTheDeviceWouldDraw;
+
+/** When the screen is drawn. */
+const WHEN_THE_KEPT_REQUESTS_ARE_DRAWN = 1_790_812_800;
 
 // What the phone kept of what a household asked for, drawn on opening for what
 // it is, and nothing on it decided until the stack answers.
@@ -94,6 +99,7 @@ function theGardenRoomsRequests(AHouseholdThatAsked $wanting, KeepingWhatWasAske
         new AppsSettingsThatOpen(),
         AroundThePhone::listening($hearing),
         $kept,
+        FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_KEPT_REQUESTS_ARE_DRAWN)),
     );
     $screen->setParams(['stack' => $room->id()->stored()]);
 
@@ -212,7 +218,7 @@ it('keeps the kept reading, waiting, beside what stopped the stack answering, an
 
     expect($screen->turningDown())->toBeNull();
 
-    $screen->turningDown = new WhatOneRequestSays('1', 'Dune', 'Mira', 'household.waiting', wantsADecision: true, sizeSaid: 'household.size_unknown', sizeFigure: 0, sizeUnit: '', refusedReason: '', refusedAt: '', untitled: '', kind: '');
+    $screen->turningDown = new WhatOneRequestSays('1', 'Dune', 'Mira', 'household.waiting', wantsADecision: true, sizeSaid: 'household.size_unknown', sizeFigure: 0, sizeUnit: '', refusedReason: '', refusedAt: AgoAsShown::saysNothing(), untitled: '', kind: '', asked: AgoAsShown::saysNothing(), alwaysWaits: '');
     $screen->because = 'We have it already';
     $writing = WhatTheDeviceWouldDraw::by($screen);
     $screen->decline();

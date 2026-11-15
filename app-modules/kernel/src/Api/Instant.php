@@ -21,6 +21,10 @@ namespace Modules\Kernel\Api;
  */
 final readonly class Instant
 {
+    /** What the stack counts an instant as where its clock would not answer. */
+    public const int UNDATED = 0;
+
+    /** @param int<0, max> $seconds */
     private function __construct(private int $seconds) {}
 
     /**
@@ -40,6 +44,7 @@ final readonly class Instant
         return new self($seconds);
     }
 
+    /** @return int<0, max> */
     public function epochSeconds(): int
     {
         return $this->seconds;

@@ -101,13 +101,13 @@ function whatAServiceThatSpokeSends(): array
 {
     return [
         ['api_version' => 1, 'kind' => 'log', 'data' => [
-            'at' => '2026-09-14T04:00:00Z', 'line' => 'tunnel up', 'service' => 'gluetun', 'stream' => 'stdout',
+            'stamped' => '2026-09-14T04:00:00Z', 'line' => 'tunnel up', 'service' => 'gluetun', 'stream' => 'stdout',
         ]],
         ['api_version' => 1, 'kind' => 'log', 'data' => [
-            'at' => null, 'line' => 'no route to host', 'service' => 'gluetun', 'stream' => 'stderr',
+            'stamped' => null, 'line' => 'no route to host', 'service' => 'gluetun', 'stream' => 'stderr',
         ]],
         ['api_version' => 1, 'kind' => 'log', 'data' => [
-            'at' => '2026-09-14T04:00:02Z', 'line' => 'retrying', 'service' => 'gluetun', 'stream' => 'stdout',
+            'stamped' => '2026-09-14T04:00:02Z', 'line' => 'retrying', 'service' => 'gluetun', 'stream' => 'stdout',
         ]],
     ];
 }
@@ -252,7 +252,7 @@ it('a line this app cannot read is an answer it could not read', function (): vo
         sprintf("%s\n", (string) json_encode([
             'api_version' => 1,
             'kind' => 'log',
-            'data' => ['at' => null, 'line' => 'tunnel up', 'service' => 'gluetun'],
+            'data' => ['stamped' => null, 'line' => 'tunnel up', 'service' => 'gluetun'],
         ])),
     );
 

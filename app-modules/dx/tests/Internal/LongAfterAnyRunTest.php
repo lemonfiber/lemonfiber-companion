@@ -14,11 +14,10 @@ use Modules\Kernel\Api\Instant;
 use function sprintf;
 
 it('spells one moment every way', function (): void {
-    $read = AMomentAsWritten::of(LongAfterAnyRun::WRITTEN)->read(
+    $read = AMomentAsWritten::of(sprintf('%sT00:00:00Z', LongAfterAnyRun::DAY))->read(
         static fn(Instant $moment): Instant => $moment,
         static fn(): Instant => Instant::atEpochSeconds(0),
     );
 
-    expect($read->epochSeconds())->toBe(LongAfterAnyRun::IN_SECONDS)
-        ->and(LongAfterAnyRun::WRITTEN)->toStartWith(sprintf('%sT', LongAfterAnyRun::DAY));
+    expect($read->epochSeconds())->toBe(LongAfterAnyRun::IN_SECONDS);
 });

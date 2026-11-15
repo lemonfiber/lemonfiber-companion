@@ -278,6 +278,27 @@ it('draws a music or book ask with its kind, opening its own page, named or not,
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Here · Album');
 });
 
+it('draws a music or book ask with the cover the core keeps for it, and asks no cover for a film', function (): void {
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a cover')));
+    $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), owing: AMemberWhoIsOwed::asking(Requested::of(
+        Wanted::of(RequestId::named('music-3'), 'Robin', 'Rumours', KindOfRequest::Album, Size::unknown(), HowARequestStands::said(Waiting::Here)),
+        Wanted::of(RequestId::named('7'), 'Robin', 'Heat', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::Getting)),
+    )), pictures: new ThePicturesItDraws(ArtworkHeldInMemory::working(), $posters));
+    $rows = $screen->theirOwn()->rows;
+
+    expect($rows[0]->posters[0]->pictured)->toStartWith(ArtworkKey::SCHEME)
+        ->and($rows[1]->posters[0]->pictured)->toBeNull()
+        ->and($posters->coversAskedFor())->toBe(['music-3']);
+});
+
+it('letters a music or book ask where no cover comes back', function (): void {
+    $screen = theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), owing: AMemberWhoIsOwed::asking(Requested::of(
+        Wanted::of(RequestId::named('music-3'), 'Robin', 'Rumours', KindOfRequest::Album, Size::unknown(), HowARequestStands::said(Waiting::Here)),
+    )));
+
+    expect($screen->theirOwn()->rows[0]->posters[0]->pictured)->toBeNull();
+});
+
 it('draws each request as a poster saying where it stands, opening nothing, ahead of the house\'s own', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theShelfScreen(AShelfThatWasRead::holding(aShelfOfThree()), owing: AMemberWhoIsOwed::asking(whatTheyAskedFor())));
     $said = $drawn->said();

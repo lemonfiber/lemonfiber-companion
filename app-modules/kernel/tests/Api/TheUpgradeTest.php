@@ -17,6 +17,7 @@ use Modules\Kernel\Api\ThereIsNothingToAgreeTo;
 use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\WhatBecameOfAskingIt;
 use Modules\Kernel\Api\WhatTheUpgradeCameTo;
+use Modules\Kernel\Api\WhatUpgradingItTakes;
 use Modules\Kernel\Api\WhereTheAskingStands;
 
 use function sprintf;
@@ -24,25 +25,42 @@ use function sprintf;
 use Tests\Support\TheWordCarriedOut;
 
 /** One kind of media, with any of its words replaced where a test names it. */
-function aKindToUpgrade(string $kind = 'movies', string $preset = 'Maximum', string $size = '~15 GB'): OneKindUpgraded
+function aKindToUpgrade(string $kind = 'movies', string $preset = 'Maximum'): OneKindUpgraded
 {
-    return OneKindUpgraded::reported($kind, $preset, $size, WhatBecameOfAskingIt::notAsked());
+    return OneKindUpgraded::reported($kind, $preset, WhatUpgradingItTakes::bytes(64_000_000_000), WhatBecameOfAskingIt::notAsked());
 }
 
-it('keeps every word of a kind as it was reported, and what asking its service came to', function (): void {
-    $asking = WhatBecameOfAskingIt::asked(WhereTheAskingStands::Started);
-    $kind = OneKindUpgraded::reported('tv', 'Space-saving', '~1 GB', $asking);
+/** What upgrading a kind takes, as one line. */
+function whatItTakes(WhatUpgradingItTakes $total): string
+{
+    return $total->either(
+        bytes: static fn(int $bytes): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d bytes', $bytes)),
+        unknown: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('unknown: %s', $why)),
+    )->said;
+}
 
-    expect([$kind->kind(), $kind->preset(), $kind->sizePerHour(), $kind->asking()])->toBe(['tv', 'Space-saving', '~1 GB', $asking]);
+it('keeps every word of a kind as it was reported, what it takes in total and what asking its service came to', function (): void {
+    $asking = WhatBecameOfAskingIt::asked(WhereTheAskingStands::Started);
+    $total = WhatUpgradingItTakes::unknown('Sonarr did not answer');
+    $kind = OneKindUpgraded::reported('tv', 'Space-saving', $total, $asking);
+
+    expect([$kind->kind(), $kind->preset(), $kind->total(), $kind->asking()])->toBe(['tv', 'Space-saving', $total, $asking]);
 });
 
 it('refuses a kind with any word left blank, naming the word', function (string $field): void {
     expect(static fn(): OneKindUpgraded => match ($field) {
         'media_type' => aKindToUpgrade(kind: ' '),
-        'preset' => aKindToUpgrade(preset: ''),
-        default => aKindToUpgrade(size: ' '),
+        default => aKindToUpgrade(preset: ''),
     })->toThrow(QualitySaysNothing::class, sprintf('`%s` blank', $field));
-})->with(['media_type', 'preset', 'size_per_hour']);
+})->with(['media_type', 'preset']);
+
+it('keeps what upgrading takes as bytes or as why it could not be worked out, and refuses a count below nothing or a blank reason', function (): void {
+    expect(whatItTakes(WhatUpgradingItTakes::bytes(0)))->toBe('0 bytes')
+        ->and(whatItTakes(WhatUpgradingItTakes::bytes(64_000_000_000)))->toBe('64000000000 bytes')
+        ->and(whatItTakes(WhatUpgradingItTakes::unknown('Sonarr did not answer')))->toBe('unknown: Sonarr did not answer')
+        ->and(static fn(): WhatUpgradingItTakes => WhatUpgradingItTakes::bytes(-1))->toThrow(QualitySaysNothing::class, '`total`')
+        ->and(static fn(): WhatUpgradingItTakes => WhatUpgradingItTakes::unknown(' '))->toThrow(QualitySaysNothing::class, '`total`');
+});
 
 it('keeps the kinds in the stack\'s order, and says whether it was carried out', function (): void {
     $movies = aKindToUpgrade();

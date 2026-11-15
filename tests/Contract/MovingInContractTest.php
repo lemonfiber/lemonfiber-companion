@@ -43,6 +43,7 @@ use Modules\Kernel\Api\WhatLinkingCosts;
 use Modules\Kernel\Api\WhatMayBeDone;
 use Modules\Kernel\Api\WhatStandsHere;
 use Modules\Kernel\Api\WhatWasNamed;
+use Modules\Kernel\Api\WhereAServiceKeepsIt;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Scouts;
 use Saloon\Http\Faking\MockClient;
@@ -79,8 +80,8 @@ function theSameSurvey(): TheSurvey
         standing: WhatStandsHere::of(
             AProjectStanding::named(
                 'media',
-                AServiceStanding::found('sonarr', ThePortsItPublishes::of(8989), running: true, adoptable: true),
-                AServiceStanding::found('tautulli', ThePortsItPublishes::of(), running: false, adoptable: false),
+                AServiceStanding::found('sonarr', ThePortsItPublishes::of(8989), running: true, adoptable: true, config: WhereAServiceKeepsIt::at('/srv/sonarr/config'), library: WhereAServiceKeepsIt::at('/media/tv')),
+                AServiceStanding::found('tautulli', ThePortsItPublishes::of(), running: false, adoptable: false, config: WhereAServiceKeepsIt::unread('It is mounted from a volume'), library: WhereAServiceKeepsIt::none('It keeps no library')),
             ),
         ),
         conflicts: ThePortsHeld::of(APortHeld::of(8989, 'sonarr', 'media')),
@@ -108,8 +109,8 @@ function whatAStackSaysIsAlreadyThere(bool $read = true, mixed $tautulliRuns = f
             'read' => $read,
             'standing' => [
                 ['project' => 'media', 'services' => [
-                    ['service' => 'sonarr', 'ports' => [8989], 'running' => true, 'adoptable' => true],
-                    ['service' => 'tautulli', 'ports' => [], 'running' => $tautulliRuns, 'adoptable' => false],
+                    ['service' => 'sonarr', 'ports' => [8989], 'running' => true, 'adoptable' => true, 'config' => ['at' => '/srv/sonarr/config'], 'library' => ['at' => '/media/tv']],
+                    ['service' => 'tautulli', 'ports' => [], 'running' => $tautulliRuns, 'adoptable' => false, 'config' => ['unread' => 'It is mounted from a volume'], 'library' => ['none' => 'It keeps no library']],
                 ]],
             ],
             'conflicts' => [['port' => 8989, 'wanted_by' => 'sonarr', 'held_by' => 'media']],
@@ -190,11 +191,21 @@ function whatWasFoundStanding(TheSurvey $survey): array
 
     foreach ($survey->standing() as $project) {
         foreach ($project as $service) {
-            $lines[] = sprintf('%s/%s|%s|%s|%s', $project->project(), $service->service(), thePortsSurveyed($service->ports()), oneWordFor($service->isRunning(), 'running', 'stopped'), oneWordFor($service->isAdoptable(), 'adoptable', 'not adoptable'));
+            $lines[] = sprintf('%s/%s|%s|%s|%s|%s|%s', $project->project(), $service->service(), thePortsSurveyed($service->ports()), oneWordFor($service->isRunning(), 'running', 'stopped'), oneWordFor($service->isAdoptable(), 'adoptable', 'not adoptable'), whereItKeepsIt($service->config()), whereItKeepsIt($service->library()));
         }
     }
 
     return $lines;
+}
+
+/** Where a found service keeps something, as one word for its arm and the stack's words. */
+function whereItKeepsIt(WhereAServiceKeepsIt $place): string
+{
+    return $place->either(
+        at: static fn(string $path): TheWordCarriedOut => new TheWordCarriedOut(sprintf('at %s', $path)),
+        unread: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('unread %s', $why)),
+        none: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('none %s', $why)),
+    )->said;
 }
 
 /**
@@ -275,8 +286,8 @@ it('comes away with every project and service, what is in the way, and every mod
     foreach (everyWayOfSurveying($answered) as $which => $make) {
         expect(everythingTheSurveySays($make()))->toBe(
             "looked\n"
-            . "media/sonarr|8989|running|adoptable\n"
-            . "media/tautulli||stopped|not adoptable\n"
+            . "media/sonarr|8989|running|adoptable|at /srv/sonarr/config|at /media/tv\n"
+            . "media/tautulli||stopped|not adoptable|unread It is mounted from a volume|none It keeps no library\n"
             . "conflict 8989|sonarr|media\n"
             . "unsupported media/tautulli|lemonfiber does not run it\n"
             . "beside sonarr|8989|8990\n"

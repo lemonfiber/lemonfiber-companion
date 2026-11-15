@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\HowBig;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
@@ -24,6 +25,8 @@ use function sprintf;
 final readonly class HowARequestReads
 {
     public const string NOT_YET_NAMED = 'household.not_yet_named.anybodys.%s';
+    /** @param Instant $now the frame's moment, which a refusal's age is counted from */
+    public function __construct(private Instant $now) {}
 
     /**
      * Fold one request into the fields a row needs.
@@ -85,10 +88,9 @@ final readonly class HowARequestReads
             notYet: static fn(): AsText => AsText::nothing(),
         )->said;
         $reason = $why instanceof TurnedDown ? $why->reason() : '';
-        $at = $why instanceof TurnedDown ? $why->when(
-            then: static fn(string $when): AsText => AsText::of($when),
-            unstated: static fn(): AsText => AsText::of(''),
-        )->said : '';
+        $at = $why instanceof TurnedDown ? AgoAsShown::sinceWritten($why->when(), $this->now) : AgoAsShown::saysNothing();
+        $asked = AgoAsShown::sinceWritten($wanted->asked(), $this->now);
+        $alwaysWaits = $wantsADecision ? $wanted->called()->kind()->alwaysWaitsOnTheScreen() : '';
 
         return $wanted->size()->either(
             measured: static fn(int $bytes): WhatOneRequestSays => new WhatOneRequestSays(
@@ -104,6 +106,8 @@ final readonly class HowARequestReads
                 refusedAt: $at,
                 untitled: $untitled,
                 kind: $kind,
+                asked: $asked,
+                alwaysWaits: $alwaysWaits,
             ),
             guessed: static fn(int $bytes): WhatOneRequestSays => new WhatOneRequestSays(
                 reference: $wanted->id()->reference(),
@@ -118,6 +122,8 @@ final readonly class HowARequestReads
                 refusedAt: $at,
                 untitled: $untitled,
                 kind: $kind,
+                asked: $asked,
+                alwaysWaits: $alwaysWaits,
             ),
             unknown: static fn(): WhatOneRequestSays => new WhatOneRequestSays(
                 reference: $wanted->id()->reference(),
@@ -137,6 +143,8 @@ final readonly class HowARequestReads
                 refusedAt: $at,
                 untitled: $untitled,
                 kind: $kind,
+                asked: $asked,
+                alwaysWaits: $alwaysWaits,
             ),
         );
     }

@@ -110,12 +110,12 @@ final readonly class WhatTheReviewFound
     /** @param array<mixed> $found */
     private static function libraries(array $found, WhatAChangeComesTo $comesTo): WhatAChangeComesTo
     {
-        foreach (InTheOrderSent::rows(Required::rows($found, ConfigField::Library, SettingIsUnreadable::missing(ConfigField::Library))) as $position => $row) {
+        foreach (InTheOrderSent::rows(Required::rows($found, WireField::Library, SettingIsUnreadable::missing(WireField::Library))) as $position => $row) {
             if (! is_array($row)) {
-                throw SettingIsUnreadable::finding(ConfigField::Library, $position);
+                throw SettingIsUnreadable::finding(WireField::Library, $position);
             }
 
-            $refused = SettingIsUnreadable::finding(ConfigField::Library, $position);
+            $refused = SettingIsUnreadable::finding(WireField::Library, $position);
             $comesTo = $comesTo->reaching(ALibraryAMoveReaches::of(
                 Required::text($row, WireField::Service, $refused),
                 Required::text($row, WireField::Path, $refused),

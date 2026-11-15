@@ -159,7 +159,7 @@ return [
         'names_no_copy' => 'This names no copy to put back',
         'a_rehearsal' => 'A rehearsal: nothing has been put back',
         'would_put_back' => 'Putting this copy back would restore :scope',
-        'taken_by' => 'Taken by lemonfiber :version on :at',
+        'taken_by' => 'Taken by lemonfiber :version :when',
         'older' => 'It comes from an older major version of lemonfiber. Putting it back is allowed, and may need a further reconcile after.',
         'would_move' => 'Its data would go to :now, not to :was where it was taken.',
         'would_go_where_it_was' => 'Its data would go back where it was taken from.',

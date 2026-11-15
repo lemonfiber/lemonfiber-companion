@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 
@@ -36,9 +37,20 @@ final readonly class AgoAsShown
         return new self($unit->comingOnTheScreen(), $unit->howManySince($now, $then));
     }
 
-    /** From how long ago it was, counted from the frame's moment. */
-    public static function from(HowLongAgo $ago, Instant $taken, Instant $now): self
+    /** How long before the frame's moment `$then` was. */
+    public static function since(Instant $then, Instant $now): self
     {
-        return new self($ago->saidOnTheScreen(), $ago->howManySince($taken, $now));
+        $ago = HowLongAgo::since($then, $now);
+
+        return new self($ago->saidOnTheScreen(), $ago->howManySince($then, $now));
+    }
+
+    /** How long before the frame's moment a written moment was, or nothing where it names none. */
+    public static function sinceWritten(AMomentAsWritten $moment, Instant $now): self
+    {
+        return $moment->read(
+            read: static fn(Instant $then): self => self::since($then, $now),
+            unreadable: self::saysNothing(...),
+        );
     }
 }

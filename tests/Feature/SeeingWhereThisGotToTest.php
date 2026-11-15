@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowFarItGot;
 use Modules\Kernel\Api\HowMuchOfItIsHere;
 use Modules\Kernel\Api\HowSureTheTraceIs;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
@@ -38,10 +39,14 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatSearches;
 use Tests\Support\Fakes\AStackThatTraces;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TracesToFollow;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheFieldsHold;
+
+/** When the screen is drawn. */
+const WHEN_THE_TRACE_IS_READ = 1_790_420_400;
 
 // Where one item got to.
 //
@@ -81,7 +86,7 @@ function theTraceScreen(AStackThatTraces $tracing, ?AKeychainInMemory $keychain 
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhereThisGotTo($tracing, $searching ?? AStackThatSearches::answering(WhatBecameOfTheWork::ended()), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhereThisGotTo($tracing, $searching ?? AStackThatSearches::answering(WhatBecameOfTheWork::ended()), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_TRACE_IS_READ)));
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $named]);
 
     return $screen;
@@ -121,9 +126,9 @@ it('shows the way it came, what was tried in order, and where the services disag
     $failed = array_keys($drawn, __('health.trace.outcome.download-failed'), strict: true);
 
     expect($drawn)->toContain(__('health.trace.recorded_untimed', ['service' => 'sonarr']))
-        ->and($drawn)->toContain(__('health.trace.recorded_at', ['service' => 'qbittorrent', 'at' => '2026-09-20T10:01:00Z']))
+        ->and($drawn)->toContain(__('health.trace.recorded_at', ['service' => 'qbittorrent', 'when' => trans_choice('health.ago.days', 6)]))
         ->and($failed)->toHaveCount(1)
-        ->and(array_slice($drawn, $failed[0] ?? 0, 2))->toBe([__('health.trace.outcome.download-failed'), '2026-09-19T21:00:00Z'])
+        ->and(array_slice($drawn, $failed[0] ?? 0, 2))->toBe([__('health.trace.outcome.download-failed'), trans_choice('health.ago.days', 6)])
         ->and($drawn)->toContain('Jellyfin holds an episode no service is watching for');
 });
 

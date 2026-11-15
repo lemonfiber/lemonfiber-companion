@@ -485,6 +485,22 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'an obstacle, and nothing this app asks for runs a recipe.',
         ],
         [
+            'path' => 'FrontDoorEnvelope.reaches',
+            'because' => WhatThisAppDoesNotRead::REACHED_FROM_HERE,
+        ],
+        [
+            'path' => 'FrontDoorEnvelope.beside[].reaches',
+            'because' => WhatThisAppDoesNotRead::REACHED_FROM_HERE,
+        ],
+        [
+            'path' => 'FrontDoorEnvelope.unaddressed',
+            'because' => WhatThisAppDoesNotRead::WHY_NO_ADDRESS,
+        ],
+        [
+            'path' => 'FrontDoorEnvelope.beside[].unaddressed',
+            'because' => WhatThisAppDoesNotRead::WHY_NO_ADDRESS,
+        ],
+        [
             'path' => 'FormsEnvelope.forms[].name',
             'because' => 'What a form is called, in the stack\'s words. The `id` is what `up`, `down` and '
                 . '`restart` are told, and a control here shows the id so that its label and its request '
@@ -587,6 +603,10 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'The profiles the verb activated, for `PreviewEnvelope.profiles`\'s reason.',
         ],
         [
+            'path' => 'LifecycleEnvelope.plan.vanished',
+            'because' => 'Each installed plugin naming a form this stack no longer declares, for `PreviewEnvelope.vanished`\'s reason.',
+        ],
+        [
             'path' => 'LifecycleEnvelope.plan.running',
             'because' => 'Which of the services were already running when the verb was asked for. It is drawn '
                 . 'before a start, from the rehearsal (`N18-R10`); after one, `services` says where each ended up '
@@ -657,8 +677,12 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'somebody opened a client.',
         ],
         [
-            'path' => 'HouseholdEnvelope.members[].requests[].asked',
-            'because' => 'When a request was asked for. The list is drawn in the core\'s order, and no requirement in `N1` to `N4` asks a row to say when it was asked (`N1-R17`).',
+            'path' => 'HouseholdEnvelope.members[].requests[].kind',
+            'because' => 'The kind of title a request asks for, as a value. `media` says what it is in the household\'s words, which is read and is what says a whole artist, author or series; this says the same as the kind the curator files it under.',
+        ],
+        [
+            'path' => 'HouseholdEnvelope.members[].requests[].unit',
+            'because' => 'What an ask for music or books asks for, as a value. `media` says the same in the household\'s words, which is read, for `HouseholdEnvelope.members[].requests[].kind`\'s reason.',
         ],
         [
             'path' => 'HouseholdEnvelope.members[].requests[].waiting_days',

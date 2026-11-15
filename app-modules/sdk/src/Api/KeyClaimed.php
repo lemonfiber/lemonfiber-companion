@@ -35,7 +35,7 @@ final readonly class KeyClaimed
         return AKeyClaim::of(
             AKeysName::of(Required::text($data, WireField::Name, MintingIsUnreadable::missing(Kind::KeyClaim, WireField::Name))),
             Required::text($data, WireField::Link, MintingIsUnreadable::missing(Kind::KeyClaim, WireField::Link)),
-            AMomentAsWritten::byTheStack(Required::text($data, KeyClaimField::Lapses, MintingIsUnreadable::missing(Kind::KeyClaim, KeyClaimField::Lapses))),
+            AMomentAsWritten::byTheStack(Required::number($data, KeyClaimField::Lapses, MintingIsUnreadable::missing(Kind::KeyClaim, KeyClaimField::Lapses))),
         );
     }
 

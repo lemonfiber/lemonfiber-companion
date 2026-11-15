@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Sdk\Api;
 
 use function array_key_exists;
-use function filter_var;
 use function is_array;
 use function is_int;
 
@@ -21,8 +20,6 @@ use Modules\Sdk\Api\Fields\HistoryField;
 use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
-
-use function preg_match;
 
 /**
  * The `history` envelope, as the record this app can show.
@@ -165,11 +162,9 @@ final readonly class Records
     /**
      * When one change was made, or that the stack's clock would not say.
      *
-     * Digits only, and a number that fits: the contract describes the field as
-     * seconds since the epoch written as a string. The pattern is checked
-     * before the conversion because the conversion alone is forgiving — it
-     * would take a sign or surrounding space — and a stamp the core never
-     * writes is one this app should not trust to put a record in order.
+     * Whole seconds since the epoch. A count before the epoch is refused: it
+     * is no moment the stack writes, and a record put in order by one would be
+     * shown out of the order it happened in.
      *
      * **Zero is not a moment.** It is what the stack writes where its clock
      * would not answer, so it is read as {@see WhenItWasMade::unreadable()}
@@ -180,16 +175,13 @@ final readonly class Records
      */
     private static function when(array $row, int $position): WhenItWasMade
     {
-        $said = self::text($row, WireField::At, $position);
-        $seconds = filter_var($said, FILTER_VALIDATE_INT);
+        $seconds = Required::number($row, WireField::At, HistoryIsUnreadable::at($position));
 
-        if (preg_match('/^\d+$/', $said) !== 1 || $seconds === false) {
-            throw HistoryIsUnreadable::at($said, $position);
-        }
-
-        return $seconds === 0
-            ? WhenItWasMade::unreadable()
-            : WhenItWasMade::at(Instant::atEpochSeconds($seconds));
+        return match (true) {
+            $seconds < Instant::UNDATED => throw HistoryIsUnreadable::at($position),
+            $seconds === Instant::UNDATED => WhenItWasMade::unreadable(),
+            default => WhenItWasMade::at(Instant::atEpochSeconds($seconds)),
+        };
     }
 
     /**

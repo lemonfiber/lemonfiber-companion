@@ -85,6 +85,12 @@ return [
     'nothing_asked_for' => 'Je hebt nog niets aangevraagd.',
     'waiting_count' => '{0} Niets wacht op je akkoord|{1} Eén verzoek wacht op je akkoord|[2,*] :count verzoeken wachten op je akkoord',
     'asked_by' => 'Gevraagd door :who',
+    'asked_when' => 'Gevraagd :when',
+    'always_waits' => [
+        'artist' => 'Wacht altijd op jou: een hele artiest',
+        'author' => 'Wacht altijd op jou: een hele auteur',
+        'book_series' => 'Wacht altijd op jou: een hele boekenreeks',
+    ],
     'reference' => 'Referentie :reference',
     'size_measured' => ':size :unit',
     'size_guessed' => 'Ongeveer :size :unit',
@@ -108,7 +114,7 @@ return [
     'nothing_asked' => 'Niemand heeft iets gevraagd.',
     'nothing_asked_action' => 'Wat het huishouden vraagt, verschijnt hier zodra iemand iets aanvraagt.',
     'refused_because' => 'Afgewezen: :reason',
-    'refused_at' => 'Afgewezen op :when',
+    'refused_at' => 'Afgewezen :when',
     'tabs' => [
         'home' => 'Thuis',
         'search' => 'Zoeken',

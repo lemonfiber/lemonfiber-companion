@@ -11,6 +11,7 @@ use InvalidArgumentException;
 use function is_int;
 use function is_string;
 
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Sdk\Api\NamesAWireField;
 
 /**
@@ -34,6 +35,18 @@ final readonly class Optional
         }
 
         return is_string($table[$field->value]) ? $table[$field->value] : throw $refused;
+    }
+
+    /**
+     * A moment the stack counted in whole seconds, or one unwritten where nothing was said.
+     *
+     * @param array<mixed> $table
+     */
+    public static function moment(array $table, NamesAWireField $field, InvalidArgumentException $refused): AMomentAsWritten
+    {
+        $seconds = self::number($table, $field, $refused);
+
+        return $seconds === null ? AMomentAsWritten::unwritten() : AMomentAsWritten::byTheStack($seconds);
     }
 
     /**

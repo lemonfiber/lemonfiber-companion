@@ -34,7 +34,9 @@ second for the steps of a running walk, the third for what a running start is
 waiting for, and the fourth for what the household is playing.
 
 `Pictures`, for `FetchingArtwork`, reads a title's poster and backdrop from the
-core's `/api/held/{id}/…` paths and a found title's poster from
-`/api/askable/{id}/poster`, through the gate and pinned as every request is.
+core's `/api/held/{id}/…` paths, a found title's poster from
+`/api/askable/{id}/poster` and a kept ask's cover from
+`/api/requests/{reference}/poster`, through the gate and pinned as every
+request is.
 The SDK bounds each answer to the picture types and size the contract allows,
 and the bytes are handed on without being kept here.

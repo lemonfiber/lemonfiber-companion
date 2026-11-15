@@ -10,7 +10,6 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARunPutBack;
 use Modules\Kernel\Api\ARunToPutBack;
 use Modules\Kernel\Api\ChangesAndWhy;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhenItWasMade;
@@ -44,7 +43,7 @@ final readonly class HowARunBackReads
 
         $when = $run->when(
             made: static fn(WhenItWasMade $made): AgoAsShown => $made->either(
-                at: static fn(Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
+                at: static fn(Instant $at): AgoAsShown => AgoAsShown::since($at, $now),
                 unreadable: AgoAsShown::undated(...),
             ),
             nowhere: AgoAsShown::saysNothing(...),

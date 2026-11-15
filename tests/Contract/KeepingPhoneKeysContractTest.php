@@ -71,8 +71,8 @@ function whatAStackSaysOfItsPhoneKeys(bool $revoked = false, string $backing = '
             'rehearsed' => false,
             'revoked' => $revoked ? 'Galaxy A51 · 7f3a' : null,
             'keys' => [
-                $first ?? ['name' => 'Galaxy A51 · 7f3a', 'fingerprint' => str_repeat('a', 64), 'backing' => $backing, 'app' => sprintf('android:app.lemonfiber.companion@%s', str_repeat('5a', 32)), 'registered' => '2026-10-01T09:00:00', 'used' => '2026-10-11T08:30:00', 'revoked' => $revoked ? '2026-10-13T10:00:00' : null],
-                ['name' => 'iPhone 12 mini · 01bc', 'fingerprint' => str_repeat('b', 64), 'backing' => 'enclave', 'app' => 'ios:NV5645J73B.app.lemonfiber.companion', 'registered' => '2026-10-11T09:00:00', 'used' => null, 'revoked' => null],
+                $first ?? ['name' => 'Galaxy A51 · 7f3a', 'fingerprint' => str_repeat('a', 64), 'backing' => $backing, 'app' => sprintf('android:app.lemonfiber.companion@%s', str_repeat('5a', 32)), 'registered' => 1_790_845_200, 'used' => 1_791_707_400, 'revoked' => $revoked ? 1_791_885_600 : null],
+                ['name' => 'iPhone 12 mini · 01bc', 'fingerprint' => str_repeat('b', 64), 'backing' => 'enclave', 'app' => 'ios:NV5645J73B.app.lemonfiber.companion', 'registered' => 1_791_709_200, 'used' => null, 'revoked' => null],
             ],
         ],
     ];
@@ -171,11 +171,11 @@ it('tells a session that has ended from a stack that is not answering, and a pho
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
         [MockResponse::make(whatAStackSaysOfItsPhoneKeys(backing: 'software')), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
-        [MockResponse::make(whatAStackSaysOfItsPhoneKeys(first: ['name' => ' ', 'fingerprint' => str_repeat('a', 64), 'backing' => 'tee', 'app' => 'ios:NV5645J73B.app.lemonfiber.companion', 'registered' => '2026-10-01T09:00:00'])), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
+        [MockResponse::make(whatAStackSaysOfItsPhoneKeys(first: ['name' => ' ', 'fingerprint' => str_repeat('a', 64), 'backing' => 'tee', 'app' => 'ios:NV5645J73B.app.lemonfiber.companion', 'registered' => 1_790_845_200])), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
         [MockResponse::make(whatAStackSaysOfItsPhoneKeys(first: 'Galaxy A51')), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
         [MockResponse::make(whatAStackSaysOfItsPhoneKeys(listing: false)), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
         [MockResponse::make(['api_version' => 1, 'kind' => 'device-keys', 'data' => 'keys']), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
-        [MockResponse::make(['api_version' => 1, 'kind' => 'device-keys', 'data' => ['rehearsed' => false, 'revoked' => null, 'keys' => ['first' => ['name' => 'iPhone 12 mini · 01bc', 'fingerprint' => str_repeat('b', 64), 'backing' => 'enclave', 'app' => 'ios:NV5645J73B.app.lemonfiber.companion', 'registered' => '2026-10-11T09:00:00', 'used' => null, 'revoked' => null]]]]), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
+        [MockResponse::make(['api_version' => 1, 'kind' => 'device-keys', 'data' => ['rehearsed' => false, 'revoked' => null, 'keys' => ['first' => ['name' => 'iPhone 12 mini · 01bc', 'fingerprint' => str_repeat('b', 64), 'backing' => 'enclave', 'app' => 'ios:NV5645J73B.app.lemonfiber.companion', 'registered' => 1_791_709_200, 'used' => null, 'revoked' => null]]]]), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],
     ];
 
     foreach ($table as [$answered, $why]) {

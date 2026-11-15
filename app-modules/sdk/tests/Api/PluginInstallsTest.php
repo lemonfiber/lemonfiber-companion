@@ -388,7 +388,8 @@ function everyPluginsAnswerThatCannotBeRead(): array
         'a grant asked of nothing' => [anInstallAnswerWith(theInstallWith(static fn(array $install): array => [...$install, 'granting' => [['credential' => '', 'of' => 'plex', 'for' => 'library-scan', 'approval' => 'x@tdarr']]])), $unreadable],
         'grants held that are not a list' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'granted' => 'plex.token'])), $unreadable],
         'a grant that is not a table' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'granted' => ['plex.token']])), $unreadable],
-        'a grant of nothing' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'granted' => [['credential' => ' ', 'of' => 'plex', 'for' => 'library-scan', 'at' => '1']]])), $unreadable],
+        'a grant of nothing' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'granted' => [['credential' => ' ', 'of' => 'plex', 'for' => 'library-scan', 'at' => 1]]])), $unreadable],
+        'a grant approved at a moment written as text' => [anInstallAnswerWith(thePluginWith(static fn(array $would): array => [...$would, 'granted' => [['credential' => 'plex.token', 'of' => 'plex', 'for' => 'library-scan', 'at' => '1761321600']]])), $unreadable],
     ];
 }
 
@@ -454,9 +455,9 @@ it('reads every check an install broke or left unsettled by its title, an agreem
 });
 
 it('reads each grant an installed plugin holds, by its record, and a record keeping none as none', function (): void {
-    $grant = ['credential' => 'plex.token', 'of' => 'plex', 'for' => 'library-scan', 'at' => '1761321600'];
+    $grant = ['credential' => 'plex.token', 'of' => 'plex', 'for' => 'library-scan', 'at' => 1_761_321_600];
     $plugins = PluginInstalls::in(anInstallAnswerWith(static fn(array $data): array => [...$data, 'installed' => [
-        [...APluginAsItArrives::onTheWire(), 'granted' => [$grant, [...$grant, 'credential' => 'jellyfin.key', 'of' => 'jellyfin', 'at' => '']]],
+        [...APluginAsItArrives::onTheWire(), 'granted' => [$grant, [...$grant, 'credential' => 'jellyfin.key', 'of' => 'jellyfin', 'at' => 0]]],
         [...APluginAsItArrives::onTheWire(), 'plugin' => 'bazarr', 'granted' => null],
     ]]));
     $held = [];

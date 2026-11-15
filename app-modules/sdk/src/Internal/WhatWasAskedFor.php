@@ -57,6 +57,16 @@ final readonly class WhatWasAskedFor
      */
     public static function request(array $row, string $by, int $position): Wanted
     {
+        return self::wanted($row, $by, $position)->askedAt(Optional::moment($row, WireField::Asked, HouseholdIsUnreadable::request($by, $position)));
+    }
+
+    /**
+     * One request, before when it was asked for is put on it.
+     *
+     * @param array<mixed> $row
+     */
+    private static function wanted(array $row, string $by, int $position): Wanted
+    {
         $standing = self::standing($row, $by, $position);
         $id = self::id($row, $by, $position);
         $kind = self::kind($row);
@@ -178,16 +188,7 @@ final readonly class WhatWasAskedFor
             throw HouseholdIsUnreadable::refusal($by, $position);
         }
 
-        $at = self::under($refused, WireField::At);
-
-        // A refusal with no moment is ordinary — the stack records one where it
-        // has one — so this is the one absence here with an answer rather than
-        // a refusal, which is `Size::unknown()`'s argument on the row above.
-        if (! Required::isText($at)) {
-            return TurnedDown::because($reason);
-        }
-
-        return TurnedDown::at($at, $reason);
+        return TurnedDown::at(Optional::moment($refused, WireField::At, HouseholdIsUnreadable::refusedAt($by, $position)), $reason);
     }
 
     /**

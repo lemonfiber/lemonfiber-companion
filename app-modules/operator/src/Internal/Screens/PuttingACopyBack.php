@@ -10,6 +10,7 @@ use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyPutBack;
 use Modules\Kernel\Api\ARefusalInItsWords;
+use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
@@ -111,6 +112,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        private readonly Clock $clock,
     ) {}
 
     /** The same question this screen's cadence asks, answered from what it last heard. */
@@ -256,7 +258,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
             listed: function (WhatPuttingItBackWouldDo $listing): WhatPuttingItBackWouldShow {
                 $this->listed = $listing;
 
-                return new HowPuttingItBackReads()->listing($listing);
+                return new HowPuttingItBackReads()->listing($listing, $this->clock->now());
             },
             refused: static fn(ARefusalInItsWords $why): WhatPuttingItBackWouldShow => new HowPuttingItBackReads()->refusedToList($why),
             met: $this->lettingGoIfRefused($stack, new HowPuttingItBackReads()->notListed(...)),

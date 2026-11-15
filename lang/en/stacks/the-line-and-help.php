@@ -176,7 +176,7 @@ return [
         'written_at' => 'It is on the machine at :path',
         'would_go_unsaid' => 'The stack does not say where it would be written',
         'bytes' => '{1} One byte|[0,*] :count bytes',
-        'taken' => 'Taken at :at, by lemonfiber :lemonfiber, from stack :stack',
+        'taken' => 'Taken :when, by lemonfiber :lemonfiber, from stack :stack',
         'missing' => 'Not collected: :what',
         'nothing_missing' => 'Everything was collected',
         'holds_no_files' => 'It holds no files',

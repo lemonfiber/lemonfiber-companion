@@ -8,6 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\ABundle;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\HowTheBundleIsGoing;
 use Modules\Kernel\Api\KindOfObstacle;
@@ -44,7 +45,7 @@ it('takes the arm for each state, and carries the bundle, the refusal and the ob
         TheTermsOfABundle::stated('the last 200 lines of each service', WhatFilenamesShow::Replaced, SettingsToReveal::none()),
         ThePiecesOfABundle::of(),
         Remarks::of(),
-        WhenABundleWasTaken::at('2026-09-26T10:00:00Z', '1.4.0', '2026.09'),
+        WhenABundleWasTaken::at(AMomentAsWritten::of('2026-09-26T10:00:00Z'), '1.4.0', '2026.09'),
     );
 
     expect(howTheBundleIsGoingReads(HowTheBundleIsGoing::stillRunning()))->toBe('running')

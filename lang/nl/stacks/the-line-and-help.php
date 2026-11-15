@@ -168,7 +168,7 @@ return [
         'written_at' => 'Hij staat op de machine in :path',
         'would_go_unsaid' => 'De stack zegt niet waar hij zou worden geschreven',
         'bytes' => '{1} Eén byte|[0,*] :count bytes',
-        'taken' => 'Genomen op :at, door lemonfiber :lemonfiber, van stack :stack',
+        'taken' => 'Genomen :when, door lemonfiber :lemonfiber, van stack :stack',
         'missing' => 'Niet verzameld: :what',
         'nothing_missing' => 'Alles is verzameld',
         'holds_no_files' => 'Er zitten geen bestanden in',

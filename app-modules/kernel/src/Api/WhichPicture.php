@@ -15,4 +15,7 @@ enum WhichPicture: string
 
     /** The poster of a title a member's search offered. */
     case AskablePoster = 'askable-poster';
+
+    /** The cover of an ask for music or books the core keeps. */
+    case KeptAskCover = 'kept-ask-cover';
 }

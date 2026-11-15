@@ -23,6 +23,12 @@ enum MigrationField: string implements NamesAWireField
     /** Whether lemonfiber knows an existing service and could take it over as it stands. */
     case Adoptable = 'adoptable';
 
+    /** Where an existing service reads its configuration from on this machine. */
+    case Config = 'config';
+
+    /** The arm of a place an existing service keeps nothing in, with why. */
+    case KeepsNone = 'none';
+
     /** Ports lemonfiber wants that something already here holds. */
     case Conflicts = 'conflicts';
 

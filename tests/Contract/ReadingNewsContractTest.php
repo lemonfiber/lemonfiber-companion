@@ -68,7 +68,7 @@ function theSameNews(): TheNewsOfAStack
  *
  * @return array<string, mixed>
  */
-function whatAStackListsAsNew(array $requests = [], array $unread = ['requests'], string $onset = '1759400000', array $replacing = []): array
+function whatAStackListsAsNew(array $requests = [], array $unread = ['requests'], mixed $onset = 1_759_400_000, array $replacing = []): array
 {
     return [
         'api_version' => 1,
@@ -165,13 +165,21 @@ it('answers an answer it could not read the same way through both', function ():
     }
 });
 
-it('refuses an onset that is not a number of seconds, rather than guessing when', function (string $onset): void {
+it('refuses an onset that is not a number of seconds, rather than guessing when', function (mixed $onset): void {
     $payload = whatAStackListsAsNew(onset: $onset);
     MockClient::destroyGlobal();
     MockClient::global([MockResponse::make((string) json_encode($payload))]);
 
     expect(everythingTheNewsSays(new Newsreaders(new PinnedClients())))->toBe(KindOfObstacle::AnswerCouldNotBeRead->value);
-})->with(['yesterday', '-1759400000', '17594e5', '99999999999999999999']);
+})->with(['yesterday', '1759400000', -1_759_400_000, -1, 1_759_400_000.5]);
+
+it('reads an onset of nought as the moment the stack could not date, not as a refusal', function (): void {
+    $payload = whatAStackListsAsNew(onset: 0);
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make((string) json_encode($payload))]);
+
+    expect(everythingTheNewsSays(new Newsreaders(new PinnedClients())))->toContain("problems read\nservice.sonarr|0|Sonarr is stopped");
+});
 
 it('refuses a list it cannot read whole, rather than showing part of it as everything new', function (array $data): void {
     $payload = whatAStackListsAsNew(replacing: $data);

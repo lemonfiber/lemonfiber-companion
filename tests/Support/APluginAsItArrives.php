@@ -163,7 +163,7 @@ final readonly class APluginAsItArrives
             'installed' => [self::onTheWire()],
             'rehearsed' => false,
             'sources' => [['plugin' => 'tdarr', 'from' => 'tdarr', 'standing' => ['standing' => 'unreachable', 'why' => 'The catalogue did not answer']]],
-            'nonconforming' => [['plugin' => 'tdarr', 'capability' => 'transcoding', 'operation' => 'queue', 'why' => 'It answered with a field its contract does not have', 'at' => '2026-10-09T21:00:00Z']],
+            'nonconforming' => [['plugin' => 'tdarr', 'capability' => 'transcoding', 'operation' => 'queue', 'why' => 'It answered with a field its contract does not have', 'at' => 1_791_579_600]],
         ];
 
         if ($install !== null) {
@@ -376,7 +376,7 @@ final readonly class APluginAsItArrives
         return [
             'plugin' => 'tdarr',
             'proofs' => [$asked ? [...$proof, 'came_to' => $cleared ? ['outcome' => 'passed'] : ['outcome' => 'failed', 'faults' => ['It answered with a field its contract does not have']]] : $proof],
-            'kept' => $cleared ? [] : [['plugin' => 'tdarr', 'capability' => 'transcoding', 'operation' => 'queue', 'why' => 'It answered with a field its contract does not have', 'at' => '2026-10-12T20:00:00Z']],
+            'kept' => $cleared ? [] : [['plugin' => 'tdarr', 'capability' => 'transcoding', 'operation' => 'queue', 'why' => 'It answered with a field its contract does not have', 'at' => 1_791_835_200]],
             'asked' => $asked,
             'cleared' => $cleared,
         ];

@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\OneKindUpgraded;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\SizeUnit;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
@@ -24,6 +25,7 @@ use Modules\Kernel\Api\WhatBecameOfAskingIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatMusicIsSetTo;
 use Modules\Kernel\Api\WhatTheChoiceCameTo;
+use Modules\Kernel\Api\WhatUpgradingItTakes;
 use Modules\Kernel\Api\WhereTheAskingStands;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WordsToChooseFrom;
@@ -89,12 +91,20 @@ function theQualityThatBecame(WhatBecameOfTheChoice $became, bool $customised = 
     );
 }
 
+/** A unit's word, as the quality screen draws it beside a figure. */
+function aUnitOnTheQualityScreen(string $key): string
+{
+    $said = __($key);
+
+    return is_string($said) ? $said : throw new LogicException(sprintf('`%s` names a group of lines, not a unit', $key));
+}
+
 /** An upgrade covering films and television. */
 function anUpgradeOfTwoKinds(): TheUpgrade
 {
     return TheUpgrade::described(
-        OneKindUpgraded::reported('movies', 'Maximum', '~15 GB', WhatBecameOfAskingIt::notAsked()),
-        OneKindUpgraded::reported('tv', 'Space-saving', '~1 GB', WhatBecameOfAskingIt::notAsked()),
+        OneKindUpgraded::reported('movies', 'Maximum', WhatUpgradingItTakes::bytes(64_000_000_000), WhatBecameOfAskingIt::notAsked()),
+        OneKindUpgraded::reported('tv', 'Space-saving', WhatUpgradingItTakes::unknown('Sonarr did not answer'), WhatBecameOfAskingIt::notAsked()),
     );
 }
 
@@ -102,8 +112,8 @@ function anUpgradeOfTwoKinds(): TheUpgrade
 function anUpgradeCarriedOut(): TheUpgrade
 {
     return TheUpgrade::carriedOut(
-        OneKindUpgraded::reported('movies', 'Maximum', '~15 GB', WhatBecameOfAskingIt::asked(WhereTheAskingStands::Started)),
-        OneKindUpgraded::reported('tv', 'Space-saving', '~1 GB', WhatBecameOfAskingIt::failed('Sonarr would not answer')),
+        OneKindUpgraded::reported('movies', 'Maximum', WhatUpgradingItTakes::bytes(64_000_000_000), WhatBecameOfAskingIt::asked(WhereTheAskingStands::Started)),
+        OneKindUpgraded::reported('tv', 'Space-saving', WhatUpgradingItTakes::unknown('Sonarr did not answer'), WhatBecameOfAskingIt::failed('Sonarr would not answer')),
     );
 }
 
@@ -458,7 +468,12 @@ it('describes upgrading kind by kind before anything is fetched, and upgrades on
     expect($described->said())->toContain(__('quality.upgrade.described'))
         ->and($described->said())->toContain(__('quality.upgrade.kind', ['kind' => 'movies', 'preset' => 'Maximum']))
         ->and($described->said())->toContain(__('quality.upgrade.kind', ['kind' => 'tv', 'preset' => 'Space-saving']))
-        ->and($described->said())->toContain(__('quality.per_hour', ['size' => '~1 GB']))
+        ->and($described->said())->toContain(__('quality.upgrade.takes', ['figure' => 64, 'unit' => aUnitOnTheQualityScreen(SizeUnit::Gigabytes->saidOnTheScreen())]))
+        ->and($described->said())->toContain(__('quality.upgrade.takes_unknown', ['why' => 'Sonarr did not answer']))
+        ->and(array_map(get_object_vars(...), $screen->upgrading->kinds ?? []))->toBe([
+            ['kind' => 'movies', 'preset' => 'Maximum', 'totalSaid' => 'quality.upgrade.takes', 'figure' => 64, 'unit' => SizeUnit::Gigabytes->saidOnTheScreen(), 'why' => '', 'askingSaid' => 'quality.asked.nothing-asked', 'detail' => ''],
+            ['kind' => 'tv', 'preset' => 'Space-saving', 'totalSaid' => 'quality.upgrade.takes_unknown', 'figure' => 0, 'unit' => '', 'why' => 'Sonarr did not answer', 'askingSaid' => 'quality.asked.nothing-asked', 'detail' => ''],
+        ])
         ->and($described->offers())->toContain(__('quality.upgrade.agree'))
         ->and($described->offers())->not->toContain(__('quality.upgrade.describe'))
         ->and([$upgrades->descriptions(), $upgrades->upgrades()])->toBe([1, 0]);

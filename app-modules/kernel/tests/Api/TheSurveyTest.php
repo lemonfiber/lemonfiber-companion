@@ -30,6 +30,7 @@ use Modules\Kernel\Api\WhatLinkingCosts;
 use Modules\Kernel\Api\WhatMayBeDone;
 use Modules\Kernel\Api\WhatStandsHere;
 use Modules\Kernel\Api\WhatWasFoundAlreadyHere;
+use Modules\Kernel\Api\WhereAServiceKeepsIt;
 
 use function sprintf;
 
@@ -78,8 +79,8 @@ it('keeps everything it was reported with, and whether it looked', function (): 
 
 it('keeps a project by its name, with its services in the stack\'s order', function (): void {
     $project = AProjectStanding::named('media', ...[
-        'first' => AServiceStanding::found('sonarr', ThePortsItPublishes::of(8989), running: true, adoptable: true),
-        'second' => AServiceStanding::found('tautulli', ThePortsItPublishes::of(), running: false, adoptable: false),
+        'first' => AServiceStanding::found('sonarr', ThePortsItPublishes::of(8989), running: true, adoptable: true, config: WhereAServiceKeepsIt::at('/srv/config'), library: WhereAServiceKeepsIt::none('It keeps no library')),
+        'second' => AServiceStanding::found('tautulli', ThePortsItPublishes::of(), running: false, adoptable: false, config: WhereAServiceKeepsIt::at('/srv/config'), library: WhereAServiceKeepsIt::none('It keeps no library')),
     ]);
     $named = [];
 
@@ -94,16 +95,18 @@ it('keeps a project by its name, with its services in the stack\'s order', funct
         ->and(fn(): AProjectStanding => AProjectStanding::named(' '))->toThrow(TheSurveySaysNothing::class, 'arrived with its `project` blank');
 });
 
-it('keeps a service\'s ports, whether it runs and whether it could be taken over', function (): void {
+it('keeps a service\'s ports, whether it runs, whether it could be taken over and where it keeps its configuration and library', function (): void {
     $ports = ThePortsItPublishes::of(...['web' => 8989, 'api' => 9898]);
-    $service = AServiceStanding::found('sonarr', $ports, running: true, adoptable: false);
+    $config = WhereAServiceKeepsIt::at('/srv/config');
+    $library = WhereAServiceKeepsIt::none('It keeps no library');
+    $service = AServiceStanding::found('sonarr', $ports, running: true, adoptable: false, config: $config, library: $library);
 
-    expect([$service->service(), $service->ports(), $service->isRunning(), $service->isAdoptable()])->toBe(['sonarr', $ports, true, false])
+    expect([$service->service(), $service->ports(), $service->isRunning(), $service->isAdoptable(), $service->config(), $service->library()])->toBe(['sonarr', $ports, true, false, $config, $library])
         ->and(iterator_to_array($ports, preserve_keys: true))->toBe([0 => 8989, 1 => 9898])
         ->and($ports)->toHaveCount(2)
-        ->and(AServiceStanding::found('tautulli', ThePortsItPublishes::of(), running: false, adoptable: true)->isRunning())->toBeFalse()
-        ->and(AServiceStanding::found('tautulli', ThePortsItPublishes::of(), running: false, adoptable: true)->isAdoptable())->toBeTrue()
-        ->and(fn(): AServiceStanding => AServiceStanding::found(' ', $ports, running: true, adoptable: true))->toThrow(TheSurveySaysNothing::class, '`service`');
+        ->and(AServiceStanding::found('tautulli', ThePortsItPublishes::of(), running: false, adoptable: true, config: WhereAServiceKeepsIt::at('/srv/config'), library: WhereAServiceKeepsIt::none('It keeps no library'))->isRunning())->toBeFalse()
+        ->and(AServiceStanding::found('tautulli', ThePortsItPublishes::of(), running: false, adoptable: true, config: WhereAServiceKeepsIt::at('/srv/config'), library: WhereAServiceKeepsIt::none('It keeps no library'))->isAdoptable())->toBeTrue()
+        ->and(fn(): AServiceStanding => AServiceStanding::found(' ', $ports, running: true, adoptable: true, config: WhereAServiceKeepsIt::at('/srv/config'), library: WhereAServiceKeepsIt::none('It keeps no library')))->toThrow(TheSurveySaysNothing::class, '`service`');
 });
 
 it('keeps every project in the stack\'s order', function (): void {

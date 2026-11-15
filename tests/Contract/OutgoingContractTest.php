@@ -64,8 +64,8 @@ function theSameConnections(): WhatLeavesThisMachine
             ARequestOfOurs::described(WhatLemonfiberAsksFor::Updates, WhereItGoes::to(), 'To say when a newer lemonfiber is out', 'Nothing but the request itself', WhetherItIsAllowed::SwitchedOff, 'updates.check', 'Nobody hears that a version came out'),
         ),
         RequestsOnAPluginsBehalf::of(
-            ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), 'plex.tv', 'To claim the media server'),
-            ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), 'metadata.provider.plex.tv', 'To match what the library holds'),
+            ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), 'plex.tv', 'To claim the media server', WhetherItIsAllowed::Allowed, 'plugin.plex.reach.plex.tv', 'The server cannot be claimed'),
+            ARequestOnAPluginsBehalf::declaredBy(APluginId::called('plex'), 'metadata.provider.plex.tv', 'To match what the library holds', WhetherItIsAllowed::SwitchedOff, 'plugin.plex.reach.metadata.provider.plex.tv', 'Nothing in the library is matched'),
         ),
         TheirRequests::of(
             ARequestOfTheirs::recorded(ServiceId::called('sonarr'), 'thetvdb.com', 'Series metadata', WhoPutItThere::bundled()),
@@ -96,8 +96,8 @@ function whatAStackSaysLeavesIt(string $reachOfTheFirst = 'registry'): array
                 ['service' => 'my-fork', 'destination' => 'unknown', 'purpose' => 'no record of what this service reaches', 'recorded' => false, 'origin' => ['named' => 'my-plugin', 'origin' => 'plugin']],
             ],
             'on_behalf' => [
-                ['plugin' => 'plex', 'destination' => 'plex.tv', 'purpose' => 'To claim the media server'],
-                ['plugin' => 'plex', 'destination' => 'metadata.provider.plex.tv', 'purpose' => 'To match what the library holds'],
+                ['plugin' => 'plex', 'destination' => 'plex.tv', 'purpose' => 'To claim the media server', 'allowed' => true, 'switch' => 'plugin.plex.reach.plex.tv', 'cost' => 'The server cannot be claimed'],
+                ['plugin' => 'plex', 'destination' => 'metadata.provider.plex.tv', 'purpose' => 'To match what the library holds', 'allowed' => false, 'switch' => 'plugin.plex.reach.metadata.provider.plex.tv', 'cost' => 'Nothing in the library is matched'],
             ],
         ],
     ];

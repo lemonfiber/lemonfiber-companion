@@ -130,11 +130,11 @@
              is in force stays on the screen above it. --}}
         @if ($this->upgrading->went->cameBack())
             <x-design::body>{{ __($this->upgrading->headingSaid) }}</x-design::body>
-            {{-- Kind by kind, each at its own preset and its own cost an hour. --}}
+            {{-- Kind by kind, each at its own preset with what it takes in total. --}}
             @forelse ($this->upgrading->kinds as $covered)
                 <x-design::card>
                     <x-design::strong>{{ __('quality.upgrade.kind', ['kind' => $covered->kind, 'preset' => $covered->preset]) }}</x-design::strong>
-                    <x-design::body>{{ __('quality.per_hour', ['size' => $covered->sizePerHour]) }}</x-design::body>
+                    <x-design::body>{{ __($covered->totalSaid, ['figure' => $covered->figure, 'unit' => $covered->unit === '' ? '' : __($covered->unit), 'why' => $covered->why]) }}</x-design::body>
                     <x-design::note>{{ __($covered->askingSaid) }}</x-design::note>
                     @if ($covered->detail !== '')
                         <x-design::note>{{ $covered->detail }}</x-design::note>

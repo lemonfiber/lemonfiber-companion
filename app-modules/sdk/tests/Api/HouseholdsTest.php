@@ -10,11 +10,11 @@ use function expect;
 use function implode;
 use function it;
 use function iterator_to_array;
-use function json_encode;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\AMember;
 use Modules\Kernel\Api\Code;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\RequestIsUnnamed;
@@ -32,6 +32,7 @@ use function sprintf;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatARequestIsCalledAsAWord;
 use Tests\Support\WhatTheContractAccepts;
+use Tests\Support\WhatTheTimestampNamed;
 
 /**
  * A `household` envelope holding whatever the case under test is about.
@@ -490,53 +491,51 @@ it('reads the reason a request was refused, and when', function (): void {
             'id' => '1',
             'title' => 'A film',
             'state' => 'declined',
-            'refused' => ['at' => '2026-09-14T04:00:00Z', 'reason' => 'The disk is nearly full'],
+            'refused' => ['at' => 1_789_358_400, 'reason' => 'The disk is nearly full'],
         ]]),
     ]])), preserve_keys: false);
 
     $said = $wanted[0]->refusal(
-        was: static fn(TurnedDown $why): Code => Code::of(sprintf('%s/%s', $why->reason(), $why->when(
-            then: static fn(string $when): Code => Code::of($when),
-            unstated: static fn(): Code => Code::of('-'),
+        was: static fn(TurnedDown $why): Code => Code::of(sprintf('%s/%s', $why->reason(), $why->when()->read(
+            read: static fn(Instant $when): Code => Code::of(sprintf('%d', $when->epochSeconds())),
+            unreadable: static fn(): Code => Code::of('-'),
         )->shown())),
         wasNot: static fn(): Code => Code::of('not refused'),
     );
 
-    expect($said->shown())->toBe('The disk is nearly full/2026-09-14T04:00:00Z');
+    expect($said->shown())->toBe('The disk is nearly full/1789358400');
 });
 
-it('a refusal timed as whitespace is read as one the stack did not time', function (): void {
-    // `at` present and blank is not the same shape as `at` absent, and it is the
-    // one a stack produces by accident — a field it always writes, filled with
-    // nothing on the row where the moment was not known. Read untrimmed it is a
-    // string, so it would reach a screen as a moment made of spaces and render
-    // as a refusal that happened at no time anybody can read.
-    foreach (['', ' ', '   ', "\t", "\n"] as $blank) {
-        $wanted = iterator_to_array(Households::in(householdSaying(['members' => [
+it('refuses a refusal timed as text rather than as whole seconds', function (): void {
+    foreach (['', ' ', '2026-09-14T04:00:00Z', '1789358400', 1789358400.0] as $said) {
+        expect(fn(): array => iterator_to_array(Households::in(householdSaying(['members' => [
             aMember('Robin', [[
                 'id' => '1',
                 'title' => 'A film',
                 'state' => 'declined',
-                'refused' => ['at' => $blank, 'reason' => 'Not this week'],
+                'refused' => ['at' => $said, 'reason' => 'Not this week'],
             ]]),
-        ]])), preserve_keys: false);
-
-        $said = $wanted[0]->refusal(
-            was: static fn(TurnedDown $why): Code => Code::of($why->when(
-                then: static fn(string $when): Code => Code::of(sprintf('timed as `%s`', $when)),
-                unstated: static fn(): Code => Code::of('unstated'),
-            )->shown()),
-            wasNot: static fn(): Code => Code::of('not refused'),
-        );
-
-        // `json_encode` rather than `var_export`: the point is to render a
-        // string of whitespace visibly in the failure message, and both do
-        // that — but `var_export` is on the list of calls that must not
-        // survive a commit, and a legible assertion is not a reason to keep
-        // one. This file held no class until now, which is the only reason
-        // the rule had never seen it.
-        expect($said->shown())->toBe('unstated', sprintf('a refusal timed as %s', json_encode($blank)));
+        ]])), preserve_keys: false))->toThrow(HouseholdIsUnreadable::class, 'declined at a moment');
     }
+});
+
+it('reads when a request was asked for, as whole seconds, and none where the stack did not say', function (): void {
+    $wanted = iterator_to_array(Households::in(householdSaying(['members' => [
+        aMember('Robin', [
+            ['id' => '1', 'title' => 'A film', 'state' => 'getting', 'asked' => 1_789_358_400],
+            ['id' => '2', 'title' => 'Another film', 'state' => 'declined', 'asked' => 1_789_358_460, 'refused' => ['reason' => 'No room']],
+            ['id' => '3', 'title' => 'A third', 'state' => 'getting'],
+            ['id' => '4', 'title' => 'A fourth', 'state' => 'getting', 'asked' => null],
+        ]),
+    ]])), preserve_keys: false);
+
+    expect(array_map(static fn(Wanted $one): ?int => WhatTheTimestampNamed::in($one->asked())->seconds, $wanted))->toBe([1_789_358_400, 1_789_358_460, null, null]);
+});
+
+it('refuses a request asked for at a moment written as text', function (): void {
+    expect(fn(): array => iterator_to_array(Households::in(householdSaying(['members' => [
+        aMember('Robin', [['id' => '1', 'title' => 'A film', 'state' => 'getting', 'asked' => '1789358400']]),
+    ]])), preserve_keys: false))->toThrow(HouseholdIsUnreadable::class, 'Request 0 belonging to `Robin`');
 });
 
 it('a refusal the stack did not time is read without one', function (): void {
@@ -550,9 +549,9 @@ it('a refusal the stack did not time is read without one', function (): void {
     ]])), preserve_keys: false);
 
     $said = $wanted[0]->refusal(
-        was: static fn(TurnedDown $why): Code => Code::of($why->when(
-            then: static fn(string $when): Code => Code::of($when),
-            unstated: static fn(): Code => Code::of('unstated'),
+        was: static fn(TurnedDown $why): Code => Code::of($why->when()->read(
+            read: static fn(Instant $when): Code => Code::of(sprintf('%d', $when->epochSeconds())),
+            unreadable: static fn(): Code => Code::of('unstated'),
         )->shown()),
         wasNot: static fn(): Code => Code::of('not refused'),
     );

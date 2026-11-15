@@ -6,10 +6,12 @@ use Modules\Kernel\Api\ABundle;
 use Modules\Kernel\Api\ABundleAsked;
 use Modules\Kernel\Api\ABundleFile;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowTheBundleIsGoing;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -29,6 +31,7 @@ use Modules\Kernel\Api\WhereABundleIs;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\ALogWindow;
+use Modules\Operator\Internal\Presenters\AgoAsShown;
 use Modules\Operator\Internal\Screens\AskingForHelpHere;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
 use Modules\Operator\Internal\ViewModels\APieceAsShown;
@@ -41,9 +44,13 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatBundles;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatABundleSays;
 use Tests\Support\WhatTheDeviceWouldDraw;
+
+/** When the screen is drawn. */
+const WHEN_HELP_IS_ASKED = 1_790_503_200;
 
 // Asking for help: choosing what goes in a support bundle, the description,
 // the second yes that writes it, and a refusal drawn as one.
@@ -76,7 +83,7 @@ function theHelpScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new AskingForHelpHere($helping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $sheet ?? AShareSheetThatWasOffered::working(), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new AskingForHelpHere($helping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $sheet ?? AShareSheetThatWasOffered::working(), new AppsSettingsThatOpen(), AroundThePhone::listening(), FrozenClock::at(Instant::atEpochSeconds(WHEN_HELP_IS_ASKED)));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -325,7 +332,7 @@ it('draws the description whole, what it reveals and what is missing among it, a
             new APieceAsShown(name: 'services.txt', body: 'sonarr running'),
         ],
         missing: ['the container engine could not be reached'],
-        takenAt: '2026-09-26T10:00:00Z',
+        takenAt: AgoAsShown::since(Instant::atEpochSeconds(1_790_416_800), Instant::atEpochSeconds(WHEN_HELP_IS_ASKED)),
         lemonfiber: '1.4.0',
         stack: '2026.09',
     ))
@@ -334,7 +341,7 @@ it('draws the description whole, what it reveals and what is missing among it, a
         ->and($drawn->said())->toContain(__('stacks.help.described'))
         ->and($drawn->said())->toContain(__('stacks.help.would_go', ['path' => WhatABundleSays::WOULD_GO]))
         ->and($drawn->said())->toContain(trans_choice('stacks.help.bytes', 48_213))
-        ->and($drawn->said())->toContain(__('stacks.help.taken', ['at' => '2026-09-26T10:00:00Z', 'lemonfiber' => '1.4.0', 'stack' => '2026.09']))
+        ->and($drawn->said())->toContain(__('stacks.help.taken', ['when' => trans_choice('health.ago.days', 1), 'lemonfiber' => '1.4.0', 'stack' => '2026.09']))
         ->and($drawn->said())->toContain(__('stacks.help.reveals', ['name' => 'SONARR_URL']))
         ->and($drawn->said())->toContain('the last 200 lines of each service')
         ->and($drawn->said())->toContain(__('stacks.help.filenames_replaced'))
@@ -456,7 +463,7 @@ it('says a bundle revealing nothing, missing nothing and placed nowhere, in word
         TheTermsOfABundle::stated('the last 50 lines of each service', WhatFilenamesShow::Shown, SettingsToReveal::none()),
         ThePiecesOfABundle::of(),
         Remarks::of(),
-        WhenABundleWasTaken::at('2026-09-26T10:00:00Z', '1.4.0', '2026.09'),
+        WhenABundleWasTaken::at(AMomentAsWritten::byTheStack(1_790_416_800), '1.4.0', '2026.09'),
     );
     $screen = aBundleDescribedOnTheScreen(AStackThatBundles::whichGathered(HowTheBundleIsGoing::done($bundle)));
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();

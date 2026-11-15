@@ -66,7 +66,7 @@ function theRequestTheReverserSent(MockClient $mock): PendingRequest
     return $sent;
 }
 
-it('asks for the run by the stamp the record keeps it under, and carries a key', function (WhenItWasMade $when, string $stamp): void {
+it('asks for the run by the stamp the record keeps it under, and carries a key', function (WhenItWasMade $when, int $stamp): void {
     MockClient::destroyGlobal();
     $mock = MockClient::global([MockResponse::make('not an envelope at all')]);
     $change = Change::made('Set LIBRARY_PATH', 'reconfigure', 'lemonfiber', $when, HowFarItGoesBack::Whole, 1);
@@ -82,8 +82,8 @@ it('asks for the run by the stamp the record keeps it under, and carries a key',
         ->and($sent->body()?->all())->toBe(['at' => $stamp])
         ->and($sent->headers()->get(Api::IDEMPOTENCY_HEADER))->toBe(SequencedEntropy::counting()->nonce()->shown());
 })->with([
-    'a dated run' => [WhenItWasMade::at(Instant::atEpochSeconds(1_790_150_000)), '1790150000'],
-    'a run the clock could not date' => [WhenItWasMade::unreadable(), '0'],
+    'a dated run' => [WhenItWasMade::at(Instant::atEpochSeconds(1_790_150_000)), 1_790_150_000],
+    'a run the clock could not date' => [WhenItWasMade::unreadable(), 0],
 ]);
 
 it('asks after a run at the handle it was answered with, carrying no key', function (): void {

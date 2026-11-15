@@ -75,7 +75,7 @@ function whatAStackSaysItHolds(string $state = 'stale'): array
         'kind' => 'credentials',
         'data' => [
             'rehearsed' => false,
-            'grants' => [['plugin' => 'tdarr', 'credential' => 'indexer.api_key', 'of' => 'prowlarr', 'for' => 'indexing', 'at' => '1761321600']],
+            'grants' => [['plugin' => 'tdarr', 'credential' => 'indexer.api_key', 'of' => 'prowlarr', 'for' => 'indexing', 'at' => 1_761_321_600]],
             'held' => [
                 [
                     'name' => 'Indexer API key',

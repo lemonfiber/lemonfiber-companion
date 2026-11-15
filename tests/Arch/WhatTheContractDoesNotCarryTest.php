@@ -100,36 +100,6 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'reading naming itself and the action taking that name back, as an uninstall\'s does.',
     ],
     [
-        'requirement' => 'N7-R11',
-        'asks' => 'to show where each service the survey found keeps its configuration and its library',
-        // Named, and watched as a whole payload: the answer could arrive as a
-        // field on a service or as a list beside the projects, and either
-        // changes the shape recorded here.
-        'envelope' => 'MigrationEnvelope',
-        'field' => null,
-        'shape' => 'array{beside: list<array{from: int, service: string, to: int}>, carrying: list<array{backup_first: bool, because: string, existing: string, ours: string, refused: bool, service: string, verdict: string}>, conflicts: list<array{held_by: string, port: int, wanted_by: string}>, linking?: array{because: string, cost: string, filesystems: list<string>, forced: bool, links: bool, remedy: string}|null, modes: list<array{disturbs: bool, mode: string, preselected: bool, what: string}>, not_carried: list<array{because: string, what: string}>, read: bool, standing: list<array{project: string, services: list<array{adoptable: bool, ports: list<int>, running: bool, service: string}>}>, unsupported: list<array{because: string, what: string}>}',
-        'raised' => '`A5-R2` has the survey name each service\'s configuration source and library '
-            . 'location, and a service here carries `service`, `ports`, `running` and `adoptable` and '
-            . 'neither of those. The only place a library appears is the filesystems a layout that '
-            . 'cannot link names, which is about a hardlink rather than a service. The app does not '
-            . 'guess either from a service\'s name or its ports; the survey draws what it carries and '
-            . 'says nothing about where a service keeps its settings.',
-    ],
-    [
-        'requirement' => 'N24-R4',
-        'asks' => 'to state what upgrading the library costs in total before it is confirmed',
-        // Named, and watched as a whole payload: a total could arrive under any
-        // name, and the payload saying anything it does not say now is what
-        // closes this.
-        'envelope' => 'UpgradeEnvelope',
-        'field' => null,
-        'shape' => 'array{confirmed: bool, media: list<array{media_type: string, outcome?: array{state: \'started\'}|array{state: \'not-started\'}|array{detail: string, state: \'failed\'}|null, preset: string, size_per_hour: string}>, rehearsed: bool}',
-        'raised' => 'An upgrade is described kind by kind with the preset in force and what an hour of it '
-            . 'costs, and nothing else. `D2-R7` asks for its cost stated, and a rate per hour is not a '
-            . 'cost: nothing says how many hours the library holds, and `N2-R14` forbids working one out. '
-            . 'The screen draws each kind\'s rate as the stack words it and no sum.',
-    ],
-    [
         'requirement' => 'N23-R11',
         'asks' => 'to say, before a guard starts, the data location it would guard, how often it looks and the command it would run',
         // Named, and watched as a whole payload: the name a guard is started

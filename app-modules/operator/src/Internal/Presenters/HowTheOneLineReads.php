@@ -9,7 +9,6 @@ use Modules\Health\Api\WhatWasHeardSoFar;
 use Modules\Kernel\Api\AnAffectedItem;
 use Modules\Kernel\Api\AStoppage;
 use Modules\Kernel\Api\HowItStands;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheHealthSummary;
@@ -59,7 +58,7 @@ final readonly class HowTheOneLineReads
             current: fn(TheHealthSummary $summary): WhatTheOneLineSays
                 => $this->said($summary, $summary->standing(), AgoAsShown::saysNothing(), $why),
             asOf: fn(TheHealthSummary $summary, Instant $at): WhatTheOneLineSays
-                => $this->said($summary, HowItStands::Unknown, AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now), $why),
+                => $this->said($summary, HowItStands::Unknown, AgoAsShown::since($at, $now), $why),
         );
     }
 
@@ -68,7 +67,7 @@ final readonly class HowTheOneLineReads
     {
         $shown = WhatWasHeardSoFar::isStillCurrent($at, $now) ? $standing : HowItStands::Unknown;
 
-        return $this->aloneOnTheList($shown, AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now));
+        return $this->aloneOnTheList($shown, AgoAsShown::since($at, $now));
     }
 
     /**

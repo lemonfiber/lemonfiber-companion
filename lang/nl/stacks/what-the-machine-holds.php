@@ -60,6 +60,8 @@ return [
             'heading' => 'Namens een plugin',
             'for' => 'Voor de plugin :plugin',
             'goes_to' => 'Naar :destination',
+            'switch' => 'Te weigeren met :switch',
+            'cost' => 'Als het geweigerd wordt: :cost',
             'none' => 'lemonfiber verstuurt niets namens een plugin',
         ],
         'theirs' => [

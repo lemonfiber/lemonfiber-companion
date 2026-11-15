@@ -7,6 +7,7 @@ namespace Tests\Support;
 use function implode;
 
 use Modules\Kernel\Api\ABundle;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\APieceOfABundle;
 use Modules\Kernel\Api\ASettingToReveal;
 use Modules\Kernel\Api\AWrittenBundle;
@@ -116,7 +117,7 @@ final readonly class WhatABundleSays
             implode(';', $pieces),
             implode(',', [...$bundle->missing()]),
             'taken',
-            $bundle->taken()->moment(),
+            WhatTheTimestampNamed::in($bundle->taken()->moment())->seconds,
             $bundle->taken()->lemonfiber(),
             $bundle->taken()->stack(),
         );
@@ -151,7 +152,7 @@ final readonly class WhatABundleSays
                 ['name' => 'services.txt', 'body' => 'sonarr running'],
             ],
             'missing' => ['the container engine could not be reached'],
-            'taken' => ['at' => '2026-09-26T10:00:00Z', 'lemonfiber' => '1.4.0', 'stack' => '2026.09'],
+            'taken' => ['at' => 1_790_416_800, 'lemonfiber' => '1.4.0', 'stack' => '2026.09'],
             'terms' => ['window' => 'the last 200 lines of each service', 'filenames' => false, 'revealed' => ['SONARR_URL']],
         ];
     }
@@ -171,7 +172,7 @@ final readonly class WhatABundleSays
                 APieceOfABundle::of('services.txt', 'sonarr running'),
             ),
             Remarks::of('the container engine could not be reached'),
-            WhenABundleWasTaken::at('2026-09-26T10:00:00Z', '1.4.0', '2026.09'),
+            WhenABundleWasTaken::at(AMomentAsWritten::of('2026-09-26T10:00:00Z'), '1.4.0', '2026.09'),
         );
     }
 }

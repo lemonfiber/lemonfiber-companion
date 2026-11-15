@@ -101,7 +101,7 @@
     <x-design::card>
         <x-design::body>{{ __($this->answer()->bundle->whereSaid, ['path' => $this->answer()->bundle->where]) }}</x-design::body>
         <x-design::note>{{ trans_choice('stacks.help.bytes', $this->answer()->bundle->bytes) }}</x-design::note>
-        <x-design::note>{{ __('stacks.help.taken', ['at' => $this->answer()->bundle->takenAt, 'lemonfiber' => $this->answer()->bundle->lemonfiber, 'stack' => $this->answer()->bundle->stack]) }}</x-design::note>
+        <x-design::note>{{ __('stacks.help.taken', ['when' => trans_choice($this->answer()->bundle->takenAt->said, $this->answer()->bundle->takenAt->count), 'lemonfiber' => $this->answer()->bundle->lemonfiber, 'stack' => $this->answer()->bundle->stack]) }}</x-design::note>
     </x-design::card>
 
     {{-- What it holds. What it reveals comes first, where it is read before

@@ -13,7 +13,6 @@ use Modules\Kernel\Api\AStoppage;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItStopped;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
@@ -193,7 +192,7 @@ it('says a kept word with when it was heard, and nothing it did not keep', funct
         counted: '',
         howMany: 0,
         worst: '',
-        ago: AgoAsShown::from(HowLongAgo::Minutes, minutesIn(0), Instant::atEpochSeconds(1_790_000_030)),
+        ago: AgoAsShown::since(minutesIn(0), Instant::atEpochSeconds(1_790_000_030)),
         met: '',
         remedy: '',
         filling: [],

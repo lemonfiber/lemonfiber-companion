@@ -14,6 +14,7 @@ use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\TraceEnvelope;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AMomentInItsHistory;
 use Modules\Kernel\Api\AnEpisodeNotHereYet;
 use Modules\Kernel\Api\ASearchThatSettles;
@@ -33,6 +34,7 @@ use Modules\Kernel\Api\WhatTheTraceFound;
 use Modules\Kernel\Api\WhereItGotTo;
 use Modules\Kernel\Api\WhereTheServicesDisagree;
 use Modules\Sdk\Api\Fields\TraceField;
+use Modules\Sdk\Internal\Optional;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\TheSearchThatSettles;
 use Modules\Sdk\Internal\Wire;
@@ -128,7 +130,7 @@ final readonly class Traces
             $stages[] = AStageItReached::recorded(
                 self::stage(self::table($row, TraceField::Stages), WireField::Stage),
                 ServiceId::called(self::text(self::table($row, TraceField::Stages), WireField::Service)),
-                self::optional(self::table($row, TraceField::Stages), WireField::At),
+                self::when(self::table($row, TraceField::Stages)),
             );
         }
 
@@ -146,7 +148,7 @@ final readonly class Traces
             $happened = WhatHappenedToIt::tryFrom($said)
                 ?? throw TraceIsUnreadable::word(WireField::Outcome, $said, ...array_map(static fn(WhatHappenedToIt $case): string => $case->value, WhatHappenedToIt::cases()));
 
-            $moments[] = AMomentInItsHistory::recorded($happened, self::text($moment, WireField::At));
+            $moments[] = AMomentInItsHistory::recorded($happened, self::when($moment));
         }
 
         return TheMomentsInItsHistory::of(...$moments);
@@ -254,6 +256,16 @@ final readonly class Traces
         }
 
         return self::text($row, $field);
+    }
+
+    /**
+     * When a service said something happened, unwritten where it gave no time.
+     *
+     * @param array<array-key, mixed> $row
+     */
+    private static function when(array $row): AMomentAsWritten
+    {
+        return Optional::moment($row, WireField::At, TraceIsUnreadable::missing(WireField::At));
     }
 
     /** @param array<array-key, mixed> $row */

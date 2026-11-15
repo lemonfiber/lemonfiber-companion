@@ -10,6 +10,7 @@ use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AskingTheIndexers;
+use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
@@ -100,6 +101,7 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        private readonly Clock $clock,
     ) {}
 
     /** Follow what was typed instead; nothing typed follows nothing new. */
@@ -258,7 +260,7 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
             },
             answered: function (WhereItGotTo $trace): TheRunTurnedOutToBe {
                 $this->searching = null;
-                $this->answered = new HowATraceReads()->this($trace);
+                $this->answered = new HowATraceReads()->this($trace, $this->clock->now());
 
                 return new HowTheRunReads()->answered();
             },
@@ -284,7 +286,7 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
     private function asked(Stack $stack, Session $session, WhatToFollow $following): TheTraceTurnedOutToBe
     {
         return $this->tracing->tracedOn($stack, $session, $following)->either(
-            found: static fn(WhereItGotTo $trace): TheTraceTurnedOutToBe => new HowATraceReads()->this($trace),
+            found: fn(WhereItGotTo $trace): TheTraceTurnedOutToBe => new HowATraceReads()->this($trace, $this->clock->now()),
             met: function (Obstacle $why) use ($stack, $following): TheTraceTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 

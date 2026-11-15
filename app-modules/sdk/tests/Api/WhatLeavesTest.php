@@ -73,7 +73,7 @@ function oneOfTheirRequests(string $service = 'sonarr'): array
  */
 function oneRequestOnAPluginsBehalf(string $destination = 'plex.tv'): array
 {
-    return ['plugin' => 'plex', 'destination' => $destination, 'purpose' => 'To claim the media server'];
+    return ['plugin' => 'plex', 'destination' => $destination, 'purpose' => 'To claim the media server', 'allowed' => true, 'switch' => 'plugin.plex.reach.plex.tv', 'cost' => 'The server cannot be claimed'];
 }
 
 /**
@@ -93,7 +93,7 @@ function whatLeavesAs(array $ours, array $theirs, array $onBehalf = []): Envelop
 /** One request made for a plugin, as one line. */
 function oneLineForOnBehalf(ARequestOnAPluginsBehalf $request): string
 {
-    return sprintf('%s/%s/%s', $request->plugin()->named(), $request->destination(), $request->purpose());
+    return sprintf('%s/%s/%s/%s/%s/%s', $request->plugin()->named(), $request->destination(), $request->purpose(), $request->allowed()->value, $request->switch(), $request->cost());
 }
 
 /** The first of lemonfiber's requests an answer holds, failing where it holds none. */
@@ -147,8 +147,8 @@ it('reads lemonfiber\'s requests, those it makes for a plugin, and its services\
         'updates/api.github.com/To say when a newer lemonfiber is out/Nothing but the request itself/allowed/updates.check/Nobody hears that a version came out',
     ])->and(array_map(oneLineForTheirs(...), iterator_to_array($leaving->theirs(), preserve_keys: false)))->toBe(['sonarr/thetvdb.com/Series metadata'])
         ->and(array_map(oneLineForOnBehalf(...), iterator_to_array($leaving->onBehalf(), preserve_keys: false)))->toBe([
-            'plex/plex.tv/To claim the media server',
-            'plex/metadata.provider.plex.tv/To claim the media server',
+            'plex/plex.tv/To claim the media server/allowed/plugin.plex.reach.plex.tv/The server cannot be claimed',
+            'plex/metadata.provider.plex.tv/To claim the media server/allowed/plugin.plex.reach.plex.tv/The server cannot be claimed',
         ]);
 });
 
@@ -228,7 +228,16 @@ it('refuses a destination list holding something that is not a destination', fun
 
 it('refuses an allowed that is not yes or no', function (): void {
     expect(fn(): WhatLeavesThisMachine => WhatLeaves::in(whatLeavesAs([[...oneOfOurRequests(), 'allowed' => 'yes']], [])))
-        ->toThrow(OutboundIsUnreadable::class, '`allowed`');
+        ->toThrow(OutboundIsUnreadable::class, '`allowed`')
+        ->and(fn(): WhatLeavesThisMachine => WhatLeaves::in(whatLeavesAs([], [], [[...oneRequestOnAPluginsBehalf(), 'allowed' => 'yes']])))
+        ->toThrow(OutboundIsUnreadable::class, 'Entry 0 of `on_behalf` in the outbound envelope has no readable `allowed`');
+});
+
+it('reads a request made for a plugin that this machine refuses as switched off', function (): void {
+    $leaving = WhatLeaves::in(whatLeavesAs([], [], [[...oneRequestOnAPluginsBehalf(), 'allowed' => false]]));
+
+    expect(array_map(oneLineForOnBehalf(...), iterator_to_array($leaving->onBehalf(), preserve_keys: false)))
+        ->toBe(['plex/plex.tv/To claim the media server/switched_off/plugin.plex.reach.plex.tv/The server cannot be claimed']);
 });
 
 it('refuses a service row missing what the reader needs, naming it', function (string $field): void {
@@ -254,7 +263,7 @@ it('refuses a request made for a plugin missing any word, or with one blank or n
         ->toThrow(OutboundIsUnreadable::class, sprintf('Entry 1 of `on_behalf` in the outbound envelope has no readable `%s`', $field))
         ->and(fn(): WhatLeavesThisMachine => WhatLeaves::in(whatLeavesAs([], [], [$missing])))
         ->toThrow(OutboundIsUnreadable::class, sprintf('Entry 0 of `on_behalf` in the outbound envelope has no readable `%s`', $field));
-})->with(['plugin', 'destination', 'purpose'])->with([['  '], [null], [3]]);
+})->with(['plugin', 'destination', 'purpose', 'switch', 'cost'])->with([['  '], [null], [3]]);
 
 it('judges the payload these cases are built on against the contract', function (): void {
     expect(WhatTheContractAccepts::complaintsAbout('OutboundEnvelope', ['api_version' => 1, 'kind' => 'outbound', 'data' => ['ours' => [oneOfOurRequests()], 'theirs' => [oneOfTheirRequests()], 'on_behalf' => [oneRequestOnAPluginsBehalf()]]]))

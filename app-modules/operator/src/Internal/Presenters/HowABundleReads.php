@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\ABundle;
 use Modules\Kernel\Api\ARefusalInItsWords;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhereABundleIs;
@@ -62,7 +63,7 @@ final readonly class HowABundleReads
     }
 
     /** The bundle, described or written, as the stack answered with it. */
-    public function done(ABundle $bundle): HowTheBundleWent
+    public function done(ABundle $bundle, Instant $now): HowTheBundleWent
     {
         $pieces = [];
 
@@ -91,7 +92,7 @@ final readonly class HowABundleReads
                 revealed: $revealed,
                 pieces: $pieces,
                 missing: [...$bundle->missing()],
-                takenAt: $bundle->taken()->moment(),
+                takenAt: AgoAsShown::sinceWritten($bundle->taken()->moment(), $now),
                 lemonfiber: $bundle->taken()->lemonfiber(),
                 stack: $bundle->taken()->stack(),
             ),

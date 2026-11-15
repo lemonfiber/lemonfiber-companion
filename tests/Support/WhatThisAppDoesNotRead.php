@@ -25,6 +25,12 @@ final readonly class WhatThisAppDoesNotRead
      */
     public const string NEVER_ASKED_FOR_A_REHEARSAL = 'Whether the report was a rehearsal. This app sends this action without `dry_run`, so the answer is always that it was not.';
 
+    /** Why the front door's and each service's `reaches` goes unread. */
+    public const string REACHED_FROM_HERE = 'Whether the address answers from where this device asked. The screen hands the address to somebody else, on a device that is not this one, so an answer from here says nothing of an answer from there, and no requirement asks for it.';
+
+    /** Why the front door's and each service's `unaddressed` goes unread. */
+    public const string WHY_NO_ADDRESS = 'Why there is no address, where there is none. The screen says there is none, and no requirement asks it to say why.';
+
     /**
      * Every row of the register.
      *

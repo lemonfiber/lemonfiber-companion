@@ -6,7 +6,6 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Health\Api\WhatAStreamSaidSoFar;
 use Modules\Kernel\Api\ALineItSaid;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\TheStageAsShown;
@@ -34,7 +33,7 @@ final readonly class HowTheStageReads
             none: static fn(): TheStageAsShown => new TheStageAsShown('', '', '', AgoAsShown::saysNothing(), $broke),
             current: fn(ALineItSaid $line): TheStageAsShown => $this->at($line, AgoAsShown::saysNothing(), $broke),
             asOf: fn(ALineItSaid $line, Instant $at): TheStageAsShown
-                => $this->at($line, AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now), $broke),
+                => $this->at($line, AgoAsShown::since($at, $now), $broke),
         );
     }
 

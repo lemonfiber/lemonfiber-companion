@@ -32,11 +32,11 @@ final readonly class WhatIsNewAsItReads
      * The envelope, corrected.
      *
      * @param array<string, mixed> $envelope the envelope as synthesised from the declaration
-     * @param string               $onset    when every problem began, in seconds since the epoch written in digits
+     * @param int                  $onset    when every problem began, in whole seconds since the epoch
      *
      * @return array<string, mixed>
      */
-    public static function from(array $envelope, string $onset): array
+    public static function from(array $envelope, int $onset): array
     {
         $data = $envelope['data'];
         // One line: `data` is always an array.

@@ -88,7 +88,7 @@ function whatAFillingStackSaysOfItsHealth(): array
         'affected' => [[
             'check' => 'disk.space',
             'severity' => 'warning',
-            'onset' => '1759400000',
+            'onset' => 1_759_400_000,
             'summary' => 'The disk is nearly full',
             'meaning' => 'New downloads will start failing soon',
             'remedies' => ['Make room', 'Add a disk'],
@@ -583,7 +583,7 @@ function aNewestNamed(array $changed = []): array
         'data' => [
             'updates' => ['2.5.0', '2.4.0'],
             'requests' => ['12', '9'],
-            'problems' => [['check' => 'disk.space', 'onset' => '1759400000']],
+            'problems' => [['check' => 'disk.space', 'onset' => 1_759_400_000]],
             'unread' => [],
             ...$changed,
         ],
@@ -709,7 +709,7 @@ it('cannot hear a newest it cannot read, and says so as an answer it could not r
     'a request that is not words' => [['requests' => [12]]],
     'a request named by nothing' => [['requests' => ['']]],
     'a problem that is not one' => [['problems' => ['disk.space']]],
-    'a problem with no check' => [['problems' => [['onset' => '1759400000']]]],
+    'a problem with no check' => [['problems' => [['onset' => 1_759_400_000]]]],
     'an onset in words' => [['problems' => [['check' => 'disk.space', 'onset' => 'this morning']]]],
     'an unread kind that is not words' => [['unread' => [1]]],
 ]);

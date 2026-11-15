@@ -70,6 +70,9 @@
                 <x-design::note>{{ __($request->kind) }}</x-design::note>
             @endif
             <x-design::note>{{ __('household.asked_by', ['who' => $request->by]) }}</x-design::note>
+            @if ($request->asked->said !== '')
+                <x-design::note>{{ __('household.asked_when', ['when' => trans_choice($request->asked->said, $request->asked->count)]) }}</x-design::note>
+            @endif
             <x-design::note>{{ __('household.reference', ['reference' => $request->reference]) }}</x-design::note>
 
             {{-- One fact and two sentences: the size, and whether anybody
@@ -79,6 +82,9 @@
             <x-design::note>{{ __($request->sizeSaid, ['size' => $request->sizeFigure, 'unit' => $request->sizeUnit === '' ? '' : __($request->sizeUnit)]) }}</x-design::note>
 
             <x-design::body>{{ __($request->standing) }}</x-design::body>
+            @if ($request->alwaysWaits !== '')
+                <x-design::note>{{ __($request->alwaysWaits) }}</x-design::note>
+            @endif
 
             {{-- A refused request carries the reason that was given.
                  `declined` on its own is the answer that sends somebody to ask
@@ -86,11 +92,8 @@
             @if ($request->refusedReason !== '')
                 <x-design::note>{{ __('household.refused_because', ['reason' => $request->refusedReason]) }}</x-design::note>
 
-                @if ($request->refusedAt !== '')
-                    {{-- In the stack's own words rather than this phone's
-                         timezone, so two people in the house do not
-                         disagree about when it happened. --}}
-                    <x-design::note>{{ __('household.refused_at', ['when' => $request->refusedAt]) }}</x-design::note>
+                @if ($request->refusedAt->said !== '')
+                    <x-design::note>{{ __('household.refused_at', ['when' => trans_choice($request->refusedAt->said, $request->refusedAt->count)]) }}</x-design::note>
                 @endif
             @endif
 

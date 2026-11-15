@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\ACheckAfterAStart;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ThePortAfterAStart;
@@ -115,7 +114,7 @@ final readonly class HowTheLastStartReads
     private static function ago(WhenItSays $when, Instant $now): AgoAsShown
     {
         return $when->either(
-            at: static fn(Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
+            at: static fn(Instant $at): AgoAsShown => AgoAsShown::since($at, $now),
             unsaid: static fn(): AgoAsShown => AgoAsShown::saysNothing(),
         );
     }

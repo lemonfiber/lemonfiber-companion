@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\ViewModels;
 
+use Modules\Operator\Internal\Presenters\AgoAsShown;
+
 /**
  * What putting a copy back would do, flattened for a template.
  *
@@ -17,7 +19,7 @@ final readonly class WhatPuttingItBackWouldShow
      * @param bool                $namesACopy whether the screen was opened on a copy at all
      * @param ?AScopeAsShown      $scope      what the copy covers
      * @param ?string             $takenBy    the version of lemonfiber that took it
-     * @param ?string             $takenAt    when it was taken, as the stack stamped it
+     * @param AgoAsShown           $takenAt    how long ago it was taken, saying nothing before a copy is listed
      * @param list<string>        $contents   what it holds, which is what putting it back would overwrite
      * @param bool                $isOlder    whether it comes from an older major version
      * @param ?ARelocationAsShown $relocation where its data would go instead of where it came from, and nothing where it goes back
@@ -28,7 +30,7 @@ final readonly class WhatPuttingItBackWouldShow
         public bool $namesACopy,
         public ?AScopeAsShown $scope,
         public ?string $takenBy,
-        public ?string $takenAt,
+        public AgoAsShown $takenAt,
         public array $contents,
         public bool $isOlder,
         public ?ARelocationAsShown $relocation,

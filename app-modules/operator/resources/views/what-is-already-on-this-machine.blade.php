@@ -8,14 +8,15 @@
     {{-- Every project and service first, before any mode: a mode chosen
          before this is read is chosen blind. A project is a card of its
          services, each with whether it runs, whether it could be taken over,
-         and the ports it publishes at its end. --}}
+         where it keeps its configuration and library, and the ports it
+         publishes at its end. --}}
     @if ($this->answer()->looked)
         @forelse ($this->answer()->projects as $project)
             <x-design::section :label="__('stacks.already_here.project', ['project' => $project->project])">
                 @forelse ($project->services as $service)
                     <x-design::row
                         :headline="$service->service"
-                        :supporting="__($service->runningSaid) . ' · ' . __($service->adoptableSaid)"
+                        :supporting="__($service->runningSaid) . ' · ' . __($service->adoptableSaid) . ' · ' . __($service->config->said, $service->config->with) . ' · ' . __($service->library->said, $service->library->with)"
                         :trailing="__($service->portsSaid, ['ports' => $service->ports])"
                     />
                 @empty

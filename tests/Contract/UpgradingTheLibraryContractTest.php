@@ -18,6 +18,7 @@ use Modules\Kernel\Api\TheUpgrade;
 use Modules\Kernel\Api\UpgradingTheLibrary;
 use Modules\Kernel\Api\WhatBecameOfAskingIt;
 use Modules\Kernel\Api\WhatTheUpgradeCameTo;
+use Modules\Kernel\Api\WhatUpgradingItTakes;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Upgraders;
 use Saloon\Http\Faking\MockClient;
@@ -69,8 +70,8 @@ function whatAStackSaysOfAnUpgrade(bool $confirmed = false, ?array $media = null
             'rehearsed' => false,
             'confirmed' => $confirmed,
             'media' => $media ?? [
-                ['media_type' => 'movies', 'preset' => 'Maximum', 'size_per_hour' => '~15 GB', 'outcome' => null],
-                ['media_type' => 'tv', 'preset' => 'Space-saving', 'size_per_hour' => '~1 GB'],
+                ['media_type' => 'movies', 'preset' => 'Maximum', 'total' => ['bytes' => 64_000_000_000], 'outcome' => null],
+                ['media_type' => 'tv', 'preset' => 'Space-saving', 'total' => ['unknown' => 'Sonarr did not answer']],
             ],
         ],
     ];
@@ -84,7 +85,7 @@ function whatAStackSaysOfAnUpgrade(bool $confirmed = false, ?array $media = null
  */
 function aKindUpgradedWith(array|string|null $outcome): array
 {
-    return ['media_type' => 'movies', 'preset' => 'Maximum', 'size_per_hour' => '~15 GB', 'outcome' => $outcome];
+    return ['media_type' => 'movies', 'preset' => 'Maximum', 'total' => ['bytes' => 64_000_000_000], 'outcome' => $outcome];
 }
 
 /** What an upgrade came to, as one line. */
@@ -95,7 +96,10 @@ function howAnUpgradeReadsAsText(WhatTheUpgradeCameTo $came): string
             $kinds = [];
 
             foreach ($upgrade as $kind) {
-                $kinds[] = implode('/', [$kind->kind(), $kind->preset(), $kind->sizePerHour(), $kind->asking()->saidOnTheScreen(), $kind->asking()->detail()]);
+                $kinds[] = implode('/', [$kind->kind(), $kind->preset(), $kind->total()->either(
+                    bytes: static fn(int $bytes): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%d bytes', $bytes)),
+                    unknown: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('unknown: %s', $why)),
+                )->said, $kind->asking()->saidOnTheScreen(), $kind->asking()->detail()]);
             }
 
             return new TheWordCarriedOut(sprintf('%s:%s', $upgrade->wasCarriedOut() ? 'carried out' : 'described', implode(';', $kinds)));
@@ -145,8 +149,8 @@ function whatTheUpgradersSent(): array
 function everyWayOfDescribingAnUpgrade(): array
 {
     $described = TheUpgrade::described(
-        OneKindUpgraded::reported('movies', 'Maximum', '~15 GB', WhatBecameOfAskingIt::notAsked()),
-        OneKindUpgraded::reported('tv', 'Space-saving', '~1 GB', WhatBecameOfAskingIt::notAsked()),
+        OneKindUpgraded::reported('movies', 'Maximum', WhatUpgradingItTakes::bytes(64_000_000_000), WhatBecameOfAskingIt::notAsked()),
+        OneKindUpgraded::reported('tv', 'Space-saving', WhatUpgradingItTakes::unknown('Sonarr did not answer'), WhatBecameOfAskingIt::notAsked()),
     );
 
     return [
@@ -158,7 +162,7 @@ function everyWayOfDescribingAnUpgrade(): array
 foreach (everyWayOfDescribingAnUpgrade() as $name => $build) {
     it(sprintf('%s describes an upgrade kind by kind, each at its own preset and cost, asking nothing', $name), function () use ($build): void {
         expect(howAnUpgradeReadsAsText($build()->whatItWouldComeTo(theMachineWhoseLibraryIsUpgraded(), theSessionAnUpgradeIsAskedOn())))
-            ->toBe('described:movies/Maximum/~15 GB/quality.asked.nothing-asked/;tv/Space-saving/~1 GB/quality.asked.nothing-asked/');
+            ->toBe('described:movies/Maximum/64000000000 bytes/quality.asked.nothing-asked/;tv/Space-saving/unknown: Sonarr did not answer/quality.asked.nothing-asked/');
     });
 }
 
@@ -198,9 +202,9 @@ it('upgrades with the yes, and reads what each service was asked', function (): 
 
     expect(whatTheUpgradersSent())->toBe(['/api/actions/quality-upgrade', ['confirm' => true]])
         ->and(howAnUpgradeReadsAsText($came))->toBe(
-            'carried out:movies/Maximum/~15 GB/quality.asked.started/;'
-            . 'tv/Maximum/~15 GB/quality.asked.not-started/;'
-            . 'anime/Maximum/~15 GB/quality.asked.failed/Sonarr said no',
+            'carried out:movies/Maximum/64000000000 bytes/quality.asked.started/;'
+            . 'tv/Maximum/64000000000 bytes/quality.asked.not-started/;'
+            . 'anime/Maximum/64000000000 bytes/quality.asked.failed/Sonarr said no',
         );
 });
 
@@ -213,7 +217,8 @@ it('refuses an upgrade answer it cannot read rather than drawing part of one', f
     'media that are not a list' => [[...whatAStackSaysOfAnUpgrade(), 'data' => ['confirmed' => false, 'media' => 'movies']]],
     'a kind that is not a table' => [whatAStackSaysOfAnUpgrade(media: [['movies']])],
     'a kind with a blank media type' => [whatAStackSaysOfAnUpgrade(media: [[...aKindUpgradedWith(null), 'media_type' => ' ']])],
-    'a kind with no cost' => [whatAStackSaysOfAnUpgrade(media: [array_diff_key(aKindUpgradedWith(null), ['size_per_hour' => true])])],
+    'a kind with no total' => [whatAStackSaysOfAnUpgrade(media: [array_diff_key(aKindUpgradedWith(null), ['total' => true])])],
+    'a total of neither arm' => [whatAStackSaysOfAnUpgrade(media: [[...aKindUpgradedWith(null), 'total' => ['size_per_hour' => '~15 GB']]])],
     'an outcome that is not a table' => [whatAStackSaysOfAnUpgrade(media: [aKindUpgradedWith('started')])],
     'an outcome the contract has not got' => [whatAStackSaysOfAnUpgrade(media: [aKindUpgradedWith(['state' => 'mostly'])])],
     'a failure with no reason' => [whatAStackSaysOfAnUpgrade(media: [aKindUpgradedWith(['state' => 'failed', 'detail' => ''])])],

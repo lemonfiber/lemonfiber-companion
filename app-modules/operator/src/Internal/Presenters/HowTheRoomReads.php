@@ -11,7 +11,6 @@ use Modules\Kernel\Api\AnAmountOfRoom;
 use Modules\Kernel\Api\ARatio;
 use Modules\Kernel\Api\AVolume;
 use Modules\Kernel\Api\HowBig;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhereTheRoomStands;
@@ -130,7 +129,7 @@ final readonly class HowTheRoomReads
     {
         $ago = $volume->reading()->either(
             live: AgoAsShown::saysNothing(...),
-            asOf: static fn(Instant $taken): AgoAsShown => AgoAsShown::from(HowLongAgo::since($taken, $now), $taken, $now),
+            asOf: static fn(Instant $taken): AgoAsShown => AgoAsShown::since($taken, $now),
         );
 
         return new AVolumeAsShown(

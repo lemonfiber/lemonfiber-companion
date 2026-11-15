@@ -15,6 +15,7 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\EnvelopeIsNotRead;
 use Modules\Kernel\Api\ThePortsItPublishes;
 use Modules\Kernel\Api\TheSurvey;
+use Modules\Kernel\Api\WhereAServiceKeepsIt;
 use Modules\Sdk\Api\MigrationIsUnreadable;
 use Modules\Sdk\Api\WhatIsAlreadyHere;
 
@@ -42,7 +43,7 @@ function surveySaying(mixed $data, int $version = 1): Envelope
  */
 function aSurveyOfTwoOfEverything(): array
 {
-    $service = ['service' => 'sonarr', 'ports' => [8989, 9898], 'running' => true, 'adoptable' => false];
+    $service = ['service' => 'sonarr', 'ports' => [8989, 9898], 'running' => true, 'adoptable' => false, 'config' => ['at' => '/srv/sonarr/config'], 'library' => ['unread' => 'It is mounted from a volume']];
     $project = ['project' => 'media', 'services' => [$service, $service]];
     $limit = ['what' => 'media/tautulli', 'because' => 'lemonfiber does not run it'];
 
@@ -113,6 +114,16 @@ function thePortsRead(ThePortsItPublishes $ports): string
     return implode(',', $said);
 }
 
+/** Where a service keeps something, as one word for its arm and the stack's words. */
+function whereItIsKept(WhereAServiceKeepsIt $place): string
+{
+    return $place->either(
+        at: static fn(string $path): TheWordCarriedOut => new TheWordCarriedOut(sprintf('at %s', $path)),
+        unread: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('unread %s', $why)),
+        none: static fn(string $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('none %s', $why)),
+    )->said;
+}
+
 /**
  * Every service of every project, a line each.
  *
@@ -124,7 +135,7 @@ function everyServiceRead(TheSurvey $survey): array
 
     foreach ($survey->standing() as $project) {
         foreach ($project as $service) {
-            $lines[] = sprintf('%s/%s|%s|%s|%s', $project->project(), $service->service(), thePortsRead($service->ports()), var_export($service->isRunning(), return: true), var_export($service->isAdoptable(), return: true));
+            $lines[] = sprintf('%s/%s|%s|%s|%s|%s|%s', $project->project(), $service->service(), thePortsRead($service->ports()), var_export($service->isRunning(), return: true), var_export($service->isAdoptable(), return: true), whereItIsKept($service->config()), whereItIsKept($service->library()));
         }
     }
 
@@ -150,10 +161,10 @@ it('stands in for a stack with a payload the contract would accept', function ()
 it('reads every service of every project, and every flag as it came', function (): void {
     expect(theSurveyRead(WhatIsAlreadyHere::in(surveySaying(aSurveyOfTwoOfEverything()))))->toBe(
         "true\n"
-        . "media/sonarr|8989,9898|true|false\n"
-        . "media/sonarr|8989,9898|true|false\n"
-        . "media/sonarr|8989,9898|true|false\n"
-        . "media/sonarr|8989,9898|true|false\n"
+        . "media/sonarr|8989,9898|true|false|at /srv/sonarr/config|unread It is mounted from a volume\n"
+        . "media/sonarr|8989,9898|true|false|at /srv/sonarr/config|unread It is mounted from a volume\n"
+        . "media/sonarr|8989,9898|true|false|at /srv/sonarr/config|unread It is mounted from a volume\n"
+        . "media/sonarr|8989,9898|true|false|at /srv/sonarr/config|unread It is mounted from a volume\n"
         . "sonarr|false|true\n"
         . 'radarr|true|false',
     )->and(theSurveyRead(WhatIsAlreadyHere::in(surveySaying([...aSurveyOfTwoOfEverything(), 'read' => false, 'standing' => []]))))->toStartWith('false');
@@ -213,7 +224,15 @@ it('refuses a service that does not say what it owes, naming its project and its
         ->toThrow(MigrationIsUnreadable::class, sprintf('Service 1 of project 1 in the migration envelope has no readable `%s`', $field === 'the row' ? 'service' : $field));
 })->with([
     ['the row', 'sonarr'], ['service', ' '], ['ports', 'absent'], ['ports', [8989, '9898']], ['running', 'yes'], ['adoptable', 'absent'],
+    ['config', 'absent'], ['config', '/srv/sonarr/config'], ['config', []], ['config', ['at' => '/srv', 'none' => 'Both']], ['config', ['at' => ' ']],
+    ['library', 'absent'], ['library', ['unread' => 7]], ['library', ['none' => '']], ['library', ['somewhere' => '/media']],
 ]);
+
+it('reads a place a service keeps nothing in, with why', function (): void {
+    $survey = WhatIsAlreadyHere::in(surveySaying(aSurveyWith(aSurveyOfTwoOfEverything(), ['standing', 0, 'services', 0, 'library'], ['none' => 'It keeps no library'])));
+
+    expect(everyServiceRead($survey)[0])->toEndWith('|none It keeps no library');
+});
 
 it('refuses a layout cost that does not say why, what, how to fix it or where', function (string $field, mixed $said): void {
     expect(fn(): TheSurvey => WhatIsAlreadyHere::in(surveySaying(aSurveyWith(aSurveyOfTwoOfEverything(), ['linking', $field], $said))))

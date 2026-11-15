@@ -12,6 +12,16 @@ return [
         'stopped' => 'Aanwezig, en gestopt',
         'adoptable' => 'lemonfiber kan het overnemen zoals het is',
         'not_adoptable' => 'lemonfiber kan het niet overnemen zoals het is',
+        'config' => [
+            'at' => 'Configuratie in :at',
+            'unread' => 'Waar de configuratie staat kon niet gelezen worden: :why',
+            'none' => 'Geen configuratie: :why',
+        ],
+        'library' => [
+            'at' => 'Bibliotheek in :at',
+            'unread' => 'Waar de bibliotheek staat kon niet gelezen worden: :why',
+            'none' => 'Geen bibliotheek: :why',
+        ],
         'ports' => 'Publiceert :ports',
         'no_ports' => 'Publiceert geen poort',
         'no_services' => 'Het heeft geen services',

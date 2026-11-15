@@ -49,6 +49,8 @@ return [
         'described' => 'What upgrading would come to. Nothing has been fetched.',
         'carried_out' => 'Upgrading: each service was asked to search again',
         'kind' => ':kind, at :preset',
+        'takes' => 'Takes :figure :unit to fetch again',
+        'takes_unknown' => 'What it takes could not be worked out: :why',
         'nothing' => 'The stack names nothing to upgrade.',
         'agree' => 'Upgrade what is already here',
     ],

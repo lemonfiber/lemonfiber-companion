@@ -10,11 +10,9 @@ use Closure;
 use InvalidArgumentException;
 
 use function is_array;
-use function is_string;
 
 use Modules\Kernel\Api\ACredentialGrant;
 use Modules\Kernel\Api\AGrantAsked;
-use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\APluginId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Sdk\Api\Fields\PluginsField;
@@ -44,7 +42,7 @@ final readonly class GrantRows
             self::text($row, WireField::Credential, $unreadable),
             ServiceId::called(self::text($row, WireField::Of, $unreadable)),
             self::text($row, WireField::For, $unreadable),
-            self::approved($row),
+            Optional::moment($row, WireField::At, $unreadable(WireField::At)),
         );
     }
 
@@ -109,20 +107,6 @@ final readonly class GrantRows
     public static function plugin(array $row, Closure $unreadable): APluginId
     {
         return APluginId::called(self::text($row, WireField::Plugin, $unreadable));
-    }
-
-    /**
-     * When it was approved, as the record stamps every change: whole seconds since the epoch, unreadable where it is anything else.
-     *
-     * @param array<mixed> $row
-     */
-    private static function approved(array $row): AMomentAsWritten
-    {
-        if (! array_key_exists(WireField::At->value, $row) || ! is_string($row[WireField::At->value])) {
-            return AMomentAsWritten::unwritten();
-        }
-
-        return AMomentAsWritten::inSeconds($row[WireField::At->value]);
     }
 
     /**

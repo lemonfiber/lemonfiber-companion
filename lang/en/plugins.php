@@ -163,6 +163,7 @@ return [
             'unreachable' => 'Could not be reached',
             'refused' => 'Refused',
             'withheld' => 'Not made: it would have carried a value nobody approved',
+            'declined' => 'Not made: you refused where it reaches, or where a step it depends on reaches',
             'unexpected' => 'Answered with something it did not expect',
             'uncaptured' => 'Answered without what it was to capture',
             'oversized' => 'Answered with more than a recipe may read',

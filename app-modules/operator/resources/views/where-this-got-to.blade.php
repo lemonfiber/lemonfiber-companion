@@ -106,7 +106,7 @@
             @forelse ($this->answer()->stages as $stage)
                 <x-design::row
                     :headline="__('health.at_stage', ['stage' => $stage->word])"
-                    :supporting="$stage->at === '' ? __('health.trace.recorded_untimed', ['service' => $stage->service]) : __('health.trace.recorded_at', ['service' => $stage->service, 'at' => $stage->at])"
+                    :supporting="$stage->at->said === '' ? __('health.trace.recorded_untimed', ['service' => $stage->service]) : __('health.trace.recorded_at', ['service' => $stage->service, 'when' => trans_choice($stage->at->said, $stage->at->count)])"
                 />
             @empty
                 <x-design::row :headline="__('health.trace.no_stages')" />
@@ -116,7 +116,7 @@
         {{-- What has been tried, oldest first: a repeated attempt is a pattern. --}}
         <x-design::section :label="__('health.trace.tried')">
             @forelse ($this->answer()->history as $moment)
-                <x-design::row :headline="__($moment->said)" :supporting="$moment->at" />
+                <x-design::row :headline="__($moment->said)" :supporting="$moment->at->said === '' ? '' : trans_choice($moment->at->said, $moment->at->count)" />
             @empty
                 <x-design::row :headline="__('health.trace.nothing_tried')" />
             @endforelse

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\AKeyForAnApp;
-use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\ARefusalInItsWords;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheKeysForApps;
@@ -80,19 +78,11 @@ final readonly class HowTheKeysRead
             admitsFilling: $filling,
             forSaid: $key->isFor()->saidOnTheScreen(),
             standsSaid: $key->stands()->saidOnTheScreen(),
-            minted: $this->ago($key->minted(), $now),
-            used: $this->ago($key->used(), $now),
+            minted: AgoAsShown::sinceWritten($key->minted(), $now),
+            used: AgoAsShown::sinceWritten($key->used(), $now),
             byAMember: $key->wasMintedByAMember(),
             mayBeRevoked: $key->stands()->mayBeRevoked(),
         );
     }
 
-    /** How long before `$now` a moment was, or nothing where it names none. */
-    private function ago(AMomentAsWritten $moment, Instant $now): AgoAsShown
-    {
-        return $moment->read(
-            read: static fn(Instant $at): AgoAsShown => AgoAsShown::from(HowLongAgo::since($at, $now), $at, $now),
-            unreadable: AgoAsShown::saysNothing(...),
-        );
-    }
 }

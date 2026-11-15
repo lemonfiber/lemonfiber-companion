@@ -8,6 +8,7 @@ use function expect;
 use function it;
 
 use Modules\Kernel\Api\ACopy;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
@@ -38,7 +39,7 @@ it('takes the listing arm for a listing, the refusal arm for a refusal and the o
         ACopy::named('lemonfiber-20260924-0300-full'),
         'restore-0f3a',
         ScopeOfACopy::theWholeStack(),
-        WhatWroteACopy::of('0.9.0', '2026-09-24T03:00:00Z'),
+        WhatWroteACopy::of('0.9.0', AMomentAsWritten::of('2026-09-24T03:00:00Z')),
         WhatACopyHolds::these(),
         older: false,
         data: WhereTheDataGoes::whereItWas(),

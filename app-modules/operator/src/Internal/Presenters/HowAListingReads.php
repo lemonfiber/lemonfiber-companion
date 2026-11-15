@@ -9,7 +9,6 @@ use function array_values;
 
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Forms;
-use Modules\Kernel\Api\HowLongAgo;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheServicesWaiting;
@@ -61,7 +60,7 @@ final readonly class HowAListingReads
      */
     public function kept(Daemons $daemons, Instant $readAt, Instant $now, HowTheReadingWent $askedNow): WhatThisStackRunsTurnedOutToBe
     {
-        return $this->read($daemons, $askedNow, AgoAsShown::from(HowLongAgo::since($readAt, $now), $readAt, $now), waits: true);
+        return $this->read($daemons, $askedNow, AgoAsShown::since($readAt, $now), waits: true);
     }
 
     /**

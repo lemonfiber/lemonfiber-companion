@@ -18,6 +18,7 @@ use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToHaveAsked;
 use Modules\Household\Internal\ViewModels\WhatStoppedAMember;
 use Modules\Household\Internal\ViewModels\WhatTheirRequestsTurnedOutToBe;
 use Modules\Kernel\Api\ChoosingHowTheyAreTold;
+use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowBeingToldCameBack;
 use Modules\Kernel\Api\ItsContent;
@@ -112,6 +113,7 @@ final class WhatYouAreOwed extends NativeComponent
         private readonly SecureStorage $storage,
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
+        private readonly Clock $clock,
     ) {}
 
     /**
@@ -231,9 +233,9 @@ final class WhatYouAreOwed extends NativeComponent
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheirRequestsTurnedOutToBe => $this->asked($stack, $session),
-            notHeld: static fn(): WhatTheirRequestsTurnedOutToBe => new WhatTheirRequestsTurnedOutToBe(
+            notHeld: fn(): WhatTheirRequestsTurnedOutToBe => new WhatTheirRequestsTurnedOutToBe(
                 new HowWhatAMemberIsOwedReads()->signedOut(),
-                new HowWhatAMemberAskedForReads()->signedOut(),
+                new HowWhatAMemberAskedForReads($this->clock->now())->signedOut(),
             ),
         );
     }
@@ -268,15 +270,15 @@ final class WhatYouAreOwed extends NativeComponent
     private function askedFrom(WhatTheyAsked $asked, Stack $stack): WhatAMemberTurnedOutToHaveAsked
     {
         return $asked->either(
-            told: static fn(Requested $wanted): WhatAMemberTurnedOutToHaveAsked
-                => new HowWhatAMemberAskedForReads()->these($wanted),
+            told: fn(Requested $wanted): WhatAMemberTurnedOutToHaveAsked
+                => new HowWhatAMemberAskedForReads($this->clock->now())->these($wanted),
             refused: function (Obstacle $why) use ($stack): WhatAMemberTurnedOutToHaveAsked {
                 // Told here as well as on the half beside it: whichever half met
                 // the refusal is the one holding the obstacle when the store has
                 // to hear about it. Letting go twice is letting go.
                 $this->letGoOfTheSession($why, $stack);
 
-                return new HowWhatAMemberAskedForReads()->met($why);
+                return new HowWhatAMemberAskedForReads($this->clock->now())->met($why);
             },
         );
     }

@@ -89,7 +89,7 @@ function whatAStackSaysWhenMinting(string $kind, array $data = []): array
 {
     return match ($kind) {
         'device-key' => ['api_version' => 1, 'kind' => 'device-key', 'data' => [...['name' => 'Galaxy A51 · 7f3a', 'fingerprint' => str_repeat('a', 64), 'backing' => 'tee', 'app' => sprintf('android:app.lemonfiber.companion@%s', str_repeat('5a', 32)), 'registered' => AStackThatMintsKeys::REGISTERED], ...$data]],
-        'device-challenge' => ['api_version' => 1, 'kind' => 'device-challenge', 'data' => [...['challenge' => AStackThatMintsKeys::CHALLENGE, 'expires' => '2026-10-13T21:01:00'], ...$data]],
+        'device-challenge' => ['api_version' => 1, 'kind' => 'device-challenge', 'data' => [...['challenge' => AStackThatMintsKeys::CHALLENGE, 'expires' => 1_791_925_260], ...$data]],
         default => ['api_version' => 1, 'kind' => 'key-claim', 'data' => [...['name' => 'Home Assistant', 'scope' => 'read', 'purpose' => 'home-assistant', 'link' => AStackThatMintsKeys::LINK, 'lapses' => AStackThatMintsKeys::LAPSES], ...$data]],
     };
 }

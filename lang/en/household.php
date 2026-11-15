@@ -85,6 +85,12 @@ return [
     'nothing_asked_for' => 'You have not asked for anything yet.',
     'waiting_count' => '{0} Nothing is waiting for you|{1} One request is waiting for you|[2,*] :count requests are waiting for you',
     'asked_by' => 'Asked for by :who',
+    'asked_when' => 'Asked :when',
+    'always_waits' => [
+        'artist' => 'Always waits for you: a whole artist',
+        'author' => 'Always waits for you: a whole author',
+        'book_series' => 'Always waits for you: a whole series of books',
+    ],
     'reference' => 'Reference :reference',
     'size_measured' => ':size :unit',
     'size_guessed' => 'About :size :unit',
@@ -108,7 +114,7 @@ return [
     'nothing_asked' => 'Nobody has asked for anything.',
     'nothing_asked_action' => 'What the household asks for shows up here as soon as somebody requests something.',
     'refused_because' => 'Turned down: :reason',
-    'refused_at' => 'Turned down at :when',
+    'refused_at' => 'Turned down :when',
     // A member's four tabs, each also the title of the screen it opens.
     'tabs' => [
         'home' => 'Home',

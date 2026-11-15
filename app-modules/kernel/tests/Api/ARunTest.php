@@ -19,6 +19,9 @@ use Modules\Kernel\Api\ThereIsNothingToAgreeTo;
 use Modules\Kernel\Api\UndoSaysNothing;
 use Modules\Kernel\Api\WhatToDoWithARun;
 use Modules\Kernel\Api\WhenItWasMade;
+
+use function sprintf;
+
 use Tests\Support\TheWordCarriedOut;
 
 /** A change made at a moment, or at none, going back as far as a case says. */
@@ -50,9 +53,16 @@ function whenTheRunWasMade(ARunToPutBack $run): string
     )->said;
 }
 
-it('keeps a stamp as it was handed, less the space around it', function (): void {
-    expect(ARun::stamped(' 1790150000 ')->stamp())->toBe('1790150000');
+it('keeps a stamp as whole seconds, less the space around it', function (): void {
+    expect(ARun::stamped(' 1790150000 ')->stamp())->toBe('1790150000')
+        ->and(ARun::stamped(' 1790150000 ')->seconds())->toBe(1_790_150_000)
+        ->and(ARun::stamped('0')->seconds())->toBe(0)
+        ->and(ARun::stamped('1790150000')->namedInAPath())->toBe('1790150000');
 });
+
+it('refuses a stamp that is not whole seconds since the epoch, quoting it', function (string $said): void {
+    expect(static fn(): ARun => ARun::stamped($said))->toThrow(UndoSaysNothing::class, sprintf('named `%s`', $said));
+})->with(['words' => ['yesterday'], 'below nothing' => ['-5'], 'a fraction' => ['1790150000.5'], 'leading nought' => ['0179']]);
 
 it('refuses a blank stamp, naming the field', function (string $blank): void {
     expect(static fn(): ARun => ARun::stamped($blank))->toThrow(UndoSaysNothing::class, '`at` blank');

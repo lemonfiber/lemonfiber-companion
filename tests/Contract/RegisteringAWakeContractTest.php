@@ -75,7 +75,7 @@ function theWakeToRegister(): AWakeToRegister
  */
 function whatAStackSaysOfARegisteredWake(): array
 {
-    return ['api_version' => 1, 'kind' => 'push-endpoint', 'data' => ['endpoint' => THE_PHONES_ENDPOINT, 'name' => THE_PHONES_PUSH_NAME, 'registered' => '2026-11-08T10:00:00', 'rehearsed' => false]];
+    return ['api_version' => 1, 'kind' => 'push-endpoint', 'data' => ['endpoint' => THE_PHONES_ENDPOINT, 'name' => THE_PHONES_PUSH_NAME, 'registered' => 1_793_872_800, 'rehearsed' => false]];
 }
 
 /**
@@ -85,7 +85,7 @@ function whatAStackSaysOfARegisteredWake(): array
  */
 function whatAStackSaysOfARemovedWake(): array
 {
-    return ['api_version' => 1, 'kind' => 'push-endpoints', 'data' => ['endpoints' => [['endpoint' => 'https://ntfy.sh/upOther?up=1', 'name' => 'iphone-12-mini-01bc', 'registered' => '2026-11-07T10:00:00']], 'rehearsed' => false, 'removed' => THE_PHONES_PUSH_NAME]];
+    return ['api_version' => 1, 'kind' => 'push-endpoints', 'data' => ['endpoints' => [['endpoint' => 'https://ntfy.sh/upOther?up=1', 'name' => 'iphone-12-mini-01bc', 'registered' => 1_793_786_400]], 'rehearsed' => false, 'removed' => THE_PHONES_PUSH_NAME]];
 }
 
 /**
@@ -213,7 +213,7 @@ it('registers with a POST carrying the name, the endpoint and both keys in base6
 it('cannot read an answer that names no endpoint as the one registered or removed', function (): void {
     foreach ([
         [MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoint', 'data' => 'registered']), MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoints', 'data' => 'removed'])],
-        [MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoint', 'data' => ['name' => THE_PHONES_PUSH_NAME, 'endpoint' => ' ', 'registered' => '2026-11-08T10:00:00', 'rehearsed' => false]]), MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoints', 'data' => ['endpoints' => [], 'rehearsed' => false, 'removed' => null]])],
+        [MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoint', 'data' => ['name' => THE_PHONES_PUSH_NAME, 'endpoint' => ' ', 'registered' => 1_793_872_800, 'rehearsed' => false]]), MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoints', 'data' => ['endpoints' => [], 'rehearsed' => false, 'removed' => null]])],
     ] as [$registering, $removing]) {
         MockClient::destroyGlobal();
         MockClient::global([$registering, $removing]);
@@ -228,7 +228,7 @@ it('cannot read an answer that names no endpoint as the one registered or remove
 
 it('cannot read an answer naming no endpoint name as the one registered', function (): void {
     MockClient::destroyGlobal();
-    MockClient::global([MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoint', 'data' => ['endpoint' => THE_PHONES_ENDPOINT, 'name' => ' ', 'registered' => '2026-11-08T10:00:00', 'rehearsed' => false]])]);
+    MockClient::global([MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoint', 'data' => ['endpoint' => THE_PHONES_ENDPOINT, 'name' => ' ', 'registered' => 1_793_872_800, 'rehearsed' => false]])]);
 
     expect(whatRegisteringCameTo(new PushEndpointKeepers(new PinnedClients())->registeredOn(aStackThatWakesAPhone(), Session::of('a-session-not-a-secret'), theWakeToRegister())))
         ->toBe(KindOfObstacle::AnswerCouldNotBeRead->value);

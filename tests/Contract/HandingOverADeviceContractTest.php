@@ -73,7 +73,7 @@ function whatAStackAnswersAHandoffWith(array $changed = []): array
         'remedy' => 'ask-again',
         'address' => 'https://den.local:8920',
         'caution' => 'That address answers only on the home network.',
-        'issued' => '2026-09-30T20:00:00Z',
+        'issued' => 1_790_798_400,
         'quick_connect' => true,
         'rehearsed' => false,
         'steps' => ['Open the app on their device and give it the server.', 'Sign in as Sam with their own password.'],
@@ -82,7 +82,7 @@ function whatAStackAnswersAHandoffWith(array $changed = []): array
             ['device' => 'A smart TV', 'client' => 'Jellyfin for TV', 'open_source' => false, 'code' => 'https://den.local:8920', 'deep_link' => false],
         ],
         'sessions' => [
-            ['device' => 'Sam\'s laptop', 'client' => 'Jellyfin Web', 'last_seen' => '2026-09-30T21:18:23.8915360Z'],
+            ['device' => 'Sam\'s laptop', 'client' => 'Jellyfin Web', 'last_seen' => 1_790_803_103],
             ['device' => 'An old tablet', 'client' => 'Jellyfin Android', 'last_seen' => null],
         ],
         ...$changed,
@@ -345,7 +345,7 @@ it('a hand-off this app cannot read is an answer it could not read, never one wi
     'a client that will not say whether its code is a link' => [['clients' => [['device' => 'An iPhone', 'client' => 'Swiftfin', 'open_source' => true, 'code' => 'x', 'deep_link' => 'yes']]]],
     'no sessions' => [['sessions' => ['device' => 'A phone']]],
     'a session with no device' => [['sessions' => [['client' => 'Jellyfin Web']]]],
-    'a session seen at a moment that is not words' => [['sessions' => [['device' => 'A phone', 'client' => 'Jellyfin Web', 'last_seen' => 7]]]],
+    'a session seen at a moment written as text' => [['sessions' => [['device' => 'A phone', 'client' => 'Jellyfin Web', 'last_seen' => '2026-09-24T03:00:00Z']]]],
 ]);
 
 it('a payload that is not a hand-off at all is an answer it could not read', function (): void {
