@@ -10,6 +10,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
@@ -92,8 +93,8 @@ function whatEachScreenDrewOf(AStandInStack $machine, array $only = []): array
  * A word the second segment of a screen's path can carry.
  *
  * Most name something free, a service, a title or a download, and any name
- * reaches the stack. Pausing names one of two directions and a run names whole
- * seconds since the epoch, and a word outside them is refused before the stack
+ * reaches the stack. Pausing names one of two directions, a run names whole
+ * seconds since the epoch and giving back names a category, and a word outside them is refused before the stack
  * is asked anything.
  */
 function whatTheSecondSegmentNames(AStacksScreen $case): string
@@ -101,6 +102,7 @@ function whatTheSecondSegmentNames(AStacksScreen $case): string
     $words = [
         AStacksScreen::Downloads->name => WhatToDoWithTheDownloads::Pause->value,
         AStacksScreen::RunBack->name => '1790150000',
+        AStacksScreen::GiveBack->name => WhatALineIsAbout::Orphaned->value,
     ];
 
     return $words[$case->name] ?? 'gluetun';

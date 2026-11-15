@@ -18,6 +18,7 @@ use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatARunCovers;
 use Modules\Kernel\Api\WhatAScreenIsAbout;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
@@ -51,6 +52,7 @@ function everythingAScreenCanBeAbout(): array
         'a download' => [ADownloadHeld::named('Show Season1/Extras')],
         'pausing the downloads' => [WhatToDoWithTheDownloads::Pause],
         'resuming the downloads' => [WhatToDoWithTheDownloads::Resume],
+        'a category of the room on offer' => [WhatALineIsAbout::Orphaned],
         'a member' => [SomebodyInTheHousehold::called('Anna Maria/2')],
         'a back-end alerts go to' => [AlertBackEndId::called('ntfy home/2')],
     ];

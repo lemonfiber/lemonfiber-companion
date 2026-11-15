@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\ACategoryOffered;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ADownloadOnDisk;
 use Modules\Kernel\Api\ALineOfTheAccount;
@@ -37,6 +38,7 @@ use Modules\Kernel\Api\WhereTheRoomStands;
 use Modules\Kernel\Api\WhereTheRoomWent;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
+use Modules\Operator\Internal\ViewModels\ACategoryAsShown;
 use Modules\Operator\Internal\ViewModels\ADownloadAsShown;
 use Modules\Operator\Internal\ViewModels\ALineAsShown;
 use Modules\Operator\Internal\ViewModels\ASizeAsShown;
@@ -253,6 +255,43 @@ it('opens stopping seeding on the download whose row it is on, by its own screen
     expect($goes)->toBe(sprintf('/stacks/%s/room/Some.Film.2024', theStackWhoseRoomIsRead()->id()->stored()))
         ->and(NativeRouter::resolve($goes))->not->toBeNull()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.room.at_the_machine'));
+});
+
+it('lists each category the stack offers as costing nothing with its size, each opening its own confirmation, and selects none', function (): void {
+    $room = WhereTheRoomWent::measured(
+        TheVolumes::of(),
+        WhereTheRoomStands::Ample,
+        TheAccount::of(),
+        TheDownloadsOnDisk::of(),
+        TheRoomOnOffer::named(
+            'space-3f9a',
+            ACategoryOffered::holding(WhatALineIsAbout::Orphaned, WhatItOccupies::counted(30_000_000_000, 30_000_000_000), 12),
+            ACategoryOffered::holding(WhatALineIsAbout::Extracted, WhatItOccupies::counted(5_000_000_000, 5_000_000_000), 3),
+        ),
+        halted: false,
+    );
+    $screen = theRoomScreen(AStackThatMeasuresItsRoom::with($room));
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->said())->toContain(roomWords('stacks.room.costs_nothing'))
+        ->and($drawn->said())->toContain(roomWords('stacks.room.about.orphaned'))
+        ->and($drawn->said())->toContain(roomSize('stacks.room.occupies', 30_000_000_000))
+        ->and($drawn->said())->toContain(roomSize('stacks.room.occupies', 5_000_000_000))
+        ->and($drawn->said())->not->toContain(roomWords('stacks.room.nothing_costs_nothing'))
+        ->and($drawn->offers())->toBe([roomWords('stacks.room.give_back'), roomWords('stacks.room.give_back'), roomWords('health.ask_again')])
+        ->and(array_map(static fn(ACategoryAsShown $category): string => $screen->goes()->about(AStacksScreen::GiveBack, $category->about), $screen->answer()->offered))
+        ->toBe([
+            sprintf('/stacks/%s/give-back/orphaned', theStackWhoseRoomIsRead()->id()->stored()),
+            sprintf('/stacks/%s/give-back/extracted', theStackWhoseRoomIsRead()->id()->stored()),
+        ])
+        ->and(array_map(static fn(ACategoryAsShown $category): int => $category->files, $screen->answer()->offered))->toBe([12, 3]);
+});
+
+it('says so where nothing costs nothing to give back, and draws no control for it', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(theRoomScreen(AStackThatMeasuresItsRoom::with(aFillingLoft())));
+
+    expect($drawn->said())->toContain(roomWords('stacks.room.nothing_costs_nothing'))
+        ->and($drawn->offers())->not->toContain(roomWords('stacks.room.give_back'));
 });
 
 it('says so where no volume is watched, nothing takes room and no download is on the machine', function (): void {

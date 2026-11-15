@@ -93,6 +93,7 @@ function theAnswerACallIsGiven(string $which, string $asked): string
         $which === 'Restorers::rehearse', $which === 'Restorers::whatBecameOf' => sprintf('%sRestoreEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Releasers::whatTheOfferCameTo', $which === 'Releasers::whatBecameOf' => sprintf('%sStopSeedingEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Reversers::whatBecameOf' => sprintf('%sUndoEnvelope', AN_ENVELOPE_BY_NAME),
+        $which === 'RoomGivers::whatBecameOf' => sprintf('%sSpaceEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Removers::whatBecameOf' => sprintf('%sRemovalEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Dismantlers::whatBecameOf' => sprintf('%sUninstallEnvelope', AN_ENVELOPE_BY_NAME),
         $which === 'Extenders::whatBecameOf' => sprintf('%sPluginsEnvelope', AN_ENVELOPE_BY_NAME),

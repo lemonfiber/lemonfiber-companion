@@ -9,6 +9,10 @@ namespace Modules\Kernel\Api;
  */
 final readonly class TheRoomGivenBack
 {
+    /**
+     * @param int<0, max> $bytes
+     * @param int<0, max> $went
+     */
     private function __construct(private int $bytes, private int $went, private WhyItemsStayed $left) {}
 
     /** The stack's report, each figure refused below nothing. */
@@ -25,13 +29,21 @@ final readonly class TheRoomGivenBack
         return new self($bytes, $went, $left);
     }
 
-    /** The room returned, in bytes. */
+    /**
+     * The room returned, in bytes.
+     *
+     * @return int<0, max>
+     */
     public function bytes(): int
     {
         return $this->bytes;
     }
 
-    /** How many items went. */
+    /**
+     * How many items went.
+     *
+     * @return int<0, max>
+     */
     public function went(): int
     {
         return $this->went;

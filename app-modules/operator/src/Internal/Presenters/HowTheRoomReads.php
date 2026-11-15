@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Design\View\Tone;
+use Modules\Kernel\Api\ACategoryOffered;
 use Modules\Kernel\Api\ADownloadOnDisk;
 use Modules\Kernel\Api\ALineOfTheAccount;
 use Modules\Kernel\Api\AnAmountOfRoom;
@@ -16,6 +17,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhereTheRoomStands;
 use Modules\Kernel\Api\WhereTheRoomWent;
 use Modules\Operator\Internal\AsText;
+use Modules\Operator\Internal\ViewModels\ACategoryAsShown;
 use Modules\Operator\Internal\ViewModels\ADownloadAsShown;
 use Modules\Operator\Internal\ViewModels\ALineAsShown;
 use Modules\Operator\Internal\ViewModels\ASizeAsShown;
@@ -59,6 +61,12 @@ final readonly class HowTheRoomReads
             $downloads[] = $this->download($download);
         }
 
+        $offered = [];
+
+        foreach ($room->offer() as $category) {
+            $offered[] = $this->category($category);
+        }
+
         return new TheRoomTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
             standsSaid: $room->stands()->saidOnTheScreen(),
@@ -67,6 +75,7 @@ final readonly class HowTheRoomReads
             volumes: $volumes,
             account: $account,
             downloads: $downloads,
+            offered: $offered,
         );
     }
 
@@ -102,10 +111,21 @@ final readonly class HowTheRoomReads
         );
     }
 
+    /** One category the stack offers as costing nothing, with its size and how many files it holds. */
+    public function category(ACategoryOffered $category): ACategoryAsShown
+    {
+        return new ACategoryAsShown(
+            about: $category->about(),
+            aboutSaid: $category->about()->saidOnTheScreen(),
+            size: $this->size($category->occupies()->physical()),
+            files: $category->files(),
+        );
+    }
+
     /** An answer with nothing in it, for a reading that did not come back. */
     private function nothingFrom(HowTheReadingWent $went): TheRoomTurnedOutToBe
     {
-        return new TheRoomTurnedOutToBe(went: $went, standsSaid: '', tone: Tone::Unknown->value, halted: false, volumes: [], account: [], downloads: []);
+        return new TheRoomTurnedOutToBe(went: $went, standsSaid: '', tone: Tone::Unknown->value, halted: false, volumes: [], account: [], downloads: [], offered: []);
     }
 
     /**

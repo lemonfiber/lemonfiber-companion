@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use function array_any;
 use function array_values;
 
 use ArrayIterator;
@@ -45,13 +46,7 @@ final readonly class TheRoomOnOffer implements Countable, IteratorAggregate
     /** Whether the offer holds a category about this. */
     public function holds(WhatALineIsAbout $about): bool
     {
-        foreach ($this->categories as $category) {
-            if ($category->about() === $about) {
-                return true;
-            }
-        }
-
-        return false;
+        return array_any($this->categories, fn(ACategoryOffered $category): bool => $category->about() === $about);
     }
 
     /** @return Traversable<int, ACategoryOffered> */

@@ -10,6 +10,7 @@ use Modules\Operator\Internal\Screens\AskingForHelpHere;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
 use Modules\Operator\Internal\Screens\ChoosingHowGood;
 use Modules\Operator\Internal\Screens\ConnectingADeviceForThem;
+use Modules\Operator\Internal\Screens\GivingRoomBack;
 use Modules\Operator\Internal\Screens\GuardingWhileYouWatch;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
@@ -340,6 +341,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // the torrent was called, so it is encoded and takes the rest of
             // the path.
             Router::native(AStacksScreen::LetGo->value, LettingADownloadGo::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
+            Router::native(AStacksScreen::GiveBack->value, GivingRoomBack::class);
             Router::native(AStacksScreen::Downloads->value, PausingTheDownloads::class);
 
             // Which version of lemonfiber runs, apart from the services' updates,

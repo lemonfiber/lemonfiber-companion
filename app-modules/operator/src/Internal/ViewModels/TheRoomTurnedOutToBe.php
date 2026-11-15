@@ -7,7 +7,9 @@ namespace Modules\Operator\Internal\ViewModels;
 /**
  * What asking a stack how full its machine is produced, flattened for a template.
  *
- * Every list is in the stack's order. Nothing here says what to remove.
+ * Every list is in the stack's order. Nothing here says what to remove: the
+ * room on offer as costing nothing is listed, and each category of it is given
+ * back on its own screen.
  */
 final readonly class TheRoomTurnedOutToBe
 {
@@ -18,6 +20,7 @@ final readonly class TheRoomTurnedOutToBe
      * @param list<AVolumeAsShown>   $volumes    each volume watched
      * @param list<ALineAsShown>     $account    where the room went
      * @param list<ADownloadAsShown> $downloads  the completed downloads on disk
+     * @param list<ACategoryAsShown> $offered    each category the stack offers back as costing nothing
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -27,5 +30,6 @@ final readonly class TheRoomTurnedOutToBe
         public array $volumes,
         public array $account,
         public array $downloads,
+        public array $offered,
     ) {}
 }

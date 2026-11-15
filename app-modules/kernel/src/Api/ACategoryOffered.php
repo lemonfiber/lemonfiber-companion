@@ -9,6 +9,7 @@ namespace Modules\Kernel\Api;
  */
 final readonly class ACategoryOffered
 {
+    /** @param int<0, max> $files */
     private function __construct(
         private WhatALineIsAbout $about,
         private WhatItOccupies $occupies,
@@ -37,7 +38,11 @@ final readonly class ACategoryOffered
         return $this->occupies;
     }
 
-    /** How many files it holds. */
+    /**
+     * How many files it holds.
+     *
+     * @return int<0, max>
+     */
     public function files(): int
     {
         return $this->files;

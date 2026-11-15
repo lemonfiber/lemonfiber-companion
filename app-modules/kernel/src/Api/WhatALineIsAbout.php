@@ -12,7 +12,7 @@ use function sprintf;
  * The categories the stack gives. The room is shown by these and never as a
  * list of files.
  */
-enum WhatALineIsAbout: string
+enum WhatALineIsAbout: string implements WhatAScreenIsAbout
 {
     /** One directory beneath the data location, named as the operator named it. */
     case Tree = 'tree';
@@ -39,5 +39,10 @@ enum WhatALineIsAbout: string
     public function saidOnTheScreen(): string
     {
         return sprintf('stacks.room.about.%s', $this->value);
+    }
+
+    public function namedInAPath(): string
+    {
+        return $this->value;
     }
 }
