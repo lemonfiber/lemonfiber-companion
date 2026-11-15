@@ -15,12 +15,14 @@ use function file_get_contents;
 use function is_string;
 
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\AHealingAct;
 use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\Availability;
 use Modules\Kernel\Api\Awaiting;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Cost;
+use Modules\Kernel\Api\HowAMonitorStands;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowDeliveryStands;
 use Modules\Kernel\Api\HowDriftWasJudged;
@@ -46,6 +48,7 @@ use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
 use Modules\Kernel\Api\KindOfAlertBackEnd;
+use Modules\Kernel\Api\KindOfMonitor;
 use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\Medium;
@@ -66,6 +69,7 @@ use Modules\Kernel\Api\WhatALimitCameTo;
 use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAStepCameTo;
 use Modules\Kernel\Api\WhatAVolumeHolds;
+use Modules\Kernel\Api\WhatBecameOfAnAct;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
@@ -96,12 +100,15 @@ use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
 use Modules\Kernel\Api\WhereTheWalkthroughIs;
 use Modules\Kernel\Api\WhereThisCopyStands;
+use Modules\Kernel\Api\WhetherHealingActs;
 use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\WhichRemoval;
 use Modules\Kernel\Api\WhichWalk;
+use Modules\Kernel\Api\WhichWayItLooks;
 use Modules\Kernel\Api\WhichWayItWent;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSettledIt;
+use Modules\Kernel\Api\WhyItIsWedged;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 
 use function preg_match_all;
@@ -133,6 +140,13 @@ final readonly class TheWireUnions
         WhoSettledIt::class => 'whose',
         HowItWasReached::class => 'how',
         HowAServiceRuns::class => 'state',
+        KindOfMonitor::class => 'kind',
+        HowAMonitorStands::class => 'state',
+        WhichWayItLooks::class => 'path',
+        WhetherHealingActs::class => 'healing',
+        WhyItIsWedged::class => 'class',
+        AHealingAct::class => 'act',
+        WhatBecameOfAnAct::class => 'outcome',
         HowMuchItMatters::class => 'criticality',
         HowTheStackIsRunning::class => 'condition',
         Stage::class => 'stage',

@@ -272,7 +272,7 @@ final readonly class PluginRecords
                 self::optional($pair, WireField::Origin),
                 self::text($pair, PluginsField::Pairs, WireField::To, $at),
                 self::optional($pair, WireField::Approval),
-                self::optional($pair, PluginsField::Release),
+                self::optional($pair, WireField::Release),
                 self::optional($pair, WireField::From),
             );
         }

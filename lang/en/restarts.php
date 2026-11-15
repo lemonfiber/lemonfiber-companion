@@ -33,6 +33,8 @@ return [
         'not_every_client' => 'Not every client takes it yet.',
     ],
     'keeps_running' => 'What keeps it running',
+    'from_outside' => 'From outside',
+    'in_the_queue' => 'In the queue',
     'keeps_running_open' => 'What keeps running here',
     'reading_keeps_running' => 'Reading what keeps it running…',
     'keeps_running_unread' => 'What keeps it running could not be read.',

@@ -10,7 +10,9 @@ use function is_array;
 use Modules\Kernel\Api\ASearchThatSettles;
 use Modules\Kernel\Api\WhetherASearchSettles;
 use Modules\Sdk\Api\Fields\TraceField;
+use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\TraceIsUnreadable;
+use Modules\Sdk\Api\WireField;
 
 /**
  * Reads a trace's `searchable`: what a search that would settle it spends, and what it covers.
@@ -35,12 +37,12 @@ final readonly class TheSearchThatSettles
 
         return WhetherASearchSettles::so(ASearchThatSettles::spending(
             self::said($searchable, TraceField::Spends),
-            self::said($searchable, TraceField::Covers),
+            self::said($searchable, WireField::Covers),
         ));
     }
 
     /** @param array<mixed> $searchable */
-    private static function said(array $searchable, TraceField $field): string
+    private static function said(array $searchable, NamesAWireField $field): string
     {
         return Required::text($searchable, $field, TraceIsUnreadable::missing($field));
     }

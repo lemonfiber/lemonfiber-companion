@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Lemonfiber\Sdk\Contract\Api;
 use Modules\Household\Internal\Screens\AskingForATitle;
 use Modules\Household\Internal\Screens\WhatYouAreOwed;
+use Modules\Operator\Internal\Screens\TheOutsideWatcher;
 use Modules\Operator\Internal\Screens\WhatEachStackMayTellThisPhone;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatIsNewOnEveryStack;
@@ -63,6 +64,7 @@ const WHAT_REACHES_A_CLIENT_ITSELF = [
  */
 const WHAT_OFFERS_NOTHING_ON_ITS_OWN_SCREEN = [
     WhatThisStackRuns::class => 'reads what the stack runs through the port that also starts and stops it, and leads to the screen that offers each verb',
+    TheOutsideWatcher::class => 'reads what the stack says of its own services through the port that also starts and stops them, beside what the watcher says, and offers no verb',
     WhatElseIsRunningHere::class => 'reads what else runs on the machine through the port that also starts and stops a service, and offers no verb',
     WhatWouldBePutRight::class => 'its reading is the repair\'s own request, so the gate in front of the reading is the gate in front of its yes',
     WhileNobodyWasLooking::class => 'reads what keeps the stack running through the port that also hands a command over, and leads to the screen that offers handing one over',

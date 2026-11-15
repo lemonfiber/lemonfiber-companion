@@ -35,9 +35,6 @@ enum ConfigField: string implements NamesAWireField
     /** What lemonfiber last wrote where a hand-edit was found. */
     case Wrote = 'wrote';
 
-    /** What is still coming down, where a change would interrupt it. */
-    case Active = 'active';
-
     /** Which way one download is coming down. */
     case Protocol = 'protocol';
 }

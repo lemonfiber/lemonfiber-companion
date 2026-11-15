@@ -50,6 +50,12 @@ enum AStacksScreen: string
     /** What happened while nobody was looking: what this machine came back to after it last started. */
     case WhileNobodyWasLooking = '/stacks/{stack}/while-nobody-was-looking';
 
+    /** What the outside watcher sees, beside what the stack says of the same services. */
+    case Watcher = '/stacks/{stack}/watcher';
+
+    /** How the queue heals itself: what it would act on and why, and every run it took. */
+    case Queue = '/stacks/{stack}/queue';
+
     /** A guard on this machine's data location, held only while its screen keeps asking. */
     case Guard = '/stacks/{stack}/guard';
 

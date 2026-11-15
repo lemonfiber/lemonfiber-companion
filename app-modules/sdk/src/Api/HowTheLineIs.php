@@ -8,7 +8,6 @@ use function array_key_exists;
 use function array_map;
 use function is_array;
 use function is_bool;
-use function is_int;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\BandwidthEnvelope;
@@ -251,11 +250,7 @@ final readonly class HowTheLineIs
      */
     private static function count(array $data, NamesAWireField $field, NamesAWireField $parent): int
     {
-        if (! array_key_exists($field->value, $data) || ! is_int($data[$field->value]) || $data[$field->value] < 0) {
-            throw BandwidthIsUnreadable::missing($field->under($parent));
-        }
-
-        return $data[$field->value];
+        return Required::count($data, $field, BandwidthIsUnreadable::missing($field->under($parent)));
     }
 
     /**

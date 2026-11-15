@@ -47,12 +47,8 @@ enum PluginsField: string implements NamesAWireField
     /** The API a recipe's call reaches its destination in, as the plugin providing that service declares it. */
     case Native = 'native';
 
-    /** Why a value is released away from the service it was read from. */
-    case Release = 'release';
-
     /** Every proof that has to hold before a plugin is installed. */
     case Proofs = 'proofs';
-
 
     /** Whether proving a plugin again cleared every answer kept against it. */
     case Cleared = 'cleared';
@@ -68,7 +64,6 @@ enum PluginsField: string implements NamesAWireField
 
     /** Each way a proof did not hold. */
     case Faults = 'faults';
-
 
     /** Every check an install made worse. */
     case Broke = 'broke';
@@ -105,7 +100,6 @@ enum PluginsField: string implements NamesAWireField
 
     /** Whether everything the version put back placed is on the machine again. */
     case Placed = 'placed';
-
 
     /** The plugin filling a capability now, which is the one going. */
     case FilledBy = 'filled_by';

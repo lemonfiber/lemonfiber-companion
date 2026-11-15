@@ -13,16 +13,6 @@ namespace Modules\Sdk\Api;
  * the case's value is the word the core writes for a state. A reader spelling
  * `'severity'` in quotes says the same thing without saying where it came from.
  *
- * **The duplication this removes was structural, not careless.** A `Problem` is
- * flattened into two envelopes — on its own in `problem`, and onto the failing
- * arms of a verdict in `doctor` — so {@see Problems} and {@see Reports} read
- * the same eight names. Spelled as literals they were eight pairs of strings in
- * two files with nothing holding them in agreement, and a rename on the core
- * side would have been fixed in one reader and missed in the other. The failure
- * that produces is a report whose findings all read as unreadable while the
- * problem envelope carries on working, which looks like a broken screen rather
- * than a renamed field.
- *
  * **Not derived from the contract document**, which carries envelope kinds and
  * versions and not the shape inside them. This is the nearest thing to a single
  * place the names live, and being an enum makes the set enumerable — which is
@@ -834,7 +824,6 @@ enum WireField: string implements NamesAWireField
     /** What the stack's own checks made of an install, or the check after a start that ran after the latest one. */
     case Verified = 'verified';
 
-
     /** What stands after: the data root a copy goes to here, and the service a choice of filler makes answer. */
     case Now = 'now';
 
@@ -990,4 +979,22 @@ enum WireField: string implements NamesAWireField
 
     /** What was carried across; and whether a library survives moving the data location. */
     case Carried = 'carried';
+
+    /** Whether something is switched on, or what is still coming down where a change would interrupt it. */
+    case Active = 'active';
+
+    /** What something covers. */
+    case Covers = 'covers';
+
+    /** A job the stack runs, by its handle or its name. */
+    case Job = 'job';
+
+    /** A grace allowed before acting, in seconds: after a heartbeat was due, or before a new download is touched. */
+    case GraceS = 'grace_s';
+
+    /** Whether a listing is short of what the stack actually holds. */
+    case Incomplete = 'incomplete';
+
+    /** Why a value is released away from the service it was read from; and a release, by its name in the download client. */
+    case Release = 'release';
 }

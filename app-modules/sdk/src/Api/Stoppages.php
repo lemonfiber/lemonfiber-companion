@@ -6,7 +6,6 @@ namespace Modules\Sdk\Api;
 
 use function array_key_exists;
 use function is_array;
-use function is_bool;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\StuckEnvelope;
@@ -14,7 +13,6 @@ use Modules\Kernel\Api\HowMuchIsShown;
 use Modules\Kernel\Api\Stage;
 use Modules\Kernel\Api\Stalled;
 use Modules\Kernel\Api\Stuck;
-use Modules\Sdk\Api\Fields\StuckField;
 use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
@@ -82,17 +80,7 @@ final readonly class Stoppages
      */
     private static function howMuchIsShown(array $data): HowMuchIsShown
     {
-        if (! array_key_exists(StuckField::Incomplete->value, $data)) {
-            throw StuckIsUnreadable::missing(StuckField::Incomplete);
-        }
-
-        $incomplete = $data[StuckField::Incomplete->value];
-
-        if (! is_bool($incomplete)) {
-            throw StuckIsUnreadable::missing(StuckField::Incomplete);
-        }
-
-        return $incomplete ? HowMuchIsShown::SomeOfIt : HowMuchIsShown::AllOfIt;
+        return Required::flag($data, WireField::Incomplete, StuckIsUnreadable::missing(WireField::Incomplete)) ? HowMuchIsShown::SomeOfIt : HowMuchIsShown::AllOfIt;
     }
 
     /**

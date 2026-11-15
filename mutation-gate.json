@@ -1,7 +1,10 @@
 {
     "$schema": "vendor/nightworksio/mutation-gate/resources/mutation-gate.schema.json",
     "preset": "laravel",
-    "runner": "pest",
+    "runner": {
+        "use": "pest",
+        "memory": "2G"
+    },
     "security": {
         "floor": 100
     },

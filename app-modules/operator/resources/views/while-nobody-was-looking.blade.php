@@ -54,6 +54,14 @@
         <x-design::row :headline="__('restarts.keeps_running_open')" :goes="$this->goes()->to(AStacksScreen::Hosting)" />
     </x-design::section>
 
+    <x-design::section :label="__('restarts.from_outside')">
+        <x-design::row :headline="__('watcher.open')" :goes="$this->goes()->to(AStacksScreen::Watcher)" />
+    </x-design::section>
+
+    <x-design::section :label="__('restarts.in_the_queue')">
+        <x-design::row :headline="__('queue.open')" :goes="$this->goes()->to(AStacksScreen::Queue)" />
+    </x-design::section>
+
     <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else

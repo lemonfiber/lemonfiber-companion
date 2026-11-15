@@ -9,7 +9,6 @@ use function array_map;
 use function implode;
 use function is_array;
 use function is_bool;
-use function is_int;
 use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
@@ -359,11 +358,7 @@ final readonly class WhereTheRoomIs
      */
     private static function count(array $data, string $where, NamesAWireField $field): int
     {
-        if (! array_key_exists($field->value, $data) || ! is_int($data[$field->value]) || $data[$field->value] < 0) {
-            throw SpaceIsUnreadable::missing($where);
-        }
-
-        return $data[$field->value];
+        return Required::count($data, $field, SpaceIsUnreadable::missing($where));
     }
 
     /**

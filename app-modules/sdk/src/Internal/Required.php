@@ -81,6 +81,18 @@ final readonly class Required
     }
 
     /**
+     * A count, which cannot be below nothing.
+     *
+     * @param array<mixed> $table
+     */
+    public static function count(array $table, NamesAWireField $field, InvalidArgumentException $refused): int
+    {
+        $count = self::number($table, $field, $refused);
+
+        return $count < 0 ? throw $refused : $count;
+    }
+
+    /**
      * A whole number, which is what a port is on the wire.
      *
      * @param array<mixed> $table

@@ -226,6 +226,7 @@ use Modules\Sdk\Api\GrantEnders;
 use Modules\Sdk\Api\Grantors;
 use Modules\Sdk\Api\Guards;
 use Modules\Sdk\Api\Guides;
+use Modules\Sdk\Api\Healers;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
 use Modules\Sdk\Api\Keepers;
@@ -274,6 +275,7 @@ use Modules\Sdk\Api\Tuners;
 use Modules\Sdk\Api\Upgraders;
 use Modules\Sdk\Api\Upkeepers;
 use Modules\Sdk\Api\Ushers;
+use Modules\Sdk\Api\Watchers;
 use Modules\Sdk\Api\WaysOfBeingTold;
 use Modules\Sdk\Api\Wirers;
 use Psr\Log\NullLogger;
@@ -400,6 +402,8 @@ final readonly class EveryAdapterCallThatReads
                 => new Guides($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Heralds::toldAbout' => static fn(): object => new Heralds($clients)->toldAbout($stack, $session),
             'Restarts::afterTheLastStart' => static fn(): object => new Restarts($clients)->afterTheLastStart($stack, $session),
+            'Watchers::whatItSees' => static fn(): object => new Watchers($clients)->whatItSees($stack, $session),
+            'Healers::howItHeals' => static fn(): object => new Healers($clients)->howItHeals($stack, $session),
             'Inspectors::checkedOn' => static fn(): object => new Inspectors($clients)->checkedOn($stack, $session),
             'Chroniclers::versionsOn' => static fn(): object => new Chroniclers($clients)->versionsOn($stack, $session),
             'Keepers::keptRunningOn' => static fn(): object => new Keepers($clients, $entropy)->keptRunningOn($stack, $session),

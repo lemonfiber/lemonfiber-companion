@@ -7,6 +7,7 @@ use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\WhereTheCodeGot;
 use Modules\Household\Internal\Month;
 use Modules\Kernel\Api\AgainstThePins;
+use Modules\Kernel\Api\AHealingAct;
 use Modules\Kernel\Api\APlaceholderForm;
 use Modules\Kernel\Api\APrivilegedShape;
 use Modules\Kernel\Api\Awaiting;
@@ -15,6 +16,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\HowADownloadComes;
+use Modules\Kernel\Api\HowAMonitorStands;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowDeliveryStands;
 use Modules\Kernel\Api\HowFarAHolderWasReached;
@@ -41,6 +43,7 @@ use Modules\Kernel\Api\HowTheTunnelCameBack;
 use Modules\Kernel\Api\HowToUndoIt;
 use Modules\Kernel\Api\HowWellADeviceIsServed;
 use Modules\Kernel\Api\KindOfAlertBackEnd;
+use Modules\Kernel\Api\KindOfMonitor;
 use Modules\Kernel\Api\KindOfNotification;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\LockAfter;
@@ -62,6 +65,7 @@ use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatAProofSays;
 use Modules\Kernel\Api\WhatAStepCameTo;
 use Modules\Kernel\Api\WhatAVolumeHolds;
+use Modules\Kernel\Api\WhatBecameOfAnAct;
 use Modules\Kernel\Api\WhatBecameOfAskingIt;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
@@ -72,6 +76,7 @@ use Modules\Kernel\Api\WhatHappenedToIt;
 use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
+use Modules\Kernel\Api\WhatKindOfThingIsCovered;
 use Modules\Kernel\Api\WhatLemonfiberAsksFor;
 use Modules\Kernel\Api\WhatSortItIs;
 use Modules\Kernel\Api\WhatTheLineRunDid;
@@ -92,6 +97,7 @@ use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
 use Modules\Kernel\Api\WhereTheWalkthroughIs;
 use Modules\Kernel\Api\WhereThisCopyStands;
+use Modules\Kernel\Api\WhetherHealingActs;
 use Modules\Kernel\Api\WhetherItGoesThroughTheTunnel;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItIsAllowed;
@@ -100,8 +106,10 @@ use Modules\Kernel\Api\WhetherTheyCanAsk;
 use Modules\Kernel\Api\WhichRate;
 use Modules\Kernel\Api\WhichRemoval;
 use Modules\Kernel\Api\WhichWalk;
+use Modules\Kernel\Api\WhichWayItLooks;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSetIt;
+use Modules\Kernel\Api\WhyItIsWedged;
 use Modules\Kernel\Api\WhyNoEndpoint;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhyNothingWasShared;
@@ -259,6 +267,38 @@ function everyDerivedKey(): array
         HowTheTunnelCameBack::class => aPairPerCase(
             HowTheTunnelCameBack::cases(),
             static fn(HowTheTunnelCameBack $came): array => [$came->saidOnTheScreen()],
+        ),
+        KindOfMonitor::class => aPairPerCase(
+            KindOfMonitor::cases(),
+            static fn(KindOfMonitor $kind): array => [$kind->saidOnTheScreen()],
+        ),
+        HowAMonitorStands::class => aPairPerCase(
+            HowAMonitorStands::cases(),
+            static fn(HowAMonitorStands $stands): array => [$stands->saidOnTheScreen()],
+        ),
+        WhichWayItLooks::class => aPairPerCase(
+            WhichWayItLooks::cases(),
+            static fn(WhichWayItLooks $path): array => [$path->saidOnTheScreen()],
+        ),
+        WhatKindOfThingIsCovered::class => aPairPerCase(
+            WhatKindOfThingIsCovered::cases(),
+            static fn(WhatKindOfThingIsCovered $kind): array => [$kind->saidOnTheScreen()],
+        ),
+        WhetherHealingActs::class => aPairPerCase(
+            WhetherHealingActs::cases(),
+            static fn(WhetherHealingActs $healing): array => [$healing->saidOnTheScreen()],
+        ),
+        WhyItIsWedged::class => aPairPerCase(
+            WhyItIsWedged::cases(),
+            static fn(WhyItIsWedged $class): array => [$class->saidOnTheScreen()],
+        ),
+        AHealingAct::class => aPairPerCase(
+            AHealingAct::cases(),
+            static fn(AHealingAct $act): array => [$act->saidOnTheScreen()],
+        ),
+        WhatBecameOfAnAct::class => aPairPerCase(
+            WhatBecameOfAnAct::cases(),
+            static fn(WhatBecameOfAnAct $outcome): array => [$outcome->saidOnTheScreen()],
         ),
         HowDeliveryStands::class => aPairPerCase(
             HowDeliveryStands::cases(),
