@@ -22,6 +22,7 @@ use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
+use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
@@ -67,6 +68,7 @@ it('the bars reach a stack-scoped frame, and the reading is replaced rather than
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        AStackThatSaysHowItRunsWithout::bundled(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

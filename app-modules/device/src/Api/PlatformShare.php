@@ -8,6 +8,7 @@ use Lemonfiber\Native\Handover;
 use Lemonfiber\Native\Offered;
 use Lemonfiber\Native\WhyNothingWasHandedOver;
 use Modules\Kernel\Api\ABundleFile;
+use Modules\Kernel\Api\ACommandToHand;
 use Modules\Kernel\Api\AnInvitationToPassOn;
 use Modules\Kernel\Api\Assembled;
 use Modules\Kernel\Api\Handed;
@@ -51,6 +52,11 @@ final readonly class PlatformShare implements Sharing
     public function passOn(AnInvitationToPassOn $invitation): Handed
     {
         return $this->handed($this->sheet->offer($invitation->named(), $invitation->text()));
+    }
+
+    public function offerToCopy(ACommandToHand $command): Handed
+    {
+        return $this->handed($this->sheet->offer($command->named(), $command->text()));
     }
 
     public function handOver(ABundleFile $bundle): Handed

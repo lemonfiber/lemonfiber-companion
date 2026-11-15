@@ -65,6 +65,16 @@ interface Sharing
     public function passOn(AnInvitationToPassOn $invitation): Handed;
 
     /**
+     * Put a command the stack gave in front of the operator to copy out, or say why it could not be.
+     *
+     * The same sheet and the same answer as an invitation, handed over as
+     * text. It takes an {@see ACommandToHand}, whose text is a command line
+     * built from the words a stack sent, so nothing but such a line can be
+     * handed over this way.
+     */
+    public function offerToCopy(ACommandToHand $command): Handed;
+
+    /**
      * Put a support bundle's file in front of the operator to hand over, or say why it could not be.
      *
      * The same sheet and the same answer. It takes an {@see ABundleFile}, which

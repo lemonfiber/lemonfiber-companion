@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Modules\Sdk\Api\Fields\AdoptionField;
 use Modules\Sdk\Api\Fields\AlertField;
-use Modules\Sdk\Api\Fields\AlertsField;
 use Modules\Sdk\Api\Fields\ArchivesField;
 use Modules\Sdk\Api\Fields\AskableField;
 use Modules\Sdk\Api\Fields\AskableKindsField;
@@ -59,6 +58,7 @@ use Modules\Sdk\Api\Fields\SeedField;
 use Modules\Sdk\Api\Fields\SelfUpdateField;
 use Modules\Sdk\Api\Fields\SettingsField;
 use Modules\Sdk\Api\Fields\SpaceField;
+use Modules\Sdk\Api\Fields\StackField;
 use Modules\Sdk\Api\Fields\StatusField;
 use Modules\Sdk\Api\Fields\StopSeedingField;
 use Modules\Sdk\Api\Fields\StoredField;
@@ -93,7 +93,6 @@ function everyFieldNamedOnTheWire(): array
         ...WireField::cases(),
         ...AdoptionField::cases(),
         ...AlertField::cases(),
-        ...AlertsField::cases(),
         ...ArchivesField::cases(),
         ...BackupField::cases(),
         ...BandwidthField::cases(),
@@ -142,6 +141,7 @@ function everyFieldNamedOnTheWire(): array
         ...SettingsField::cases(),
         ...SelfUpdateField::cases(),
         ...SpaceField::cases(),
+        ...StackField::cases(),
         ...StatusField::cases(),
         ...StopSeedingField::cases(),
         ...PausingField::cases(),

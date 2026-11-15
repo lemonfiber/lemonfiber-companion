@@ -28,6 +28,7 @@ use Tests\Support\Fakes\ADeviceOnANetwork;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
+use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
@@ -274,6 +275,7 @@ it('says on the list the word the stack\'s own screen just heard', function (): 
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Advisory, 1, 'A note', WhatStoppedMoving::nothing()))), FrozenClock::at(Instant::atEpochSeconds(NOW - 3)), standings: $standings),
+        AStackThatSaysHowItRunsWithout::bundled(),
     );
     $heard->setParams(['stack' => $stack->id()->stored()]);
     $heard->listen();

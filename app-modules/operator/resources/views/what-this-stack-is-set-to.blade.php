@@ -192,6 +192,42 @@
          screen puts it there: somebody who has just changed something in the
          stack scrolls to the end of what they were reading, and that is where
          they want to ask whether it took. --}}
+    <x-design::section :label="__('without.section')">
+        @if ($this->withoutIsBeingRead())
+            <x-design::row :headline="__('without.reading')" />
+            <x-design::the-next-frame />
+        @elseif ($this->without()->went->cameBack())
+            @if ($this->without()->ownDirectory !== '')
+                <x-design::notice tone="attention">
+                    <x-design::strong>{{ __('without.own_stack', ['path' => $this->without()->ownDirectory]) }}</x-design::strong>
+                </x-design::notice>
+            @endif
+
+            <x-design::body>{{ __('without.runs_without') }}</x-design::body>
+            <x-design::verbatim>{{ $this->without()->plainUp }}</x-design::verbatim>
+            <x-design::action :label="__('without.copy')" tap="copyTheWords()" tone="tonal" />
+
+            @if ($this->copied !== null)
+                <x-design::note>{{ __($this->copied) }}</x-design::note>
+            @endif
+
+            <x-design::body>{{ __('without.project', ['path' => $this->without()->project]) }}</x-design::body>
+            <x-design::body>{{ __('without.env', ['path' => $this->without()->env]) }}</x-design::body>
+            <x-design::body>{{ __('without.non_interactive') }}</x-design::body>
+            <x-design::verbatim>{{ $this->without()->nonInteractive }}</x-design::verbatim>
+
+            <x-design::strong>{{ __('without.left_out') }}</x-design::strong>
+            @forelse ($this->without()->leftOut as $part)
+                {{-- The operator's own words for why the part is left out. --}}
+                <x-design::row :headline="$part->part" :supporting="$part->reason" />
+            @empty
+                <x-design::row :headline="__('without.nothing_left_out')" />
+            @endforelse
+        @else
+            <x-design::row :headline="__('without.unread')" />
+        @endif
+    </x-design::section>
+
     <x-design::action :label="__('config.ask_again')" tap="askAgain()" tone="tonal" />
 </x-operator::content>
 @else

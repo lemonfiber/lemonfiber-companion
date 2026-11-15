@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Contracts\Translation\Translator;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ADownloadItWouldInterrupt;
 use Modules\Kernel\Api\ALibraryAMoveReaches;
@@ -36,7 +37,9 @@ use Modules\Stacks\Api\AStacksScreen;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatIsSet;
+use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
 use Tests\Support\Fakes\AStackToldToChangeSomething;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -86,6 +89,8 @@ function theSettingsScreen(
     ?AStackToldToChangeSomething $adjusting = null,
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
+    ?AStackThatSaysHowItRunsWithout $without = null,
+    ?AShareSheetThatWasOffered $sheet = null,
 ): WhatThisStackIsSetTo {
     $stack = theStackWhoseSettingsAreRead();
     $keychain ??= AKeychainInMemory::working();
@@ -102,6 +107,9 @@ function theSettingsScreen(
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        $without ?? AStackThatSaysHowItRunsWithout::bundled(),
+        $sheet ?? AShareSheetThatWasOffered::working(),
+        app(Translator::class),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -390,7 +398,7 @@ it('draws both sides of a staged change, and offers to make it or to leave it', 
         ->and($drawn->said())->toContain(__($cost->saidOnTheScreen()))
         ->and($drawn->said())->toContain(__(Stance::Pending->saidOnTheScreen()))
         ->and(in_array(__('config.worth_reading_twice'), $drawn->said(), strict: true))->toBe($warned)
-        ->and($drawn->offers())->toBe([__('config.agree'), __('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('config.ask_again')]);
+        ->and($drawn->offers())->toBe([__('config.agree'), __('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('without.copy'), __('config.ask_again')]);
 })->with([
     'cheap' => [Cost::Cheap, false],
     'consequential' => [Cost::Consequential, true],
@@ -763,5 +771,5 @@ it('draws a change refused because the operator declared the area unmanaged in t
 
     expect($drawn->said())->toContain(__(Stance::Blocked->saidOnTheScreen()), $refusal)
         ->and($screen->proposal()?->canBeAgreedTo)->toBeFalse()
-        ->and($drawn->offers())->toBe([__('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('config.ask_again')]);
+        ->and($drawn->offers())->toBe([__('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('without.copy'), __('config.ask_again')]);
 });

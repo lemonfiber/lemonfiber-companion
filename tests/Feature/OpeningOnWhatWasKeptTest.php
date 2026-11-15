@@ -42,6 +42,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
+use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\DistributorsOnAPhone;
@@ -110,6 +111,7 @@ function theAtticsScreen(KeepingTheLastReading $keeping, AStackThatSpeaksUp $str
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening($stream, FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_STACK_WAS_OPENED)), keeping: $keeping),
+        AStackThatSaysHowItRunsWithout::bundled(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

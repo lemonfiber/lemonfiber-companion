@@ -33,6 +33,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ANotifierInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
+use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
@@ -101,6 +102,7 @@ function aScreenThatHearsThrough(AStackThatSpeaksUp $hearing, StandingsInMemory 
         AroundThePhone::holding(StacksInMemory::holding(theCellar(), theShed()), $standings, $keychain, $clock, $hearing, $capture),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(AStackThatSpeaksUp::holdingOpen(), $clock, standings: $standings),
+        AStackThatSaysHowItRunsWithout::bundled(),
     );
     $screen->setParams(['stack' => theCellar()->id()->stored()]);
 
@@ -118,6 +120,7 @@ function theCellarsHealth(AStackThatSpeaksUp $own, AStackThatSpeaksUp $list, Sta
         AroundThePhone::holding(StacksInMemory::holding(theCellar(), theShed()), $standings, $keychain, $clock, $list),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening($own, $clock, standings: $standings),
+        AStackThatSaysHowItRunsWithout::bundled(),
     );
     $screen->setParams(['stack' => theCellar()->id()->stored()]);
 
@@ -217,6 +220,7 @@ it('tells the operator each alert another stack raised, filed under its name', f
         AroundThePhone::holding(StacksInMemory::holding(theCellar(), theShed()), StandingsInMemory::working(), $keychain, $clock, AStackThatSpeaksUp::holdingOpen($raised), notifier: $notifier),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(AStackThatSpeaksUp::holdingOpen(), $clock),
+        AStackThatSaysHowItRunsWithout::bundled(),
     );
     $screen->setParams(['stack' => theCellar()->id()->stored()]);
 
@@ -237,6 +241,7 @@ it('tells the operator each alert the screen\'s own stack raised, its resolution
         AroundThePhone::holding(StacksInMemory::holding(theCellar(), theShed()), StandingsInMemory::working(), $keychain, $clock, AStackThatSpeaksUp::holdingOpen()),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(AStackThatSpeaksUp::holdingOpen(theStackIsCritical()->alerting(TheAlerts::of($onset, $resolved))), $clock, notifier: $notifier),
+        AStackThatSaysHowItRunsWithout::bundled(),
     );
     $screen->setParams(['stack' => theCellar()->id()->stored()]);
 

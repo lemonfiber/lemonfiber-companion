@@ -122,16 +122,7 @@ enum WireField: string implements NamesAWireField
     /** How much a problem matters, in the engine's judgement. */
     case Severity = 'severity';
 
-    /**
-     * Where a problem stands with respect to being fixed.
-     *
-     * Named `state` on the wire and `Standing` in this app, because `state` is
-     * a word a screen already uses for other things. The case is named for the
-     * wire, which is what this enum is for; the type it becomes is not.
-     *
-     * The `credentials` envelope spends the same word on where a credential
-     * stands, and the quality envelopes on what became of asking a service.
-     */
+    /** Where a problem stands with respect to being fixed; where a credential stands; what became of asking a service. */
     case State = 'state';
 
     /**
@@ -997,4 +988,13 @@ enum WireField: string implements NamesAWireField
 
     /** Why a value is released away from the service it was read from; and a release, by its name in the download client. */
     case Release = 'release';
+
+    /** Where a figure for the line came from; whether a machine runs the bundled stack or the operator's own. */
+    case Source = 'source';
+
+    /** The form a placeholder writes its secret's value in; the words an action runs with without a question. */
+    case Form = 'form';
+
+    /** The events set apart from an alert preset; the parts plain Compose words do not bring up as lemonfiber does. */
+    case Exceptions = 'exceptions';
 }

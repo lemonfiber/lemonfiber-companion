@@ -47,6 +47,7 @@ use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
+use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
@@ -196,6 +197,7 @@ it('offers What\'s new first on the health screen where anything is new, and not
         AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(theBarnSayingWhatIsNew(), $clock),
+        AStackThatSaysHowItRunsWithout::bundled(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
     $offered = trans_choice('news.new_on_tab', 4, ['tab' => __('navigation.menu.whats_new')]);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Support\Fakes;
 
 use Modules\Kernel\Api\ABundleFile;
+use Modules\Kernel\Api\ACommandToHand;
 use Modules\Kernel\Api\AnInvitationToPassOn;
 use Modules\Kernel\Api\Assembled;
 use Modules\Kernel\Api\Handed;
@@ -29,6 +30,9 @@ final class AShareSheetThatWasOffered implements Sharing
 
     /** The invitation it was handed to pass on, or nothing where it never was. */
     private ?AnInvitationToPassOn $passed = null;
+
+    /** The command it was handed to copy out, or nothing where it never was. */
+    private ?ACommandToHand $copied = null;
 
     /** @var list<ABundleFile> every bundle's file it was handed, in order */
     private array $handedOver = [];
@@ -65,6 +69,12 @@ final class AShareSheetThatWasOffered implements Sharing
         return $this->passed;
     }
 
+    /** The command it was handed to copy out, for a test to read every word of. */
+    public function copied(): ?ACommandToHand
+    {
+        return $this->copied;
+    }
+
     /** @return list<ABundleFile> every bundle's file it was handed, for a test to read every byte of */
     public function handedOver(): array
     {
@@ -75,6 +85,14 @@ final class AShareSheetThatWasOffered implements Sharing
     {
         // Recorded on both arms, for the reason `hand()` records a report.
         $this->handedOver[] = $bundle;
+
+        return $this->answered();
+    }
+
+    public function offerToCopy(ACommandToHand $command): Handed
+    {
+        // Recorded on both arms, for the reason `hand()` records a report.
+        $this->copied = $command;
 
         return $this->answered();
     }

@@ -36,6 +36,7 @@ use Tests\Support\AnObstacleOfEachKind;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TheHealthScreenOfTheLoft;
@@ -290,7 +291,7 @@ it('asking again notices a session that has ended underneath them', function ():
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
 
-    $screen = new HowThisStackIs($asking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new HowThisStackIs($asking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AStackThatSaysHowItRunsWithout::bundled());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     expect($screen->answer()->went->isSignedIn)->toBeTrue();
@@ -344,7 +345,7 @@ it('a session that has ended sends them to sign in rather than to an error', fun
     $asking = AStackThatWasAsked::saying(aRunWithAWarning());
     $stack = TheHealthScreenOfTheLoft::theStackBeingLookedAt();
 
-    $screen = new HowThisStackIs($asking, AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new HowThisStackIs($asking, AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AStackThatSaysHowItRunsWithout::bundled());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()

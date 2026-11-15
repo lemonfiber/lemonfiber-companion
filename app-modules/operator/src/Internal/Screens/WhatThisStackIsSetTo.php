@@ -5,17 +5,25 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Closure;
+use Illuminate\Contracts\Translation\Translator;
 use Illuminate\View\View;
+
+use function is_string;
+
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
+use Modules\Kernel\Api\ACommandToHand;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Arranging;
+use Modules\Kernel\Api\AskingHowItRunsWithoutLemonfiber;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HowItRunsWithoutLemonfiber;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Settings;
+use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
@@ -25,9 +33,12 @@ use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAChangeReads;
 use Modules\Operator\Internal\Presenters\HowTheSettingsRead;
+use Modules\Operator\Internal\ReadsHowItRunsWithout;
 use Modules\Operator\Internal\ViewModels\WhatAChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatThisStackIsSetToTurnedOutToBe;
+use Modules\Operator\Internal\WhatTheSheetSaid;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
+use Modules\Wayfinding\Api\Screens\ReadsAStackOnceAFrame;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -68,6 +79,11 @@ final class WhatThisStackIsSetTo extends NativeComponent
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
+    use ReadsAStackOnceAFrame;
+    use ReadsHowItRunsWithout;
+
+    /** The key for the name the share sheet shows the words under. */
+    private const string COPY_NAMED = 'without.copy_named';
 
     /**
      * What the operator has typed into the setting open for changing, while one is.
@@ -86,6 +102,9 @@ final class WhatThisStackIsSetTo extends NativeComponent
 
     public ?WhatThisStackIsSetToTurnedOutToBe $answered = null;
 
+    /** The catalogue key for what handing the words over came to, where they have been. */
+    public ?string $copied = null;
+
     /** Which setting is open for changing, where one is. */
     public ?string $changing = null;
 
@@ -99,6 +118,9 @@ final class WhatThisStackIsSetTo extends NativeComponent
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly AskingHowItRunsWithoutLemonfiber $askingWithout,
+        private readonly Sharing $sharing,
+        private readonly Translator $catalogue,
     ) {}
 
     /** What the operator has typed into the setting open for changing, or nothing while none is. */
@@ -119,6 +141,30 @@ final class WhatThisStackIsSetTo extends NativeComponent
     {
         $this->answered = null;
         $this->proposed = null;
+        $this->copied = null;
+        $this->forgetHowItRunsWithout();
+    }
+
+    /**
+     * Hand the words that bring the stack up without lemonfiber to the device's own sharing, to copy out.
+     *
+     * Only words the stack gave are offered; the sheet is the platform's and
+     * where they go is the operator's choice.
+     */
+    public function copyTheWords(): void
+    {
+        $how = $this->heardWithout;
+
+        if (! $how instanceof HowItRunsWithoutLemonfiber) {
+            return;
+        }
+
+        $named = $this->catalogue->get(self::COPY_NAMED);
+
+        $this->copied = $this->sharing->offerToCopy(ACommandToHand::of($how->plainUp(), is_string($named) ? $named : self::COPY_NAMED))->either(
+            over: static fn(): WhatTheSheetSaid => new WhatTheSheetSaid('without.copied'),
+            refused: static fn(): WhatTheSheetSaid => new WhatTheSheetSaid('without.not_copied'),
+        )->said;
     }
 
     /**
@@ -229,6 +275,8 @@ final class WhatThisStackIsSetTo extends NativeComponent
 
     public function render(): View
     {
+        $this->aFrameBegins();
+
         return view('operator::what-this-stack-is-set-to');
     }
 
@@ -282,6 +330,7 @@ final class WhatThisStackIsSetTo extends NativeComponent
 
     private function ask(): WhatThisStackIsSetToTurnedOutToBe
     {
+        $this->readsItsStack();
         $stack = $this->stack();
 
         return $this->storage->resume($stack->id())->either(

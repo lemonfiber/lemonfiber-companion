@@ -40,7 +40,7 @@ const OFFERED = [
     'Adoption', 'Alert', 'Alerts', 'Archives', 'Askable', 'AskableKinds', 'Asked', 'Backup', 'Boot', 'Bandwidth', 'Beside', 'Bundle', 'Capabilities', 'Catalogue', 'Clients', 'Config',
     'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Grant', 'Held', 'History', 'Hosting',
     'Handoff', 'Household', 'Import', 'Invitation', 'Job', 'Keys', 'DeviceKeys', 'DeviceKey', 'DeviceChallenge', 'KeyClaim', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Notify', 'NotifyMine', 'Outbound', 'Pairing', 'PartWay', 'Pausing', 'Playing', 'Plugins', 'Preview',
-    'Provenance', 'PushEndpoint', 'PushEndpoints', 'Quality', 'Queue', 'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Settings', 'Space',
+    'Provenance', 'PushEndpoint', 'PushEndpoints', 'Quality', 'Queue', 'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Settings', 'Space', 'Stack',
     'Start', 'Status', 'Step', 'StopSeeding', 'Stored', 'Stuck', 'Substitution', 'Title', 'Trace', 'Undo', 'Uninstall', 'Update', 'Upgrade',
     'Version', 'Walkthrough', 'Watch', 'Watched', 'Watcher', 'Wiring', 'Word',
 ];
@@ -95,7 +95,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Certificate', 'Channels', 'Ended', 'MintedKey', 'Play', 'PluginClaims', 'PluginConformance', 'PluginProvenance', 'PluginRecording', 'Settled', 'Stack', 'Tuned',
+    'Certificate', 'Channels', 'Ended', 'MintedKey', 'Play', 'PluginClaims', 'PluginConformance', 'PluginProvenance', 'PluginRecording', 'Settled', 'Tuned',
 ];
 
 it('every kind the stack offers has been looked at', function (): void {

@@ -119,9 +119,6 @@ enum PluginsField: string implements NamesAWireField
     /** Each starting file whose placeholders an update changes. */
     case Reshipped = 'reshipped';
 
-    /** The form a placeholder writes its secret's value in. */
-    case Form = 'form';
-
     /** A starting file's placeholders as the version coming ships it. */
     case Becomes = 'becomes';
 

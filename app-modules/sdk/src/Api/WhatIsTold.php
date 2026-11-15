@@ -18,7 +18,6 @@ use Modules\Kernel\Api\KindsOfNotification;
 use Modules\Kernel\Api\SetApart;
 use Modules\Kernel\Api\WhatTheOperatorIsTold;
 use Modules\Kernel\Api\WhetherItIsHeard;
-use Modules\Sdk\Api\Fields\AlertsField;
 use Modules\Sdk\Internal\InTheOrderSent;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
@@ -94,14 +93,14 @@ final readonly class WhatIsTold
      */
     private static function exceptions(array $data): array
     {
-        if (! array_key_exists(AlertsField::Exceptions->value, $data) || ! is_array($data[AlertsField::Exceptions->value])) {
-            throw AlertsAreUnreadable::missing(AlertsField::Exceptions);
+        if (! array_key_exists(WireField::Exceptions->value, $data) || ! is_array($data[WireField::Exceptions->value])) {
+            throw AlertsAreUnreadable::missing(WireField::Exceptions);
         }
 
         $found = [];
         $kinds = [];
 
-        foreach (InTheOrderSent::rows($data[AlertsField::Exceptions->value]) as $position => $row) {
+        foreach (InTheOrderSent::rows($data[WireField::Exceptions->value]) as $position => $row) {
             if (! is_array($row)) {
                 throw AlertsAreUnreadable::exception($position);
             }
