@@ -36,6 +36,10 @@
                     <x-design::note>{{ __($request->kind) }}</x-design::note>
                 @endif
 
+                @if ($request->asked->saysWhen())
+                    <x-design::note>{{ __('household.asked_when', ['when' => trans_choice($request->asked->said, $request->asked->count)]) }}</x-design::note>
+                @endif
+
                 {{-- The state in the member's words rather than the operator's, and
                      a state rather than a stage: no queue position, no percentage,
                      no service doing the fetching. None of it is an answer to

@@ -32,6 +32,7 @@ use function sprintf;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatARequestIsCalledAsAWord;
 use Tests\Support\WhatTheContractAccepts;
+use Tests\Support\WhatTheTimestampNamed;
 
 /**
  * A `household` envelope holding whatever the case under test is about.
@@ -516,6 +517,25 @@ it('refuses a refusal timed as text rather than as whole seconds', function (): 
             ]]),
         ]])), preserve_keys: false))->toThrow(HouseholdIsUnreadable::class, 'declined at a moment');
     }
+});
+
+it('reads when a request was asked for, as whole seconds, and none where the stack did not say', function (): void {
+    $wanted = iterator_to_array(Households::in(householdSaying(['members' => [
+        aMember('Robin', [
+            ['id' => '1', 'title' => 'A film', 'state' => 'getting', 'asked' => 1_789_358_400],
+            ['id' => '2', 'title' => 'Another film', 'state' => 'declined', 'asked' => 1_789_358_460, 'refused' => ['reason' => 'No room']],
+            ['id' => '3', 'title' => 'A third', 'state' => 'getting'],
+            ['id' => '4', 'title' => 'A fourth', 'state' => 'getting', 'asked' => null],
+        ]),
+    ]])), preserve_keys: false);
+
+    expect(array_map(static fn(Wanted $one): ?int => WhatTheTimestampNamed::in($one->asked())->seconds, $wanted))->toBe([1_789_358_400, 1_789_358_460, null, null]);
+});
+
+it('refuses a request asked for at a moment written as text', function (): void {
+    expect(fn(): array => iterator_to_array(Households::in(householdSaying(['members' => [
+        aMember('Robin', [['id' => '1', 'title' => 'A film', 'state' => 'getting', 'asked' => '1789358400']]),
+    ]])), preserve_keys: false))->toThrow(HouseholdIsUnreadable::class, 'Request 0 belonging to `Robin`');
 });
 
 it('a refusal the stack did not time is read without one', function (): void {

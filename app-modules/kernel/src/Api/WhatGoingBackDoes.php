@@ -88,6 +88,9 @@ enum WhatGoingBackDoes: string
     /** A release is grabbed again by its curator and taken off the blocklist. */
     case Regrab = 'regrab';
 
+    /** A curator is asked to remove what a member asked it for, and the ask comes off the household list; nothing it held before is removed. */
+    case Unask = 'unask';
+
     /** The catalogue key for this, as an operator reads it. */
     public function saidOnTheScreen(): string
     {

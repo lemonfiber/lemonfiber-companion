@@ -57,6 +57,16 @@ final readonly class WhatWasAskedFor
      */
     public static function request(array $row, string $by, int $position): Wanted
     {
+        return self::wanted($row, $by, $position)->askedAt(Optional::moment($row, WireField::Asked, HouseholdIsUnreadable::request($by, $position)));
+    }
+
+    /**
+     * One request, before when it was asked for is put on it.
+     *
+     * @param array<mixed> $row
+     */
+    private static function wanted(array $row, string $by, int $position): Wanted
+    {
         $standing = self::standing($row, $by, $position);
         $id = self::id($row, $by, $position);
         $kind = self::kind($row);

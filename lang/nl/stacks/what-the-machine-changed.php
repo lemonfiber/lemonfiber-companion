@@ -75,6 +75,7 @@ return [
             'leave' => 'Je eigen overlay blijft staan zoals hij is',
             'push-endpoint' => 'Het push-adres van een telefoon blijft staan zoals het is; alleen de telefoon kan het opnieuw aanmelden',
             'regrab' => 'De release wordt opnieuw opgehaald en van de blokkeerlijst gehaald',
+            'unask' => 'De beheerder wordt gevraagd te verwijderen wat gevraagd was, en het verzoek gaat van de lijst van het huishouden; niets wat de beheerder al had wordt verwijderd',
         ],
     ],
 ];

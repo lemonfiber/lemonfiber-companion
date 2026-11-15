@@ -8,9 +8,11 @@ use Modules\Household\Internal\ViewModels\AWayToBeToldAsShown;
 use Modules\Household\Internal\ViewModels\WhatOneOfTheirRequestsSays;
 use Modules\Household\Internal\ViewModels\WhatStoppedAMember;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AWayToBeTold;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Nonce;
@@ -39,6 +41,7 @@ use Tests\Support\Fakes\AHouseThatTellsWhenItsReady;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheKeychainStillHolds;
@@ -102,6 +105,9 @@ function whatThisMemberAskedFor(): Requested
     );
 }
 
+/** The moment the screen is read at, in whole seconds since the epoch. */
+const WHEN_THE_OWED_SCREEN_IS_READ = 1_790_150_000;
+
 /**
  * The screen, with a stack it knows and a keychain holding whatever a test says.
  *
@@ -122,7 +128,7 @@ function theOwedScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), $whose ?? Whose::theOperator());
     }
 
-    $screen = new WhatYouAreOwed($owing, $telling ?? AHouseThatTellsWhenItsReady::offeringNothing(), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
+    $screen = new WhatYouAreOwed($owing, $telling ?? AHouseThatTellsWhenItsReady::offeringNothing(), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen(), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_OWED_SCREEN_IS_READ)));
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -333,6 +339,24 @@ it('names what each request is in household words, and draws no kind where the t
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Album', 'Book series', 'Film', 'An author you asked for');
 });
 
+it('says how long ago each request was asked for, and nothing where the core did not say', function (): void {
+    $screen = theOwedScreen(AMemberWhoIsOwed::asking(Requested::of(
+        Wanted::of(RequestId::named('music-3'), 'Robin', 'Rumours', KindOfRequest::Album, Size::unknown(), HowARequestStands::said(Waiting::ForApproval))
+            ->askedAt(AMomentAsWritten::byTheStack(WHEN_THE_OWED_SCREEN_IS_READ - 3 * 86_400)),
+        Wanted::turnedDown(RequestId::named('1'), 'Robin', 'The Third Man', KindOfRequest::Film, Size::unknown(), TurnedDown::at(AMomentAsWritten::unwritten(), 'Not this week'))
+            ->askedAt(AMomentAsWritten::byTheStack(WHEN_THE_OWED_SCREEN_IS_READ - 7_200)),
+        Wanted::of(RequestId::named('2'), 'Robin', 'Solaris', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::Here)),
+    )));
+    $rows = $screen->requests()->rows;
+
+    expect(array_map(static fn(WhatOneOfTheirRequestsSays $row): array => [$row->asked->said, $row->asked->count, $row->asked->saysWhen()], $rows))->toBe([
+        ['health.ago.days', 3, true],
+        ['health.ago.hours', 2, true],
+        ['', 0, false],
+    ])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.asked_when', ['when' => trans_choice('health.ago.days', 3)]), __('household.asked_when', ['when' => trans_choice('health.ago.hours', 2)]));
+});
+
 it('says where a request stands in their words, not the operator\'s', function (): void {
     // The one state whose wording differs in meaning rather than in phrasing.
     // *Waiting for your decision* is true to an operator and false to the person
@@ -358,6 +382,7 @@ it('carries no requester on a member\'s own row', function (): void {
             'standing' => $row->standing,
             'reason' => $row->reason,
             'kind' => $row->kind,
+            'asked' => $row->asked,
         ]);
     }
 });

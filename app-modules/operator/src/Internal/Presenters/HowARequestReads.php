@@ -89,6 +89,8 @@ final readonly class HowARequestReads
         )->said;
         $reason = $why instanceof TurnedDown ? $why->reason() : '';
         $at = $why instanceof TurnedDown ? AgoAsShown::sinceWritten($why->when(), $this->now) : AgoAsShown::saysNothing();
+        $asked = AgoAsShown::sinceWritten($wanted->asked(), $this->now);
+        $alwaysWaits = $wantsADecision ? $wanted->called()->kind()->alwaysWaitsOnTheScreen() : '';
 
         return $wanted->size()->either(
             measured: static fn(int $bytes): WhatOneRequestSays => new WhatOneRequestSays(
@@ -104,6 +106,8 @@ final readonly class HowARequestReads
                 refusedAt: $at,
                 untitled: $untitled,
                 kind: $kind,
+                asked: $asked,
+                alwaysWaits: $alwaysWaits,
             ),
             guessed: static fn(int $bytes): WhatOneRequestSays => new WhatOneRequestSays(
                 reference: $wanted->id()->reference(),
@@ -118,6 +122,8 @@ final readonly class HowARequestReads
                 refusedAt: $at,
                 untitled: $untitled,
                 kind: $kind,
+                asked: $asked,
+                alwaysWaits: $alwaysWaits,
             ),
             unknown: static fn(): WhatOneRequestSays => new WhatOneRequestSays(
                 reference: $wanted->id()->reference(),
@@ -137,6 +143,8 @@ final readonly class HowARequestReads
                 refusedAt: $at,
                 untitled: $untitled,
                 kind: $kind,
+                asked: $asked,
+                alwaysWaits: $alwaysWaits,
             ),
         );
     }

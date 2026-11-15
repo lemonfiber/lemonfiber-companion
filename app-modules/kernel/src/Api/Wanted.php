@@ -48,7 +48,8 @@ final readonly class Wanted
         private WhatARequestIsCalled $called,
         private Size $size,
         private HowARequestStands $standing,
-        private ?TurnedDown $turnedDown = null,
+        private ?TurnedDown $turnedDown,
+        private AMomentAsWritten $asked,
     ) {}
 
     /**
@@ -85,7 +86,7 @@ final readonly class Wanted
             throw RequestHasNobodyBehindIt::forNothing($id, $asker);
         }
 
-        return new self($id, $asker, WhatARequestIsCalled::named($title, $kind), $size, $standing);
+        return new self($id, $asker, WhatARequestIsCalled::named($title, $kind), $size, $standing, null, AMomentAsWritten::unwritten());
     }
 
     /**
@@ -103,7 +104,7 @@ final readonly class Wanted
             throw RequestHasNobodyBehindIt::about($id);
         }
 
-        return new self($id, $asker, WhatARequestIsCalled::notYetNamed($kind), $size, $standing);
+        return new self($id, $asker, WhatARequestIsCalled::notYetNamed($kind), $size, $standing, null, AMomentAsWritten::unwritten());
     }
 
     /** The reference the stack names this request by, for acting on it. */
@@ -186,8 +187,20 @@ final readonly class Wanted
         return $this->standing;
     }
 
+    /** The same request, asked for at the moment the core says. */
+    public function askedAt(AMomentAsWritten $when): self
+    {
+        return new self($this->id, $this->by, $this->called, $this->size, $this->standing, $this->turnedDown, $when);
+    }
+
+    /** When it was asked for, or unwritten where the core did not say. */
+    public function asked(): AMomentAsWritten
+    {
+        return $this->asked;
+    }
+
     private static function declined(self $was, TurnedDown $why): self
     {
-        return new self($was->id, $was->by, $was->called, $was->size, $was->standing, $why);
+        return new self($was->id, $was->by, $was->called, $was->size, $was->standing, $why, $was->asked);
     }
 }

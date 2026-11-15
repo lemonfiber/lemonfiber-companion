@@ -71,7 +71,7 @@ function whatAStackSaysOfItsPhoneKeys(bool $revoked = false, string $backing = '
             'rehearsed' => false,
             'revoked' => $revoked ? 'Galaxy A51 · 7f3a' : null,
             'keys' => [
-                $first ?? ['name' => 'Galaxy A51 · 7f3a', 'fingerprint' => str_repeat('a', 64), 'backing' => $backing, 'app' => sprintf('android:app.lemonfiber.companion@%s', str_repeat('5a', 32)), 'registered' => 1_790_845_200, 'used' => 1_791_707_400, 'revoked' => $revoked ? '2026-10-13T10:00:00' : null],
+                $first ?? ['name' => 'Galaxy A51 · 7f3a', 'fingerprint' => str_repeat('a', 64), 'backing' => $backing, 'app' => sprintf('android:app.lemonfiber.companion@%s', str_repeat('5a', 32)), 'registered' => 1_790_845_200, 'used' => 1_791_707_400, 'revoked' => $revoked ? 1_791_885_600 : null],
                 ['name' => 'iPhone 12 mini · 01bc', 'fingerprint' => str_repeat('b', 64), 'backing' => 'enclave', 'app' => 'ios:NV5645J73B.app.lemonfiber.companion', 'registered' => 1_791_709_200, 'used' => null, 'revoked' => null],
             ],
         ],

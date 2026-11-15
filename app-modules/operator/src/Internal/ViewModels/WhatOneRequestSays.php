@@ -40,6 +40,8 @@ final readonly class WhatOneRequestSays
      * @param string $sizeUnit    the key for what the figure counts, or empty where there is none
      * @param string $refusedReason what they were told, where it was refused
      * @param AgoAsShown $refusedAt how long ago it was turned down, saying nothing where the stack recorded no moment
+     * @param AgoAsShown $asked     how long ago it was asked for, saying nothing where the stack recorded no moment
+     * @param string     $alwaysWaits the key saying a whole artist, author or series always waits for the operator, or empty
      *
      * The refusal is two fields rather than one composed sentence, for the size
      * pair's reason above: the reason is the stack's words and the moment is
@@ -67,6 +69,8 @@ final readonly class WhatOneRequestSays
         public AgoAsShown $refusedAt,
         public string $untitled,
         public string $kind,
+        public AgoAsShown $asked,
+        public string $alwaysWaits,
     ) {}
 
     /** Whether there is a kind to draw beneath the title. */

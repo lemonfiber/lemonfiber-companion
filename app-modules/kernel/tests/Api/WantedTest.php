@@ -7,6 +7,7 @@ namespace Modules\Kernel\Tests\Api;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\KindOfRequest;
@@ -22,6 +23,7 @@ use function sprintf;
 
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatARequestIsCalledAsAWord;
+use Tests\Support\WhatTheTimestampNamed;
 
 /** A request as it arrives, with whatever a case wants to change. */
 function aRequest(
@@ -211,4 +213,17 @@ it('builds a request nothing has named yet by its kind, still refusing one nobod
 
 it('refuses a blank title given to a request, which is not the same as one not named yet', function (): void {
     expect(fn(): WhatARequestIsCalled => WhatARequestIsCalled::named('  ', KindOfRequest::Film))->toThrow(RequestHasNobodyBehindIt::class);
+});
+
+it('carries when it was asked for, unwritten until the core says, through a refusal as well', function (): void {
+    $when = AMomentAsWritten::byTheStack(1_789_358_400);
+    $asked = Wanted::of(RequestId::named('1'), 'Robin', 'Dune', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::ForApproval));
+    $refused = Wanted::turnedDown(RequestId::named('2'), 'Robin', 'Solaris', KindOfRequest::Film, Size::unknown(), TurnedDown::at(AMomentAsWritten::unwritten(), 'No room'))->askedAt($when);
+    $kept = $asked->askedAt($when);
+
+    expect(WhatTheTimestampNamed::in($asked->asked())->seconds)->toBeNull()
+        ->and(WhatTheTimestampNamed::in($kept->asked())->seconds)->toBe(1_789_358_400)
+        ->and([$kept->id(), $kept->by(), $kept->called(), $kept->size(), $kept->standing()])->toBe([$asked->id(), $asked->by(), $asked->called(), $asked->size(), $asked->standing()])
+        ->and(WhatTheTimestampNamed::in($refused->asked())->seconds)->toBe(1_789_358_400)
+        ->and($refused->refusal(was: static fn(TurnedDown $why): TheWordCarriedOut => new TheWordCarriedOut($why->reason()), wasNot: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none'))->said)->toBe('No room');
 });

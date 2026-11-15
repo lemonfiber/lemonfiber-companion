@@ -20,6 +20,14 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'When a request in the news was asked for. The news lists requests in the core\'s order, newest asked first, and no requirement asks a row to say when (`N1-R17`).',
         ],
         [
+            'path' => 'NewsItemsEnvelope.requests[].kind',
+            'because' => 'The kind of title a request in the news asks for. The news names a request by its title and who asked, and no requirement asks it to say the kind (`N1-R17`); the household\'s list says it.',
+        ],
+        [
+            'path' => 'NewsItemsEnvelope.requests[].unit',
+            'because' => 'What an ask for music or books in the news asks for, for `NewsItemsEnvelope.requests[].kind`\'s reason.',
+        ],
+        [
             'path' => 'NotifyEnvelope.rehearsed',
             'because' => 'Whether the answer was a rehearsal. Where alerts go is only read, never rehearsed, so every answer the app reads is the machine as it stands.',
         ],
@@ -313,6 +321,18 @@ final readonly class UnreadOnEnvelopesMToZ
         [
             'path' => 'UndoEnvelope.reversed[].action.release',
             'because' => 'The fingerprint of the release a regrab asks for again, the instruction the curator carries out with. A fingerprint means nothing on a screen, and `does` says the release is grabbed again, which is drawn.',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.reference',
+            'because' => 'The curator\'s own reference for what an unask removes, the instruction the curator carries out with. A reference inside a service names nothing an operator can look up from a phone, for `UndoEnvelope.reversed[].action.id`\'s reason, and `does` says what is removed, which is drawn.',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.unit',
+            'because' => 'What the ask an unask removes was for: an album or a whole artist, a book or a whole author or series. `target` names what the change was against and `does` says the ask is removed, and both are drawn; no requirement asks a reversal to name what an ask was for (`N1-R17`).',
+        ],
+        [
+            'path' => 'UndoEnvelope.reversed[].action.whole',
+            'because' => 'Whether the curator held none of it before, which decides whether anything is removed at all. `does` says what going back does, which is drawn; no requirement asks a reversal to say what the curator held before (`N1-R17`).',
         ],
         [
             'path' => 'WatchEnvelope.would',

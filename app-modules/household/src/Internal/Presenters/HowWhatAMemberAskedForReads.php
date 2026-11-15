@@ -7,6 +7,9 @@ namespace Modules\Household\Internal\Presenters;
 use Modules\Household\Internal\ViewModels\ALineAsShown;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToHaveAsked;
 use Modules\Household\Internal\ViewModels\WhatOneOfTheirRequestsSays;
+use Modules\Household\Internal\ViewModels\WhenTheyAskedAsShown;
+use Modules\Kernel\Api\HowLongAgo;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
@@ -40,6 +43,8 @@ final readonly class HowWhatAMemberAskedForReads
     public const string UNNAMED = 'household.asked.unnamed';
 
     public const string NOT_YET_NAMED = 'household.not_yet_named.theirs.%s';
+
+    public function __construct(private Instant $now) {}
 
     /** The stack answered, and this is what they have asked for. */
     public function these(Requested $wanted): WhatAMemberTurnedOutToHaveAsked
@@ -122,9 +127,24 @@ final readonly class HowWhatAMemberAskedForReads
     {
         $reason = $wanted->refusal(was: static fn(TurnedDown $why): InWords => new InWords($why->reason()), wasNot: static fn(): InWords => new InWords(''))->said;
 
+        $asked = $this->whenTheyAsked($wanted);
+
         return $wanted->called()->either(
-            named: static fn(string $named): WhatOneOfTheirRequestsSays => new WhatOneOfTheirRequestsSays($named, $standing, $reason, self::kindOf($wanted)),
-            notYet: static fn(KindOfRequest $kind): WhatOneOfTheirRequestsSays => new WhatOneOfTheirRequestsSays(new ALineAsShown(self::notYetNamed($kind), []), $standing, $reason, ''),
+            named: static fn(string $named): WhatOneOfTheirRequestsSays => new WhatOneOfTheirRequestsSays($named, $standing, $reason, self::kindOf($wanted), $asked),
+            notYet: static fn(KindOfRequest $kind): WhatOneOfTheirRequestsSays => new WhatOneOfTheirRequestsSays(new ALineAsShown(self::notYetNamed($kind), []), $standing, $reason, '', $asked),
+        );
+    }
+
+    /** How long ago they asked, or nothing where the core did not say. */
+    private function whenTheyAsked(Wanted $wanted): WhenTheyAskedAsShown
+    {
+        return $wanted->asked()->read(
+            read: function (Instant $then): WhenTheyAskedAsShown {
+                $ago = HowLongAgo::since($then, $this->now);
+
+                return new WhenTheyAskedAsShown($ago->saidOnTheScreen(), $ago->howManySince($then, $this->now));
+            },
+            unreadable: static fn(): WhenTheyAskedAsShown => new WhenTheyAskedAsShown('', 0),
         );
     }
 }

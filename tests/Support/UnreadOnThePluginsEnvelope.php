@@ -207,6 +207,10 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'Every destination outside the plugin\'s own services a recipe could reach. Each recipe\'s steps and pairs are read and drawn with their destinations (`N20-R1`, `N20-R5`), which say the same with what goes there.',
         ],
         [
+            'path' => 'PluginsEnvelope.install.would.declared.stops',
+            'because' => 'What refusing each destination the plugin reaches stops, in the same order. The same account reaches the operator as each request\'s `cost` on the outbound screen (`OutboundEnvelope.on_behalf[].cost`), read and drawn beside the switch that refuses it (`N10-R3`).',
+        ],
+        [
             'path' => 'PluginsEnvelope.install.would.description',
             'because' => 'What the plugin does, in its author\'s words. No requirement asks for it here, and its name and version say which plugin it is.',
         ],
@@ -237,6 +241,10 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.installed[].declared.reaches',
             'because' => 'Every destination outside the plugin\'s own services a recipe could reach. Each recipe\'s steps and pairs are read and drawn with their destinations (`N20-R1`, `N20-R5`), which say the same with what goes there.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.installed[].declared.stops',
+            'because' => 'What refusing each destination the plugin reaches stops, in the same order. The same account reaches the operator as each request\'s `cost` on the outbound screen (`OutboundEnvelope.on_behalf[].cost`), read and drawn beside the switch that refuses it (`N10-R3`).',
         ],
         [
             'path' => 'PluginsEnvelope.installed[].description',
@@ -393,6 +401,10 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.update.install.would.declared.reaches',
             'because' => 'As `PluginsEnvelope.install.would.declared.reaches`: an update carries the new version\'s install account whole, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.declared.stops',
+            'because' => 'As `PluginsEnvelope.install.would.declared.stops`: an update carries the new version\'s install account whole, and the one reader reads both.',
         ],
         [
             'path' => 'PluginsEnvelope.update.install.would.description',

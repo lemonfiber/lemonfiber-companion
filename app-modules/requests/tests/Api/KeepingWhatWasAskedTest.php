@@ -128,7 +128,7 @@ it('keeps a reading sealed, read now, and hands it back whole with when it was r
     expect(whatTheRequestsScreenOpensOn($kept->keeping->lastKept(theStackTheRequestsAreKeptFor())))->toBe(
         'as of 0, 7200 ago: #1 Mira for Dune, measured 4200000000, waiting-for-approval, not refused'
         . ' | #2 Joost for Severance, guessed 30000000000, getting, not refused'
-        . ' | #3 Mira for Cats, size unknown, declined, refused "We have it already" at 2026-09-30 21:04'
+        . ' | #3 Mira for Cats, size unknown, declined, refused "We have it already" at 1790802240'
         . ' | #4 Joost for The Room, measured 700000000, declined, refused "Not in this house" at no stated time'
         . ' | #5 Joost for Twin Peaks, size unknown, unnamed, not refused',
     );

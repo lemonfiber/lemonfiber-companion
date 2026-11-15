@@ -673,8 +673,12 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'somebody opened a client.',
         ],
         [
-            'path' => 'HouseholdEnvelope.members[].requests[].asked',
-            'because' => 'When a request was asked for. The list is drawn in the core\'s order, and no requirement in `N1` to `N4` asks a row to say when it was asked (`N1-R17`).',
+            'path' => 'HouseholdEnvelope.members[].requests[].kind',
+            'because' => 'The kind of title a request asks for, as a value. `media` says what it is in the household\'s words, which is read and is what says a whole artist, author or series; this says the same as the kind the curator files it under.',
+        ],
+        [
+            'path' => 'HouseholdEnvelope.members[].requests[].unit',
+            'because' => 'What an ask for music or books asks for, as a value. `media` says the same in the household\'s words, which is read, for `HouseholdEnvelope.members[].requests[].kind`\'s reason.',
         ],
         [
             'path' => 'HouseholdEnvelope.members[].requests[].waiting_days',

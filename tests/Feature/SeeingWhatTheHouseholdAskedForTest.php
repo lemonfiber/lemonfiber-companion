@@ -158,6 +158,37 @@ it('names what each named request is, and no kind for one named by its kind or w
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Artist', __('household.not_yet_named.anybodys.book'));
 });
 
+it('says a whole artist, author or series always waits for the operator, only while it waits', function (): void {
+    $screen = theRequestsScreen(AHouseholdThatAsked::wanting(Requested::of(
+        Wanted::of(RequestId::named('music-3'), 'Sanne', 'Fleetwood Mac', KindOfRequest::Artist, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::notYetNamed(RequestId::named('books-1'), 'Robin', KindOfRequest::Author, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('books-2'), 'Robin', 'Discworld', KindOfRequest::BookSeries, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('books-3'), 'Robin', 'Mort', KindOfRequest::BookSeries, Size::unknown(), HowARequestStands::said(Waiting::Getting)),
+        Wanted::of(RequestId::named('music-4'), 'Sanne', 'Rumours', KindOfRequest::Album, Size::unknown(), HowARequestStands::said(Waiting::ForApproval)),
+    )));
+
+    expect(array_map(static fn(WhatOneRequestSays $row): string => $row->alwaysWaits, $screen->answer()->requests))->toBe([
+        'household.always_waits.artist',
+        'household.always_waits.author',
+        'household.always_waits.book_series',
+        '',
+        '',
+    ])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.always_waits.artist'), __('household.always_waits.author'), __('household.always_waits.book_series'));
+});
+
+it('says how long ago each request was asked for, and nothing where the stack did not say', function (): void {
+    $screen = theRequestsScreen(AHouseholdThatAsked::wanting(Requested::of(
+        Wanted::of(RequestId::named('1'), 'Sanne', 'Dune', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::ForApproval))
+            ->askedAt(AMomentAsWritten::byTheStack(WHEN_THE_REQUESTS_ARE_READ - 2 * 86_400)),
+        Wanted::of(RequestId::named('2'), 'Robin', 'Solaris', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::Here)),
+    )));
+    $rows = $screen->answer()->requests;
+
+    expect([[$rows[0]->asked->said, $rows[0]->asked->count], [$rows[1]->asked->said, $rows[1]->asked->count]])->toBe([['health.ago.days', 2], ['', 0]])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.asked_when', ['when' => trans_choice('health.ago.days', 2)]));
+});
+
 it('an estimate is labelled as one, and a measurement is not', function (): void {
     // One fact and two sentences. A screen carrying the figure and dropping the
     // word would render both of these identically, which is the failure the
@@ -424,13 +455,13 @@ it('a refused request shows the reason on the row', function (): void {
     $rows = $screen->answer()->requests;
 
     expect($rows[0]->refusedReason)->toBe('The disk is nearly full')
-        ->and($rows[0]->refusedAt)->toBe('2026-09-14T04:00:00Z')
+        ->and([$rows[0]->refusedAt->said, $rows[0]->refusedAt->count])->toBe(['health.ago.days', 17])
         ->and($rows[0]->standing)->toBe(Waiting::Declined->saidOnTheScreen())
         // The row beside it carries neither, which is what the template
         // branches on — an empty reason renders nothing rather than a heading
         // with a blank under it.
         ->and($rows[1]->refusedReason)->toBe('')
-        ->and($rows[1]->refusedAt)->toBe('');
+        ->and([$rows[1]->refusedAt->said, $rows[1]->refusedAt->count])->toBe(['', 0]);
 });
 
 it('a refusal the stack did not time carries the reason and no moment', function (): void {
@@ -441,7 +472,7 @@ it('a refusal the stack did not time carries the reason and no moment', function
     $rows = $screen->answer()->requests;
 
     expect($rows[0]->refusedReason)->toBe('Not this week')
-        ->and($rows[0]->refusedAt)->toBe('');
+        ->and([$rows[0]->refusedAt->said, $rows[0]->refusedAt->count])->toBe(['', 0]);
 });
 
 it('a credential the stack refused signs this device out and lets the session go', function (): void {

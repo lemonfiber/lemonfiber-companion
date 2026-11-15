@@ -163,6 +163,7 @@ return [
             'unreachable' => 'Kon niet worden bereikt',
             'refused' => 'Geweigerd',
             'withheld' => 'Niet gedaan: het zou een waarde meenemen die niemand goedkeurde',
+            'declined' => 'Niet gedaan: je weigerde waar het naartoe gaat, of waar een stap waar het van afhangt naartoe gaat',
             'unexpected' => 'Beantwoord met iets wat het niet verwachtte',
             'uncaptured' => 'Beantwoord zonder wat het moest vastleggen',
             'oversized' => 'Beantwoord met meer dan een recept mag lezen',

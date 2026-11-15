@@ -63,13 +63,12 @@ it('reads a moment the stack counted in whole seconds', function (): void {
     )->seconds)->toBe(1_790_717_941);
 });
 
-it('reads no count, and none at or before the epoch, as a moment the stack wrote', function (?int $written): void {
+it('reads no count at or before the epoch as a moment the stack wrote', function (int $written): void {
     expect(AMomentAsWritten::byTheStack($written)->read(
         read: static fn(Instant $moment): WhatTheTimestampNamed => new WhatTheTimestampNamed($moment->epochSeconds()),
         unreadable: static fn(): WhatTheTimestampNamed => new WhatTheTimestampNamed(null),
     )->seconds)->toBeNull();
 })->with([
-    'nothing' => [null],
     'the clock not answering' => [0],
     'before the epoch' => [-1],
 ]);
