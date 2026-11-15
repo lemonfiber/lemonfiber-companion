@@ -6,12 +6,14 @@ namespace Modules\Household\Internal\Screens;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Household\Internal\Presenters\HowYourAskReads;
+use Modules\Household\Internal\ThePicturesItDraws;
 use Modules\Household\Internal\ViewModels\WhatYourAskTurnedOutToBe;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Owing;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\WhatItShowsDoes;
@@ -25,10 +27,11 @@ use Native\Mobile\Edge\NativeComponent;
 /**
  * One music or book ask of the member's, opened from Home.
  *
- * Its lettered poster, its name and kind, and where it stands drawn as the one
- * action, not usable: the app plays films and series only. Once it is here, a
- * line says where in the house to find it, naming no service. It reads what the
- * Requests tab reads and asks the core nothing of its own.
+ * Its poster, drawn with its cover where the core serves one and lettered
+ * where none comes back, its name and kind, and where it stands drawn as the
+ * one action, not usable: the app plays films and series only. Once it is
+ * here, a line says where in the house to find it, naming no service. Beside
+ * its cover it reads what the Requests tab reads.
  */
 #[Lazy]
 #[Concealed]
@@ -49,6 +52,7 @@ final class WhereYourAskStands extends NativeComponent
         private readonly Owing $owing,
         private readonly SecureStorage $storage,
         protected readonly TheWayAround $around,
+        private readonly ThePicturesItDraws $pictures,
     ) {}
 
     public function again(): void
@@ -75,7 +79,11 @@ final class WhereYourAskStands extends NativeComponent
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatYourAskTurnedOutToBe => $this->owing->theirRequests($stack, $session)->asked()->either(
-                told: static fn(Requested $wanted): WhatYourAskTurnedOutToBe => new HowYourAskReads()->among($wanted, $reference),
+                told: fn(Requested $wanted): WhatYourAskTurnedOutToBe => new HowYourAskReads()->among(
+                    $wanted,
+                    $reference,
+                    fn(RequestId $ask): ?string => $this->pictures->ofAKeptAsk($stack, $session, $ask),
+                ),
                 refused: function (Obstacle $why) use ($stack): WhatYourAskTurnedOutToBe {
                     $this->letGoOfTheSession($why, $stack);
 

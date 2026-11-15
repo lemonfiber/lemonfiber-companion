@@ -13,13 +13,14 @@ use Modules\Kernel\Api\FetchingArtwork;
 use Modules\Kernel\Api\HoldingArtwork;
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\HowArtworkCame;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhichPicture;
 use Modules\Kernel\Api\Whose;
 
 /**
- * Where an image element draws a title's picture from: the device's memory, fetched from the core first where it is not held yet.
+ * Where an image element draws a title's picture or a kept ask's cover from: the device's memory, fetched from the core first where it is not held yet.
  *
  * Answers the source an image element is given, or nothing where the core has
  * no such picture or could not be asked, which leaves the lettering drawn.
@@ -57,6 +58,16 @@ final readonly class ThePicturesItDraws
             ArtworkKey::of($stack->id(), WhichPicture::AskablePoster, $title->named()),
             $stack,
             fn(): HowArtworkCame => $this->fetching->posterOfAFoundTitle($stack, $session, $title),
+        );
+    }
+
+    /** The source of the cover of a music or book ask the core keeps, as the member whose session asked it, or null where the phone holds none. */
+    public function ofAKeptAsk(Stack $stack, Session $session, RequestId $ask): ?string
+    {
+        return $this->drawn(
+            ArtworkKey::of($stack->id(), WhichPicture::KeptAskCover, $ask->reference()),
+            $stack,
+            fn(): HowArtworkCame => $this->fetching->coverOfAKeptAsk($stack, $session, $ask),
         );
     }
 

@@ -9,6 +9,9 @@ use function dirname;
 use function in_array;
 
 use Lemonfiber\Sdk\Contract\Api;
+
+use function rawurldecode;
+
 use Saloon\Http\Faking\MockResponse;
 
 /**
@@ -22,12 +25,12 @@ final readonly class APictureAsItIsServed
     /** The type a picture is labelled with. */
     private const string LABELLED = 'image/png';
 
-    /** Whether a path is one of the core's picture paths, for whichever title it names. */
+    /** Whether a path is one of the core's picture paths, for whichever title or kept ask it names. */
     public static function isServedAt(string $endpoint): bool
     {
-        $title = basename(dirname($endpoint));
+        $named = rawurldecode(basename(dirname($endpoint)));
 
-        return in_array($endpoint, [Api::poster($title), Api::backdrop($title), Api::askablePoster($title)], strict: true);
+        return in_array($endpoint, [Api::poster($named), Api::backdrop($named), Api::askablePoster($named), Api::requestPoster($named)], strict: true);
     }
 
     /** The picture, answered with this status. */

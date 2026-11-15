@@ -129,6 +129,7 @@ final readonly class WhatARefusalMeant
         RefusalCode::NobodyAsking,
         RefusalCode::NotAMember,
         RefusalCode::NoPicture,
+        RefusalCode::ThroughTheHouse,
         RefusalCode::MissingArgument,
         RefusalCode::UnrecognisedArgument,
         RefusalCode::UnwantedArgument,

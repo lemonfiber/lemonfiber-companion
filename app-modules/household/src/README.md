@@ -11,11 +11,13 @@ Profile, in a bottom bar, and no side menu.
 | Profile | `YourCornerOfTheHouse` | Switch house, App settings in household words, the languages titles play in (kept by `watching`), and taking the house off the phone |
 
 **Posters are drawn from memory.** `ThePicturesItDraws` answers the source an
-image element draws a title's picture from: the device's memory where it holds
-the picture, and otherwise the core's own path for it, fetched through the SDK
-on the session the screen is drawn for and handed to the device to hold. Home
-draws the newest title's backdrop and the first posters of each row, each
-asked for once; a title's page and a found title's page draw its poster. A
+image element draws a title's picture or a kept ask's cover from: the device's
+memory where it holds the picture, and otherwise the core's own path for it,
+fetched through the SDK on the session the screen is drawn for and handed to
+the device to hold. Home draws the newest title's backdrop, the first posters of
+each row and the cover of each music or book ask, each asked for once; a
+title's page and a found title's page draw its poster, and an ask's page its
+cover. A
 picture the core does not have, or that could not be fetched, leaves the
 lettered poster drawn, and so does one let go of under it.
 
@@ -35,8 +37,9 @@ from where they left off, as the core answers it again. `HowTheirOwnTitlesRead` 
 requests into *Ready for you*, what has arrived in whole or in part, and *On
 its way*, what is waiting for a yes, being fetched or partly here. Which
 standing belongs to which row is `Waiting`'s to say. A request is a poster
-with where it stands at the top, and it opens nothing, since a request names
-no title on the shelf. Where those could not be asked for and the shelf
+with where it stands at the top, and a film or series request opens nothing,
+since it names no title on the shelf. A music or book ask opens its own page,
+`WhereYourAskStands`. Where those could not be asked for and the shelf
 answered, Home says so in their place with Ask again.
 
 **Then the house's own.** The hero comes next: the shelf's first title, which

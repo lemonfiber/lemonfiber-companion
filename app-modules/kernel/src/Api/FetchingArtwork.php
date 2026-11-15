@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 /**
- * A title's pictures, asked of the core's own API on the session they are drawn for and pinned as every request is.
+ * A title's pictures and a kept ask's cover, asked of the core's own API on the session they are drawn for and pinned as every request is.
  *
- * Only the core's paths for a title it listed are asked; no address is
- * composed beyond them.
+ * Only the core's paths for a title it listed or an ask it keeps are asked; no
+ * address is composed beyond them.
  */
 interface FetchingArtwork
 {
@@ -20,4 +20,7 @@ interface FetchingArtwork
 
     /** The poster of a title a member's search offered. */
     public function posterOfAFoundTitle(Stack $stack, Session $session, AFoundTitle $title): HowArtworkCame;
+
+    /** The cover of a music or book ask the core keeps, as the member whose session asked it. */
+    public function coverOfAKeptAsk(Stack $stack, Session $session, RequestId $ask): HowArtworkCame;
 }

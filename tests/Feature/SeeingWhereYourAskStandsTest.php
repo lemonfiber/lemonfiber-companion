@@ -3,11 +3,15 @@
 declare(strict_types=1);
 
 use Modules\Household\Internal\Screens\WhereYourAskStands;
+use Modules\Household\Internal\ThePicturesItDraws;
 use Modules\Household\Internal\ViewModels\ALineAsShown;
 use Modules\Household\Internal\WhereAnAskIsKept;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\Artwork;
+use Modules\Kernel\Api\ArtworkKey;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowARequestStands;
+use Modules\Kernel\Api\HowArtworkCame;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Nonce;
@@ -28,7 +32,10 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
+use Tests\Support\Fakes\ArtworkHeldInMemory;
+use Tests\Support\Fakes\AStackWithPosters;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheKeychainStillHolds;
 
@@ -52,7 +59,7 @@ function whatTheyAskedOfMusicAndBooks(): Requested
     );
 }
 
-function thePageOfAnAsk(AMemberWhoIsOwed $owing, string $reference, ?AKeychainInMemory $keychain = null, bool $signedIn = true): WhereYourAskStands
+function thePageOfAnAsk(AMemberWhoIsOwed $owing, string $reference, ?AKeychainInMemory $keychain = null, bool $signedIn = true, ?ThePicturesItDraws $pictures = null): WhereYourAskStands
 {
     $stack = theHouseAnAskIsIn();
     $keychain ??= AKeychainInMemory::working();
@@ -61,7 +68,7 @@ function thePageOfAnAsk(AMemberWhoIsOwed $owing, string $reference, ?AKeychainIn
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhereYourAskStands($owing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain));
+    $screen = new WhereYourAskStands($owing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), $pictures ?? ThePicturesOnScreen::none());
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $reference]);
 
     return $screen;
@@ -80,6 +87,21 @@ it('draws an arrived album with its kind, here as the action not usable, and whe
         ->and($ask?->poster->plays)->toBeNull()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Rumours', __('household.request_kind.album'), __('household.asked.here'), __(WhereAnAskIsKept::IN_THE_MUSIC))
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('household.title.play'));
+});
+
+it('draws the ask with the cover the core keeps for it, asked by its reference', function (): void {
+    $posters = AStackWithPosters::answering(HowArtworkCame::arrived(Artwork::of('a cover')));
+    $ask = thePageOfAnAsk(AMemberWhoIsOwed::asking(whatTheyAskedOfMusicAndBooks()), 'books-2', pictures: new ThePicturesItDraws(ArtworkHeldInMemory::working(), $posters))->ask()->ask;
+
+    expect($ask?->poster->pictured)->toStartWith(ArtworkKey::SCHEME)
+        ->and($posters->coversAskedFor())->toBe(['books-2']);
+});
+
+it('letters the ask where no cover comes back', function (): void {
+    $ask = thePageOfAnAsk(AMemberWhoIsOwed::asking(whatTheyAskedOfMusicAndBooks()), 'music-3')->ask()->ask;
+
+    expect($ask?->poster->pictured)->toBeNull()
+        ->and($ask?->poster->titled)->toBe('Rumours');
 });
 
 it('says a book series held in part is in the house\'s books', function (): void {

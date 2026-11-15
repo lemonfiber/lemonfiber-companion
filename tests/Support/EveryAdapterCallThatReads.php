@@ -407,6 +407,8 @@ final readonly class EveryAdapterCallThatReads
                 => new Pictures($clients)->backdropOfAHolding($stack, $session, Whose::member('sanne'), HoldingId::called('a1')),
             'Pictures::posterOfAFoundTitle' => static fn(): object
                 => new Pictures($clients)->posterOfAFoundTitle($stack, $session, self::aFoundTitleToSpoilTheAnswerTo()),
+            'Pictures::coverOfAKeptAsk' => static fn(): object
+                => new Pictures($clients)->coverOfAKeptAsk($stack, $session, RequestId::named('music-3')),
             'Players::now' => static fn(): object => new Players($clients)->now($stack, $session),
             'Players::heard' => static fn(): object => new Players($clients)->heard($stack, $session),
             'StartLines::whatItWaitsOn' => static fn(): object => new StartLines($clients)->whatItWaitsOn($stack, $session),

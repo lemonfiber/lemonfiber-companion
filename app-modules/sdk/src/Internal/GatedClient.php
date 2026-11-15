@@ -20,11 +20,13 @@ use Lemonfiber\Sdk\Keys;
 use Lemonfiber\Sdk\Logs;
 use Lemonfiber\Sdk\LogWindow;
 use Lemonfiber\Sdk\Picture;
+use Lemonfiber\Sdk\Pictures;
 use Lemonfiber\Sdk\PushEndpoints;
 use Lemonfiber\Sdk\Repair;
 use Modules\Kernel\Api\Ability;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\WhichPicture;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\TheStackDoesNotOfferIt;
 
@@ -45,7 +47,8 @@ use Modules\Sdk\Api\TheStackDoesNotOfferIt;
  * request a stack declares.
  *
  * The SDK's client's own method names, because every adapter calls them and
- * the doors this app opens are counted by name.
+ * the doors this app opens are counted by name. Pictures are the one read
+ * named by which picture it is, since the client reads each through one handle.
  */
 final readonly class GatedClient
 {
@@ -139,7 +142,7 @@ final readonly class GatedClient
     }
 
     /**
-     * The poster of a title the house holds, through the gate the core declares it under.
+     * One of the pictures the core serves, through the gate the core declares its path under.
      *
      * @param array<string, scalar> $query
      *
@@ -150,9 +153,14 @@ final readonly class GatedClient
      * @throws Unreachable
      * @throws UnreadableResponse
      */
-    public function poster(string $id, array $query = []): Picture
+    public function picture(WhichPicture $which, string $named, array $query = []): Picture
     {
-        return $this->clients->towards($this->stack, $this->session, Ability::of(Api::POSTER_ENDPOINT))->poster($id, $query);
+        return match ($which) {
+            WhichPicture::HeldPoster => $this->picturesAt(Api::POSTER_ENDPOINT)->poster($named, $query),
+            WhichPicture::HeldBackdrop => $this->picturesAt(Api::BACKDROP_ENDPOINT)->backdrop($named, $query),
+            WhichPicture::AskablePoster => $this->picturesAt(Api::ASKABLE_POSTER_ENDPOINT)->askablePoster($named, $query),
+            WhichPicture::KeptAskCover => $this->picturesAt(Api::REQUEST_POSTER_ENDPOINT)->requestPoster($named, $query),
+        };
     }
 
     /**
@@ -205,40 +213,6 @@ final readonly class GatedClient
     }
 
     /**
-     * The backdrop of a title the house holds, through the gate the core declares it under.
-     *
-     * @param array<string, scalar> $query
-     *
-     * @throws ApiVersionMismatch
-     * @throws ConfigurationProblem
-     * @throws RequestFailed
-     * @throws TheStackDoesNotOfferIt
-     * @throws Unreachable
-     * @throws UnreadableResponse
-     */
-    public function backdrop(string $id, array $query = []): Picture
-    {
-        return $this->clients->towards($this->stack, $this->session, Ability::of(Api::BACKDROP_ENDPOINT))->backdrop($id, $query);
-    }
-
-    /**
-     * The poster of a title a member's search offered, through the gate the core declares it under.
-     *
-     * @param array<string, scalar> $query
-     *
-     * @throws ApiVersionMismatch
-     * @throws ConfigurationProblem
-     * @throws RequestFailed
-     * @throws TheStackDoesNotOfferIt
-     * @throws Unreachable
-     * @throws UnreadableResponse
-     */
-    public function askablePoster(string $id, array $query = []): Picture
-    {
-        return $this->clients->towards($this->stack, $this->session, Ability::of(Api::ASKABLE_POSTER_ENDPOINT))->askablePoster($id, $query);
-    }
-
-    /**
      * @throws ApiVersionMismatch
      * @throws NoSuchJob
      * @throws RequestFailed
@@ -269,5 +243,19 @@ final readonly class GatedClient
     public function bundle(string $name): BundleFile
     {
         return $this->clients->client($this->stack, $this->session)->bundle($name);
+    }
+
+    /**
+     * The client's pictures, once the stack says it serves the path one is read at.
+     *
+     * @throws ApiVersionMismatch
+     * @throws RequestFailed
+     * @throws TheStackDoesNotOfferIt
+     * @throws Unreachable
+     * @throws UnreadableResponse
+     */
+    private function picturesAt(string $declared): Pictures
+    {
+        return $this->clients->towards($this->stack, $this->session, Ability::of($declared))->pictures();
     }
 }

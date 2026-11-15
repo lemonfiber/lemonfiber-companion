@@ -104,12 +104,10 @@ const DOORS_THE_APP_OPENS = [
     // changes nothing on the machine, and nothing is sent back through it.
     'bundle' => 'reads one support bundle the stack wrote, by its name, changing nothing',
 
-    // A title's poster and backdrop, read from the core's own path for a
-    // title it listed and held in the device's memory only. Pictures rather
-    // than envelopes, so each has a door of its own; none changes anything.
-    'poster' => 'reads the poster of a title the house holds, changing nothing',
-    'backdrop' => 'reads the backdrop of a title the house holds, changing nothing',
-    'askablePoster' => 'reads the poster of a title a member\'s search offered, changing nothing',
+    // A title's poster and backdrop, a found title's poster and a kept ask's
+    // cover, read from the core's own paths and held in the device's memory
+    // only. Pictures rather than envelopes, so they have a door of their own.
+    'pictures' => 'reads a held title\'s poster and backdrop, a found title\'s poster and a kept ask\'s cover, changing nothing',
 
     // The one thing this app can ask a stack to change,
     // and it takes a `Repair` the stack itself offered rather than an endpoint

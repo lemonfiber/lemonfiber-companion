@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal\Presenters;
 
+use Closure;
 use Modules\Household\Internal\ViewModels\WhatAShelfRowSays;
 use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
 use Modules\Household\Internal\ViewModels\WhatTheirOwnTitlesTurnedOutToBe;
@@ -12,6 +13,7 @@ use Modules\Household\Internal\WhereTheHouseIs;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Requested;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
 
@@ -34,14 +36,18 @@ final readonly class HowTheirOwnTitlesRead
     /** The key the row of what is still coming is headed with. */
     private const string ON_ITS_WAY = 'household.shelf.on_its_way';
 
-    /** The house answered, and this is what they asked for. */
-    public function these(Requested $wanted, WhereTheHouseIs $house): WhatTheirOwnTitlesTurnedOutToBe
+    /**
+     * The house answered, and this is what they asked for, each music or book ask drawn with the cover `$coverOf` answers for it.
+     *
+     * @param Closure(RequestId): ?string $coverOf
+     */
+    public function these(Requested $wanted, WhereTheHouseIs $house, Closure $coverOf): WhatTheirOwnTitlesTurnedOutToBe
     {
         $ready = [];
         $coming = [];
 
         foreach ($wanted as $one) {
-            $poster = $this->posterFor($one, $house);
+            $poster = $this->posterFor($one, $house, $coverOf);
 
             if ($one->standing()->isReadyForYou()) {
                 $ready[] = $poster;
@@ -84,8 +90,10 @@ final readonly class HowTheirOwnTitlesRead
      * Folded rather than read, so the unnamed arm is one the type insists
      * on: it says what the Requests tab says of a request whose standing
      * nobody named, though such a request is in neither row.
+     *
+     * @param Closure(RequestId): ?string $coverOf
      */
-    private function posterFor(Wanted $wanted, WhereTheHouseIs $house): WhatOnePosterSays
+    private function posterFor(Wanted $wanted, WhereTheHouseIs $house, Closure $coverOf): WhatOnePosterSays
     {
         $standing = $wanted->standing()->either(
             said: static fn(Waiting $said): InWords => new InWords($said->saidToTheMember()),
@@ -102,6 +110,6 @@ final readonly class HowTheirOwnTitlesRead
             notYet: static fn(KindOfRequest $notYet): WhatOnePosterSays => WhatOnePosterSays::ofARequestNotYetNamed(HowWhatAMemberAskedForReads::notYetNamed($notYet), $standing),
         );
 
-        return $keptElsewhere ? $poster->opening($house->asked($wanted->id())) : $poster;
+        return $keptElsewhere ? $poster->opening($house->asked($wanted->id()))->pictured($coverOf($wanted->id())) : $poster;
     }
 }

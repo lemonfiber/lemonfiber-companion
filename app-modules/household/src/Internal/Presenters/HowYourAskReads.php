@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Household\Internal\Presenters;
 
+use Closure;
 use Modules\Household\Internal\ViewModels\ALineAsShown;
 use Modules\Household\Internal\ViewModels\WhatOnePosterSays;
 use Modules\Household\Internal\ViewModels\WhatYourAskSays;
@@ -21,8 +22,12 @@ use function trim;
 /** One of a member's music or book asks, found by its reference among what the Requests tab reads, as its page draws it. */
 final readonly class HowYourAskReads
 {
-    /** The ask `$reference` names among what they asked for, or that none is. */
-    public function among(Requested $wanted, string $reference): WhatYourAskTurnedOutToBe
+    /**
+     * The ask `$reference` names among what they asked for, drawn with the cover `$coverOf` answers for it, or that none is.
+     *
+     * @param Closure(RequestId): ?string $coverOf
+     */
+    public function among(Requested $wanted, string $reference, Closure $coverOf): WhatYourAskTurnedOutToBe
     {
         if (trim($reference) === '') {
             return WhatYourAskTurnedOutToBe::notAmongThem();
@@ -32,7 +37,7 @@ final readonly class HowYourAskReads
 
         foreach ($wanted as $one) {
             if ($one->id()->is($named)) {
-                return WhatYourAskTurnedOutToBe::found($this->said($one));
+                return WhatYourAskTurnedOutToBe::found($this->said($one, $coverOf($named)));
             }
         }
 
@@ -49,7 +54,7 @@ final readonly class HowYourAskReads
         return WhatYourAskTurnedOutToBe::theSessionEnded();
     }
 
-    private function said(Wanted $wanted): WhatYourAskSays
+    private function said(Wanted $wanted, ?string $cover): WhatYourAskSays
     {
         $kind = $wanted->called()->kind();
         $standing = $wanted->standing()->either(
@@ -59,9 +64,9 @@ final readonly class HowYourAskReads
         $foundIn = $wanted->standing()->isReadyForYou() ? WhereAnAskIsKept::forThe($kind) : '';
 
         return $wanted->called()->either(
-            named: static fn(string $title): WhatYourAskSays => new WhatYourAskSays(WhatOnePosterSays::ofARequest($title, $standing), $title, $kind->saidToTheMember(), $standing, $foundIn),
+            named: static fn(string $title): WhatYourAskSays => new WhatYourAskSays(WhatOnePosterSays::ofARequest($title, $standing)->pictured($cover), $title, $kind->saidToTheMember(), $standing, $foundIn),
             notYet: static fn(KindOfRequest $notYet): WhatYourAskSays => new WhatYourAskSays(
-                WhatOnePosterSays::ofARequestNotYetNamed(HowWhatAMemberAskedForReads::notYetNamed($notYet), $standing),
+                WhatOnePosterSays::ofARequestNotYetNamed(HowWhatAMemberAskedForReads::notYetNamed($notYet), $standing)->pictured($cover),
                 new ALineAsShown(HowWhatAMemberAskedForReads::notYetNamed($notYet), []),
                 $notYet->saidToTheMember(),
                 $standing,

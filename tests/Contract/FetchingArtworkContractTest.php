@@ -13,6 +13,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -84,7 +85,7 @@ function howThePosterCame(HowArtworkCame $came): string
     )->said;
 }
 
-it('fetches a held title\'s poster and backdrop and a found title\'s poster, byte for byte', function (): void {
+it('fetches a held title\'s poster and backdrop, a found title\'s poster and a kept ask\'s cover, byte for byte', function (): void {
     $png = static fn(): MockResponse => MockResponse::make(A_POSTERS_BYTES, 200, ['Content-Type' => 'image/png']);
 
     foreach (everyWayOfFetchingAPoster($png(), HowArtworkCame::arrived(Artwork::of(A_POSTERS_BYTES))) as $which => $make) {
@@ -101,13 +102,18 @@ it('fetches a held title\'s poster and backdrop and a found title\'s poster, byt
         expect(howThePosterCame($make()->posterOfAFoundTitle(aHouseWithPosters(), aSessionPostersAreDrawnFor(), aFoundTitleWithAPoster())))
             ->toBe(sprintf('arrived %d bytes', strlen(A_POSTERS_BYTES)), $which);
     }
+
+    foreach (everyWayOfFetchingAPoster($png(), HowArtworkCame::arrived(Artwork::of(A_POSTERS_BYTES))) as $which => $make) {
+        expect(howThePosterCame($make()->coverOfAKeptAsk(aHouseWithPosters(), aSessionPostersAreDrawnFor(), RequestId::named('music-3'))))
+            ->toBe(sprintf('arrived %d bytes', strlen(A_POSTERS_BYTES)), $which);
+    }
 });
 
-it('asks a held title\'s pictures as the member, the household\'s defaults for the operator, and a found title\'s poster by its kind and unit', function (): void {
+it('asks a held title\'s pictures as the member, the household\'s defaults for the operator, a found title\'s poster by its kind and unit, and a kept ask\'s cover by its reference alone', function (): void {
     $png = static fn(): MockResponse => MockResponse::make(A_POSTERS_BYTES, 200, ['Content-Type' => 'image/png']);
     $asked = [];
     MockClient::destroyGlobal();
-    $client = MockClient::global([$png(), $png(), $png(), $png(), $png()]);
+    $client = MockClient::global([$png(), $png(), $png(), $png(), $png(), $png()]);
     $pictures = new Pictures(new PinnedClients());
 
     $pictures->posterOfAHolding(aHouseWithPosters(), aSessionPostersAreDrawnFor(), Whose::member('sanne'), HoldingId::called('a1'));
@@ -115,6 +121,7 @@ it('asks a held title\'s pictures as the member, the household\'s defaults for t
     $pictures->backdropOfAHolding(aHouseWithPosters(), aSessionPostersAreDrawnFor(), Whose::member('sanne'), HoldingId::called('a1'));
     $pictures->posterOfAFoundTitle(aHouseWithPosters(), aSessionPostersAreDrawnFor(), aFoundTitleWithAPoster());
     $pictures->posterOfAFoundTitle(aHouseWithPosters(), aSessionPostersAreDrawnFor(), AFoundTitle::curated('mb-1', KindOfTitle::Music, UnitOfTitle::Album, 'Rumours', 'Fleetwood Mac', WhenItCameOut::in(1977), WhereAFoundTitleStands::Askable));
+    $pictures->coverOfAKeptAsk(aHouseWithPosters(), aSessionPostersAreDrawnFor(), RequestId::named('music 3/b'));
 
     foreach ($client->getRecordedResponses() as $response) {
         $request = $response->getPendingRequest();
@@ -127,6 +134,7 @@ it('asks a held title\'s pictures as the member, the household\'s defaults for t
         '/api/held/a1/backdrop?member=sanne',
         '/api/askable/438631/poster?kind=movies',
         '/api/askable/mb-1/poster?kind=music&unit=album',
+        '/api/requests/music%203%2Fb/poster?',
     ]);
 });
 
@@ -141,6 +149,11 @@ it('says a title with no poster, a refused session and a picture it cannot read 
         foreach (everyWayOfFetchingAPoster($answered, HowArtworkCame::refused(Obstacle::of($kind))) as $which => $make) {
             expect(howThePosterCame($make()->posterOfAFoundTitle(aHouseWithPosters(), aSessionPostersAreDrawnFor(), aFoundTitleWithAPoster())))
                 ->toBe($kind->value, sprintf('%s, %s', $which, $kind->value));
+        }
+
+        foreach (everyWayOfFetchingAPoster(clone $answered, HowArtworkCame::refused(Obstacle::of($kind))) as $which => $make) {
+            expect(howThePosterCame($make()->coverOfAKeptAsk(aHouseWithPosters(), aSessionPostersAreDrawnFor(), RequestId::named('music-3'))))
+                ->toBe($kind->value, sprintf('a kept ask\'s cover, %s, %s', $which, $kind->value));
         }
     }
 });

@@ -4,7 +4,6 @@
 <x-operator::content>
 
 @if ($this->ask()->ask !== null)
-    {{-- Lettered with its name until the core serves its cover. --}}
     <x-household::poster :poster="$this->ask()->ask->poster" />
     <x-design::title>{{ is_string($this->ask()->ask->title) ? $this->ask()->ask->title : __($this->ask()->ask->title->key, $this->ask()->ask->title->filling) }}</x-design::title>
     <x-design::note>{{ __($this->ask()->ask->kind) }}</x-design::note>
