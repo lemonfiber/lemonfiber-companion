@@ -45,6 +45,7 @@ use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\AStackThatNarrates;
 use Tests\Support\Fakes\AStackThatRehearses;
+use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
 use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatSupervises;
@@ -116,6 +117,7 @@ function theShedsHealthHearing(AStackThatSpeaksUp $stream, ?ASealInMemory $seal 
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening($stream, $clock, $window, $standings, noticing: NoticingWhatIsNew::over($seal ?? ASealInMemory::working(), $kept ?? NewsKeptInMemory::empty())),
+        AStackThatSaysHowItRunsWithout::bundled(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -133,7 +135,7 @@ function theShedsTabHearing(TheTabs $tab, AStackThatSpeaksUp $stream, FrozenCloc
     $offline = Obstacle::of(KindOfObstacle::DeviceHasNoNetwork);
 
     $screen = match ($tab) {
-        TheTabs::Health => new HowThisStackIs(AStackThatWasAsked::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
+        TheTabs::Health => new HowThisStackIs(AStackThatWasAsked::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, AStackThatSaysHowItRunsWithout::bundled()),
         TheTabs::Services => new WhatThisStackRuns(AStackThatSupervises::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, WhatThePhoneKeeps::noListingYet(), AStackThatSwitches::sayingAtOnce(WhatBecameOfTheWork::ended())),
         TheTabs::Updates => new HowCurrentThisStackIs(AStackThatKeepsCurrent::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, WhatThePhoneKeeps::noUpkeepYet()),
         TheTabs::Repairs => new WhatWouldBePutRight(AStackThatWouldMend::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),

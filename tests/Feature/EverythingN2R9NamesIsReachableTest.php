@@ -27,6 +27,7 @@ use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\StacksInMemory;
 
@@ -90,6 +91,7 @@ function theScreenTheFourAreReachedFrom(): HowThisStackIs
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        AStackThatSaysHowItRunsWithout::bundled(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

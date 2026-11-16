@@ -221,6 +221,7 @@ use Modules\Sdk\Api\Fillers;
 use Modules\Sdk\Api\Finders;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Forgetters;
+use Modules\Sdk\Api\Foundations;
 use Modules\Sdk\Api\Graders;
 use Modules\Sdk\Api\GrantEnders;
 use Modules\Sdk\Api\Grantors;
@@ -404,6 +405,7 @@ final readonly class EveryAdapterCallThatReads
             'Restarts::afterTheLastStart' => static fn(): object => new Restarts($clients)->afterTheLastStart($stack, $session),
             'Watchers::whatItSees' => static fn(): object => new Watchers($clients)->whatItSees($stack, $session),
             'Healers::howItHeals' => static fn(): object => new Healers($clients)->howItHeals($stack, $session),
+            'Foundations::withoutLemonfiber' => static fn(): object => new Foundations($clients)->withoutLemonfiber($stack, $session),
             'Inspectors::checkedOn' => static fn(): object => new Inspectors($clients)->checkedOn($stack, $session),
             'Chroniclers::versionsOn' => static fn(): object => new Chroniclers($clients)->versionsOn($stack, $session),
             'Keepers::keptRunningOn' => static fn(): object => new Keepers($clients, $entropy)->keptRunningOn($stack, $session),

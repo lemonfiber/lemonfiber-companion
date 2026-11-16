@@ -20,6 +20,7 @@ use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\AskingForHelp;
 use Modules\Kernel\Api\AskingForTitles;
 use Modules\Kernel\Api\AskingHowItCameBack;
+use Modules\Kernel\Api\AskingHowItRunsWithoutLemonfiber;
 use Modules\Kernel\Api\AskingTheIndexers;
 use Modules\Kernel\Api\AskingTheQueue;
 use Modules\Kernel\Api\AskingTheWatcher;
@@ -126,6 +127,7 @@ use Modules\Sdk\Api\Fillers;
 use Modules\Sdk\Api\Finders;
 use Modules\Sdk\Api\Followers;
 use Modules\Sdk\Api\Forgetters;
+use Modules\Sdk\Api\Foundations;
 use Modules\Sdk\Api\Graders;
 use Modules\Sdk\Api\GrantEnders;
 use Modules\Sdk\Api\Grantors;
@@ -383,6 +385,7 @@ final class TheWayToEveryStack extends ServiceProvider
         $this->app->bind(AskingHowItCameBack::class, Restarts::class);
         $this->app->bind(AskingTheWatcher::class, Watchers::class);
         $this->app->bind(AskingTheQueue::class, Healers::class);
+        $this->app->bind(AskingHowItRunsWithoutLemonfiber::class, Foundations::class);
 
         // How the line is shared, read beside the rest and bound for the same
         // reason: one place decides whether a certificate is checked.

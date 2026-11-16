@@ -81,7 +81,7 @@ final readonly class PlaceholderRows
 
             $found[] = APlaceholder::naming(
                 Required::text($placeholder, WireField::Secret, $refused),
-                APlaceholderForm::tryFrom(Required::text($placeholder, PluginsField::Form, $refused)) ?? throw $refused,
+                APlaceholderForm::tryFrom(Required::text($placeholder, WireField::Form, $refused)) ?? throw $refused,
             );
         }
 

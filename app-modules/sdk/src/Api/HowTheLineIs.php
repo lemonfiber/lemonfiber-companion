@@ -173,13 +173,13 @@ final readonly class HowTheLineIs
      */
     private static function capacity(array $capacity): WhatTheLineCarries
     {
-        $source = self::text($capacity, BandwidthField::Source->under(BandwidthField::Capacity), BandwidthField::Source);
+        $source = self::text($capacity, WireField::Source->under(BandwidthField::Capacity), WireField::Source);
 
         return WhatTheLineCarries::measured(
             self::count($capacity, BandwidthField::Down, BandwidthField::Capacity),
             self::count($capacity, BandwidthField::Up, BandwidthField::Capacity),
             HowTheLineWasMeasured::tryFrom($source)
-                ?? throw BandwidthIsUnreadable::word(BandwidthField::Source->under(BandwidthField::Capacity), $source, ...array_map(static fn(HowTheLineWasMeasured $case): string => $case->value, HowTheLineWasMeasured::cases())),
+                ?? throw BandwidthIsUnreadable::word(WireField::Source->under(BandwidthField::Capacity), $source, ...array_map(static fn(HowTheLineWasMeasured $case): string => $case->value, HowTheLineWasMeasured::cases())),
             Instant::atEpochSeconds(self::count($capacity, WireField::Taken, BandwidthField::Capacity)),
             WhetherItGoesThroughTheTunnel::said(throughTunnel: self::flag($capacity, BandwidthField::ThroughTunnel, BandwidthField::Capacity)),
         );

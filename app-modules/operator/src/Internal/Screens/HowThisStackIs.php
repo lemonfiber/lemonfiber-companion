@@ -11,6 +11,7 @@ use Modules\Health\Api\Queries\InCategory;
 use Modules\Health\Api\Queries\TheCauseBeforeItsSymptoms;
 use Modules\Health\Api\Queries\WorstFirst;
 use Modules\Kernel\Api\Asking;
+use Modules\Kernel\Api\AskingHowItRunsWithoutLemonfiber;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Finding;
@@ -30,14 +31,14 @@ use Modules\Operator\Internal\Presenters\HowAFamilyReads;
 use Modules\Operator\Internal\Presenters\HowAFindingReads;
 use Modules\Operator\Internal\Presenters\HowARunOfChecksReads;
 use Modules\Operator\Internal\Presenters\HowAStackReads;
+use Modules\Operator\Internal\ReadsHowItRunsWithout;
 use Modules\Operator\Internal\ViewModels\ARunOffered;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Operator\Internal\ViewModels\WhatTheStackTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Modules\Stacks\Api\AStacksScreen;
-use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
-use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
+use Modules\Wayfinding\Api\Screens\ReadsAStackOnceAFrame;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -98,8 +99,8 @@ final class HowThisStackIs extends NativeComponent
     use HearsHowTheStackIs;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
-    use DrawsItsTemplate;
-    use AsksAgain;
+    use ReadsAStackOnceAFrame;
+    use ReadsHowItRunsWithout;
 
     public const string TEMPLATE = 'operator::how-this-stack-is';
 
@@ -148,6 +149,7 @@ final class HowThisStackIs extends NativeComponent
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly AskingHowItRunsWithoutLemonfiber $askingWithout,
     ) {}
 
     /**
@@ -298,6 +300,20 @@ final class HowThisStackIs extends NativeComponent
         return $this->howMuchIsNewHere()->howManyInAll();
     }
 
+    public function render(): View
+    {
+        $this->aFrameBegins();
+
+        return view(self::TEMPLATE);
+    }
+
+    /** Let go of the findings and of how it runs without lemonfiber, so the next frames read them again. */
+    public function again(): void
+    {
+        $this->answered = null;
+        $this->forgetHowItRunsWithout();
+    }
+
     /**
      * What came back, asked once and held.
      *
@@ -395,6 +411,7 @@ final class HowThisStackIs extends NativeComponent
      */
     private function ask(): WhatTheStackTurnedOutToBe
     {
+        $this->readsItsStack();
         $stack = $this->stack();
 
         return $this->storage->resume($stack->id())->either(

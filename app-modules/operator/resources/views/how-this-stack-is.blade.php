@@ -7,6 +7,14 @@
         <x-design::action :label="trans_choice('news.new_on_tab', $this->newHere(), ['tab' => __('navigation.menu.whats_new')])" tap="openWhatsNew()" tone="tonal" />
     @endif
 
+    @if ($this->withoutIsBeingRead())
+        <x-design::the-next-frame />
+    @elseif ($this->without()->ownDirectory !== '')
+        <x-design::notice tone="attention">
+            <x-design::strong>{{ __('without.own_stack', ['path' => $this->without()->ownDirectory]) }}</x-design::strong>
+        </x-design::notice>
+    @endif
+
     {{-- The one line, as the core computed it for every surface: the worst
          thing it named, in its words, beside the glyph of how the stack
          stands and that standing in a word, and the line's own sentence where

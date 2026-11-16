@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Lemonfiber\Native\Handover;
 use Modules\Device\Api\PlatformShare;
 use Modules\Kernel\Api\ABundleFile;
+use Modules\Kernel\Api\ACommandToHand;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\AnInvitationToPassOn;
@@ -12,6 +13,7 @@ use Modules\Kernel\Api\Assembled;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Handed;
 use Modules\Kernel\Api\Sharing;
+use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Native\Mobile\Testing\FakeBridge;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -169,6 +171,39 @@ it('says so where the platform would not pass an invitation on', function (): vo
         expect(howTheSharingWent($sharing->passOn($invitation)))
             ->toBe(WhyNothingWasShared::TheDeviceWouldNotOffer->value, $which);
     }
+});
+
+it('offers a command the stack gave to copy out, under its name and as typed, and says it did', function (): void {
+    $command = ACommandToHand::of(TheCommandLine::of('docker', 'compose', '--project-directory', '/srv/lemonfiber', 'up', '-d'), 'Bring the stack up without lemonfiber');
+    $adapter = overASheetThatSays(['outcome' => 'offered']);
+    $fake = AShareSheetThatWasOffered::working();
+
+    foreach (['the fake' => $fake, 'the adapter' => $adapter] as $which => $sharing) {
+        expect(howTheSharingWent($sharing->offerToCopy($command)))->toBe('over', $which);
+    }
+
+    expect($fake->copied())->toBe($command);
+
+    FakeBridge::enable()->assertCalled(
+        'Lemonfiber.Handover.Offer',
+        static fn(array $sent): bool => $sent === [
+            'title' => 'Bring the stack up without lemonfiber',
+            'text' => 'docker compose --project-directory /srv/lemonfiber up -d',
+        ],
+    );
+});
+
+it('says so where the platform would not offer a command to copy out', function (): void {
+    $command = ACommandToHand::of(TheCommandLine::of('docker', 'compose', 'up', '-d'), 'Bring the stack up without lemonfiber');
+    $adapter = overASheetThatSays(['outcome' => 'refused', 'because' => 'the_platform_would_not']);
+    $fake = AShareSheetThatWasOffered::refusing(WhyNothingWasShared::TheDeviceWouldNotOffer);
+
+    foreach (['the fake' => $fake, 'the adapter' => $adapter] as $which => $sharing) {
+        expect(howTheSharingWent($sharing->offerToCopy($command)))
+            ->toBe(WhyNothingWasShared::TheDeviceWouldNotOffer->value, $which);
+    }
+
+    expect($fake->copied())->toBe($command);
 });
 
 /**

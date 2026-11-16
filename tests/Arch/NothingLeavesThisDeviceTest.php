@@ -7,6 +7,7 @@ use Lemonfiber\Native\Offered;
 use Lemonfiber\Native\WhyNothingWasHandedOver;
 use Modules\Device\Api\PlatformShare;
 use Modules\Kernel\Api\ABundleFile;
+use Modules\Kernel\Api\ACommandToHand;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnInvitationToPassOn;
 use Modules\Kernel\Api\AskingForHelp;
@@ -93,6 +94,7 @@ it('hands the device\'s sharing a value to put in front of the operator, and nev
     expect(everyParameterOf(Sharing::class))->toBe([
         sprintf('hand($assembled: %s)', Assembled::class),
         sprintf('handOver($bundle: %s)', ABundleFile::class),
+        sprintf('offerToCopy($command: %s)', ACommandToHand::class),
         sprintf('passOn($invitation: %s)', AnInvitationToPassOn::class),
     ], 'The device\'s sharing takes one value made for handing over. A string, an address, a stack or a '
         . 'session beside it is somewhere to send something, and that is the app sending it rather than '
@@ -103,7 +105,7 @@ it('holds nothing that says where, in anything the device\'s sharing is handed',
     $where = [Address::class, Stack::class, Session::class];
     $holding = [];
 
-    foreach ([Assembled::class, AnInvitationToPassOn::class, ABundleFile::class] as $handed) {
+    foreach ([Assembled::class, AnInvitationToPassOn::class, ABundleFile::class, ACommandToHand::class] as $handed) {
         foreach (new ReflectionClass($handed)->getProperties() as $property) {
             $held = $property->getType();
 
@@ -123,6 +125,7 @@ it('builds the device\'s sharing over the sheet and over nothing that could send
         sprintf('handOver($bundle: %s)', ABundleFile::class),
         sprintf('handed($offered: %s)', Offered::class),
         sprintf('meaning($why: %s)', WhyNothingWasHandedOver::class),
+        sprintf('offerToCopy($command: %s)', ACommandToHand::class),
         sprintf('passOn($invitation: %s)', AnInvitationToPassOn::class),
     ]);
 });
