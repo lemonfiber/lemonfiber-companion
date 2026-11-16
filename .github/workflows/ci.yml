@@ -674,7 +674,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: lemonfiber/spec/.github/workflows/sonar-gate.yml@7aaa0b068eebfefb516e1abc34628d95bb299051 # v1.0.151
+    uses: lemonfiber/spec/.github/workflows/sonar-gate.yml@74bf6bf2d9214bed1dcb832f2c1e77855b5a51f5 # v1.0.155
     with:
       # Nothing, which is now true: `main` carries zero open issues, and the two
       # it did carry went out with the commit that installed this gate.
