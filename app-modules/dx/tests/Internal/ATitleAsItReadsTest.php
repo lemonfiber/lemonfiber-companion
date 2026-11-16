@@ -9,29 +9,29 @@ use function it;
 
 use Modules\Dx\Internal\ATitleAsItReads;
 
-it('gives a title the declaration left out a reason in place of a location, no release day and no seasons', function (): void {
+it('gives a title the declaration left out an obstacle in place of a location, no release day and no seasons', function (): void {
     $read = ATitleAsItReads::from(['data' => ['id' => 'a1']]);
 
     expect($read['data'])->toBe(['id' => 'a1', 'title' => [
         'stream_from' => null,
         'door' => null,
-        'unlocated' => 'unlocated',
+        'unlocated' => ['code' => 'code', 'said' => 'unlocated', 'remedy' => 'remedy'],
         'released' => null,
         'seasons' => [],
     ]]);
 });
 
-it('gives each episode of each season a reason in place of a location', function (): void {
+it('gives each episode of each season an obstacle in place of a location', function (): void {
     $read = ATitleAsItReads::from(['data' => ['title' => ['seasons' => [['name' => 'Season 1', 'episodes' => [['id' => 'e1']]], 'not a season']]]]);
 
     expect($read['data'])->toBe(['title' => [
         'seasons' => [
-            ['name' => 'Season 1', 'episodes' => [['id' => 'e1', 'stream_from' => null, 'door' => null, 'unlocated' => 'unlocated']]],
+            ['name' => 'Season 1', 'episodes' => [['id' => 'e1', 'stream_from' => null, 'door' => null, 'unlocated' => ['code' => 'code', 'said' => 'unlocated', 'remedy' => 'remedy']]]],
             ['episodes' => []],
         ],
         'stream_from' => null,
         'door' => null,
-        'unlocated' => 'unlocated',
+        'unlocated' => ['code' => 'code', 'said' => 'unlocated', 'remedy' => 'remedy'],
         'released' => null,
     ]]);
 });

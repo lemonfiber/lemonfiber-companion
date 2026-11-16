@@ -52,6 +52,18 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'The media server\'s identifier for the member watching. `N2-R28` asks for the member, and the name beside it is what the operator recognises; nothing opens a member from this screen.',
         ],
         [
+            'path' => 'PlayingEnvelope.findings[].code',
+            'because' => 'The code that names what stood in the way of reading the media server. The screen says '
+                . 'what the core wrote in its place, and no requirement asks this app to word an obstacle again '
+                . 'by its code.',
+        ],
+        [
+            'path' => 'PlayingEnvelope.findings[].remedy',
+            'because' => 'What to do about what stood in the way. `N2-R28` asks what is playing, and where that '
+                . 'could not be read the screen says so in the core\'s sentence; no requirement asks it to say what '
+                . 'to do about it.',
+        ],
+        [
             'path' => 'PushEndpointEnvelope.registered',
             'because' => 'When the stack registered the endpoint. The switch says whether the stack wakes this phone (`N4-R26`), and no requirement asks when it began to.',
         ],
@@ -189,6 +201,14 @@ final readonly class UnreadOnEnvelopesMToZ
         [
             'path' => 'PartWayEnvelope.part_way[].backdrop',
             'because' => 'Where its backdrop is served at the door, for `HeldEnvelope.holdings[].poster`\'s reason.',
+        ],
+        [
+            'path' => 'PartWayEnvelope.part_way[].unlocated.code',
+            'because' => 'The code that names why an item has no location, for `HeldEnvelope.findings[].code`\'s reason.',
+        ],
+        [
+            'path' => 'PartWayEnvelope.part_way[].unlocated.remedy',
+            'because' => 'What to do about an item having no location, for `HeldEnvelope.findings[].remedy`\'s reason.',
         ],
         [
             'path' => 'PairingEnvelope.material.stack',
@@ -462,6 +482,22 @@ final readonly class UnreadOnEnvelopesMToZ
             'path' => 'TitleEnvelope.title.seasons[].episodes[].year',
             'because' => 'The year an episode came out. The title\'s page dates the title, and an episode is drawn by its '
                 . 'number, its name and how long it runs; no companion requirement asks for an episode\'s year.',
+        ],
+        [
+            'path' => 'TitleEnvelope.title.unlocated.code',
+            'because' => 'The code that names why the title has no location, for `HeldEnvelope.findings[].code`\'s reason.',
+        ],
+        [
+            'path' => 'TitleEnvelope.title.unlocated.remedy',
+            'because' => 'What to do about the title having no location, for `HeldEnvelope.findings[].remedy`\'s reason.',
+        ],
+        [
+            'path' => 'TitleEnvelope.title.seasons[].episodes[].unlocated.code',
+            'because' => 'The code that names why an episode has no location, for `HeldEnvelope.findings[].code`\'s reason.',
+        ],
+        [
+            'path' => 'TitleEnvelope.title.seasons[].episodes[].unlocated.remedy',
+            'because' => 'What to do about an episode having no location, for `HeldEnvelope.findings[].remedy`\'s reason.',
         ],
         [
             'path' => 'UpdateEnvelope.applied[].detail',

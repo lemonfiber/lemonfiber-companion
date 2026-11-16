@@ -26,6 +26,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\TheirOwn;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Tests\Support\AnObstacleOnTheWire;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatARequestIsCalledAsAWord;
@@ -101,6 +102,7 @@ function whatAStackSendsOneMember(array $owed): array
             'rehearsed' => false,
             'available' => true,
             'findings' => [],
+            'noted' => [],
             'members' => [[
                 'name' => 'Robin',
                 'claimed' => true,
@@ -143,6 +145,7 @@ function whatAStackSendsOneMemberWhoHasAsked(array $requests): array
             'rehearsed' => false,
             'available' => true,
             'findings' => [],
+            'noted' => [],
             'members' => [[
                 'name' => 'Robin',
                 'claimed' => true,
@@ -193,7 +196,7 @@ function whatAStackSendsAnOperator(): array
     return [
         'api_version' => 1,
         'kind' => 'household',
-        'data' => ['available' => true, 'findings' => [], 'members' => [], 'rehearsed' => false],
+        'data' => ['available' => true, 'findings' => [], 'noted' => [], 'members' => [], 'rehearsed' => false],
     ];
 }
 
@@ -465,7 +468,7 @@ it('a household the stack could not read reaches the member as a refusal', funct
     $unread = [
         'api_version' => 1,
         'kind' => 'household',
-        'data' => ['available' => false, 'findings' => ['The request service did not answer.'], 'members' => []],
+        'data' => ['available' => false, 'findings' => [AnObstacleOnTheWire::saying('The request service did not answer.')], 'noted' => [], 'members' => []],
     ];
 
     MockClient::destroyGlobal();

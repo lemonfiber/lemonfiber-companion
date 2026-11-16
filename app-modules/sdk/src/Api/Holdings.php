@@ -15,12 +15,12 @@ use Lemonfiber\Sdk\Generated\HeldEnvelope;
 use Modules\Kernel\Api\Holding;
 use Modules\Kernel\Api\HoldingId;
 use Modules\Kernel\Api\Medium;
-use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Sentences;
 use Modules\Kernel\Api\Shelf;
 use Modules\Kernel\Api\WhatTheyMayWatch;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Sdk\Api\Fields\HeldField;
+use Modules\Sdk\Internal\WhatEachObstacleSaid;
 use Modules\Sdk\Internal\Wire;
 
 /**
@@ -101,27 +101,7 @@ final readonly class Holdings
      */
     private static function said(array $data): Sentences
     {
-        if (! array_key_exists(WireField::Findings->value, $data)) {
-            throw ShelfIsUnreadable::missing(WireField::Findings);
-        }
-
-        $listed = $data[WireField::Findings->value];
-
-        if (! is_array($listed)) {
-            throw ShelfIsUnreadable::missing(WireField::Findings);
-        }
-
-        $said = [];
-
-        foreach ($listed as $sentence) {
-            if (! is_string($sentence)) {
-                throw ShelfIsUnreadable::missing(WireField::Findings);
-            }
-
-            $said[] = Sentence::of($sentence);
-        }
-
-        return Sentences::of(...$said);
+        return Sentences::of(...WhatEachObstacleSaid::in($data, ShelfIsUnreadable::missing(WireField::Findings)));
     }
 
     /**

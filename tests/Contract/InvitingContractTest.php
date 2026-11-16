@@ -232,7 +232,7 @@ it('stands in for a stack with a payload the contract would accept', function ()
 });
 
 it('reads who is in, joined or still invited', function (): void {
-    $household = MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'household', 'data' => ['available' => true, 'findings' => [], 'members' => [
+    $household = MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'household', 'data' => ['available' => true, 'findings' => [], 'noted' => [], 'members' => [
         ['name' => 'anna', 'access' => ['administrator' => false, 'disabled' => false, 'every_library' => true, 'libraries' => [], 'restriction' => 'unrestricted', 'unrated' => 'let-through'], 'claimed' => true, 'standing' => 'active', 'to_hand_over' => [], 'requests' => []],
         ['name' => 'bob', 'access' => ['administrator' => false, 'disabled' => false, 'every_library' => true, 'libraries' => [], 'restriction' => 'unrestricted', 'unrated' => 'let-through'], 'claimed' => false, 'standing' => 'invited', 'to_hand_over' => [], 'requests' => []],
     ]]]));

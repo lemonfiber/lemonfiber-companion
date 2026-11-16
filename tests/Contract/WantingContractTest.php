@@ -25,6 +25,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Requests;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Tests\Support\AnObstacleOnTheWire;
 use Tests\Support\Fakes\AHouseholdThatAsked;
 use Tests\Support\Fakes\SequencedEntropy;
 use Tests\Support\TheWordCarriedOut;
@@ -96,6 +97,7 @@ function whatAHouseholdThatAskedSends(): array
             'rehearsed' => false,
             'available' => true,
             'findings' => [],
+            'noted' => [],
             'members' => [
                 [
                     'name' => 'Sam',
@@ -373,7 +375,7 @@ it('tells a session that has ended from a stack that is not answering', function
 });
 
 it('tells a household the stack could not read from a payload it cannot read', function (): void {
-    $unread = ['api_version' => 1, 'kind' => 'household', 'data' => ['available' => false, 'findings' => ['The request service did not answer.'], 'members' => [], 'rehearsed' => false]];
+    $unread = ['api_version' => 1, 'kind' => 'household', 'data' => ['available' => false, 'findings' => [AnObstacleOnTheWire::saying('The request service did not answer.')], 'noted' => [], 'members' => [], 'rehearsed' => false]];
     $table = [
         [MockResponse::make((string) json_encode($unread)), Obstacle::of(KindOfObstacle::HouseholdCouldNotBeRead)],
         [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'household', 'data' => 'a house'])), Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)],

@@ -15,7 +15,7 @@ use Modules\Sdk\Api\Fields\PartWayField;
  * The `part-way` envelope's own declaration, corrected where
  * {@see ATitleAsItReads} corrects a title's: a synthesised location and
  * fingerprint are words no door serves, and a stand-in has no door to stream
- * through, so each item carries a reason in the place of a location.
+ * through, so each item carries an obstacle in the place of a location.
  */
 final readonly class WhereTheyLeftOffAsItReads
 {

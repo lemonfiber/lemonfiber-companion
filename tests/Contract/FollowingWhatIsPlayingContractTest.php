@@ -10,6 +10,7 @@ use Modules\Kernel\Api\HowPlayingWasRead;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -20,6 +21,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\Players;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Tests\Support\AnObstacleOnTheWire;
 use Tests\Support\Fakes\AStackThatPlays;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
@@ -161,7 +163,7 @@ it('reads every session the core says is playing, an episode with its series and
 it('reads no sessions as nothing playing, and a media server it could not read as unread', function (): void {
     $table = [
         [whatTheCoreSaysIsPlaying(['sessions' => []]), WhatTheHouseholdIsPlaying::these(), 'nothing'],
-        [whatTheCoreSaysIsPlaying(['available' => false, 'sessions' => [], 'findings' => ['Jellyfin did not answer.', 'Try again shortly.']]), WhatTheHouseholdIsPlaying::unread('Jellyfin did not answer.', 'Try again shortly.'), 'unread: Jellyfin did not answer. Try again shortly.'],
+        [whatTheCoreSaysIsPlaying(['available' => false, 'sessions' => [], 'findings' => [AnObstacleOnTheWire::saying('Jellyfin did not answer.'), AnObstacleOnTheWire::saying('Try again shortly.')]]), WhatTheHouseholdIsPlaying::unread(Sentence::of('Jellyfin did not answer.'), Sentence::of('Try again shortly.')), 'unread: Jellyfin did not answer. Try again shortly.'],
     ];
 
     foreach ($table as [$payload, $playing, $word]) {

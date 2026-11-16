@@ -17,10 +17,10 @@ use Modules\Sdk\Api\WireField;
  * leaves the shape open. A synthesised release day is the word `released`,
  * and a synthesised location and fingerprint are words no door serves, which
  * the reader refuses as it would refuse any stack that wrote them. A stand-in
- * has no door to stream through, so the title and each episode carry a reason
- * in the place of a location, as a stack that knows no household address
- * does: the field's own name, which is what makes a stand-in's words obvious
- * on a screen.
+ * has no door to stream through, so the title and each episode carry an
+ * obstacle in the place of a location, as a stack that knows no household
+ * address does, each of its words the name of the field it fills, which is
+ * what makes a stand-in's words obvious on a screen.
  */
 final readonly class ATitleAsItReads
 {
@@ -55,7 +55,7 @@ final readonly class ATitleAsItReads
     }
 
     /**
-     * An item with no location, and a reason in its place: a title, an
+     * An item with no location, and an obstacle in its place: a title, an
      * episode, or something part-way through.
      *
      * @param array<array-key, mixed> $item
@@ -68,7 +68,11 @@ final readonly class ATitleAsItReads
             ...$item,
             WireField::StreamFrom->value => null,
             WireField::Door->value => null,
-            WireField::Unlocated->value => WireField::Unlocated->value,
+            WireField::Unlocated->value => [
+                WireField::Code->value => WireField::Code->value,
+                WireField::Said->value => WireField::Unlocated->value,
+                WireField::Remedy->value => WireField::Remedy->value,
+            ],
         ];
     }
 
