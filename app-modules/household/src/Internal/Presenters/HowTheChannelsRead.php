@@ -13,6 +13,8 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\TheChannels;
 use Modules\Kernel\Api\Zone;
 
+use function sprintf;
+
 /**
  * The channels a member may watch, as Home's Live TV shelf draws them, in the core's order.
  *
@@ -25,6 +27,12 @@ final readonly class HowTheChannelsRead
     public const string TUNES = 'tuneTo';
 
     public function __construct(private Zone $here) {}
+
+    /** A channel's number and name together, as a tile and a guide row say it, or its name alone where it has no number. */
+    public static function shown(string $number, string $name): string
+    {
+        return $number === '' ? $name : sprintf('%s · %s', $number, $name);
+    }
 
     public function these(TheChannels $channels): WhatTheChannelsTurnedOutToBe
     {

@@ -344,6 +344,7 @@ final readonly class EveryAdapterCallThatReads
             'Copiers::whatBecameOf' => static fn(): object
                 => new Copiers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Broadcasters::theChannelsOf' => static fn(): object => new Broadcasters($clients, $entropy)->theChannelsOf($stack, $session, Whose::member('robin')),
+            'Broadcasters::theGuideOf' => static fn(): object => new Broadcasters($clients, $entropy)->theGuideOf($stack, $session, Whose::member('robin')),
             'Broadcasters::tune' => static fn(): object => new Broadcasters($clients, $entropy)->tune($stack, $session, Whose::member('robin'), ChannelId::called('c1')),
             'Broadcasters::renew' => static fn(): object => new Broadcasters($clients, $entropy)->renew($stack, $session, Whose::member('robin'), self::aLiveStream()),
             'Broadcasters::stop' => static fn(): object => new Broadcasters($clients, $entropy)->stop($stack, $session, Whose::member('robin'), self::aLiveStream()),

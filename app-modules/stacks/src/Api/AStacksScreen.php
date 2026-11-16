@@ -122,6 +122,9 @@ enum AStacksScreen: string
      */
     case Title = '/stacks/{stack}/watch/{about}';
 
+    /** The live TV guide, opened from See all on Home's Live TV shelf: every channel's programmes across the window the core answers. */
+    case Guide = '/stacks/{stack}/guide';
+
     /** The member's Search tab: titles the house does not hold yet, found by the core under their limits. */
     case Search = '/stacks/{stack}/search';
 

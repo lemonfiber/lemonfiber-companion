@@ -58,4 +58,10 @@ final readonly class TimeOfDay
             intdiv($this->secondsIntoTheDay % SecondsIn::AnHour->value, SecondsIn::AMinute->value),
         );
     }
+
+    /** How far the clock reads into the span it is in: `21:39` is 540 seconds into its half hour. */
+    public function secondsInto(SecondsIn $span): int
+    {
+        return $this->secondsIntoTheDay % $span->value;
+    }
 }

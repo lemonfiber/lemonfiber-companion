@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use Lemonfiber\Sdk\Http\ActRequest;
 use Modules\Kernel\Api\AChannel;
+use Modules\Kernel\Api\AChannelsGuide;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ALiveStream;
+use Modules\Kernel\Api\AnAiring;
 use Modules\Kernel\Api\AProgramme;
 use Modules\Kernel\Api\ChannelId;
 use Modules\Kernel\Api\Fingerprint;
@@ -19,6 +21,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheChannels;
+use Modules\Kernel\Api\TheGuide;
 use Modules\Kernel\Api\Tuning;
 use Modules\Kernel\Api\WhatRenewingCameTo;
 use Modules\Kernel\Api\WhatStoppingCameTo;
@@ -73,6 +76,22 @@ function theSameChannels(): TheChannels
     );
 }
 
+/** The guide both implementations answer: a channel with a gap between its programmes, and one whose guide holds nothing. */
+function theSameGuide(): TheGuide
+{
+    return TheGuide::of(
+        AChannelsGuide::of(
+            ChannelId::called('c1'),
+            'NPO 1',
+            '1',
+            WhenItSays::at(Instant::atEpochSeconds(1893470400)),
+            AnAiring::of('The news', Instant::atEpochSeconds(1893454200), Instant::atEpochSeconds(1893456000), '6'),
+            AnAiring::of('The quiz', Instant::atEpochSeconds(1893463200), Instant::atEpochSeconds(1893466800), ''),
+        ),
+        AChannelsGuide::of(ChannelId::called('c2'), 'Radio', '', WhenItSays::unsaid()),
+    );
+}
+
 /** The live stream both implementations open. */
 function theSameLiveStream(): ALiveStream
 {
@@ -97,6 +116,33 @@ function whatAStackListsOnItsChannels(array $changed = []): array
             'channels' => [
                 ['id' => 'c1', 'name' => 'NPO 1', 'number' => '1', 'now' => ['title' => 'The news', 'ends' => 1893456000, 'certificate' => '6']],
                 ['id' => 'c2', 'name' => 'Radio', 'number' => null, 'now' => null],
+            ],
+            ...$changed,
+        ],
+    ];
+}
+
+/**
+ * The `guide` payload a stack sends for that guide.
+ *
+ * @param  array<mixed>         $changed
+ * @return array<string, mixed>
+ */
+function whatAStackGuides(array $changed = []): array
+{
+    return [
+        'api_version' => 1,
+        'kind' => 'guide',
+        'data' => [
+            'id' => 'u1',
+            'member' => 'ana',
+            'rehearsed' => false,
+            'channels' => [
+                ['id' => 'c1', 'name' => 'NPO 1', 'number' => '1', 'guide_until' => 1893470400, 'programmes' => [
+                    ['title' => 'The news', 'starts' => 1893454200, 'ends' => 1893456000, 'certificate' => '6'],
+                    ['title' => 'The quiz', 'starts' => 1893463200, 'ends' => 1893466800, 'certificate' => null],
+                ]],
+                ['id' => 'c2', 'name' => 'Radio', 'number' => null, 'guide_until' => null, 'programmes' => []],
             ],
             ...$changed,
         ],
@@ -168,6 +214,34 @@ function everythingOnTheChannels(Tuning $tuning, ?Whose $whose = null): string
     )->said;
 }
 
+/** What the guide came to, folded to text. */
+function everythingInTheGuide(Tuning $tuning, ?Whose $whose = null): string
+{
+    return $tuning->theGuideOf(aStackWithATuner(), Session::of('a-session-not-a-secret'), $whose ?? Whose::member('ana'))->either(
+        told: static function (TheGuide $guide): TheWordCarriedOut {
+            $said = [];
+
+            foreach ($guide as $channel) {
+                $airings = array_map(
+                    static fn(AnAiring $airing): string => sprintf('%s %d-%d (%s)', $airing->title(), $airing->starts()->epochSeconds(), $airing->ends()->epochSeconds(), $airing->certificate()),
+                    iterator_to_array($channel->airings(), preserve_keys: false),
+                );
+                $said[] = sprintf(
+                    '%s "%s" #%s until %s: %s',
+                    $channel->id()->named(),
+                    $channel->name(),
+                    $channel->number(),
+                    $channel->until()->either(at: static fn(Instant $at): TheWordCarriedOut => new TheWordCarriedOut((string) $at->epochSeconds()), unsaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('?'))->said,
+                    implode(', ', $airings),
+                );
+            }
+
+            return new TheWordCarriedOut(implode('; ', $said));
+        },
+        refused: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
+    )->said;
+}
+
 /** What tuning came to, folded to text. */
 function whatTuningCameTo(WhatTuningCameTo $came): string
 {
@@ -227,6 +301,36 @@ it('asks for the channels as the member', function (): void {
     expect($asked)->toBe(['/api/channels', ['member' => 'ana']]);
 });
 
+it('comes away with each channel\'s programmes across the window, gaps left as gaps, and where its guide ends', function (): void {
+    $said = [
+        'the fake' => everythingInTheGuide(ATunerThatAnswered::listing(theSameChannels())->guiding(theSameGuide())),
+        'the adapter' => everythingInTheGuide(aBroadcasterAnswering(MockResponse::make((string) json_encode(whatAStackGuides())))),
+    ];
+
+    expect($said['the adapter'])->toBe($said['the fake'])
+        ->and($said['the fake'])->toBe('c1 "NPO 1" #1 until 1893470400: The news 1893454200-1893456000 (6), The quiz 1893463200-1893466800 (); c2 "Radio" # until ?: ');
+});
+
+it('asks for the guide as the member', function (): void {
+    $asked = null;
+    MockClient::destroyGlobal();
+    MockClient::global(['*' => static function (PendingRequest $request) use (&$asked): MockResponse {
+        $asked = [$request->getRequest()->resolveEndpoint(), $request->query()->all()];
+
+        return MockResponse::make((string) json_encode(whatAStackGuides()));
+    }]);
+
+    everythingInTheGuide(new Broadcasters(new PinnedClients(), SequencedEntropy::counting()));
+
+    expect($asked)->toBe(['/api/guide', ['member' => 'ana']]);
+});
+
+it('reads a guide with no channels as an answer', function (): void {
+    expect(everythingInTheGuide(aBroadcasterAnswering(MockResponse::make((string) json_encode(whatAStackGuides(['channels' => []]))))))
+        ->toBe('')
+        ->and(everythingInTheGuide(ATunerThatAnswered::listing(theSameChannels())))->toBe('');
+});
+
 it('reads no channels as an answer, which is a house without live TV', function (): void {
     expect(everythingOnTheChannels(aBroadcasterAnswering(MockResponse::make((string) json_encode(whatAStackListsOnItsChannels(['channels' => []]))))))
         ->toBe('')
@@ -239,6 +343,7 @@ it('asks the operator nothing, who has no account to watch on', function (): voi
         $operator = Whose::theOperator();
 
         expect(everythingOnTheChannels($tuning, $operator))->toBe(KindOfObstacle::NotForThisAccount->value, $which)
+            ->and(everythingInTheGuide($tuning, $operator))->toBe(KindOfObstacle::NotForThisAccount->value, $which)
             ->and(whatTuningCameTo($tuning->tune(aStackWithATuner(), $session, $operator, ChannelId::called('c1'))))->toBe(KindOfObstacle::NotForThisAccount->value, $which)
             ->and(whatRenewingCameTo($tuning->renew(aStackWithATuner(), $session, $operator, theSameLiveStream())))->toBe(KindOfObstacle::NotForThisAccount->value, $which)
             ->and(whatStoppingCameTo($tuning->stop(aStackWithATuner(), $session, $operator, theSameLiveStream())))->toBe(KindOfObstacle::NotForThisAccount->value, $which);
@@ -320,11 +425,12 @@ it('tells a session that has ended from a stack that is not answering', function
     $ana = Whose::member('ana');
 
     foreach ($table as [$answered, $why]) {
-        foreach (['the fake' => static fn(): Tuning => ATunerThatAnswered::met($why), 'the adapter' => static fn(): Tuning => aBroadcasterAnswering($answered, $answered, $answered, $answered)] as $which => $make) {
+        foreach (['the fake' => static fn(): Tuning => ATunerThatAnswered::met($why), 'the adapter' => static fn(): Tuning => aBroadcasterAnswering($answered, $answered, $answered, $answered, $answered)] as $which => $make) {
             $tuning = $make();
             $label = sprintf('%s / %s', $which, $why->kind()->value);
 
             expect(everythingOnTheChannels($tuning))->toBe($why->kind()->value, $label)
+                ->and(everythingInTheGuide($tuning))->toBe($why->kind()->value, $label)
                 ->and(whatTuningCameTo($tuning->tune(aStackWithATuner(), $session, $ana, ChannelId::called('c1'))))->toBe($why->kind()->value, $label)
                 ->and(whatRenewingCameTo($tuning->renew(aStackWithATuner(), $session, $ana, theSameLiveStream())))->toBe($why->kind()->value, $label)
                 ->and(whatStoppingCameTo($tuning->stop(aStackWithATuner(), $session, $ana, theSameLiveStream())))->toBe($why->kind()->value, $label);
@@ -347,6 +453,26 @@ it('refuses channels it cannot read, rather than leaving one out', function (arr
     'an end before the epoch' => [['channels' => [['id' => 'c1', 'name' => 'NPO 1', 'now' => ['title' => 'The news', 'ends' => -1]]]]],
     'an end that is not a moment' => [['channels' => [['id' => 'c1', 'name' => 'NPO 1', 'now' => ['title' => 'The news', 'ends' => 'soon']]]]],
     'a certificate that is not text' => [['channels' => [['id' => 'c1', 'name' => 'NPO 1', 'now' => ['title' => 'The news', 'certificate' => 6]]]]],
+]);
+
+// `guide` is stood in for and not judged, for the same reason.
+it('refuses a guide it cannot read, rather than drawing a gap the core did not leave', function (array $changed): void {
+    expect(everythingInTheGuide(aBroadcasterAnswering(MockResponse::make((string) json_encode(whatAStackGuides($changed))))))
+        ->toBe(KindOfObstacle::AnswerCouldNotBeRead->value);
+})->with([
+    'no channels' => [['channels' => null]],
+    'a channel that is not an object' => [['channels' => ['c1']]],
+    'a channel with no id' => [['channels' => [['id' => ' ', 'name' => 'NPO 1', 'programmes' => []]]]],
+    'a channel with no name' => [['channels' => [['id' => 'c1', 'programmes' => []]]]],
+    'a number that is not text' => [['channels' => [['id' => 'c1', 'name' => 'NPO 1', 'number' => 1, 'programmes' => []]]]],
+    'no programmes' => [['channels' => [['id' => 'c1', 'name' => 'NPO 1']]]],
+    'an end of the guide that is not a moment' => [['channels' => [['id' => 'c1', 'name' => 'NPO 1', 'guide_until' => 'later', 'programmes' => []]]]],
+    'a programme that is not an object' => [['channels' => [['id' => 'c1', 'name' => 'NPO 1', 'programmes' => ['The news']]]]],
+    'a programme with no title' => [['channels' => [['id' => 'c1', 'name' => 'NPO 1', 'programmes' => [['starts' => 1, 'ends' => 2]]]]]],
+    'a programme with no start' => [['channels' => [['id' => 'c1', 'name' => 'NPO 1', 'programmes' => [['title' => 'The news', 'ends' => 2]]]]]],
+    'a programme with no end' => [['channels' => [['id' => 'c1', 'name' => 'NPO 1', 'programmes' => [['title' => 'The news', 'starts' => 1]]]]]],
+    'a start before the epoch' => [['channels' => [['id' => 'c1', 'name' => 'NPO 1', 'programmes' => [['title' => 'The news', 'starts' => -1, 'ends' => 2]]]]]],
+    'a certificate that is not text' => [['channels' => [['id' => 'c1', 'name' => 'NPO 1', 'programmes' => [['title' => 'The news', 'starts' => 1, 'ends' => 2, 'certificate' => 6]]]]]],
 ]);
 
 // `tuned` is stood in for and not judged, for the same reason.
@@ -386,6 +512,8 @@ it('refuses a stop it cannot read, rather than saying the stream was closed', fu
 it('stands in for a stack with payloads the contract would accept', function (): void {
     expect(WhatTheContractAccepts::complaintsAbout('ChannelsEnvelope', whatAStackListsOnItsChannels()))
         ->toBe([], "The channels payload this suite stands in for a stack with is not one a stack would send.\n")
+        ->and(WhatTheContractAccepts::complaintsAbout('GuideEnvelope', whatAStackGuides()))
+        ->toBe([], "The guide payload this suite stands in for a stack with is not one a stack would send.\n")
         ->and(WhatTheContractAccepts::complaintsAbout('TunedEnvelope', whatAStackTunedTo()))
         ->toBe([], "The tuned payload this suite stands in for a stack with is not one a stack would send.\n");
 });

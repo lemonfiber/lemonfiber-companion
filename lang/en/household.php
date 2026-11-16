@@ -241,7 +241,7 @@ return [
         'scan' => 'Open the camera',
         'the_operator_closed_it_action' => 'Open the camera again, and hold it over the code.',
         'the_camera_was_declined_action' => 'Open the camera again, and allow it when the phone asks.',
-        'the_camera_is_not_permitted_action' => 'Allow the camera for lemonfiber in Settings, then open it again.',
+        'the_camera_is_not_permitted_action' => 'Allow the camera for this app in Settings, then open it again.',
         'there_is_no_camera_action' => 'Ask whoever runs your house to help you set this phone up.',
         'code_unreadable' => 'That is not a code this phone can use.',
         'code_unreadable_action' => 'Scan the code on your invitation, or the one whoever runs your house shows for a new phone.',
@@ -264,8 +264,8 @@ return [
         'refused_action' => 'Check both, and try again.',
         'too_many_attempts' => 'Too many tries for now.',
         'too_many_attempts_action' => 'Wait a little, then try once more.',
-        'not_permitted' => 'This phone is not letting lemonfiber look for your house.',
-        'not_permitted_action' => 'Allow lemonfiber to find devices on your network in Settings, then try again.',
+        'not_permitted' => 'This phone is not letting this app look for your house.',
+        'not_permitted_action' => 'Allow this app to find devices on your network in Settings, then try again.',
         'not_the_house' => 'Your invitation could not reach the house it names.',
         'not_open' => 'This invitation is no longer open.',
         'not_open_action' => 'If you already chose a password, sign in with it below. If not, ask whoever sent the invitation for a new one.',
@@ -399,6 +399,18 @@ return [
         'nothing_in_the_guide' => 'Nothing in the guide right now',
         'reads' => ':channel, :programme',
         'reads_until' => ':channel, :programme, until :time',
+        'see_all' => 'See all',
+        'see_all_named' => 'See the whole live TV guide',
+    ],
+
+    // The live TV guide: every channel's programmes across the hours the house answers.
+    'guide' => [
+        'title' => 'Live TV guide',
+        'none' => 'No live TV right now',
+        'none_action' => 'Pull down to look again.',
+        'channel_named' => 'Watch :channel',
+        'reads_on_now' => ':channel, :programme, :times, on now',
+        'reads_later' => ':programme, :times',
     ],
 
     // The months, by number, for when a title came out.

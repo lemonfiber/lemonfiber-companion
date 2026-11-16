@@ -16,6 +16,7 @@ use Modules\Dx\Internal\WhatAStackWouldSay;
 use Modules\Dx\Internal\WhatTheContractDeclares;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
 use Modules\Household\Internal\Presenters\HowAShelfReads;
+use Modules\Household\Internal\Presenters\HowTheGuideReads;
 use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\APushName;
 use Modules\Kernel\Api\ARatio;
@@ -56,6 +57,7 @@ final readonly class Coincidences
     public const array OF = [
         SystemEntropy::class => ['BYTES' => 'the bytes of randomness a nonce is drawn from'],
         Nonce::class => ['SHORTEST' => 'the fewest characters a nonce may have'],
+        HowTheGuideReads::class => ['POINTS_PER_MINUTE' => 'how wide a minute of the live TV guide is drawn, in points'],
         AStandInStack::class => ['IS_ANSWERING' => 'the status a working stand-in answers with, written as a stack writes it'],
         TheHarnessInstead::class => ['THE_ROUTE_IS_THERE' => 'the status a suite is answered with for a route that names a screen'],
         WhatAStackWouldSay::class => ['A_NUMBER' => 'the integer a stand-in payload is given'],

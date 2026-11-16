@@ -13,7 +13,6 @@ use Modules\Kernel\Api\AChannel;
 use Modules\Kernel\Api\AProgramme;
 use Modules\Kernel\Api\ChannelId;
 use Modules\Kernel\Api\TheChannels;
-use Modules\Sdk\Api\Fields\ChannelsField;
 use Modules\Sdk\Internal\Optional;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
@@ -38,7 +37,7 @@ final readonly class TheChannelsListed
 
         $channels = [];
 
-        foreach (Required::rows($data, ChannelsField::Channels, ChannelsAreUnreadable::missing(ChannelsField::Channels)) as $at => $channel) {
+        foreach (Required::rows($data, WireField::Channels, ChannelsAreUnreadable::missing(WireField::Channels)) as $at => $channel) {
             $channels[] = is_array($channel) ? self::channel($channel, ChannelsAreUnreadable::channel((int) $at)) : throw ChannelsAreUnreadable::channel((int) $at);
         }
 
@@ -69,7 +68,7 @@ final readonly class TheChannelsListed
 
         return AChannel::showing($id, $name, $number, AProgramme::of(
             Required::text($now, WireField::Title, $refused),
-            Optional::instant($now, ChannelsField::Ends, $refused),
+            Optional::instant($now, WireField::Ends, $refused),
             Optional::text($now, WireField::Certificate, $refused),
         ));
     }

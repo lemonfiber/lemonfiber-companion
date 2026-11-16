@@ -49,6 +49,8 @@ const WORDS_AN_OPERATOR_ALREADY_KNOWS = [
     'API' => 'Somebody running a stack of their own meets it on every release note and update '
         . 'screen, and the one sentence that uses it names both version numbers, so nothing in '
         . 'it hangs on the letters.',
+    'TV' => 'Television is spelled this way in every household, on the remote and the set itself, and '
+        . 'a member reads it on the live TV shelf beside the channels it names.',
 ];
 
 /**

@@ -11,10 +11,12 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheChannels;
+use Modules\Kernel\Api\TheGuide;
 use Modules\Kernel\Api\Tuning;
 use Modules\Kernel\Api\WhatIsOnTheChannels;
 use Modules\Kernel\Api\WhatRenewingCameTo;
 use Modules\Kernel\Api\WhatStoppingCameTo;
+use Modules\Kernel\Api\WhatTheGuideSays;
 use Modules\Kernel\Api\WhatTuningCameTo;
 use Modules\Kernel\Api\Whose;
 
@@ -28,6 +30,9 @@ final class ATunerThatAnswered implements Tuning
 {
     /** How many times the channels were asked, which is how a screen asking twice a frame is caught. */
     private int $askings = 0;
+
+    /** How many times the guide was asked, for the same reason. */
+    private int $guideAskings = 0;
 
     /** @var list<string> each channel tuned, by its id, in order */
     private array $tuned = [];
@@ -43,6 +48,7 @@ final class ATunerThatAnswered implements Tuning
         private WhatTuningCameTo $tuning,
         private WhatRenewingCameTo $renewing,
         private WhatStoppingCameTo $stopping,
+        private WhatTheGuideSays $guide,
     ) {}
 
     /** A house whose core lists these channels, and opens, renews and closes what is asked. */
@@ -53,6 +59,7 @@ final class ATunerThatAnswered implements Tuning
             WhatTuningCameTo::refused(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
             WhatRenewingCameTo::refused(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
             WhatStoppingCameTo::stopped(),
+            WhatTheGuideSays::told(TheGuide::of()),
         );
     }
 
@@ -64,7 +71,16 @@ final class ATunerThatAnswered implements Tuning
             WhatTuningCameTo::refused($why),
             WhatRenewingCameTo::refused($why),
             WhatStoppingCameTo::refused($why),
+            WhatTheGuideSays::refused($why),
         );
+    }
+
+    /** The same tuner, answering the guide with this. */
+    public function guiding(TheGuide $guide): self
+    {
+        $this->guide = WhatTheGuideSays::told($guide);
+
+        return $this;
     }
 
     /** The same tuner, answering a channel opened with this. */
@@ -96,6 +112,11 @@ final class ATunerThatAnswered implements Tuning
         return $this->askings;
     }
 
+    public function guideAskings(): int
+    {
+        return $this->guideAskings;
+    }
+
     /** @return list<string> */
     public function tuned(): array
     {
@@ -121,6 +142,16 @@ final class ATunerThatAnswered implements Tuning
         return $whose->either(
             operator: static fn(): WhatIsOnTheChannels => WhatIsOnTheChannels::refused(Obstacle::of(KindOfObstacle::NotForThisAccount)),
             member: fn(): WhatIsOnTheChannels => $this->channels,
+        );
+    }
+
+    public function theGuideOf(Stack $stack, Session $session, Whose $whose): WhatTheGuideSays
+    {
+        $this->guideAskings++;
+
+        return $whose->either(
+            operator: static fn(): WhatTheGuideSays => WhatTheGuideSays::refused(Obstacle::of(KindOfObstacle::NotForThisAccount)),
+            member: fn(): WhatTheGuideSays => $this->guide,
         );
     }
 

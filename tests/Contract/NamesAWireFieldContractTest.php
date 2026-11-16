@@ -13,7 +13,6 @@ use Modules\Sdk\Api\Fields\BootField;
 use Modules\Sdk\Api\Fields\BundleField;
 use Modules\Sdk\Api\Fields\CapabilitiesField;
 use Modules\Sdk\Api\Fields\CatalogueField;
-use Modules\Sdk\Api\Fields\ChannelsField;
 use Modules\Sdk\Api\Fields\ClientsField;
 use Modules\Sdk\Api\Fields\ConfigField;
 use Modules\Sdk\Api\Fields\CredentialsField;
@@ -23,6 +22,7 @@ use Modules\Sdk\Api\Fields\DoctorField;
 use Modules\Sdk\Api\Fields\FrontDoorField;
 use Modules\Sdk\Api\Fields\GlossaryField;
 use Modules\Sdk\Api\Fields\GrantField;
+use Modules\Sdk\Api\Fields\GuideField;
 use Modules\Sdk\Api\Fields\HandoffField;
 use Modules\Sdk\Api\Fields\HeldField;
 use Modules\Sdk\Api\Fields\HistoryField;
@@ -99,7 +99,6 @@ function everyFieldNamedOnTheWire(): array
         ...BandwidthField::cases(),
         ...BootField::cases(),
         ...CatalogueField::cases(),
-        ...ChannelsField::cases(),
         ...BundleField::cases(),
         ...CapabilitiesField::cases(),
         ...ClientsField::cases(),
@@ -113,6 +112,7 @@ function everyFieldNamedOnTheWire(): array
         ...GlossaryField::cases(),
         ...HandoffField::cases(),
         ...GrantField::cases(),
+        ...GuideField::cases(),
         ...PartWayField::cases(),
         ...HeldField::cases(),
         ...TitleField::cases(),

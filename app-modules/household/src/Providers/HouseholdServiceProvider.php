@@ -9,6 +9,7 @@ use Illuminate\Support\ServiceProvider;
 use Modules\Household\Internal\Screens\AskingForATitle;
 use Modules\Household\Internal\Screens\LookingForATitle;
 use Modules\Household\Internal\Screens\WhatAMemberWouldSee;
+use Modules\Household\Internal\Screens\WhatIsOnLiveTv;
 use Modules\Household\Internal\Screens\WhatThisTitleIs;
 use Modules\Household\Internal\Screens\WhatYouAreOwed;
 use Modules\Household\Internal\Screens\WhatYouCanWatch;
@@ -54,6 +55,7 @@ final class HouseholdServiceProvider extends ServiceProvider
         $this->app->booted(static function (): void {
             Router::native(AStacksScreen::Shelf->value, WhatYouCanWatch::class);
             Router::native(AStacksScreen::Title->value, WhatThisTitleIs::class);
+            Router::native(AStacksScreen::Guide->value, WhatIsOnLiveTv::class);
             Router::native(AStacksScreen::Search->value, LookingForATitle::class);
             Router::native(AStacksScreen::Found->value, AskingForATitle::class);
             Router::native(AStacksScreen::Owed->value, WhatYouAreOwed::class);

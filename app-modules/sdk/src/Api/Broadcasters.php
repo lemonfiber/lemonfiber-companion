@@ -29,6 +29,7 @@ use Modules\Kernel\Api\Tuning;
 use Modules\Kernel\Api\WhatIsOnTheChannels;
 use Modules\Kernel\Api\WhatRenewingCameTo;
 use Modules\Kernel\Api\WhatStoppingCameTo;
+use Modules\Kernel\Api\WhatTheGuideSays;
 use Modules\Kernel\Api\WhatTuningCameTo;
 use Modules\Kernel\Api\Whose;
 use Modules\Sdk\Internal\GatedClient;
@@ -36,7 +37,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
 use Override;
 
 /**
- * Live TV as the stack answers one member: the channels they may watch, and a channel opened, renewed and closed for them.
+ * Live TV as the stack answers one member: the channels they may watch, their guide, and a channel opened, renewed and closed for them.
  *
  * Written as {@see Shelves} is: the connection comes from {@see Clients}, and
  * the operator, who has no account to watch on, is answered as not theirs to
@@ -49,9 +50,22 @@ final readonly class Broadcasters implements Tuning
     #[Override]
     public function theChannelsOf(Stack $stack, Session $session, Whose $whose): WhatIsOnTheChannels
     {
-        return $whose->either(
-            operator: static fn(): WhatIsOnTheChannels => WhatIsOnTheChannels::refused(Obstacle::of(KindOfObstacle::NotForThisAccount)),
-            member: fn(string $member): WhatIsOnTheChannels => $this->listed($stack, $session, $member),
+        return $this->asMember(
+            $stack,
+            $whose,
+            static fn(Obstacle $why): WhatIsOnTheChannels => WhatIsOnTheChannels::refused($why),
+            fn(string $member): WhatIsOnTheChannels => WhatIsOnTheChannels::told(TheChannelsListed::in($this->read($stack, $session, Api::CHANNELS_ENDPOINT, $member))),
+        );
+    }
+
+    #[Override]
+    public function theGuideOf(Stack $stack, Session $session, Whose $whose): WhatTheGuideSays
+    {
+        return $this->asMember(
+            $stack,
+            $whose,
+            static fn(Obstacle $why): WhatTheGuideSays => WhatTheGuideSays::refused($why),
+            fn(string $member): WhatTheGuideSays => WhatTheGuideSays::told(TheGuideRead::in($this->read($stack, $session, Api::GUIDE_ENDPOINT, $member))),
         );
     }
 
@@ -88,27 +102,23 @@ final readonly class Broadcasters implements Tuning
         );
     }
 
-    /** The channels that member's account may watch, or why they could not be had. */
-    private function listed(Stack $stack, Session $session, string $member): WhatIsOnTheChannels
+    /**
+     * One of the live TV reads, asked as that member.
+     *
+     * @return Envelope<mixed>
+     */
+    private function read(Stack $stack, Session $session, string $endpoint, string $member): Envelope
     {
-        $client = GatedClient::of($this->clients, $stack, $session);
-
-        try {
-            return WhatIsOnTheChannels::told(TheChannelsListed::in($client->read(Api::CHANNELS_ENDPOINT, ['member' => $member])));
-        } catch (CertificateWasRefused|RequestFailed $why) {
-            return WhatIsOnTheChannels::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|ChannelsAreUnreadable|ChannelIsUnnamed|InstantIsBeforeTheEpoch $why) {
-            return WhatIsOnTheChannels::refused($this->clients->whatStoodInTheWay($stack, $why));
-        }
+        return GatedClient::of($this->clients, $stack, $session)->read($endpoint, ['member' => $member]);
     }
 
     /**
-     * Asked as a member, and answered with what stood in the way where the operator asks or the asking fails.
+     * Asked as a member, by name, and answered with what stood in the way where the operator asks or the asking fails.
      *
      * @template TAnswer of object
      *
      * @param Closure(Obstacle): TAnswer $refused
-     * @param Closure(): TAnswer         $asked
+     * @param Closure(string): TAnswer   $asked
      *
      * @return TAnswer
      */
@@ -116,7 +126,7 @@ final readonly class Broadcasters implements Tuning
     {
         return $whose->either(
             operator: static fn(): object => $refused(Obstacle::of(KindOfObstacle::NotForThisAccount)),
-            member: fn(): object => $this->asked($stack, $refused, $asked),
+            member: fn(string $member): object => $this->asked($stack, $member, $refused, $asked),
         );
     }
 
@@ -124,17 +134,17 @@ final readonly class Broadcasters implements Tuning
      * @template TAnswer of object
      *
      * @param Closure(Obstacle): TAnswer $refused
-     * @param Closure(): TAnswer         $asked
+     * @param Closure(string): TAnswer   $asked
      *
      * @return TAnswer
      */
-    private function asked(Stack $stack, Closure $refused, Closure $asked): object
+    private function asked(Stack $stack, string $member, Closure $refused, Closure $asked): object
     {
         try {
-            return $asked();
+            return $asked($member);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return $refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|TunedIsUnreadable|SentenceSaysNothing $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|ChannelsAreUnreadable|GuideIsUnreadable|TunedIsUnreadable|ChannelIsUnnamed|InstantIsBeforeTheEpoch|SentenceSaysNothing $why) {
             return $refused($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
