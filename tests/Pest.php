@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Http;
 use Native\Mobile\Edge\ChromeContributorRegistry;
+use Native\Mobile\Edge\TreeObservers;
 use Saloon\Http\Faking\MockClient;
 use Tests\Support\OurCode;
 use Tests\TestCase;
@@ -74,11 +75,13 @@ pest()->beforeEach(function (): void {
 })->in('Feature', 'Templates', 'Contract', sprintf('%s/../bridge/tests', __DIR__));
 
 /*
- * Every boot of the application hands NativePHP the side menu, and NativePHP
- * keeps what it is handed for as long as the process runs. On the phone the
- * application boots once; each test boots it anew, so the list is emptied after
- * every test and a frame carries the menu once, as it does on the phone.
+ * Every boot of the application hands NativePHP the side menu and the tree's
+ * observers, and NativePHP keeps what it is handed for as long as the process
+ * runs. On the phone the application boots once; each test boots it anew, so
+ * both lists are emptied after every test, and a frame carries the menu once and
+ * reaches only the observers of the application that drew it, as on the phone.
  */
 pest()->afterEach(function (): void {
     ChromeContributorRegistry::reset();
+    TreeObservers::reset();
 })->in(...OurCode::testDirectories());
