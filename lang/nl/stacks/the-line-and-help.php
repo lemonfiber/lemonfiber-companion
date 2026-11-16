@@ -8,6 +8,10 @@ return [
         'remedy' => 'Wat te doen: :remedy',
     ],
 
+    'obstacle' => [
+        'code' => 'Code :code',
+    ],
+
     'line' => [
         'restraint' => [
             'unlimited' => 'Niets houdt de stack tegen',

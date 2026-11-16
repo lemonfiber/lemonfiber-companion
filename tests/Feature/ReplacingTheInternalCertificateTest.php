@@ -21,7 +21,6 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Remarks;
-use Modules\Kernel\Api\Sentence;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -41,6 +40,7 @@ use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatItHoldsToLetThemIn;
 use Modules\Operator\Internal\ViewModels\ACredentialAsShown;
+use Tests\Support\AnObstacleOnTheWire;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -206,7 +206,7 @@ it('reads what replacing it would do first, labelled as nothing replaced yet, in
 it('says nobody is watching, that who is watching could not be read, and never asks with a member\'s session', function (): void {
     $replacing = static fn(): AStackThatReplacesItsCertificate => AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::answered(theReplacementAsRead()), WhatBecameOfTheWork::ended());
     $nobody = theReplacementReadOn($replacing(), AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these())));
-    $unread = theReplacementReadOn($replacing(), AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::unread(Sentence::of('Jellyfin did not answer.')))));
+    $unread = theReplacementReadOn($replacing(), AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::unread(AnObstacleOnTheWire::read('Jellyfin did not answer.')))));
     $refused = theReplacementReadOn($replacing(), AStackThatPlays::holdingOpen(HowPlayingWasRead::refused(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
     $playing = sanneWatching();
     $member = theReplacingScreen($replacing(), $playing, Whose::member('sanne'));

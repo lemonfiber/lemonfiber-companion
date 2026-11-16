@@ -45,7 +45,7 @@ final readonly class WhatThePlayingSaid
         }
 
         if (! $data[WireField::Available->value]) {
-            return WhatTheHouseholdIsPlaying::unread(...WhatEachObstacleSaid::in($data, PlayingIsUnreadable::missing(WireField::Findings->value)));
+            return WhatTheHouseholdIsPlaying::unread(...WhatEachObstacleSaid::namedIn($data, PlayingIsUnreadable::missing(WireField::Findings->value)));
         }
 
         $sessions = [];

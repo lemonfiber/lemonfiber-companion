@@ -52,18 +52,6 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'The media server\'s identifier for the member watching. `N2-R28` asks for the member, and the name beside it is what the operator recognises; nothing opens a member from this screen.',
         ],
         [
-            'path' => 'PlayingEnvelope.findings[].code',
-            'because' => 'The code that names what stood in the way of reading the media server. The screen says '
-                . 'what the core wrote in its place, and no requirement asks this app to word an obstacle again '
-                . 'by its code.',
-        ],
-        [
-            'path' => 'PlayingEnvelope.findings[].remedy',
-            'because' => 'What to do about what stood in the way. `N2-R28` asks what is playing, and where that '
-                . 'could not be read the screen says so in the core\'s sentence; no requirement asks it to say what '
-                . 'to do about it.',
-        ],
-        [
             'path' => 'PushEndpointEnvelope.registered',
             'because' => 'When the stack registered the endpoint. The switch says whether the stack wakes this phone (`N4-R26`), and no requirement asks when it began to.',
         ],

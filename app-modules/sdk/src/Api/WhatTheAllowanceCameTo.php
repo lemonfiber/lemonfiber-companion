@@ -26,19 +26,21 @@ final readonly class WhatTheAllowanceCameTo
     public static function in(Envelope $envelope): TheAllowanceAsChanged
     {
         $data = self::payload($envelope);
-        $said = [];
+        $inTheWay = [];
+        $noted = [];
 
         foreach (InTheOrderSent::rows(Required::rows($data, WireField::Findings, HouseholdIsUnreadable::missing(WireField::Findings))) as $position => $obstacle) {
-            $said[] = WhatEachObstacleSaid::of($obstacle, HouseholdIsUnreadable::finding($position));
+            $inTheWay[] = WhatEachObstacleSaid::named($obstacle, HouseholdIsUnreadable::finding($position));
         }
 
         foreach (InTheOrderSent::rows(Required::rows($data, WireField::Noted, HouseholdIsUnreadable::missing(WireField::Noted))) as $position => $note) {
-            $said[] = self::note($note, $position);
+            $noted[] = self::note($note, $position);
         }
 
         return TheAllowanceAsChanged::said(
             WhetherItWasRehearsed::said(Required::flag($data, WireField::Rehearsed, HouseholdIsUnreadable::missing(WireField::Rehearsed))),
-            Sentences::of(...$said),
+            Sentences::of(...$noted),
+            ...$inTheWay,
         );
     }
 

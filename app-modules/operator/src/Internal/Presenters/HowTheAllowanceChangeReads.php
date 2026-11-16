@@ -85,6 +85,7 @@ final readonly class HowTheAllowanceChangeReads
                 didSaid: $rehearsed ? self::REHEARSED : self::CARRIED_OUT,
                 mayBeApplied: $rehearsed,
                 sentences: $sentences,
+                inTheWay: new HowAnObstacleReads()->all($report->whatStoodInTheWay()),
             ),
         );
     }

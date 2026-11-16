@@ -7,9 +7,6 @@ namespace Modules\Kernel\Api;
 use function array_values;
 
 use ArrayIterator;
-
-use function implode;
-
 use IteratorAggregate;
 use Override;
 use Traversable;
@@ -26,20 +23,19 @@ final readonly class WhatTheHouseholdIsPlaying implements IteratorAggregate
 {
     /**
      * @param list<ASessionPlaying> $sessions
-     * @param list<Sentence>        $why
      */
-    private function __construct(private array $sessions, private bool $read, private array $why) {}
+    private function __construct(private array $sessions, private bool $read, private TheObstaclesNamed $why) {}
 
     /** What the media server is playing; none at all is nothing playing. */
     public static function these(ASessionPlaying ...$sessions): self
     {
-        return new self(array_values($sessions), read: true, why: []);
+        return new self(array_values($sessions), read: true, why: TheObstaclesNamed::of());
     }
 
-    /** The core could not read the media server, and said why. */
-    public static function unread(Sentence ...$why): self
+    /** The core could not read the media server, and named what stood in the way. */
+    public static function unread(AnObstacleNamed ...$why): self
     {
-        return new self([], read: false, why: array_values($why));
+        return new self([], read: false, why: TheObstaclesNamed::of(...$why));
     }
 
     /** Whether the core could read the media server. */
@@ -48,16 +44,10 @@ final readonly class WhatTheHouseholdIsPlaying implements IteratorAggregate
         return $this->read;
     }
 
-    /** What the core said instead, where it could not read the media server; empty where it could. */
-    public function whyNot(): string
+    /** What stood in the way, where the core could not read the media server; none where it could. */
+    public function whatStoodInTheWay(): TheObstaclesNamed
     {
-        $said = [];
-
-        foreach ($this->why as $sentence) {
-            $said[] = $sentence->shown();
-        }
-
-        return implode(' ', $said);
+        return $this->why;
     }
 
     /** @return Traversable<int, ASessionPlaying> */

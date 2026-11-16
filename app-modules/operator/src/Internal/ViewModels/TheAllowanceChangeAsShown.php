@@ -8,13 +8,15 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class TheAllowanceChangeAsShown
 {
     /**
-     * @param string       $didSaid      the catalogue key leading the report: rehearsed or made
-     * @param bool         $mayBeApplied whether this is a rehearsal a yes may be given to
-     * @param list<string> $sentences    what the stack said, in its order and words
+     * @param string                  $didSaid      the catalogue key leading the report: rehearsed or made
+     * @param bool                    $mayBeApplied whether this is a rehearsal a yes may be given to
+     * @param list<string>            $sentences    what the stack noted, in its order and words
+     * @param list<AnObstacleAsShown> $inTheWay     what stood in the way of reading the household, in the stack's order
      */
     public function __construct(
         public string $didSaid,
         public bool $mayBeApplied,
         public array $sentences,
+        public array $inTheWay,
     ) {}
 }

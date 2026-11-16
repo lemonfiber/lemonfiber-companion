@@ -9,6 +9,10 @@ return [
         'remedy' => 'What to do: :remedy',
     ],
 
+    'obstacle' => [
+        'code' => 'Code :code',
+    ],
+
     // How the machine shares its line with the household.
     'line' => [
         'restraint' => [

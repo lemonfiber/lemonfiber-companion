@@ -11,8 +11,9 @@ final readonly class WhatWasHeardPlaying
 {
     /**
      * @param list<ASessionPlayingAsShown> $sessions every session playing, in the core's order
-     * @param string                       $unread   what the core said instead, where it could not read the media server, or empty
+     * @param bool                         $read     whether the core could read the media server
+     * @param list<AnObstacleAsShown>      $unread   what stood in the way, where it could not, in the core's order
      * @param AgoAsShown                   $ago      when it was heard, or live where it is current
      */
-    public function __construct(public array $sessions, public string $unread, public AgoAsShown $ago) {}
+    public function __construct(public array $sessions, public bool $read, public array $unread, public AgoAsShown $ago) {}
 }
