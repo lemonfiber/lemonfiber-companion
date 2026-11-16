@@ -49,6 +49,7 @@ it('speaks the same words as both native halves', function (): void {
             'no_grant',
             'grant_in_the_address',
             'no_starting_point',
+            'nowhere_to_play',
             'refused',
             'no_player',
         ]);

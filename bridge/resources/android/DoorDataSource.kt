@@ -26,7 +26,8 @@ import javax.net.ssl.HttpsURLConnection
  * Media3 sees it, so a playlist naming anything elsewhere stops playback rather
  * than sending the player there.
  *
- * **The grant goes in a header and nowhere else**, and nothing is cached.
+ * **The grant goes in a header and nowhere else**, and nothing is cached. A
+ * channel has none: its pass is in the address the core answered.
  *
  * What went wrong is kept for the screen to say: the pin refused, an address
  * off the door, or the door's status.
@@ -160,7 +161,9 @@ public class DoorDataSource(
         one.useCaches = false
         one.connectTimeout = TIMEOUT_MS
         one.readTimeout = TIMEOUT_MS
-        one.setRequestProperty(WhatToPlay.GRANT_HEADER, asked.grantHeaderValue)
+        if (asked.carriesAGrant) {
+            one.setRequestProperty(WhatToPlay.GRANT_HEADER, asked.grantHeaderValue)
+        }
         range?.let { one.setRequestProperty("Range", it) }
 
         try {

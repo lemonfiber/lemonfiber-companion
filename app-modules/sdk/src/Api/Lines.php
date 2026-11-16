@@ -157,7 +157,7 @@ final readonly class Lines
      */
     private static function stream(array $row, int $position): Stream
     {
-        $said = self::text($row, LogField::Stream, $position);
+        $said = self::text($row, WireField::Stream, $position);
 
         return Stream::tryFrom($said) ?? throw LineIsUnreadable::stream($said, $position);
     }

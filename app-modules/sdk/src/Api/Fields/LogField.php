@@ -20,8 +20,6 @@ enum LogField: string implements NamesAWireField
     /** One line of what a service wrote, exactly as it wrote it. */
     case Line = 'line';
 
-    /** Which of a service's two mouths a line came out of. */
-    case Stream = 'stream';
 
     /** When the engine stamped the line, in RFC 3339, as it wrote it. */
     case Stamped = 'stamped';

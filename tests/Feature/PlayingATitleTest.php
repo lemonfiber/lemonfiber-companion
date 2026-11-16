@@ -43,6 +43,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShelfThatWasRead;
 use Tests\Support\Fakes\AStackThatGrants;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheChannelsOnScreen;
 use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\TheTitlesOnScreen;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -202,6 +203,7 @@ function aHomeToPressPlayOn(AShelfThatWasRead $watching, APlayerOnAHandset $play
         AMemberWhoIsOwed::owedNothing(),
         $keychain,
         TheTitlesOnScreen::over($watching, $keychain, $player, null, $core),
+        TheChannelsOnScreen::none($keychain),
         AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain),
         new AppsSettingsThatOpen(),
     );

@@ -39,6 +39,7 @@ use Lemonfiber\Sdk\Generated\SettingsEnvelope;
 use Lemonfiber\Sdk\Generated\SettingsSetAction;
 use Lemonfiber\Sdk\Generated\StoredEnvelope;
 use Lemonfiber\Sdk\Generated\SwitchAction;
+use Lemonfiber\Sdk\Generated\TunedEnvelope;
 use Lemonfiber\Sdk\Generated\WatchedEnvelope;
 use Modules\Dx\Api\AStandInStack;
 use Modules\Kernel\Api\AskingForIt;
@@ -394,7 +395,7 @@ final readonly class WhatTheWireWouldAnswer
     {
         // The paths whose body is not one envelope built from the
         // contract's declaration, the two answers work redeems into, what a
-        // member was part-way through, the player's two actions, which answer
+        // member was part-way through, the player's three actions, which answer
         // at once, and then everything else. `match` rather than early returns, because what this is doing
         // is naming a path rather than deciding anything.
         return match (true) {
@@ -419,6 +420,7 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Api::KEYS_ENDPOINT, str_starts_with($endpoint, sprintf('%s/', Api::KEYS_ENDPOINT)) => KeysAsTheyRead::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(KeysEnvelope::KIND->value))),
             $endpoint === Api::WATCHING_ENDPOINT => WhereTheyLeftOffAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(PartWayEnvelope::KIND->value))),
             $endpoint === Api::action(WhatThePlayerAsks::Watched->value) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(WatchedEnvelope::KIND->value)),
+            $endpoint === Api::action(WhatThePlayerAsks::Tune->value) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(TunedEnvelope::KIND->value)),
             $endpoint === Api::action(AskingForIt::AskForIt->asked()) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(AskedEnvelope::KIND->value)),
             $endpoint === Api::action(ChoosingHowToBeTold::Choose->asked()) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(NotifyMineEnvelope::KIND->value)),
             str_starts_with($endpoint, Api::JOBS_ENDPOINT) => self::oneEnvelope(self::WHAT_WORK_BECOMES),

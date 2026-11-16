@@ -68,7 +68,8 @@ public object PlaybackRule {
      * Whether to report the position now.
      *
      * @param sinceLastReport seconds since the last report.
-     * @param isPlaying whether the picture is moving.
+     * @param isPlaying whether the picture is moving, or a channel is open: it reports while paused,
+     *   so its pass is renewed.
      * @param moved whether the viewer paused, sought, closed or reached the end.
      * @return whether to report.
      */

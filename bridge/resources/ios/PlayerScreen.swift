@@ -35,6 +35,9 @@ final class PlayerScreen: AVPlayerViewController {
     /// The periodic observer, kept so it can be removed.
     private var looking: Any?
 
+    /// What looks while a channel is paused, when the periodic observer does not fire, kept so it can be stopped.
+    private var lookingWhilePaused: Timer?
+
     /// The status observer, kept so it can be removed.
     private var watchingStatus: NSKeyValueObservation?
 
@@ -183,6 +186,18 @@ final class PlayerScreen: AVPlayerViewController {
         looking = player.addPeriodicTimeObserver(forInterval: Self.lookEvery, queue: .main) { [weak self] _ in
             self?.tick()
         }
+
+        if asked.isLive {
+            lookingWhilePaused = Timer.scheduledTimer(withTimeInterval: Self.lookEvery.seconds, repeats: true)
+            {
+                [weak self] _ in
+                guard self?.player?.timeControlStatus == .paused else {
+                    return
+                }
+
+                self?.tick()
+            }
+        }
     }
 
     private func unwatch() {
@@ -202,6 +217,8 @@ final class PlayerScreen: AVPlayerViewController {
             NotificationCenter.default.removeObserver(watchingStalls)
         }
 
+        lookingWhilePaused?.invalidate()
+        lookingWhilePaused = nil
         looking = nil
         watchingSeeks = nil
         watchingFailures = nil
@@ -335,7 +352,10 @@ final class PlayerScreen: AVPlayerViewController {
         let since = Date().timeIntervalSince(lastReported)
         let isPlaying = player?.timeControlStatus == .playing
 
-        guard PlaybackRule.reportsProgress(sinceLastReport: since, isPlaying: isPlaying, moved: moved) else {
+        guard
+            PlaybackRule.reportsProgress(
+                sinceLastReport: since, isPlaying: isPlaying || asked.isLive, moved: moved)
+        else {
             return
         }
 

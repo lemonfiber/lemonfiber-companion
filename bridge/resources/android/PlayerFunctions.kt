@@ -35,37 +35,51 @@ public object PlayerFunctions {
     public class Open(
         private val activity: FragmentActivity,
     ) : BridgeFunction {
-        override fun execute(parameters: Map<String, Any>): Map<String, Any> {
-            val read = WhatToPlay.read(parameters)
-            val asked = (read as? WhatToPlay.Read.ToPlay)?.asked
-            val why =
-                when {
-                    read is WhatToPlay.Read.Refused -> read.why.word
-                    asked == null || PlayerSession.extensions.source(asked) == null ->
-                        WhyPlaybackStopped.REFUSED.word
-                    else -> null
-                }
+        override fun execute(parameters: Map<String, Any>): Map<String, Any> =
+            show(activity, WhatToPlay.read(parameters))
+    }
 
-            if (asked == null || why != null) {
-                Log.i(TAG, "player: refused, ${why ?: WhyPlaybackStopped.REFUSED.word}")
+    /** `Lemonfiber.Player.Tune` — put the player on screen for a channel's live stream the core opened. */
+    public class Tune(
+        private val activity: FragmentActivity,
+    ) : BridgeFunction {
+        override fun execute(parameters: Map<String, Any>): Map<String, Any> =
+            show(activity, WhatToPlay.readChannel(parameters))
+    }
 
-                return Envelope.refusing("refused", why ?: WhyPlaybackStopped.REFUSED.word).asAnswer()
+    /** Put the player on screen for what was read, or answer why not. */
+    private fun show(
+        activity: FragmentActivity,
+        read: WhatToPlay.Read,
+    ): Map<String, Any> {
+        val asked = (read as? WhatToPlay.Read.ToPlay)?.asked
+        val why =
+            when {
+                read is WhatToPlay.Read.Refused -> read.why.word
+                asked == null || PlayerSession.extensions.source(asked) == null ->
+                    WhyPlaybackStopped.REFUSED.word
+                else -> null
             }
 
-            PlayerSession.begin(asked)
-            main.post {
-                PlayerSession.service?.play(asked)
-                activity.startActivity(
-                    Intent(
-                        activity,
-                        PlayerActivity::class.java,
-                    ).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),
-                )
-            }
-            Log.i(TAG, "player: showing")
+        if (asked == null || why != null) {
+            Log.i(TAG, "player: refused, ${why ?: WhyPlaybackStopped.REFUSED.word}")
 
-            return Envelope.of("showing").asAnswer()
+            return Envelope.refusing("refused", why ?: WhyPlaybackStopped.REFUSED.word).asAnswer()
         }
+
+        PlayerSession.begin(asked)
+        main.post {
+            PlayerSession.service?.play(asked)
+            activity.startActivity(
+                Intent(
+                    activity,
+                    PlayerActivity::class.java,
+                ).addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT),
+            )
+        }
+        Log.i(TAG, "player: showing")
+
+        return Envelope.of("showing").asAnswer()
     }
 
     /** `Lemonfiber.Player.Command` — carry out one thing the app asked of the player on screen. */

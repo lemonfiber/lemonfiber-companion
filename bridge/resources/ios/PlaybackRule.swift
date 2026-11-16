@@ -53,7 +53,7 @@ public enum PlaybackRule {
     ///
     /// - Parameters:
     ///   - sinceLastReport: seconds since the last report.
-    ///   - isPlaying: whether the picture is moving.
+    ///   - isPlaying: whether the picture is moving, or a channel is open, which reports while paused so its pass is renewed.
     ///   - moved: whether the viewer paused, sought, closed or reached the end.
     /// - Returns: whether to report.
     public static func reportsProgress(sinceLastReport: Double, isPlaying: Bool, moved: Bool) -> Bool {

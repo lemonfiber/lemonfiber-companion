@@ -392,6 +392,15 @@ return [
         'not_let_in' => 'This stopped because the house wouldn\'t let it play here. Press Play to try again.',
     ],
 
+    // Home's Live TV shelf: each channel with what is on it now.
+    'live' => [
+        'heading' => 'Live TV',
+        'until' => 'until :time',
+        'nothing_in_the_guide' => 'Nothing in the guide right now',
+        'reads' => ':channel, :programme',
+        'reads_until' => ':channel, :programme, until :time',
+    ],
+
     // The months, by number, for when a title came out.
     'month' => [
         'january' => 'January',

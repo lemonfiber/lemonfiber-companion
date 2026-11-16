@@ -48,6 +48,7 @@ use Tests\Support\Fakes\ArtworkHeldInMemory;
 use Tests\Support\Fakes\AShelfThatWasRead;
 use Tests\Support\Fakes\AStackWithPosters;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheChannelsOnScreen;
 use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\TheTitlesOnScreen;
 use Tests\Support\WhatMarkupDraws;
@@ -108,7 +109,7 @@ function theShelfScreen(
         );
     }
 
-    $screen = new WhatYouCanWatch($watching, $pictures ?? ThePicturesOnScreen::none(), $owing ?? AMemberWhoIsOwed::owedNothing(), $keychain, TheTitlesOnScreen::over($watching, $keychain), AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), $settings ?? new AppsSettingsThatOpen());
+    $screen = new WhatYouCanWatch($watching, $pictures ?? ThePicturesOnScreen::none(), $owing ?? AMemberWhoIsOwed::owedNothing(), $keychain, TheTitlesOnScreen::over($watching, $keychain), TheChannelsOnScreen::none($keychain), AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), $settings ?? new AppsSettingsThatOpen());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -609,6 +610,7 @@ it('reads a route parameter that is not a word as naming no machine', function (
         AMemberWhoIsOwed::owedNothing(),
         AKeychainInMemory::working(),
         TheTitlesOnScreen::over(AShelfThatWasRead::holding(aShelfOfThree()), AKeychainInMemory::working()),
+        TheChannelsOnScreen::none(AKeychainInMemory::working()),
         AroundThePhone::holding(StacksInMemory::holding(theStackAShelfIsReadFrom())),
         new AppsSettingsThatOpen(),
     );

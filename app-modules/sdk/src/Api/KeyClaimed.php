@@ -12,7 +12,6 @@ use Lemonfiber\Sdk\Generated\Kind;
 use Modules\Kernel\Api\AKeyClaim;
 use Modules\Kernel\Api\AKeysName;
 use Modules\Kernel\Api\AMomentAsWritten;
-use Modules\Sdk\Api\Fields\KeyClaimField;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\Wire;
 
@@ -35,7 +34,7 @@ final readonly class KeyClaimed
         return AKeyClaim::of(
             AKeysName::of(Required::text($data, WireField::Name, MintingIsUnreadable::missing(Kind::KeyClaim, WireField::Name))),
             Required::text($data, WireField::Link, MintingIsUnreadable::missing(Kind::KeyClaim, WireField::Link)),
-            AMomentAsWritten::byTheStack(Required::number($data, KeyClaimField::Lapses, MintingIsUnreadable::missing(Kind::KeyClaim, KeyClaimField::Lapses))),
+            AMomentAsWritten::byTheStack(Required::number($data, WireField::Lapses, MintingIsUnreadable::missing(Kind::KeyClaim, WireField::Lapses))),
         );
     }
 

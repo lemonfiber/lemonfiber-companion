@@ -91,6 +91,7 @@ use Modules\Kernel\Api\TakingCopies;
 use Modules\Kernel\Api\TakingLemonfiberOff;
 use Modules\Kernel\Api\Telling;
 use Modules\Kernel\Api\Tracing;
+use Modules\Kernel\Api\Tuning;
 use Modules\Kernel\Api\UpgradingTheLibrary;
 use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\Wanting;
@@ -107,6 +108,7 @@ use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Askers;
 use Modules\Sdk\Api\Assessors;
+use Modules\Sdk\Api\Broadcasters;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Cataloguers;
 use Modules\Sdk\Api\CertificateReplacers;
@@ -308,6 +310,7 @@ final class TheWayToEveryStack extends ServiceProvider
         $this->app->bind(ChoosingHowTheyAreTold::class, WaysOfBeingTold::class);
         $this->app->bind(KnowingWhereAlertsGo::class, AlertDeliveries::class);
         $this->app->bind(Watching::class, Shelves::class);
+        $this->app->bind(Tuning::class, Broadcasters::class);
 
         // A grant for this device to play a member's titles, asked of the core
         // under the member's own session.

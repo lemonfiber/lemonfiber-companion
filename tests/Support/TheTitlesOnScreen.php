@@ -6,6 +6,7 @@ namespace Tests\Support;
 
 use Modules\Connection\Api\TheGrantForThisDevice;
 use Modules\Household\Internal\Playing\PutsATitleOnScreen;
+use Modules\Household\Internal\Playing\TheChannelOnScreen;
 use Modules\Household\Internal\Playing\WhatIsPlaying;
 use Modules\Kernel\Api\AGrant;
 use Modules\Kernel\Api\Granting;
@@ -43,6 +44,7 @@ final readonly class TheTitlesOnScreen
         ?WhatIsPlaying $playing = null,
         ?Granting $core = null,
         ?KeepingTheirLanguages $languages = null,
+        ?TheChannelOnScreen $channel = null,
     ): PutsATitleOnScreen {
         return new PutsATitleOnScreen(
             $storage,
@@ -56,6 +58,7 @@ final readonly class TheTitlesOnScreen
             $player ?? APlayerOnAHandset::working(),
             $playing ?? new WhatIsPlaying(),
             $languages ?? WhatThePhoneKeeps::noLanguagesYet(),
+            $channel ?? new TheChannelOnScreen(),
         );
     }
 }

@@ -81,6 +81,23 @@ grant the core answered for this member on this device
 default tracks play. Where the device would not play it, the line beside Play
 says so in the household's words.
 
+**Live TV is a shelf on Home, after the rows.** `TheLiveTvShelf` asks the
+core for the channels this member may watch (`/api/channels`), each drawn as a
+16:9 tile with its number and name, what is on now and until when on the
+phone's clock. Where the core lists none, or the list cannot be had, no shelf
+is drawn and no tab is added. Pressing a channel asks the core to open it
+(`tune`); `PutsAChannelOnScreen` hands the player the stream's two addresses,
+each carrying the pass the door asks for, and the player plays the tuner's own
+stream where it can decode it and the transcoded playlist otherwise. The device
+says the player moved every ten seconds while a channel is open, paused
+included, and `KeepsTheChannelOpen` renews the passes once
+`KeepsTheChannelOpen::RENEWS_WITHIN` seconds or fewer are left. A refusal in
+the core's own words is final; a core that could not be reached is asked again
+on each report. Where the passes lapse unrenewed, the player is closed, the
+core is told, and the shelf says why beside the channel, in the core's words or
+the app's own; nothing is tried again. Away from home the core's own sentence
+is said beside it, as a title's is.
+
 **The member's place is the core's to keep.** The device says the player moved
 every ten seconds while it plays and at once on a pause, a seek, the end or a
 close, and `KeepsTheMembersPlace` reads where it stands and tells the core

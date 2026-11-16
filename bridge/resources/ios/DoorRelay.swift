@@ -2,7 +2,7 @@ import Foundation
 import Network
 import Security
 
-/// What the player fetches through: a listener on loopback that forwards each request to the door, over the pin and with the grant.
+/// What the player fetches through: a listener on loopback that forwards each request to the door, over the pin and with the grant, or with a channel's pass in its address.
 final class DoorRelay: NSObject, URLSessionDataDelegate {
     private static let playlistTypes: Set<String> = [
         "application/vnd.apple.mpegurl", "application/x-mpegurl", "audio/mpegurl", "audio/x-mpegurl",
@@ -207,7 +207,9 @@ final class DoorRelay: NSObject, URLSessionDataDelegate {
 
         var forwarded = URLRequest(url: url)
         forwarded.httpMethod = request.method
-        forwarded.setValue(asked.grantHeaderValue, forHTTPHeaderField: WhatToPlay.grantHeader)
+        if asked.carriesAGrant {
+            forwarded.setValue(asked.grantHeaderValue, forHTTPHeaderField: WhatToPlay.grantHeader)
+        }
 
         if let range = request.range {
             forwarded.setValue(range, forHTTPHeaderField: "Range")
@@ -283,7 +285,9 @@ final class DoorRelay: NSObject, URLSessionDataDelegate {
 
         var followed = request
         followed.url = admitted
-        followed.setValue(asked.grantHeaderValue, forHTTPHeaderField: WhatToPlay.grantHeader)
+        if asked.carriesAGrant {
+            followed.setValue(asked.grantHeaderValue, forHTTPHeaderField: WhatToPlay.grantHeader)
+        }
         completionHandler(followed)
     }
 

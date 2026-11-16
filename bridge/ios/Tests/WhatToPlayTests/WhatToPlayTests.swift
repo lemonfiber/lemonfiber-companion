@@ -111,4 +111,85 @@ func eachRefusalIsOneWord() {
     #expect(WhatToPlay.WhyNot.noGrant.word == "no_grant")
     #expect(WhatToPlay.WhyNot.grantInTheAddress.word == "grant_in_the_address")
     #expect(WhatToPlay.WhyNot.noStartingPoint.word == "no_starting_point")
+    #expect(WhatToPlay.WhyNot.nowhereToPlay.word == "nowhere_to_play")
+}
+
+private let theDirect = "https://door.home:8920/live/s1/stream.ts?lfpass=p.1.m"
+
+private let theTranscoded = "https://door.home:8920/live/s1/main.m3u8?lfpass=p.1.m"
+
+private func aChannel(_ changed: [String: Any] = [:]) -> [String: Any] {
+    [
+        "direct": theDirect,
+        "transcoded": theTranscoded,
+        "fingerprint": theFingerprint,
+        "title": "NPO 1",
+    ].merging(changed) { _, new in new }
+}
+
+@Test("a channel plays what the player here decodes best, with no grant beside its pass")
+func aChannelPlaysItsTranscodedPlaylist() {
+    let asked = toPlay(WhatToPlay.readChannel(aChannel()))
+
+    #expect(asked?.location == theTranscoded)
+    #expect(asked?.carriesAGrant == false)
+    #expect(asked?.isLive == true)
+    #expect(asked?.startAt == 0)
+    #expect(asked?.shown.title == "NPO 1")
+}
+
+@Test("a channel never carries a grant, even one sent beside it")
+func aChannelNeverCarriesAGrant() {
+    let asked = toPlay(WhatToPlay.readChannel(aChannel(["grant": "0123456789abcdef0123456789abcdef"])))
+
+    #expect(asked?.grant == "")
+    #expect(asked?.carriesAGrant == false)
+}
+
+@Test("a channel ends on its transcoded playlist, with nothing past it to fall back to")
+func aChannelHasNothingToFallBackTo() {
+    #expect(toPlay(WhatToPlay.readChannel(aChannel()))?.location != theDirect)
+}
+
+@Test("a channel served only one way plays that one, with nothing to fall back to")
+func aChannelServedOneWayPlaysThatOne() {
+    #expect(toPlay(WhatToPlay.readChannel(aChannel(["direct": ""])))?.location == theTranscoded)
+    #expect(toPlay(WhatToPlay.readChannel(aChannel(["transcoded": ""])))?.location == theDirect)
+}
+
+@Test("a channel served nowhere, off a door, at two doors or unpinned is refused")
+func aChannelThatDoesNotHoldIsRefused() {
+    #expect(whyNot(WhatToPlay.readChannel(aChannel(["direct": "", "transcoded": ""]))) == .nowhereToPlay)
+    #expect(
+        whyNot(
+            WhatToPlay.readChannel(aChannel(["direct": "http://door.home:8920/live/s1/stream.ts?lfpass=p"])))
+            == .notAtADoor)
+    #expect(
+        whyNot(
+            WhatToPlay.readChannel(
+                aChannel(["transcoded": "https://elsewhere.home:8920/live/s1/main.m3u8?lfpass=p"])))
+            == .notAtADoor)
+    #expect(whyNot(WhatToPlay.readChannel(aChannel(["fingerprint": "abc"]))) == .unpinned)
+}
+
+@Test("a channel reads a field it was not sent as empty")
+func aChannelReadsAMissingFieldAsEmpty() {
+    #expect(whyNot(WhatToPlay.readChannel([:])) == .nowhereToPlay)
+    #expect(whyNot(WhatToPlay.readChannel(["direct": theDirect])) == .unpinned)
+    let sent: [String: Any] = ["transcoded": theTranscoded, "fingerprint": theFingerprint]
+    let untitled = toPlay(WhatToPlay.readChannel(sent))
+
+    #expect(untitled?.shown.title == "")
+}
+
+@Test("a title is still refused with a grant in its address, which only a channel's pass may be")
+func aTitleIsStillRefusedWithAGrantInItsAddress() {
+    #expect(
+        whyNot(
+            WhatToPlay.read(
+                aRequest([
+                    "location":
+                        "https://door.home:8443/library/1/main.m3u8?t=0123456789abcdef0123456789abcdef"
+                ])))
+            == .grantInTheAddress)
 }

@@ -424,6 +424,26 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'reading it, which is `N1-R17`.',
         ],
         [
+            'path' => 'TunedEnvelope.rehearsed',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
+        ],
+        [
+            'path' => 'TunedEnvelope.channel',
+            'because' => 'The channel it was opened for, echoed back: the app named the channel it pressed, and a renewal or a stop names the stream.',
+        ],
+        [
+            'path' => 'TunedEnvelope.member',
+            'because' => 'The member it was opened for, by name, echoed back, for `HeldEnvelope.member`\'s reason.',
+        ],
+        [
+            'path' => 'TunedEnvelope.unlocated.code',
+            'because' => 'The code that names why a channel has no location, for `HeldEnvelope.findings[].code`\'s reason.',
+        ],
+        [
+            'path' => 'TunedEnvelope.unlocated.remedy',
+            'because' => 'What to do about a channel having no location, for `HeldEnvelope.findings[].remedy`\'s reason.',
+        ],
+        [
             'path' => 'TitleEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],

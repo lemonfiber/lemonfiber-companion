@@ -61,6 +61,11 @@ final class MustNotLeaveThisProcess extends LogicException
         return new self('A grant may not be serialised. It plays a member\'s titles through the household\'s door, and it is kept in the platform\'s secure storage and nowhere else.');
     }
 
+    public static function aLiveStream(): self
+    {
+        return new self('A live stream may not be serialised. Its addresses carry the pass the household\'s door lets it through on, and it is held in memory while it plays and nowhere else.');
+    }
+
     /**
      * A key the phone's kept values are sealed under.
      *

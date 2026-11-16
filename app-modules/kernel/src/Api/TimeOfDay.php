@@ -48,4 +48,14 @@ final readonly class TimeOfDay
             $this->secondsIntoTheDay % SecondsIn::AMinute->value,
         );
     }
+
+    /** The time as a 24-hour clock shows it, to the minute: `21:39`, as a programme's end is read. */
+    public function shownToTheMinute(): string
+    {
+        return sprintf(
+            '%02d:%02d',
+            intdiv($this->secondsIntoTheDay, SecondsIn::AnHour->value),
+            intdiv($this->secondsIntoTheDay % SecondsIn::AnHour->value, SecondsIn::AMinute->value),
+        );
+    }
 }
