@@ -6,6 +6,7 @@ namespace Modules\Kernel\Tests\Api;
 
 use function expect;
 use function it;
+use function iterator_to_array;
 
 use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\Code;
@@ -14,6 +15,7 @@ use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\RequestHasNobodyBehindIt;
 use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Size;
+use Modules\Kernel\Api\TheOthersOnAnAsk;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
@@ -213,6 +215,17 @@ it('builds a request nothing has named yet by its kind, still refusing one nobod
 
 it('refuses a blank title given to a request, which is not the same as one not named yet', function (): void {
     expect(fn(): WhatARequestIsCalled => WhatARequestIsCalled::named('  ', KindOfRequest::Film))->toThrow(RequestHasNobodyBehindIt::class);
+});
+
+it('carries the other members one ask is also for, none until the core names them, kept through when it was asked', function (): void {
+    $asked = Wanted::of(RequestId::named('tv-1'), 'Robin', 'Dune', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::ForApproval));
+    $joined = $asked->alsoFor(TheOthersOnAnAsk::these('Sam', 'Mira'))->askedAt(AMomentAsWritten::byTheStack(1_789_358_400));
+
+    expect(iterator_to_array($asked->alsoAskedBy(), preserve_keys: true))->toBe([])
+        ->and(iterator_to_array($joined->alsoAskedBy(), preserve_keys: true))->toBe(['Sam', 'Mira'])
+        ->and(iterator_to_array(TheOthersOnAnAsk::these(...['first' => 'Sam', 'second' => 'Mira']), preserve_keys: true))->toBe(['Sam', 'Mira'])
+        ->and(WhatTheTimestampNamed::in($joined->alsoFor(TheOthersOnAnAsk::these('Sam'))->asked())->seconds)->toBe(1_789_358_400)
+        ->and([$joined->id(), $joined->by(), $joined->called(), $joined->size(), $joined->standing()])->toBe([$asked->id(), $asked->by(), $asked->called(), $asked->size(), $asked->standing()]);
 });
 
 it('carries when it was asked for, unwritten until the core says, through a refusal as well', function (): void {

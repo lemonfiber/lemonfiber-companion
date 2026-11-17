@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Presenters;
 use Modules\Kernel\Api\HowBig;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfRequest;
+use Modules\Kernel\Api\TheOthersOnAnAsk;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
@@ -91,6 +92,7 @@ final readonly class HowARequestReads
         $at = $why instanceof TurnedDown ? AgoAsShown::sinceWritten($why->when(), $this->now) : AgoAsShown::saysNothing();
         $asked = AgoAsShown::sinceWritten($wanted->asked(), $this->now);
         $alwaysWaits = $wantsADecision ? $wanted->called()->kind()->alwaysWaitsOnTheScreen() : '';
+        $alsoBy = $this->names($wanted->alsoAskedBy());
 
         return $wanted->size()->either(
             measured: static fn(int $bytes): WhatOneRequestSays => new WhatOneRequestSays(
@@ -108,6 +110,7 @@ final readonly class HowARequestReads
                 kind: $kind,
                 asked: $asked,
                 alwaysWaits: $alwaysWaits,
+                alsoBy: $alsoBy,
             ),
             guessed: static fn(int $bytes): WhatOneRequestSays => new WhatOneRequestSays(
                 reference: $wanted->id()->reference(),
@@ -124,6 +127,7 @@ final readonly class HowARequestReads
                 kind: $kind,
                 asked: $asked,
                 alwaysWaits: $alwaysWaits,
+                alsoBy: $alsoBy,
             ),
             unknown: static fn(): WhatOneRequestSays => new WhatOneRequestSays(
                 reference: $wanted->id()->reference(),
@@ -145,7 +149,20 @@ final readonly class HowARequestReads
                 kind: $kind,
                 asked: $asked,
                 alwaysWaits: $alwaysWaits,
+                alsoBy: $alsoBy,
             ),
         );
+    }
+
+    /** @return list<string> */
+    private function names(TheOthersOnAnAsk $others): array
+    {
+        $names = [];
+
+        foreach ($others as $name) {
+            $names[] = $name;
+        }
+
+        return $names;
     }
 }

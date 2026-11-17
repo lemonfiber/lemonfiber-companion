@@ -47,7 +47,7 @@ it('gives each health its own tone, and a failed run alone its exit and its line
 
     expect($shown->went)->toEqual(HowTheReadingWent::itCameBack())
         ->and($shown->services)->toEqual([
-            new ARunAndExitAsShown('A', 'scheduled.health.not-run', 'quiet', running: true, fired: false, skipped: 1, last: ALastRunAsShown::none()),
+            new ARunAndExitAsShown('A', 'scheduled.health.not-run', 'quiet', running: true, fired: false, skipped: 1, last: new ALastRunAsShown(AgoAsShown::saysNothing(), '', 0, new AnExitAsShown('', 0), [])),
             new ARunAndExitAsShown('B', 'scheduled.health.succeeded', 'fine', running: false, fired: true, skipped: 0, last: $ran(new AnExitAsShown('', 0))),
             new ARunAndExitAsShown('C', 'scheduled.health.failed', 'trouble', running: false, fired: true, skipped: 0, last: $ran(new AnExitAsShown('scheduled.exit.code', 3), 'a line')),
             new ARunAndExitAsShown('D', 'scheduled.health.failed', 'trouble', running: false, fired: true, skipped: 0, last: $ran(new AnExitAsShown('scheduled.exit.none', 0), 'a line')),

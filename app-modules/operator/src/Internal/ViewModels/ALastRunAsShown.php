@@ -23,6 +23,6 @@ final readonly class ALastRunAsShown
     /** No run to draw. */
     public static function none(): self
     {
-        return new self(AgoAsShown::saysNothing(), '', 0, new AnExitAsShown('', 0), []);
+        return new self(AgoAsShown::saysNothing(), '', 0, AnExitAsShown::none(), []);
     }
 }

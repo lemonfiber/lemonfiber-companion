@@ -88,7 +88,7 @@ final readonly class HowTheScheduleReads
             exit: $failed ? $run->exit(
                 said: static fn(int $code): AnExitAsShown => new AnExitAsShown(self::EXITED, $code),
                 unsaid: static fn(): AnExitAsShown => new AnExitAsShown(self::NO_CODE, 0),
-            ) : new AnExitAsShown('', 0),
+            ) : AnExitAsShown::none(),
             log: $failed ? $this->lines($run->log()) : [],
         );
     }

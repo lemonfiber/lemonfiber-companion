@@ -50,6 +50,7 @@ final readonly class Wanted
         private HowARequestStands $standing,
         private ?TurnedDown $turnedDown,
         private AMomentAsWritten $asked,
+        private TheOthersOnAnAsk $alsoFor,
     ) {}
 
     /**
@@ -86,7 +87,7 @@ final readonly class Wanted
             throw RequestHasNobodyBehindIt::forNothing($id, $asker);
         }
 
-        return new self($id, $asker, WhatARequestIsCalled::named($title, $kind), $size, $standing, null, AMomentAsWritten::unwritten());
+        return new self($id, $asker, WhatARequestIsCalled::named($title, $kind), $size, $standing, null, AMomentAsWritten::unwritten(), TheOthersOnAnAsk::none());
     }
 
     /**
@@ -104,7 +105,7 @@ final readonly class Wanted
             throw RequestHasNobodyBehindIt::about($id);
         }
 
-        return new self($id, $asker, WhatARequestIsCalled::notYetNamed($kind), $size, $standing, null, AMomentAsWritten::unwritten());
+        return new self($id, $asker, WhatARequestIsCalled::notYetNamed($kind), $size, $standing, null, AMomentAsWritten::unwritten(), TheOthersOnAnAsk::none());
     }
 
     /** The reference the stack names this request by, for acting on it. */
@@ -190,7 +191,7 @@ final readonly class Wanted
     /** The same request, asked for at the moment the core says. */
     public function askedAt(AMomentAsWritten $when): self
     {
-        return new self($this->id, $this->by, $this->called, $this->size, $this->standing, $this->turnedDown, $when);
+        return new self($this->id, $this->by, $this->called, $this->size, $this->standing, $this->turnedDown, $when, $this->alsoFor);
     }
 
     /** When it was asked for, or unwritten where the core did not say. */
@@ -199,8 +200,20 @@ final readonly class Wanted
         return $this->asked;
     }
 
+    /** The same request, one ask the core keeps for these other members too, by name. */
+    public function alsoFor(TheOthersOnAnAsk $others): self
+    {
+        return new self($this->id, $this->by, $this->called, $this->size, $this->standing, $this->turnedDown, $this->asked, $others);
+    }
+
+    /** The other members this one ask is also for, by name, or none where only one member asked. */
+    public function alsoAskedBy(): TheOthersOnAnAsk
+    {
+        return $this->alsoFor;
+    }
+
     private static function declined(self $was, TurnedDown $why): self
     {
-        return new self($was->id, $was->by, $was->called, $was->size, $was->standing, $why, $was->asked);
+        return new self($was->id, $was->by, $was->called, $was->size, $was->standing, $why, $was->asked, $was->alsoFor);
     }
 }
