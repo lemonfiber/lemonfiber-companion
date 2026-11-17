@@ -57,9 +57,9 @@ return [
     'what_it_would_hold' => 'What it would hold',
     'holds_now' => 'It holds :value now',
     'holds_nothing_yet' => 'Nothing is in it yet',
-    'what_would_happen' => 'See what this would do',
+    'what_would_happen' => 'See what happens',
     'agree' => 'Make this change',
-    'never_mind' => 'Leave it as it is',
+    'never_mind' => 'Leave it',
     'change_this' => 'Change this',
 
     'agree_to' => 'Make this change to :key',
@@ -72,11 +72,11 @@ return [
     'worth_reading_twice' => 'This one may move data or take a service away.',
 
     // Where putting every edited file back is offered from.
-    'put_it_all_back' => 'Put the configuration back',
+    'put_it_all_back' => 'Restore the configuration',
 
     'findings' => [
         'in_its_words' => ':words',
-        'heading' => 'What this comes to on the machine',
+        'heading' => 'On the machine',
         'stops' => 'It stops :service.',
         'keeps' => 'It leaves this as it is: :what.',
         'interrupts' => [

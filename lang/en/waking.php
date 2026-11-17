@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'heading' => 'Waking',
-    'switch' => 'Wake this phone for this stack',
+    'switch' => 'Wake this phone',
     'none_installed' => 'Install a UnifiedPush distributor, such as ntfy, to wake this phone when the stack has something to say. Without one, Android decides when lemonfiber may listen.',
     'off' => 'This stack can wake this phone through :distributor when it has something to say. Only the wake goes through :distributor; what you are told is read from the stack.',
     'off_choosing' => 'This stack can wake this phone through a UnifiedPush distributor when it has something to say. Only the wake goes through the distributor; what you are told is read from the stack.',

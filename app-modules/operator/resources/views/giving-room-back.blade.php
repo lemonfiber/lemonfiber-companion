@@ -52,6 +52,7 @@
          why in its words, and the offer below is the one read since. --}}
     @if ($this->movedOn !== null)
         <x-operator::heading>{{ __('stacks.give_back.moved') }}</x-operator::heading>
+        <x-design::body>{{ __('stacks.give_back.moved_said') }}</x-design::body>
         <x-operator::refused-in-its-words :refused="$this->movedOn" />
     @endif
 

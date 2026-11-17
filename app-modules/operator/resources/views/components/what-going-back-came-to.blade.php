@@ -1,7 +1,8 @@
 @if ($report->rehearsed)
     {{-- A rehearsal, and said to be one before anything else: nothing
          below has happened, and nothing is worded as though it had. --}}
-    <x-operator::heading>{{ __('stacks.run_back.a_rehearsal') }}</x-operator::heading>
+    <x-operator::heading>{{ __('stacks.a_rehearsal') }}</x-operator::heading>
+    <x-design::body>{{ __('stacks.run_back.a_rehearsal_said') }}</x-design::body>
 @endif
 
 {{-- What was left leads, because it is the part worth reading: an operator

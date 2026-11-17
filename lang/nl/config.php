@@ -44,9 +44,9 @@ return [
     'what_it_would_hold' => 'Wat erin zou komen te staan',
     'holds_now' => 'Er staat nu :value in',
     'holds_nothing_yet' => 'Er staat nog niets in',
-    'what_would_happen' => 'Bekijk wat dit zou doen',
+    'what_would_happen' => 'Bekijk wat er gebeurt',
     'agree' => 'Deze wijziging doorvoeren',
-    'never_mind' => 'Laat het zoals het is',
+    'never_mind' => 'Laat het',
     'change_this' => 'Dit wijzigen',
 
     'agree_to' => 'Deze wijziging aan :key doorvoeren',
@@ -59,11 +59,11 @@ return [
     'worth_reading_twice' => 'Deze kan gegevens verplaatsen of een dienst wegnemen.',
 
     // Waar het terugzetten van elk bewerkt bestand wordt aangeboden.
-    'put_it_all_back' => 'Zet de configuratie terug',
+    'put_it_all_back' => 'Configuratie terugzetten',
 
     'findings' => [
         'in_its_words' => ':words',
-        'heading' => 'Wat dit op de machine betekent',
+        'heading' => 'Op de machine',
         'stops' => 'Het stopt :service.',
         'keeps' => 'Dit laat het zoals het is: :what.',
         'interrupts' => [

@@ -27,7 +27,7 @@ return [
 
     // Music has no resolution, and is said to be chosen by its format.
     'music' => [
-        'heading' => 'Music, by format rather than resolution',
+        'heading' => 'Music, by format',
         'targets' => 'Aims for :targets',
         'unset' => 'No format is chosen for music.',
     ],
@@ -43,16 +43,16 @@ return [
     ],
 
     'upgrade' => [
-        'heading' => 'Upgrading what is already here',
+        'heading' => 'Upgrading what\'s here',
         'apart' => 'Offered on its own, and described kind by kind before anything is fetched.',
-        'describe' => 'What would upgrading come to?',
+        'describe' => 'Preview the upgrade',
         'described' => 'What upgrading would come to. Nothing has been fetched.',
         'carried_out' => 'Upgrading: each service was asked to search again',
         'kind' => ':kind, at :preset',
         'takes' => 'Takes :figure :unit to fetch again',
         'takes_unknown' => 'What it takes could not be worked out: :why',
         'nothing' => 'The stack names nothing to upgrade.',
-        'agree' => 'Upgrade what is already here',
+        'agree' => 'Upgrade what\'s here',
     ],
 
     // What became of asking a service, whether to search again or to take a

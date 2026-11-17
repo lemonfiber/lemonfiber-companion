@@ -408,6 +408,10 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'so the answer\'s copy is the same value come back, for `HeldEnvelope.id`\'s reason.',
         ],
         [
+            'path' => 'DashboardEnvelope.scheduled',
+            'because' => 'The run-and-exit services and how their last run went. No companion requirement asks for scheduled runs, so the front page draws none of them.',
+        ],
+        [
             'path' => 'DashboardEnvelope.downloaders',
             'because' => 'Every download client and whether it is paused. Pausing and resuming downloads '
                 . 'read each client before and after from `PausingEnvelope`, which the action answers with, '

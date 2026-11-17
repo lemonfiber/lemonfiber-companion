@@ -29,7 +29,8 @@
     @elseif ($this->done()->wasRehearsed)
         {{-- A rehearsal, said to be one before anything else, and never
              worded as room freed: the client still holds all of it. --}}
-        <x-operator::heading>{{ __('stacks.let_go.a_rehearsal') }}</x-operator::heading>
+        <x-operator::heading>{{ __('stacks.a_rehearsal') }}</x-operator::heading>
+        <x-design::body>{{ __('stacks.let_go.a_rehearsal_said') }}</x-design::body>
         <x-operator::emphasis>{{ __('stacks.let_go.rehearsed', ['download' => $this->done()->name]) }}</x-operator::emphasis>
         <x-design::body>{{ __('stacks.let_go.nothing_freed', ['figure' => $this->done()->size->figure, 'unit' => __($this->done()->size->unit)]) }}</x-design::body>
         <x-operator::action :label="__('stacks.let_go.see_the_room')" :goes="$this->goes()->to(AStacksScreen::Room)" />

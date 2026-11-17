@@ -201,6 +201,7 @@ function whatAStackRunningSends(): array
             // the fixture carries it — and it is one rather than none because
             // an empty list would not tell a reader written later that the
             // rows have a shape of their own.
+            'scheduled' => [],
             'undeclared' => [[
                 'id' => 'a-container-somebody-started',
                 'describes' => 'Something running beside the stack',
@@ -617,6 +618,7 @@ it('an answer this app cannot read is an answer it could not read', function ():
                     'criticality' => 'core',
                     'depends_on' => [],
                 ]],
+                'scheduled' => [],
                 'undeclared' => [],
                 'waiting' => [],
             ],

@@ -27,7 +27,7 @@ return [
 
     // Muziek heeft geen resolutie, en wordt gekozen naar formaat.
     'music' => [
-        'heading' => 'Muziek, naar formaat in plaats van resolutie',
+        'heading' => 'Muziek, naar formaat',
         'targets' => 'Mikt op :targets',
         'unset' => 'Er is geen formaat gekozen voor muziek.',
     ],
@@ -43,16 +43,16 @@ return [
     ],
 
     'upgrade' => [
-        'heading' => 'Wat er al is verbeteren',
+        'heading' => 'Wat er is verbeteren',
         'apart' => 'Los aangeboden, en per soort beschreven voordat er iets wordt opgehaald.',
-        'describe' => 'Wat zou verbeteren inhouden?',
+        'describe' => 'Bekijk de verbetering',
         'described' => 'Wat verbeteren zou inhouden. Er is niets opgehaald.',
         'carried_out' => 'Verbeteren: elke dienst is gevraagd opnieuw te zoeken',
         'kind' => ':kind, op :preset',
         'takes' => 'Kost :figure :unit om opnieuw op te halen',
         'takes_unknown' => 'Wat het kost kon niet worden uitgerekend: :why',
         'nothing' => 'De stack noemt niets om te verbeteren.',
-        'agree' => 'Verbeter wat er al is',
+        'agree' => 'Verbeter wat er is',
     ],
 
     // Wat er werd van het vragen aan een dienst, om opnieuw te zoeken of om

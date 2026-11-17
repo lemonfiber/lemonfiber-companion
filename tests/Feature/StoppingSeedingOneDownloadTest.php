@@ -219,7 +219,7 @@ it('asks what stopping seeding would cost first, and draws all of it as its own 
         ->and($drawn->said())->toContain(__('stacks.room.ratio', ['ratio' => '1.25']))
         ->and($drawn->said())->toContain('Your ratio on that tracker stops growing')
         ->and($drawn->said())->toContain('The copy in the downloads tree goes with it')
-        ->and($drawn->said())->not->toContain(__('stacks.let_go.a_rehearsal'))
+        ->and($drawn->said())->not->toContain(__('stacks.a_rehearsal'))
         ->and($drawn->offers())->toBe([__('stacks.let_go.stop_it'), __('health.ask_again')]);
 });
 
@@ -371,7 +371,7 @@ it('reports the download let go and the room it took', function (): void {
     expect(everythingLettingGoShows($screen->done()))->toBe(nothingReportedOfLettingGo(['name' => 'Some.Film.2024', 'size' => [$big->figure, $big->said]]))
         ->and($drawn->said())->toContain(__('stacks.let_go.let_go', ['download' => 'Some.Film.2024']))
         ->and($drawn->said())->toContain(aSizeLetGo('stacks.let_go.occupied', 8_000_000_000))
-        ->and($drawn->said())->not->toContain(__('stacks.let_go.a_rehearsal'))
+        ->and($drawn->said())->not->toContain(__('stacks.a_rehearsal'))
         ->and($drawn->offers())->toContain(__('stacks.let_go.see_the_room'));
 });
 
@@ -383,7 +383,7 @@ it('labels a rehearsal as one and never reports it as room freed', function (): 
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
     $big = HowBig::of(8_000_000_000);
-    $labelled = array_search(__('stacks.let_go.a_rehearsal'), $drawn, strict: true);
+    $labelled = array_search(__('stacks.a_rehearsal'), $drawn, strict: true);
     $said = array_search(__('stacks.let_go.rehearsed', ['download' => 'Some.Film.2024']), $drawn, strict: true);
 
     // Labelled before anything else about it is said.

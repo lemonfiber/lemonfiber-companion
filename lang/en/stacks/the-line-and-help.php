@@ -28,7 +28,7 @@ return [
         'down' => 'Download: :says',
         'up' => 'Upload: :says',
         'upload_cost' => 'Holding the upload back costs: :costs',
-        'capacity' => 'What the line carries',
+        'capacity' => 'Line capacity',
         'carries' => ':down :down_unit down, :up :up_unit up',
         // A line's speed, in what it is sold in.
         'rate' => [
@@ -72,7 +72,7 @@ return [
 
     // Changing how the machine shares its line, rehearsed before it is applied.
     'line_change' => [
-        'title' => 'Change how the line is shared',
+        'title' => 'Share the line',
         'left_blank' => 'Leave a field empty to keep it as it is.',
         'down' => 'Download limit',
         'down_is' => 'A share of the measured line, such as 50%, a figure such as 2MiB, or unlimited',
@@ -114,7 +114,7 @@ return [
             ],
         ],
         'nothing_asked' => 'Change at least one thing, or choose a lift',
-        'rehearse' => 'See what this change would do',
+        'rehearse' => 'Preview this change',
         'apply' => 'Make this change',
         'working' => 'The stack is asking the download clients',
         'no_outcome' => 'The stack no longer has an answer for this. The line above is as it stands now.',
@@ -149,7 +149,7 @@ return [
 
     // Asking for help: a support bundle, described before it is written.
     'help' => [
-        'what_goes_in' => 'What goes in the bundle',
+        'what_goes_in' => 'In the bundle',
         'nothing_leaves' => 'The stack describes the bundle first. Nothing is written until you agree to that description, and this app adds nothing to the bundle and sends it nowhere: a written bundle is yours to hand over, through your phone\'s own sharing.',
         'lines' => '{1} The last line of each service\'s logs|[2,*] The last :count lines of each service\'s logs',
         'take_lines' => '{1} Take the last line|[2,*] Take the last :count lines',
@@ -157,7 +157,7 @@ return [
         'filenames_replaced' => 'Media filenames are replaced',
         'show_filenames' => 'Show media filenames',
         'replace_filenames' => 'Replace media filenames',
-        'revealing' => 'Settings shown as they are',
+        'revealing' => 'Settings shown as-is',
         'revealing_is_publishing' => 'Every setting that holds a secret is redacted. A setting shown as it is will be read by whoever you give the bundle to, so each one is named and agreed to on its own.',
         'reveals' => 'Shows :name as it is',
         'take_back' => 'Stop showing :name',
@@ -167,11 +167,11 @@ return [
         'keep_it_hidden' => 'Keep it redacted',
         'setting_label' => 'A setting to show as it is',
         'setting_placeholder' => 'The setting\'s name, as the bundle names it',
-        'name_it' => 'Ask about this setting',
+        'name_it' => 'Ask about this',
         'describe' => 'Describe the bundle',
         'gathering' => 'The stack is gathering the bundle.',
         'no_outcome' => 'The stack no longer says what became of this bundle.',
-        'start_over' => 'Change what goes in',
+        'start_over' => 'Change the contents',
         'refused' => 'The stack refused this bundle',
         'refused_wrote_nothing' => 'Nothing was written. The stack gives the same answer until what it names has changed.',
         'written' => 'The bundle is written',

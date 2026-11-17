@@ -104,6 +104,10 @@ final readonly class WhatARefusalMeant
         RefusalCode::NotThePassword,
         RefusalCode::TooManyAttempts,
         RefusalCode::NotAPassword,
+        RefusalCode::CodeNotWaiting,
+        RefusalCode::TooManyCodes,
+        RefusalCode::SignsInByPassword,
+        RefusalCode::NotACodeRequest,
         // A key's own refusals. This app sends a session and no key, so one
         // reaching it ends no session, and its words are the answer.
         RefusalCode::KeyInTheClear,
@@ -173,6 +177,7 @@ final readonly class WhatARefusalMeant
         RefusalCode::BundleNotHeld,
         RefusalCode::NoFormNamed,
         RefusalCode::NoSuchForm,
+        RefusalCode::NotScheduled,
         RefusalCode::FormsConflict,
         RefusalCode::NoLimit,
         RefusalCode::NotWaiting,

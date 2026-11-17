@@ -41,7 +41,8 @@
         @if ($this->lastCopy()->wasRehearsed)
             {{-- A rehearsal wrote nothing, and every sentence below is
                  worded as what would happen. --}}
-            <x-design::heading>{{ __('stacks.copy.a_rehearsal') }}</x-design::heading>
+            <x-design::heading>{{ __('stacks.a_rehearsal') }}</x-design::heading>
+            <x-design::body>{{ __('stacks.copy.a_rehearsal_said') }}</x-design::body>
         @endif
 
         <x-design::card>

@@ -25,7 +25,7 @@ return [
         'down' => 'Download: :says',
         'up' => 'Upload: :says',
         'upload_cost' => 'De upload afremmen kost: :costs',
-        'capacity' => 'Wat de lijn aankan',
+        'capacity' => 'Lijncapaciteit',
         'carries' => ':down :down_unit omlaag, :up :up_unit omhoog',
         'rate' => [
             'kilobits' => 'kbit/s',
@@ -64,7 +64,7 @@ return [
     ],
 
     'line_change' => [
-        'title' => 'Aanpassen hoe de lijn wordt gedeeld',
+        'title' => 'Lijn verdelen',
         'left_blank' => 'Laat een veld leeg om het te houden zoals het is.',
         'down' => 'Downloadlimiet',
         'down_is' => 'Een deel van de gemeten lijn, zoals 50%, een waarde zoals 2MiB, of unlimited',
@@ -106,7 +106,7 @@ return [
             ],
         ],
         'nothing_asked' => 'Pas minstens één ding aan, of kies om de limieten op te heffen',
-        'rehearse' => 'Bekijk wat deze aanpassing zou doen',
+        'rehearse' => 'Bekijk deze aanpassing',
         'apply' => 'Voer deze aanpassing uit',
         'working' => 'De stack vraagt het de downloadprogramma\'s',
         'no_outcome' => 'De stack heeft hier geen antwoord meer op. De lijn hierboven is zoals hij nu is.',
@@ -141,7 +141,7 @@ return [
 
     // Om hulp vragen: een supportbundel, beschreven voordat hij wordt geschreven.
     'help' => [
-        'what_goes_in' => 'Wat er in de bundel komt',
+        'what_goes_in' => 'In de bundel',
         'nothing_leaves' => 'De stack beschrijft de bundel eerst. Er wordt niets geschreven totdat je instemt met die beschrijving, en deze app voegt niets aan de bundel toe en stuurt hem nergens heen: een geschreven bundel geef je zelf door, via het deelmenu van je telefoon.',
         'lines' => '{1} De laatste regel van de logs van elke service|[2,*] De laatste :count regels van de logs van elke service',
         'take_lines' => '{1} Neem de laatste regel|[2,*] Neem de laatste :count regels',
@@ -149,7 +149,7 @@ return [
         'filenames_replaced' => 'Bestandsnamen van media worden vervangen',
         'show_filenames' => 'Toon bestandsnamen van media',
         'replace_filenames' => 'Vervang bestandsnamen van media',
-        'revealing' => 'Instellingen die getoond worden zoals ze zijn',
+        'revealing' => 'Instellingen zoals ze zijn',
         'revealing_is_publishing' => 'Elke instelling met een geheim erin wordt weggelakt. Een instelling die getoond wordt zoals ze is, leest iedereen aan wie je de bundel geeft, dus elke instelling wordt apart genoemd en goedgekeurd.',
         'reveals' => 'Toont :name zoals het is',
         'take_back' => 'Toon :name niet meer',
@@ -159,11 +159,11 @@ return [
         'keep_it_hidden' => 'Laat het weggelakt',
         'setting_label' => 'Een instelling om te tonen zoals ze is',
         'setting_placeholder' => 'De naam van de instelling, zoals de bundel haar noemt',
-        'name_it' => 'Vraag naar deze instelling',
+        'name_it' => 'Vraag hiernaar',
         'describe' => 'Beschrijf de bundel',
         'gathering' => 'De stack stelt de bundel samen.',
         'no_outcome' => 'De stack zegt niet meer wat er van deze bundel geworden is.',
-        'start_over' => 'Verander wat erin komt',
+        'start_over' => 'Inhoud aanpassen',
         'refused' => 'De stack heeft deze bundel geweigerd',
         'refused_wrote_nothing' => 'Er is niets geschreven. De stack geeft hetzelfde antwoord totdat wat hij noemt veranderd is.',
         'written' => 'De bundel is geschreven',

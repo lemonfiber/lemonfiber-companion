@@ -7,12 +7,12 @@ return [
         'as_declared' => 'Zoals deze machine haar eigen diensten beschrijft, zonder dat er iets gestart is.',
         'without_it' => 'Zonder: :without',
         'nothing_declared' => 'Deze machine geeft geen diensten op',
-        'dropped' => 'Niet langer deel van deze stack',
+        'dropped' => 'Niet langer hier',
         'removed_in' => 'Weggelaten in :version: :reason',
         'replaced_by' => 'Vervangen door :by',
         'not_replaced' => 'Niets heeft de plaats ingenomen',
         'nothing_dropped' => 'Deze stack heeft geen dienst weggelaten',
-        'refused' => 'De stack antwoordde, en kon niet zeggen waar zijn diensten voor zijn',
+        'refused' => 'Doelen niet gegeven',
         'same_answer' => 'Opnieuw vragen geeft hetzelfde antwoord totdat wat hij noemt op de machine is rechtgezet.',
     ],
     'origins' => [
@@ -48,7 +48,7 @@ return [
             'switched_off' => 'Uitgeschakeld',
         ],
         'ours' => [
-            'heading' => 'Wat lemonfiber zelf verstuurt',
+            'heading' => 'Verstuurd door lemonfiber',
             'sends' => 'Verstuurt: :sends',
             'goes_to' => 'Naar :destination',
             'nowhere' => 'Er is niets ingesteld om te bereiken',
@@ -57,7 +57,7 @@ return [
             'none' => 'lemonfiber verstuurt zelf niets',
         ],
         'on_behalf' => [
-            'heading' => 'Namens een plugin',
+            'heading' => 'Voor een plugin',
             'for' => 'Voor de plugin :plugin',
             'goes_to' => 'Naar :destination',
             'switch' => 'Te weigeren met :switch',
@@ -65,7 +65,7 @@ return [
             'none' => 'lemonfiber verstuurt niets namens een plugin',
         ],
         'theirs' => [
-            'heading' => 'Wat de diensten versturen',
+            'heading' => 'Verstuurd door diensten',
             'reaches' => 'Bereikt :destination',
             'reaches_nothing' => 'Bereikt niets',
             'unrecorded' => 'lemonfiber weet niet wat deze dienst bereikt',
@@ -82,7 +82,7 @@ return [
         ],
     ],
     'alerts' => [
-        'set_apart' => 'Apart gezet van de voorinstelling',
+        'set_apart' => 'Apart gezet',
         'heard' => [
             'heard' => 'Je hoort hierover, wat de voorinstelling ook zegt',
             'silenced' => 'Stil gehouden, wat de voorinstelling ook zegt',
@@ -138,12 +138,12 @@ return [
     // Een bewaker op de gegevenslocatie, die blijft zolang zijn scherm ernaar
     // vraagt. Elke regel houdt hem apart van wat de machine host.
     'guard' => [
-        'road_in' => 'Bewaak de gegevenslocatie terwijl je kijkt',
+        'road_in' => 'Bewaak de data',
         'apart' => 'Of bewaak de gegevenslocatie alleen zolang een scherm van deze app open is; dat is niet hosten',
-        'heading' => 'Bewaak de gegevenslocatie terwijl je kijkt',
+        'heading' => 'Bewaak de data',
         'lives_while_asked' => 'Deze bewaker leeft alleen zolang dit scherm ernaar blijft vragen. Verlaat het scherm en hij stopt.',
         'not_hosted' => 'Hij wordt niet aan de machine overgedragen, dus hij overleeft dit scherm, een vergrendelde telefoon of een herstart van de stack niet.',
-        'to_host_one' => 'Houd een bewaker draaiende als niemand kijkt',
+        'to_host_one' => 'Blijf bewaken',
         'would_do' => 'Zolang hij bewaakt, kijkt de stack naar de gegevenslocatie. Verdwijnt die of blijkt het een andere schijf, dan stopt de stack de forms die hier genoemd zijn, zodat ze geen bibliotheek schrijven op wat er over is, en start ze niet opnieuw.',
         'not_said_before' => 'Deze stack zegt vooraf niet welke locatie hij zou bewaken, hoe vaak hij kijkt of welke opdracht hij zou uitvoeren.',
         'which_forms' => 'Welke forms moet hij stoppen?',
@@ -151,7 +151,7 @@ return [
         'named' => '‘:form’ is genoemd',
         'leave_out' => 'Laat ‘:form’ weg',
         'no_forms' => 'Deze stack declareert geen forms om te bewaken',
-        'start' => 'Bewaak de genoemde forms',
+        'start' => 'Bewaak deze forms',
         'about_to' => 'De gegevenslocatie bewaken voor :forms?',
         'guarding' => 'Bewaakt de gegevenslocatie voor :forms',
         'saw_it_go' => 'De bewaker zag de gegevenslocatie verdwijnen',
@@ -175,8 +175,8 @@ return [
         'less' => 'Minder over ‘:word’',
         'nothing_matched' => 'Geen woord, en niets waarmee een woord ook wordt aangeduid, past daarbij',
         'none' => 'Deze machine legt geen woorden uit',
-        'ask' => 'Vraag deze machine wat ‘:word’ betekent',
+        'ask' => 'Vraag naar ‘:word’',
         'unexplained' => 'Ook deze machine heeft geen uitleg bij ‘:word’, dus het staat er zoals het kwam',
-        'ask_in_place' => 'Vraag wat ‘:word’ betekent',
+        'ask_in_place' => 'Vraag naar ‘:word’',
     ],
 ];

@@ -27,7 +27,7 @@ return [
     // and never as having happened; only a report the stack says it carried
     // out is worded in the past.
     'reset' => [
-        'heading' => 'Putting the configuration back',
+        'heading' => 'Restoring the configuration',
         'a_preview' => 'A preview. Nothing has been put back.',
         'put_back' => 'The configuration was put back.',
         'would_revert_files' => 'These files would go back to lemonfiber\'s own. Lines marked - are edits that would be lost; lines marked + are what lemonfiber would write.',

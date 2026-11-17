@@ -44,6 +44,7 @@ return [
     'keeps-running' => [
         'launchd' => 'launchd, in je eigen inlogsessie',
         'systemd' => 'systemd, in je eigen sessie',
+        'task-scheduler' => 'Taakplanner, in je eigen account',
         'unsupported' => 'Deze machine heeft geen servicebeheer dat lemonfiber instelt',
     ],
 
@@ -51,8 +52,8 @@ return [
     // terugnemen. Elke knop noemt zijn commando, zodat twee regels nooit
     // dezelfde woorden dragen.
     'handing_over' => [
-        'install' => ':name draaiend houden op deze machine',
-        'remove' => ':name niet langer draaiend houden',
+        'install' => ':name draaiend houden',
+        'remove' => 'Stop met :name',
     ],
     'handing_over_asked' => [
         'install' => ':name draaiend houden op deze machine?',
@@ -102,7 +103,7 @@ return [
         'before_and_after' => 'Eerst: :was. Nu: :now.',
         'no_outcome' => 'De stack weet niet meer wat ervan geworden is',
         'no_outcome_action' => 'De downloadclients kunnen veranderd zijn. Vraag het opnieuw om te zien wat elk doet.',
-        'a_rehearsal' => 'Een repetitie: geen client is iets gevraagd',
+        'a_rehearsal_said' => 'Geen client is iets gevraagd.',
         'said' => [
             'fetching' => 'Haalt op',
             'stopped' => 'Haalt niet op',
@@ -134,10 +135,10 @@ return [
         ],
     ],
     'switch' => [
-        'title' => 'Kies welke forms draaien',
+        'title' => 'Kies de forms',
         'what_it_does' => 'Maak de forms die je kiest de actieve set. Wat beide sets bevatten, blijft draaien en wordt niet herstart.',
         'none_chosen' => 'Kies minstens één form',
-        'rehearse' => 'Bekijk wat deze wissel zou doen',
+        'rehearse' => 'Bekijk deze wissel',
         'apply' => 'Voer deze wissel uit',
         'working' => 'De stack is ermee bezig',
         'no_outcome' => 'De stack heeft hier geen antwoord meer op.',
