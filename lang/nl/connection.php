@@ -8,7 +8,7 @@ return [
     'local_network_refused' => 'Deze app mag het lokale netwerk niet op.',
     'local_network_refused_action' => 'Geef lemonfiber toegang tot het lokale netwerk in Instellingen.',
     'open_settings' => 'Open Instellingen',
-    'settings_would_not_open' => 'Deze telefoon wilde zijn instellingen voor lemonfiber niet openen.',
+    'settings_would_not_open' => 'Deze telefoon wilde zijn instellingen voor deze app niet openen.',
     'no_answer' => 'Deze stack gaf geen antwoord.',
     'no_answer_action' => 'Controleer of de machine aanstaat en op hetzelfde netwerk zit.',
     'name_not_found' => 'Deze telefoon kon de machine niet vinden op haar naam.',

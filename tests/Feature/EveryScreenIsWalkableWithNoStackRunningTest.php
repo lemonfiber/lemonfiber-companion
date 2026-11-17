@@ -315,12 +315,12 @@ it('finds screens to draw', function (): void {
  *
  * **A stand-in run is the operator**, which `ASessionThisRunKeeps` says in as
  * many words: somebody looking at the whole of this application rather than a
- * member looking at their half. A shelf is read from the media server *as* an
- * account, and the operator is not one, so the reading is refused before a
- * request is made. Under a member's session this screen meets the machine like
- * any other.
+ * member looking at their half. A shelf and a live TV guide are read from the
+ * media server *as* an account, and the operator is not one, so the reading is
+ * refused before a request is made. Under a member's session each of these
+ * screens meets the machine like any other.
  */
-const NEVER_REACHES_THE_MACHINE = ['Shelf'];
+const NEVER_REACHES_THE_MACHINE = ['Shelf', 'Guide'];
 
 /** Where a member's screens live: every screen under it is a member's, and says things in the household's words. */
 const A_MEMBERS_SURFACE = 'Modules\\Household\\';

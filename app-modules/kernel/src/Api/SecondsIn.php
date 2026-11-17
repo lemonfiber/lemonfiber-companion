@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 /**
- * How many seconds make a minute, an hour and a day, declared once.
+ * How many seconds make a minute, a half hour, an hour and a day, declared once.
  *
  * Every length of time here is counted in the seconds an {@see Instant}
  * counts, and every class that turns one into a minute, an hour or a day
@@ -20,6 +20,8 @@ namespace Modules\Kernel\Api;
 enum SecondsIn: int
 {
     case AMinute = 60;
+
+    case AHalfHour = 1_800;
 
     case AnHour = 3_600;
 

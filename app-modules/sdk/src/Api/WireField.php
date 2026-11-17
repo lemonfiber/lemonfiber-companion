@@ -7,20 +7,10 @@ namespace Modules\Sdk\Api;
 /**
  * What the wire calls each field that more than one envelope this module reads carries.
  *
- * The case's value *is* the name on the wire, which is the pattern every
- * translated word in this app follows — {@see \Modules\Kernel\Api\Conclusion}
- * and {@see \Modules\Kernel\Api\Severity} are the same idea one level up, where
- * the case's value is the word the core writes for a state. A reader spelling
- * `'severity'` in quotes says the same thing without saying where it came from.
- *
- * **Not derived from the contract document**, which carries kinds, not shapes.
- * Being an enum makes the set enumerable, so a test asks each name is read.
- *
- * **Only the shared words are here.** A word one envelope carries lives in
- * that envelope's own enum under `Fields`, so a name there says which payload
- * it belongs to; a word read out of two or more envelopes lives here, and
- * `data`, the payload every envelope has, does too. `EveryWireFieldIsReadTest`
- * holds each word to the enum it belongs in.
+ * The case's value *is* the name on the wire. A word one envelope carries
+ * lives in that envelope's own enum under `Fields`; a word read out of two or
+ * more envelopes lives here, and so does `data`, the payload every envelope
+ * has. `EveryWireFieldIsReadTest` holds each word to the enum it belongs in.
  */
 enum WireField: string implements NamesAWireField
 {
@@ -997,4 +987,13 @@ enum WireField: string implements NamesAWireField
 
     /** The events set apart from an alert preset; the parts plain Compose words do not bring up as lemonfiber does. */
     case Exceptions = 'exceptions';
+
+    /** The live TV channels a member may watch, listed with what is on now or in the guide. */
+    case Channels = 'channels';
+
+    /** When a programme ends, on a channel now and in the guide. */
+    case Ends = 'ends';
+
+    /** Every service held back a change starts; and when a programme in the guide starts. */
+    case Starts = 'starts';
 }

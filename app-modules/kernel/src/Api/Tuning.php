@@ -18,6 +18,9 @@ interface Tuning
     /** The channels this member may watch, each with what is on it now, or why the core would not say. */
     public function theChannelsOf(Stack $stack, Session $session, Whose $whose): WhatIsOnTheChannels;
 
+    /** Every channel this member may watch, each with its programmes across the window the operator sets, or why the core would not say. */
+    public function theGuideOf(Stack $stack, Session $session, Whose $whose): WhatTheGuideSays;
+
     /** Open one channel's live stream for this member. */
     public function tune(Stack $stack, Session $session, Whose $whose, ChannelId $channel): WhatTuningCameTo;
 

@@ -229,7 +229,7 @@ return [
         'scan' => 'Open de camera',
         'the_operator_closed_it_action' => 'Open de camera opnieuw en houd hem boven de code.',
         'the_camera_was_declined_action' => 'Open de camera opnieuw en sta hem toe als de telefoon erom vraagt.',
-        'the_camera_is_not_permitted_action' => 'Sta de camera voor lemonfiber toe in Instellingen en open hem dan opnieuw.',
+        'the_camera_is_not_permitted_action' => 'Sta de camera voor deze app toe in Instellingen en open hem dan opnieuw.',
         'there_is_no_camera_action' => 'Vraag wie je huis beheert om je te helpen deze telefoon in te stellen.',
         'code_unreadable' => 'Dat is geen code die deze telefoon kan gebruiken.',
         'code_unreadable_action' => 'Scan de code op je uitnodiging, of die wie je huis beheert voor een nieuwe telefoon laat zien.',
@@ -252,8 +252,8 @@ return [
         'refused_action' => 'Controleer ze allebei en probeer het opnieuw.',
         'too_many_attempts' => 'Even te veel pogingen.',
         'too_many_attempts_action' => 'Wacht even en probeer het dan nog één keer.',
-        'not_permitted' => 'Deze telefoon laat lemonfiber niet naar je huis zoeken.',
-        'not_permitted_action' => 'Sta lemonfiber in Instellingen toe apparaten op je netwerk te vinden en probeer het opnieuw.',
+        'not_permitted' => 'Deze telefoon laat deze app niet naar je huis zoeken.',
+        'not_permitted_action' => 'Sta deze app in Instellingen toe apparaten op je netwerk te vinden en probeer het opnieuw.',
         'not_the_house' => 'Je uitnodiging kon het huis dat erin staat niet bereiken.',
         'not_open' => 'Deze uitnodiging staat niet meer open.',
         'not_open_action' => 'Heb je al een wachtwoord gekozen, log hieronder daarmee in. Zo niet, vraag wie de uitnodiging stuurde om een nieuwe.',
@@ -380,6 +380,17 @@ return [
         'nothing_in_the_guide' => 'Nu niets in de gids',
         'reads' => ':channel, :programme',
         'reads_until' => ':channel, :programme, tot :time',
+        'see_all' => 'Alles bekijken',
+        'see_all_named' => 'De hele tv-gids bekijken',
+    ],
+
+    'guide' => [
+        'title' => 'Tv-gids',
+        'none' => 'Nu geen live tv',
+        'none_action' => 'Trek omlaag om opnieuw te kijken.',
+        'channel_named' => ':channel kijken',
+        'reads_on_now' => ':channel, :programme, :times, nu',
+        'reads_later' => ':programme, :times',
     ],
 
     'month' => [

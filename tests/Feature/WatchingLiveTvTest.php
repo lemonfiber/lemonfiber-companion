@@ -150,6 +150,12 @@ it('draws a Live TV shelf after Home\'s rows, each channel with what is on it no
         ->and($said)->toContain('Radio, Nothing in the guide right now');
 });
 
+it('offers See all under the shelf, which opens the guide', function (): void {
+    $home = homeWithLiveTv(ATunerThatAnswered::listing(twoChannels()), aMemberWatchingLiveTv(), APlayerOnAHandset::working(), new TheChannelOnScreen());
+
+    expect(WhatTheDeviceWouldDraw::by($home)->offers())->toContain(__('household.live.see_all_named'));
+});
+
 it('draws no shelf where the core lists no channel, or will not list them', function (ATunerThatAnswered $tuner): void {
     $home = homeWithLiveTv($tuner, aMemberWatchingLiveTv(), APlayerOnAHandset::working(), new TheChannelOnScreen());
 

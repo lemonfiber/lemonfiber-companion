@@ -98,6 +98,19 @@ core is told, and the shelf says why beside the channel, in the core's words or
 the app's own; nothing is tried again. Away from home the core's own sentence
 is said beside it, as a title's is.
 
+**See all opens the guide** (`WhatIsOnLiveTv`, under the Home tab).
+`TheLiveTvGuide` asks the core for the member's guide (`/api/guide`) when the
+screen opens and when it is pulled down, never on a timer, and
+`HowTheGuideReads` draws it as a grid on the phone's clock: half hours along
+the top from the one the clock is in, the channels in a column that stays put,
+and each channel's programmes beside it, `HowTheGuideReads::POINTS_PER_MINUTE`
+points to the minute, panned sideways together. The time between two
+programmes is empty space, which is how a programme the core left out for the
+member's limits looks, and a row stops where its guide ends. A channel, or the
+programme on it now, tunes it as the shelf does, and what came of it is said
+above the grid; a later programme opens a sheet with its title, times and
+certificate, and nothing to press.
+
 **The member's place is the core's to keep.** The device says the player moved
 every ten seconds while it plays and at once on a pause, a seek, the end or a
 close, and `KeepsTheMembersPlace` reads where it stands and tells the core

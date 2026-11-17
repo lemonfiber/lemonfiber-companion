@@ -132,6 +132,18 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'member\'s own and the core narrowed the grant to them, for `HeldEnvelope.member`\'s reason.',
         ],
         [
+            'path' => 'GuideEnvelope.rehearsed',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
+        ],
+        [
+            'path' => 'GuideEnvelope.id',
+            'because' => 'The member it was read for, by the media server\'s id, echoed back, for `ChannelsEnvelope.id`\'s reason.',
+        ],
+        [
+            'path' => 'GuideEnvelope.member',
+            'because' => 'The member it was read for, by name, echoed back, for `HeldEnvelope.member`\'s reason.',
+        ],
+        [
             'path' => 'HeldEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],

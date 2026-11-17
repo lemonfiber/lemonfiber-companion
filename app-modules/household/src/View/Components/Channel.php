@@ -10,9 +10,9 @@ use Illuminate\View\Component;
 
 use function is_string;
 
+use Modules\Household\Internal\Presenters\HowTheChannelsRead;
 use Modules\Household\Internal\ViewModels\WhatOneChannelSays;
 
-use function sprintf;
 use function view;
 
 /**
@@ -37,7 +37,7 @@ final class Channel extends Component
 
     public function __construct(Translator $catalogue, public readonly WhatOneChannelSays $channel)
     {
-        $this->above = $channel->number === '' ? $channel->name : sprintf('%s · %s', $channel->number, $channel->name);
+        $this->above = HowTheChannelsRead::shown($channel->number, $channel->name);
         $this->lettered = $channel->programme === '' ? $this->said($catalogue, 'household.live.nothing_in_the_guide', []) : $channel->programme;
         $this->below = $channel->until === '' ? $channel->certificate : $this->said($catalogue, 'household.live.until', ['time' => $channel->until]);
         $this->named = $channel->until === ''

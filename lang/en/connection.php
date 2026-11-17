@@ -8,7 +8,7 @@ return [
     'local_network_refused' => 'This app is not allowed onto the local network.',
     'local_network_refused_action' => 'Allow local network access for lemonfiber in Settings.',
     'open_settings' => 'Open Settings',
-    'settings_would_not_open' => 'This phone would not open its settings for lemonfiber.',
+    'settings_would_not_open' => 'This phone would not open its settings for this app.',
     'no_answer' => 'This stack did not answer.',
     'no_answer_action' => 'Check that the machine is on and on the same network.',
     'name_not_found' => 'This phone could not find the machine by its name.',
