@@ -37,6 +37,7 @@ const SENT_THROUGH_THE_SDK = [
  * @var array<string, string>
  */
 const NOT_SENT_BECAUSE = [
+    'push-woken' => 'N4-R31 — confirming a wake means opening the push, and the app never opens one, so a push stays a wake',
     'quality-reapply' => 'N24-R5 — its whole effect is overwriting a quality configuration the operator edited by hand, which the app does not offer (N19-R4)',
 ];
 
@@ -48,7 +49,6 @@ const NOT_SENT_BECAUSE = [
  */
 const NOT_SENT_YET = [
     'play',
-    'push-woken',
     'run',
 ];
 

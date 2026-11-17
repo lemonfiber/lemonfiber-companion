@@ -37,6 +37,7 @@ use Modules\Operator\Internal\Screens\TakingSomebodyOut;
 use Modules\Operator\Internal\Screens\TheKeysAppsHold;
 use Modules\Operator\Internal\Screens\TheOutsideWatcher;
 use Modules\Operator\Internal\Screens\TheQueueHealingItself;
+use Modules\Operator\Internal\Screens\TheScheduledRuns;
 use Modules\Operator\Internal\Screens\ThisStackOnThisPhone;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatAcceptingItCosts;
@@ -230,6 +231,7 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::WhileNobodyWasLooking->value, WhileNobodyWasLooking::class);
             Router::native(AStacksScreen::Watcher->value, TheOutsideWatcher::class);
             Router::native(AStacksScreen::Queue->value, TheQueueHealingItself::class);
+            Router::native(AStacksScreen::Scheduled->value, TheScheduledRuns::class);
 
             // A guard on the data location, held while its screen asks. A
             // screen of its own rather than a row of the one above, because

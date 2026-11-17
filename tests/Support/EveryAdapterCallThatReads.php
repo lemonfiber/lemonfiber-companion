@@ -265,6 +265,7 @@ use Modules\Sdk\Api\Restarts;
 use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Reversers;
 use Modules\Sdk\Api\RoomGivers;
+use Modules\Sdk\Api\Schedulers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Searchers;
@@ -414,6 +415,7 @@ final readonly class EveryAdapterCallThatReads
             'Restarts::afterTheLastStart' => static fn(): object => new Restarts($clients)->afterTheLastStart($stack, $session),
             'Watchers::whatItSees' => static fn(): object => new Watchers($clients)->whatItSees($stack, $session),
             'Healers::howItHeals' => static fn(): object => new Healers($clients)->howItHeals($stack, $session),
+            'Schedulers::scheduled' => static fn(): object => new Schedulers($clients)->scheduled($stack, $session),
             'Foundations::withoutLemonfiber' => static fn(): object => new Foundations($clients)->withoutLemonfiber($stack, $session),
             'Inspectors::checkedOn' => static fn(): object => new Inspectors($clients)->checkedOn($stack, $session),
             'Chroniclers::versionsOn' => static fn(): object => new Chroniclers($clients)->versionsOn($stack, $session),

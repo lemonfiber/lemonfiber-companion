@@ -44,4 +44,7 @@ requirement = [
   { id = "N2-R36", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatToDoWithThis.php", "app-modules/sdk/src/Api/Supervisors.php", "tests/Feature/AStartsYesToItsInstallsTest.php", "tests/Feature/WhatAnActSaysBesideItselfTest.php"] },
   { id = "N2-R37", state = "done", evidence = ["app-modules/sdk/src/Api/Lifecycles.php", "app-modules/operator/resources/views/what-to-do-with-this.blade.php", "tests/Feature/WhatAnActSaysBesideItselfTest.php"] },
   { id = "N2-R38", state = "done", evidence = ["app-modules/kernel/src/Api/RequestId.php", "app-modules/operator/src/Internal/Screens/WhatTheHouseholdAsked.php", "app-modules/news/src/Internal/TheNewestAsItems.php", "tests/Feature/SeeingWhatTheHouseholdAskedForTest.php::names every row by the reference the stack gives it", "tests/Contract/WantingContractTest.php::an approval names the request and nothing else", "tests/Contract/ReadingNewsContractTest.php::comes away with each kind newest first"] },
+  { id = "N2-R39", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/TheScheduledRuns.php", "app-modules/sdk/src/Api/TheScheduleRead.php", "tests/Contract/RunningOnAScheduleContractTest.php", "tests/Feature/SeeingWhatRunsOnAScheduleTest.php"] },
+  { id = "N2-R40", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/TheScheduledRuns.php", "tests/Arch/ModuleApiTest.php"] },
+  { id = "N2-R41", state = "open" },
 ]

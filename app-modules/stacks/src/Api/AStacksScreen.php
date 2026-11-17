@@ -56,6 +56,9 @@ enum AStacksScreen: string
     /** How the queue heals itself: what it would act on and why, and every run it took. */
     case Queue = '/stacks/{stack}/queue';
 
+    /** Every run-and-exit service and how its last run went. */
+    case Scheduled = '/stacks/{stack}/scheduled';
+
     /** A guard on this machine's data location, held only while its screen keeps asking. */
     case Guard = '/stacks/{stack}/guard';
 

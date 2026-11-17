@@ -24,6 +24,7 @@ use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
+use Modules\Kernel\Api\HowItsLastRunWent;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\HowItWasRead;
@@ -283,6 +284,10 @@ function everyDerivedKey(): array
         WhatKindOfThingIsCovered::class => aPairPerCase(
             WhatKindOfThingIsCovered::cases(),
             static fn(WhatKindOfThingIsCovered $kind): array => [$kind->saidOnTheScreen()],
+        ),
+        HowItsLastRunWent::class => aPairPerCase(
+            HowItsLastRunWent::cases(),
+            static fn(HowItsLastRunWent $health): array => [$health->saidOnTheScreen()],
         ),
         WhetherHealingActs::class => aPairPerCase(
             WhetherHealingActs::cases(),

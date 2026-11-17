@@ -51,6 +51,7 @@ return [
         'after_a_restart' => 'Na een herstart',
         'watcher' => 'Wachter buiten',
         'queue' => 'Wachtrijherstel',
+        'scheduled' => 'Geplande taken',
         'while_nobody_was_looking' => 'Onbewaakte uren',
         'already_installed' => 'Al geïnstalleerd',
         'other_programs' => 'Andere programma\'s',
