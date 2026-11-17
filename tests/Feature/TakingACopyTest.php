@@ -307,7 +307,7 @@ it('reports what the copy covered, what it removed, its size against the minute 
         ->and($drawn)->toContain('lemonfiber-20260902-0300-full')
         ->and($drawn)->toContain(__('stacks.copy.pace.slow', ['moved' => 1, 'moved_unit' => aLineOfTheCopy('household.gigabytes'), 'budget' => 600, 'budget_unit' => aLineOfTheCopy('household.megabytes')]))
         ->and($drawn)->toContain(__('stacks.copy.holds_credentials'))
-        ->and($drawn)->not->toContain(__('stacks.copy.a_rehearsal'))
+        ->and($drawn)->not->toContain(__('stacks.a_rehearsal'))
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('stacks.copy.see_the_copies'));
 });
 
@@ -333,7 +333,7 @@ it('labels a rehearsal as one and words every sentence of it as what would happe
         ->and($screen->lastCopy()->prunedSaid)->toBe('stacks.copy.would_remove')
         ->and($screen->lastCopy()->pace?->said)->toBe($pace)
         ->and($screen->lastCopy()->holdsSaid)->toBe($holdsSaid)
-        ->and($drawn)->toContain(__('stacks.copy.a_rehearsal'))
+        ->and($drawn)->toContain(__('stacks.a_rehearsal'))
         ->and($drawn)->toContain(__('stacks.copy.would_copy', ['scope' => aLineOfTheCopy('stacks.copy.scope.whole_stack')]))
         ->and($drawn)->toContain(trans_choice('stacks.copy.would_remove', 1))
         ->and($drawn)->not->toContain(__('stacks.copy.copied', ['scope' => aLineOfTheCopy('stacks.copy.scope.whole_stack')]))

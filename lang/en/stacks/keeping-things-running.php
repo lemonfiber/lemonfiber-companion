@@ -45,14 +45,15 @@ return [
     'keeps-running' => [
         'launchd' => 'launchd, in your own login session',
         'systemd' => 'systemd, in your own session',
+        'task-scheduler' => 'Task Scheduler, in your own account',
         'unsupported' => 'This machine has no service manager lemonfiber sets up',
     ],
 
     // Handing one command to this machine to keep running, or taking it back.
     // Each control names its command, so two rows never carry the same words.
     'handing_over' => [
-        'install' => 'Keep :name running on this machine',
-        'remove' => 'Stop keeping :name running',
+        'install' => 'Keep :name running',
+        'remove' => 'Stop keeping :name',
     ],
     'handing_over_asked' => [
         'install' => 'Keep :name running on this machine?',
@@ -102,7 +103,7 @@ return [
         'before_and_after' => 'Before: :was. Now: :now.',
         'no_outcome' => 'The stack no longer knows what became of it',
         'no_outcome_action' => 'The download clients may have changed. Ask again to see what each is doing.',
-        'a_rehearsal' => 'A rehearsal: no client was asked anything',
+        'a_rehearsal_said' => 'No client was asked anything.',
         'said' => [
             'fetching' => 'Fetching',
             'stopped' => 'Not fetching',
@@ -134,10 +135,10 @@ return [
         ],
     ],
     'switch' => [
-        'title' => 'Choose which forms run',
+        'title' => 'Choose the forms',
         'what_it_does' => 'Make the forms you choose the active set. What both sets hold keeps running and is not restarted.',
         'none_chosen' => 'Choose at least one form',
-        'rehearse' => 'See what this switch would do',
+        'rehearse' => 'Preview this switch',
         'apply' => 'Make this switch',
         'working' => 'The stack is working on it',
         'no_outcome' => 'The stack no longer has an answer for this.',

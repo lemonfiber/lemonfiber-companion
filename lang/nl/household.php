@@ -35,7 +35,7 @@ return [
         // aanvraag; wat niemand ze kan vertellen is hoe ver hij is.
         'unnamed' => 'Status hier niet bekend',
     ],
-    'your_requests' => 'Wat je hebt aangevraagd',
+    'your_requests' => 'Je verzoeken',
 
     // Een verzoek dat nog geen dienst een naam heeft gegeven, naar wat voor iets
     // het is: in de eigen lijst van het lid, en in die van wie het huis beheert.
@@ -72,12 +72,12 @@ return [
         'book_series' => 'Boekenreeks',
     ],
     'told' => [
-        'heading' => "Laat het me weten als het klaar is",
+        'heading' => "Als het klaar is",
         'phone_woken' => 'Deze telefoon krijgt het ook te horen.',
         'phone_not_woken' => 'Deze telefoon krijgt het niet te horen.',
     ],
     'your_ask' => [
-        'heading' => 'Wat je vroeg',
+        'heading' => 'Je vraag',
         'not_among' => 'Dit staat niet meer tussen wat je vroeg.',
         'in_the_music' => "In de muziek van het huis. Speel het af waar het huis zijn muziek bewaart.",
         'in_the_books' => "In de boeken van het huis. Lees het waar het huis zijn boeken bewaart.",
@@ -222,7 +222,7 @@ return [
         'which_are_you' => 'Wie van deze ben jij?',
         'invited' => 'Ik ben uitgenodigd',
         'invited_explained' => 'Iemand heeft je in zijn huis uitgenodigd.',
-        'runs_it' => 'Ik beheer het huis',
+        'runs_it' => 'Ik beheer het',
         'runs_it_explained' => 'Je hebt het thuis op een computer opgezet.',
         'your_invitation' => 'Scan je uitnodiging',
         'your_invitation_explained' => 'Scan de code op de uitnodiging die je kreeg. Heb je er geen, vraag dan wie je huis beheert om op zijn telefoon Telefoon koppelen te openen, en scan de code die daar staat.',
@@ -240,8 +240,8 @@ return [
         'not_kept_action' => 'Ontgrendel de telefoon en probeer het opnieuw.',
         'is_it_yours' => 'Heeft iemand uit je huis dit gestuurd?',
         'is_it_yours_explained' => 'Deze uitnodiging verbindt deze telefoon met het huis hieronder. Ga alleen verder als iemand uit je huis hem naar je heeft gestuurd. Weet je niet wie hem stuurde, ga dan niet verder.',
-        'it_is_yours' => 'Ja, iemand uit mijn huis stuurde hem',
-        'it_is_not_yours' => 'Nee, niet verder',
+        'it_is_yours' => 'Ja, ga verder',
+        'it_is_not_yours' => 'Nee, stop',
         'called' => 'Thuis',
         'signing_in' => 'Inloggen',
         'signing_in_explained' => 'Typ je naam en je wachtwoord.',

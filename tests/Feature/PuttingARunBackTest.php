@@ -419,7 +419,7 @@ it('says all of it went back only where nothing was left, and what went back', f
     ]))
         ->and($drawn->said())->toContain(__('stacks.run_back.did.all'))
         ->and($drawn->said())->toContain(__('stacks.run_back.does.delete'))
-        ->and($drawn->said())->not->toContain(__('stacks.run_back.a_rehearsal'))
+        ->and($drawn->said())->not->toContain(__('stacks.a_rehearsal'))
         ->and($drawn->said())->not->toContain(__('stacks.run_back.noted'))
         ->and($drawn->offers())->toContain(__('stacks.record.road_in'));
 });
@@ -456,7 +456,7 @@ it('labels a rehearsal as one and says it in the tense of what would happen', fu
     expect(everythingPuttingTheRunBackShows($screen->done())['said'])
         ->toBe(['stacks.run_back.would.not_all', 'stacks.run_back.would.reversed', 'stacks.run_back.would.none_reversed'])
         ->and($screen->done()->rehearsed)->toBeTrue()
-        ->and($said)->toContain(__('stacks.run_back.a_rehearsal'))
+        ->and($said)->toContain(__('stacks.a_rehearsal'))
         ->and($said)->toContain(__('stacks.run_back.would.not_all'))
         ->and($said)->toContain(__('stacks.run_back.would.none_reversed'))
         ->and($said)->not->toContain(__('stacks.run_back.did.reversed'));

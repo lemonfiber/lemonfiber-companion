@@ -9,12 +9,13 @@ use function array_find;
 use function array_map;
 use function array_slice;
 use function array_values;
+use function class_exists;
+use function constant;
 use function count;
 use function explode;
 use function file_get_contents;
 use function in_array;
 use function is_array;
-use function is_file;
 use function is_string;
 use function json_decode;
 use function mb_strtolower;
@@ -22,6 +23,7 @@ use function preg_match;
 use function preg_replace;
 use function preg_split;
 use function rtrim;
+use function sprintf;
 use function str_contains;
 use function str_replace;
 use function strlen;
@@ -32,16 +34,19 @@ use function substr;
  *
  * What a member's surface may not show: a service's name, a domain term, a
  * size, a rate, an address or a version. The list is the core's, as the SDK
- * vendors it with the contract; until the SDK carries it, the copy beside this
- * file, taken from the core at the revision it names, stands in.
+ * generates it; until the SDK carries it, the copy beside this file, taken
+ * from the core at the revision it names, stands in.
  */
 final readonly class TheHouseholdsWords
 {
-    /** Where the SDK vendors the core's list. */
-    public const string AS_THE_SDK_VENDORS_IT = 'vendor/lemonfiber/sdk-php/contract/web-api/household-words.json';
+    /** The class the SDK generates the core's list into. */
+    public const string AS_THE_SDK_GENERATES_IT = 'Lemonfiber\\Sdk\\Generated\\HouseholdWords';
 
     /** The copy taken from the core, read where the SDK carries none. */
     public const string AS_TAKEN = 'tests/Support/household-words.json';
+
+    /** What each part of the list is called, as a key of the copy and a constant of the SDK's class. */
+    private const array PARTS = ['names' => 'NAMES', 'terms' => 'TERMS', 'sizes' => 'SIZES', 'marks' => 'MARKS'];
 
     /**
      * @param list<string> $names
@@ -51,12 +56,10 @@ final readonly class TheHouseholdsWords
      */
     private function __construct(private array $names, private array $terms, private array $sizes, private array $marks) {}
 
-    /** The list as the SDK vendors it, or the copy taken from the core where it vendors none. */
+    /** The list as the SDK generates it, or the copy taken from the core where it generates none. */
     public static function read(): self
     {
-        $vendored = Tree::at(self::AS_THE_SDK_VENDORS_IT);
-        $said = json_decode((string) file_get_contents(is_file($vendored) ? $vendored : Tree::at(self::AS_TAKEN)), associative: true);
-        $said = is_array($said) ? $said : [];
+        $said = class_exists(self::AS_THE_SDK_GENERATES_IT) ? self::generated() : self::taken();
 
         return new self(self::listed($said, 'names'), self::listed($said, 'terms'), self::listed($said, 'sizes'), self::listed($said, 'marks'));
     }
@@ -73,6 +76,26 @@ final readonly class TheHouseholdsWords
         $lower = mb_strtolower($text);
 
         return $this->termIn($lower) ?? $this->figureIn($lower) ?? $this->markIn($lower);
+    }
+
+    /** @return array<string, mixed> */
+    private static function generated(): array
+    {
+        $said = [];
+
+        foreach (self::PARTS as $part => $constant) {
+            $said[$part] = constant(sprintf('%s::%s', self::AS_THE_SDK_GENERATES_IT, $constant));
+        }
+
+        return $said;
+    }
+
+    /** @return array<mixed> */
+    private static function taken(): array
+    {
+        $said = json_decode((string) file_get_contents(Tree::at(self::AS_TAKEN)), associative: true);
+
+        return is_array($said) ? $said : [];
     }
 
     /** The first name or term said among the words of `$lower`. */

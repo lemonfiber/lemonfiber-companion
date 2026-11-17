@@ -38,7 +38,7 @@ return [
         'clock_unreadable' => 'At a time the machine could not tell',
         // The way to putting back what was done at one moment. It opens a
         // screen that says what goes with it; nothing is put back from here.
-        'put_back' => 'What putting this back takes',
+        'put_back' => 'Putting it back',
         // The same, for somebody being read to, naming the moment.
         'put_back_that' => 'What putting back ":did", :when, takes',
     ],
@@ -61,10 +61,10 @@ return [
         'no_outcome_action' => 'It may have gone back. The record says what is there now.',
         // The stack's own answer, told apart from a stack that could not be
         // reached. Asking after the same work is answered the same way.
-        'refused' => 'The stack answered, and did not put this run back',
+        'refused' => 'Not put back',
         'refused_same_answer' => 'Asking again gets the same answer. The record says what is there now, and the run can be chosen there again once what the stack said has changed.',
         // A rehearsal is said to be one, and nothing about it is in the past tense.
-        'a_rehearsal' => 'A rehearsal: nothing has been put back',
+        'a_rehearsal_said' => 'Nothing has been put back.',
         // What was left leads, in the report's tense.
         'did' => [
             'all' => 'All of it went back.',

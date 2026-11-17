@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'title' => 'Terwijl niemand keek',
-    'after_the_last_restart' => 'Na de laatste herstart',
+    'after_the_last_restart' => 'Na herstarten',
     'started' => 'De machine is :ago voor het laatst gestart, en de controle daarna is uitgevoerd.',
     'not_run' => 'De machine is :ago voor het laatst gestart, en de controle na een herstart is sindsdien niet uitgevoerd.',
     'start_unknown' => 'De machine zegt niet wanneer hij voor het laatst is gestart, dus geen controle kan daarna worden geplaatst.',
@@ -32,7 +32,7 @@ return [
         'unknown' => 'De stack kon niet zeggen welke poort wordt doorgestuurd.',
         'not_every_client' => 'Nog niet elke client gebruikt hem.',
     ],
-    'keeps_running' => 'Wat hem draaiende houdt',
+    'keeps_running' => 'Houdt hem draaiende',
     'from_outside' => 'Van buitenaf',
     'in_the_queue' => 'In de wachtrij',
     'keeps_running_open' => 'Wat hier blijft draaien',

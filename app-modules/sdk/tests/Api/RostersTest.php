@@ -173,6 +173,7 @@ function aRosterOf(array $differently = []): array
         // configuration does not declare. Every stack sends the field, and it
         // carries a row rather than none so that the shape of a row is part of
         // what the contract is asked about here.
+        'scheduled' => [],
         'undeclared' => [[
             'id' => 'a-container-somebody-started',
             'describes' => 'Something running beside the stack',

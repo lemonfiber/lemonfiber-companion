@@ -23,7 +23,7 @@ return [
     'nothing_to_hand_over_action' => 'Try asking for it again.',
     'the_device_would_not_offer' => 'This phone would not offer a way to send it.',
     'the_device_would_not_offer_action' => 'The report is on the screen above; you can copy it by hand.',
-    'share_diagnostics' => 'Send a report to someone helping you',
+    'share_diagnostics' => 'Send a report',
     'notifications_reason' => 'lemonfiber tells you when a stack needs attention, and when it is back to normal. It hears your stacks while it is open. While it is closed, your phone decides when it may listen, so it may tell you late or not at all.',
     'notifications_alternative' => 'Without notifications, open lemonfiber to see how each stack is doing.',
 ];

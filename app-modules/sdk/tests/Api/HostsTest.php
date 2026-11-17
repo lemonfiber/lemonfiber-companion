@@ -189,7 +189,7 @@ it('a manager this app does not recognise names what it does read', function ():
     expect(fn(): WhatRunsUnattended => Hosts::in(hostingSaying([
         'manager' => 'runit',
         'commands' => [],
-    ])))->toThrow(HostingIsUnreadable::class, '`launchd`, `systemd`, `unsupported`');
+    ])))->toThrow(HostingIsUnreadable::class, '`launchd`, `systemd`, `task-scheduler`, `unsupported`');
 });
 
 it('refuses a listing with no commands key, and one whose commands are not commands', function (): void {

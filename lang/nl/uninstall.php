@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'heading' => 'lemonfiber van deze machine halen',
+    'heading' => 'lemonfiber verwijderen',
     'four' => 'Vier verwijderingen, elk een eigen beslissing. Elk wordt eerst gelezen voordat er iets wordt afgesproken, en er wordt niets verwijderd tot je het zegt',
 
     // De vier verwijderingen, zoals ze worden gekozen en zoals ze worden afgesproken.
@@ -14,14 +14,14 @@ return [
         'media' => 'De bibliotheek en de downloads verwijderen',
     ],
     'read' => 'Lezen wat dit zou doen: :tier',
-    'the_library' => 'De bibliotheek en de downloads',
+    'the_library' => 'Bibliotheek en downloads',
     'the_library_alone' => 'Dit is een eigen beslissing, nooit samen met een andere, omdat niets de bibliotheek terug kan halen',
     'choose_again' => 'Een andere verwijdering kiezen',
 
     // Het overzicht. Hoeveel ervan gelezen kon worden, komt eerst.
     'complete' => 'Dit is alles wat deze verwijdering raakt: elke bron die nodig was heeft geantwoord',
     'incomplete' => 'Deze lijst is niet volledig. Een deel van wat deze verwijdering raakt kon niet worden gelezen, dus er staat meer op deze machine dan hier staat',
-    'unread' => 'Wat niet gelezen kon worden',
+    'unread' => 'Niet gelezen',
     'removes' => 'Wat het verwijdert',
     'keeps' => 'Wat het laat staan',
     'going' => 'Wat weggaat',
@@ -39,7 +39,7 @@ return [
     'nothing_kept' => 'Er wordt niets achtergehouden',
     'frees' => 'Wat weggaat neemt :figure :unit in. Wat bewaard wordt telt niet mee',
     'frees_as_read' => 'Wat van het weggaande gelezen kon worden neemt :figure :unit in. Wat bewaard wordt telt niet mee, en wat niet gelezen kon worden ook niet',
-    'foreign' => 'Hier, en niet van lemonfiber',
+    'foreign' => 'Niet van lemonfiber',
     'foreign_is' => 'Dit staat onder de datalocatie en lemonfiber heeft het er niet neergezet. Het telt niet als van lemonfiber, en de datalocatie wordt niet in zijn geheel verwijderd zolang het er staat',
     'foreign_line' => '{1} :at: één bestand, :figure :unit|[0,*] :at: :count bestanden, :figure :unit',
     'nothing_foreign' => 'Niets hier is van iemand anders',
@@ -47,20 +47,20 @@ return [
     'coming_line' => ':name, :progress% op weg',
     'nothing_coming' => 'Er wordt niets binnengehaald',
     'interrupts' => 'Nu doorgaan onderbreekt elke download hierboven, en wat die al hadden opgehaald gaat verloren',
-    'wait' => 'Wachten tot ze binnen zijn, dan: :agree',
-    'go_ahead_now' => 'Nu, en ze onderbreken: :agree',
-    'outside' => 'Wat lemonfiber niet kan weghalen',
+    'wait' => 'Wacht, dan :agree',
+    'go_ahead_now' => 'Nu :agree',
+    'outside' => 'Blijft staan',
     'outside_is' => 'Elk hiervan blijft op de machine staan, met hoe je het zelf verwijdert',
     'was_found' => 'Op deze machine gevonden',
     'not_found' => 'Het overzicht vond het hier niet, en dat is niet hetzelfde als dat het er niet is',
     'by_hand' => 'Met de hand: :how',
     'nothing_outside' => 'Niets wat lemonfiber niet kan weghalen',
-    'volume' => 'Waar de data staat',
+    'volume' => 'De data',
     'acknowledge_the_volume' => 'Ik weet dat de data daar staat',
     'volume_acknowledged' => 'Bevestigd',
     'copy_first' => 'Voordat de configuratie weggaat: :said',
     'no_copy_first' => 'Deze stack maakt geen kopie voordat de configuratie weggaat',
-    'take_a_copy' => 'Eerst een kopie maken',
+    'take_a_copy' => 'Eerst kopiëren',
     'ends_this_session' => 'Dit verwijdert ook wat deze app binnenlaat. De sessie van deze app op deze machine eindigt als dit draait, en de machine biedt niet langer aan wat deze app bereikt',
     'agree' => [
         'stop' => 'Alles stoppen',

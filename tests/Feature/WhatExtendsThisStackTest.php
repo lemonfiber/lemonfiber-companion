@@ -674,7 +674,7 @@ it('rehearses an update and draws it as a rehearsal: from and to, what stops, wh
         ->and($said)->toContain(aPluginsLine('plugins.rehearsal'))
         ->and($said)->toContain(aPluginsLine('plugins.from_to', ['from' => '2.1.0', 'to' => '2.2.0']))
         ->and($said)->toContain(aPluginsLine('plugins.what_goes_back'))
-        ->and($said)->toContain(__('stacks.run_back.a_rehearsal'))
+        ->and($said)->toContain(__('stacks.a_rehearsal'))
         ->and($said)->toContain('What the service wrote stays for the new version')
         ->and($said)->toContain(aPluginsLine('plugins.new_version'))
         ->and($said)->toContain(aPluginsLine('plugins.proof.not_asked'))

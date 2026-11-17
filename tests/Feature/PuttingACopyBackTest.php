@@ -243,7 +243,7 @@ it('rehearses first, labelled as one, with the scope, what wrote it, what it hol
     ])
         ->and(array_map(static fn(ACopy $copy): string => $copy->name(), $puttingBack->rehearsed()))->toBe(['lemonfiber-20260924-0300-full'])
         ->and($puttingBack->agreed())->toBe([])
-        ->and($drawn->said())->toContain(__('stacks.put_back.a_rehearsal'))
+        ->and($drawn->said())->toContain(__('stacks.a_rehearsal'))
         ->and($drawn->said())->toContain(__('stacks.put_back.would_put_back', ['scope' => aLineOfPuttingBack('stacks.copy.scope.whole_stack')]))
         ->and($drawn->said())->toContain(__('stacks.put_back.taken_by', ['version' => '0.9.0', 'when' => trans_choice('health.ago.days', 1)]))
         ->and($drawn->said())->toContain(__('stacks.put_back.would_move', ['was' => '/srv/old', 'now' => '/srv/new']))
@@ -288,7 +288,7 @@ it('offers nothing to agree to where the stack would not list the copy', functio
 
     expect(everythingTheListingShows($screen->answer()))->toBe(nothingListedOfTheCopy(['cameBack' => false, 'met' => KindOfObstacle::StackDidNotAnswer->said()]))
         ->and($drawn->offers())->not->toContain(__('stacks.put_back.put_it_back'))
-        ->and($drawn->said())->not->toContain(__('stacks.put_back.a_rehearsal'));
+        ->and($drawn->said())->not->toContain(__('stacks.a_rehearsal'));
 
     $screen->agree();
 
@@ -313,7 +313,7 @@ it('says a copy the stack will not list in its words, apart from a stack that co
         ->and($drawn->said())->toContain('It may hold configuration this version would not restore correctly, so it is refused rather than half-applied. Nothing was touched.')
         ->and($drawn->said())->toContain(__('stacks.refusal.named', ['named' => 'the backup is 2.0.0, this is 0.9.0']))
         ->and($drawn->said())->toContain(__('stacks.put_back.same_answer'))
-        ->and($drawn->said())->not->toContain(__('stacks.put_back.a_rehearsal'))
+        ->and($drawn->said())->not->toContain(__('stacks.a_rehearsal'))
         ->and($drawn->said())->not->toContain(__(KindOfObstacle::StackDidNotAnswer->said()))
         ->and($drawn->offers())->toContain(__('stacks.copy.see_the_copies'))
         ->and($drawn->offers())->not->toContain(__('stacks.put_back.put_it_back'))
@@ -426,7 +426,7 @@ it('puts back exactly the listing it showed, and says it is running without draw
         ->and(everythingThePuttingBackShows($screen->done()))->toBe(nothingReportedOfPuttingItBack(['isWorking' => true]))
         ->and($drawn)->toContain(__('stacks.put_back.putting_back', ['copy' => 'lemonfiber-20260924-0300-full']))
         ->and($drawn)->toContain(__('stacks.put_back.no_progress_while_running'))
-        ->and($drawn)->not->toContain(__('stacks.put_back.a_rehearsal'))
+        ->and($drawn)->not->toContain(__('stacks.a_rehearsal'))
         ->and($puttingBack->followed())->toBe([]);
 });
 
@@ -479,7 +479,7 @@ it('reports what was put back, and where the data went when it moved', function 
     ]))
         ->and($drawn->said())->toContain(__('stacks.put_back.put_back', ['scope' => aLineOfPuttingBack('stacks.copy.scope.service', ['name' => 'sonarr']), 'version' => '0.9.0']))
         ->and($drawn->said())->toContain(__($key, ['was' => '/srv/old', 'now' => '/srv/new']))
-        ->and($drawn->said())->not->toContain(__('stacks.put_back.a_rehearsal'))
+        ->and($drawn->said())->not->toContain(__('stacks.a_rehearsal'))
         ->and($drawn->offers())->toContain(__('stacks.copy.see_the_copies'));
 
     $screen->whileItRuns();

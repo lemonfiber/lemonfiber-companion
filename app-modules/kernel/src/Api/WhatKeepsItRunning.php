@@ -29,6 +29,9 @@ enum WhatKeepsItRunning: string
     /** Linux, through a user service in the operator's own session. */
     case Systemd = 'systemd';
 
+    /** Windows, through a task in the operator's own Task Scheduler. */
+    case TaskScheduler = 'task-scheduler';
+
     /** A platform lemonfiber does not configure. */
     case Unsupported = 'unsupported';
 

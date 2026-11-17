@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 return [
-    'heading' => 'Taking lemonfiber off this machine',
+    'heading' => 'Removing lemonfiber',
     'four' => 'Four removals, each its own decision. Each is read before anything is agreed to, and nothing is removed until you say so',
 
     // The four removals, as they are chosen and as they are agreed to.
@@ -14,14 +14,14 @@ return [
         'media' => 'Remove the library and the downloads',
     ],
     'read' => 'Read what this would do: :tier',
-    'the_library' => 'The library and the downloads',
+    'the_library' => 'Library and downloads',
     'the_library_alone' => 'This is its own decision, never taken with another, because nothing can fetch the library again',
     'choose_again' => 'Choose another removal',
 
     // The reading. How much of it could be read comes first.
     'complete' => 'This is everything this removal reaches: every source it needed answered',
     'incomplete' => 'This list is not complete. Some of what this removal reaches could not be read, so there is more on this machine than is listed here',
-    'unread' => 'What could not be read',
+    'unread' => 'Not read',
     'removes' => 'What it removes',
     'keeps' => 'What it leaves',
     'going' => 'What goes',
@@ -39,7 +39,7 @@ return [
     'nothing_kept' => 'Nothing is kept back',
     'frees' => 'What goes takes :figure :unit. What is kept is not counted',
     'frees_as_read' => 'What could be read of what goes takes :figure :unit. What is kept is not counted, and what could not be read is not either',
-    'foreign' => 'Here, and not lemonfiber\'s',
+    'foreign' => 'Not lemonfiber\'s',
     'foreign_is' => 'These are under the data location and lemonfiber did not put them there. They are not counted as lemonfiber\'s, and the data location is not removed as one tree while they are there',
     'foreign_line' => '{1} :at: one file, :figure :unit|[0,*] :at: :count files, :figure :unit',
     'nothing_foreign' => 'Nothing here belongs to anybody else',
@@ -47,20 +47,20 @@ return [
     'coming_line' => ':name, :progress% of the way',
     'nothing_coming' => 'Nothing is coming down',
     'interrupts' => 'Going ahead now interrupts every download above, and what each had fetched so far is lost',
-    'wait' => 'Wait for them to land, then: :agree',
-    'go_ahead_now' => 'Now, interrupting them: :agree',
-    'outside' => 'What lemonfiber cannot take',
+    'wait' => 'Wait, then :agree',
+    'go_ahead_now' => ':agree now',
+    'outside' => 'Left in place',
     'outside_is' => 'Each of these is left on the machine, with how to remove it yourself',
     'was_found' => 'Found on this machine',
     'not_found' => 'The survey did not find it here, which is not the same as it not being here',
     'by_hand' => 'By hand: :how',
     'nothing_outside' => 'Nothing lemonfiber cannot take',
-    'volume' => 'Where the data is',
+    'volume' => 'The data',
     'acknowledge_the_volume' => 'I know the data is there',
     'volume_acknowledged' => 'Acknowledged',
     'copy_first' => 'Before configuration goes: :said',
     'no_copy_first' => 'This stack takes no copy before configuration goes',
-    'take_a_copy' => 'Take a copy first',
+    'take_a_copy' => 'Copy first',
     'ends_this_session' => 'This also removes what lets this app in. Its session on this machine ends when this runs, and the machine stops offering what this app reaches',
     'agree' => [
         'stop' => 'Stop everything',

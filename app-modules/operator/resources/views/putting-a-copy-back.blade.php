@@ -80,7 +80,8 @@
 @else
     {{-- A rehearsal, and said to be one before anything else: nothing below
          has happened, and nothing is worded as though it had. --}}
-    <x-design::heading>{{ __('stacks.put_back.a_rehearsal') }}</x-design::heading>
+    <x-design::heading>{{ __('stacks.a_rehearsal') }}</x-design::heading>
+    <x-design::body>{{ __('stacks.put_back.a_rehearsal_said') }}</x-design::body>
 
     <x-design::card>
         <x-design::strong>{{ __('stacks.put_back.would_put_back', ['scope' => __($this->answer()->scope->said, $this->answer()->scope->with)]) }}</x-design::strong>

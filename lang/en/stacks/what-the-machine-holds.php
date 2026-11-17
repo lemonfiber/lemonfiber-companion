@@ -10,7 +10,7 @@ return [
         'as_declared' => 'As this machine describes its own services, with nothing started.',
         'without_it' => 'Without it: :without',
         'nothing_declared' => 'This machine declares no services',
-        'dropped' => 'No longer part of this stack',
+        'dropped' => 'No longer here',
         'removed_in' => 'Dropped in :version: :reason',
         // Where something took its place, named so somebody looking for the
         // old one is answered.
@@ -20,7 +20,7 @@ return [
         'nothing_dropped' => 'This stack has not dropped any service',
         // The stack's own answer, told apart from a machine that is not
         // answering: it could not read the description of itself.
-        'refused' => 'The stack answered, and could not say what its services are for',
+        'refused' => 'Purposes not given',
         'same_answer' => 'Asking again gets the same answer until what it names is put right on the machine.',
     ],
 
@@ -72,7 +72,7 @@ return [
             'switched_off' => 'Switched off',
         ],
         'ours' => [
-            'heading' => 'What lemonfiber itself sends',
+            'heading' => 'Sent by lemonfiber',
             'sends' => 'Sends: :sends',
             'goes_to' => 'To :destination',
             // Not *switched off*: a request can be allowed with nowhere to go.
@@ -83,7 +83,7 @@ return [
             'none' => 'lemonfiber itself sends nothing',
         ],
         'on_behalf' => [
-            'heading' => 'On a plugin\'s behalf',
+            'heading' => 'For a plugin',
             'for' => 'For the plugin :plugin',
             'goes_to' => 'To :destination',
             'switch' => 'Refused by :switch',
@@ -91,7 +91,7 @@ return [
             'none' => 'lemonfiber sends nothing on a plugin\'s behalf',
         ],
         'theirs' => [
-            'heading' => 'What the services send',
+            'heading' => 'Sent by services',
             'reaches' => 'Reaches :destination',
             // An answer: the stack records this service reaching nothing.
             'reaches_nothing' => 'Reaches nothing',
@@ -115,7 +115,7 @@ return [
 
     // What the machine will tell its operator about.
     'alerts' => [
-        'set_apart' => 'Set apart from the preset',
+        'set_apart' => 'Set apart',
         'heard' => [
             'heard' => 'You hear about this, whatever the preset says',
             'silenced' => 'Kept quiet, whatever the preset says',
@@ -177,12 +177,12 @@ return [
     // keeps it apart from what the machine hosts: it lives only while the
     // screen asks about it, and says so before it starts and while it runs.
     'guard' => [
-        'road_in' => 'Guard the data location while you watch',
+        'road_in' => 'Guard the data',
         'apart' => 'Or guard the data location only while a screen of this app is open, which is not hosting it',
-        'heading' => 'Guard the data location while you watch',
+        'heading' => 'Guard the data',
         'lives_while_asked' => 'This guard lives only while this screen keeps asking about it. Leave the screen and it stops.',
         'not_hosted' => 'It is not handed to the machine, so it does not outlast this screen, a locked phone or a restart of the stack.',
-        'to_host_one' => 'Keep a guard running when nobody is looking',
+        'to_host_one' => 'Keep guarding',
         'would_do' => 'While it guards, the stack looks at the data location. If it disappears or turns out to be a different drive, the stack stops the forms named here, so they do not write a library onto whatever is left, and does not start them again.',
         'not_said_before' => 'This stack does not say beforehand which location it would guard, how often it looks, or the command it would run.',
         'which_forms' => 'Which forms should it stop?',
@@ -190,7 +190,7 @@ return [
         'named' => '‘:form’ is named',
         'leave_out' => 'Leave ‘:form’ out',
         'no_forms' => 'This stack declares no forms to guard',
-        'start' => 'Guard the forms named',
+        'start' => 'Guard these forms',
         'about_to' => 'Guard the data location for :forms?',
         'guarding' => 'Guarding the data location for :forms',
         'saw_it_go' => 'The guard saw the data location go',
@@ -214,8 +214,8 @@ return [
         'less' => 'Less about ‘:word’',
         'nothing_matched' => 'No word, and nothing else a word is called, matches that',
         'none' => 'This machine explains no words',
-        'ask' => 'Ask this machine what ‘:word’ means',
+        'ask' => 'Ask about ‘:word’',
         'unexplained' => 'This machine has no entry for ‘:word’ either, so it is shown as it came',
-        'ask_in_place' => 'Ask what ‘:word’ means',
+        'ask_in_place' => 'Ask about ‘:word’',
     ],
 ];

@@ -35,7 +35,7 @@ return [
         // request; what nobody can tell them is where it stands.
         'unnamed' => 'Status not known here',
     ],
-    'your_requests' => 'What you have asked for',
+    'your_requests' => 'Your requests',
 
     // A request no service has named yet, by the kind of thing it is: in the
     // member's own list, and on the operator's.
@@ -72,12 +72,12 @@ return [
         'book_series' => 'Book series',
     ],
     'told' => [
-        'heading' => "Tell me when it's ready",
+        'heading' => "When it's ready",
         'phone_woken' => 'This phone is told too.',
         'phone_not_woken' => 'This phone is not told.',
     ],
     'your_ask' => [
-        'heading' => 'What you asked for',
+        'heading' => 'Your ask',
         'not_among' => 'This is not among what you asked for any more.',
         'in_the_music' => "In the house's music. Play it where the house keeps its music.",
         'in_the_books' => "In the house's books. Read it where the house keeps its books.",
@@ -234,7 +234,7 @@ return [
         'which_are_you' => 'Which of these is you?',
         'invited' => 'I was invited',
         'invited_explained' => 'Somebody asked you into their house.',
-        'runs_it' => 'I run the house',
+        'runs_it' => 'I run it',
         'runs_it_explained' => 'You set it up on a computer at home.',
         'your_invitation' => 'Scan your invitation',
         'your_invitation_explained' => 'Scan the code on the invitation you were sent. If you have none, ask whoever runs your house to open Pair a phone on theirs, and scan the code it shows.',
@@ -253,8 +253,8 @@ return [
         'called' => 'Home',
         'is_it_yours' => 'Did somebody in your house send this?',
         'is_it_yours_explained' => 'This invitation would connect this phone to the house below. Only go on if somebody in your house sent it to you. If you don’t know who sent it, don’t go on.',
-        'it_is_yours' => 'Yes, somebody in my house sent it',
-        'it_is_not_yours' => 'No, don’t go on',
+        'it_is_yours' => 'Yes, go on',
+        'it_is_not_yours' => 'No, stop',
         'signing_in' => 'Sign in',
         'signing_in_explained' => 'Type your name and your password.',
         'your_name' => 'Your name',

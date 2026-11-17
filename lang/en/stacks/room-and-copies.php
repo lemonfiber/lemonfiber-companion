@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 return [
+    // Over what a rehearsal shows: nothing below it has happened.
+    'a_rehearsal' => 'A rehearsal',
+
     // How full the machine is, and where the room went.
     'room' => [
         // Where the machine, or one volume, stands.
@@ -27,7 +30,7 @@ return [
         'projected' => ':figure :unit free once that has landed',
         'as_of' => 'As last read :ago',
         'no_volumes' => 'The stack names no volume it watches',
-        'account' => 'Where the room went',
+        'account' => 'Where room went',
         'about' => [
             'tree' => ':tree',
             'landing' => 'Downloads still being written',
@@ -49,7 +52,7 @@ return [
             'you_said_not' => 'Not to be got back, because you said so',
         ],
         'nothing_accounted' => 'Nothing is taking room',
-        'downloads' => 'Finished downloads on this machine',
+        'downloads' => 'Finished downloads',
         'takes' => 'Takes :figure :unit',
         'standing' => [
             'never_imported' => 'Never taken into a library',
@@ -63,7 +66,7 @@ return [
         'stop_seeding' => 'Stop seeding this',
         'stop_seeding_that' => 'Stop seeding :download',
         'at_the_machine' => 'Stopping seeding is offered one download at a time, and the room that costs nothing one category at a time. Anything else is removed at the machine, not from here',
-        'costs_nothing' => 'Room that costs nothing to give back',
+        'costs_nothing' => 'Free room',
         'nothing_costs_nothing' => 'Nothing on this machine costs nothing to give back',
         'give_back' => 'Give back',
         'give_back_that' => 'Give back :category',
@@ -72,15 +75,16 @@ return [
     // Stopping seeding one download: what it costs first, and only then the yes.
     'give_back' => [
         'names_no_category' => 'This names nothing the stack offers to give back',
-        'what_goes' => 'What giving this back removes',
+        'what_goes' => 'What this removes',
         'files' => '{1} It holds one file|[0,*] It holds :count files',
         'cannot_be_undone' => 'This cannot be undone.',
         'give_it_back' => 'Give it back',
         'not_on_offer' => 'The stack no longer offers this as costing nothing, so there is nothing to give back',
-        'moved' => 'The offer moved, so nothing was removed. Here it is as it stands now.',
+        'moved' => 'The offer moved',
+        'moved_said' => 'Nothing was removed. Here it is as it stands now.',
         'giving_back' => 'The stack is giving the room back',
         'no_outcome' => 'The stack no longer knows what became of giving the room back. How full the machine is says what is still there.',
-        'refused' => 'The stack would not give it back',
+        'refused' => 'Not given back',
         'returned' => ':figure :unit came back',
         'went' => '{1} One item went|[0,*] :count items went',
         'left' => '{1} One item was left behind|[0,*] :count items were left behind',
@@ -92,7 +96,7 @@ return [
         'see_the_room' => 'See how full the machine is',
         'working_it_out' => 'Asking the stack what stopping seeding :download would cost',
         'offer_ended' => 'The stack no longer knows what stopping seeding :download would cost. Ask again to hear it afresh.',
-        'what_it_costs' => 'What stopping seeding this costs',
+        'what_it_costs' => 'What stopping costs',
         // Stopping seeding is its own act, and said to be before the cost.
         'its_own_act' => 'Stopping seeding is its own act: it asks the download client to let this one download go and stop sharing it. Nothing else on the machine is removed.',
         'stop_it' => 'Stop seeding it',
@@ -100,7 +104,7 @@ return [
         'no_outcome' => 'The stack no longer knows what became of stopping seeding :download',
         'no_outcome_action' => 'The client may have let it go. How full the machine is says whether it is still there.',
         // A rehearsal is said to be one, and never reported as room freed.
-        'a_rehearsal' => 'A rehearsal: nothing has been let go',
+        'a_rehearsal_said' => 'Nothing has been let go.',
         'rehearsed' => 'The stack is rehearsing, so the client still holds :download and is still seeding it.',
         'nothing_freed' => 'No room was freed. It still occupies :figure :unit.',
         'let_go' => 'The client let :download go',
@@ -110,18 +114,18 @@ return [
     // What the machine keeps, where, and why, and the copies it holds.
     'keeps' => [
         'road_in' => 'What this machine keeps',
-        'roots' => 'Where it is all kept',
+        'roots' => 'Where it\'s kept',
         'no_roots' => 'The stack names nowhere it keeps things',
-        'kept' => 'What the stack keeps',
+        'kept' => 'What it keeps',
         'nothing_kept' => 'The stack keeps nothing here',
         // Said on every row; the value is never shown.
         'secret' => [
             'secret' => 'Holds a secret, which is never shown here',
             'plain' => 'Holds no secret',
         ],
-        'beside' => 'Here, and not the stack\'s',
+        'beside' => 'Not the stack\'s',
         'nothing_beside' => 'Nothing here belongs to anybody else',
-        'copies' => 'Copies of the stack',
+        'copies' => 'Stack copies',
         'no_copies' => 'No copy has been taken',
         // Never drawn as an empty list.
         'copies_unread' => 'The copies could not be listed',
@@ -136,9 +140,9 @@ return [
     // Taking a copy. Every sentence about one is built around the scope, so
     // the whole stack, one service and somebody else's setup are always named.
     'copy' => [
-        'what_to_copy' => 'What to take a copy of',
+        'what_to_copy' => 'What to copy',
         'the_whole_stack' => 'The whole stack',
-        'or_one_service' => 'Or one service on its own',
+        'or_one_service' => 'Or one service',
         'only_this_service' => 'Take a copy of :name only',
         'no_services' => 'The stack runs no service to copy on its own',
         'about_to' => 'About to take a copy of :scope',
@@ -150,7 +154,7 @@ return [
         'no_outcome' => 'The stack no longer knows what became of the copy of :scope',
         'no_outcome_action' => 'It may have been taken. The list of copies says whether it is there.',
         // A rehearsal is said to be one, and nothing about it is in the past tense.
-        'a_rehearsal' => 'A rehearsal: nothing has been written',
+        'a_rehearsal_said' => 'Nothing has been written.',
         'copied' => 'Took a copy of :scope',
         'would_copy' => 'This would take a copy of :scope',
         'removed' => '{0} It removed no older copy|{1} It removed one older copy to make room|[2,*] It removed :count older copies to make room',
@@ -178,7 +182,7 @@ return [
     // the stack did is said only after the yes.
     'put_back' => [
         'names_no_copy' => 'This names no copy to put back',
-        'a_rehearsal' => 'A rehearsal: nothing has been put back',
+        'a_rehearsal_said' => 'Nothing has been put back.',
         'would_put_back' => 'Putting this copy back would restore :scope',
         'taken_by' => 'Taken by lemonfiber :version :when',
         'older' => 'It comes from an older major version of lemonfiber. Putting it back is allowed, and may need a further reconcile after.',
@@ -197,16 +201,16 @@ return [
         'where_it_was' => 'Its data went back where it was taken from.',
         // The stack's own answer, told apart from a stack that could not be
         // reached. Asking the same again is answered the same way.
-        'would_not_list' => 'The stack will not put this copy back, and says why',
-        'refused' => 'The stack did not finish putting this copy back, and says why',
+        'would_not_list' => 'Refused',
+        'refused' => 'Not put back',
         'same_answer' => 'Asking again gets the same answer until what it says has changed.',
-        'look_again' => 'Read what putting it back would do now',
+        'look_again' => 'Look again',
     ],
     'forget' => [
-        'title' => 'Remove everything lemonfiber keeps here',
+        'title' => 'Forget this stack',
         'untouched' => 'Your library, your downloads and the running containers are not touched. Only what lemonfiber itself keeps on this machine goes.',
         'ends_this_session' => 'It also removes what lets this app in, so this app\'s session with the stack ends when it runs.',
-        'what_would_go' => 'See what would go',
+        'what_would_go' => 'See what goes',
         'would_go' => 'Nothing has gone yet. This is what the stack says would go.',
         'forget_it' => 'Remove everything listed',
         'working' => 'The stack is working on it',

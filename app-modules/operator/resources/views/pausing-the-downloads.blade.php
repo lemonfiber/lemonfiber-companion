@@ -23,7 +23,8 @@
         <x-design::body>{{ __('stacks.pausing.no_outcome_action') }}</x-design::body>
     @elseif ($this->done()->said !== null)
         @if ($this->done()->wasRehearsed)
-            <x-operator::heading>{{ __('stacks.pausing.a_rehearsal') }}</x-operator::heading>
+            <x-operator::heading>{{ __('stacks.a_rehearsal') }}</x-operator::heading>
+            <x-design::body>{{ __('stacks.pausing.a_rehearsal_said') }}</x-design::body>
         @else
             <x-operator::heading>{{ __($this->says()->done) }}</x-operator::heading>
         @endif

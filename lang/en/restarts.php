@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'title' => 'While nobody was looking',
-    'after_the_last_restart' => 'After the last restart',
+    'after_the_last_restart' => 'After restarting',
     'started' => 'The machine last started :ago, and the check after it ran.',
     'not_run' => 'The machine last started :ago, and the check after a restart has not run since.',
     'start_unknown' => 'The machine does not say when it last started, so no check can be placed after it.',
@@ -32,7 +32,7 @@ return [
         'unknown' => 'The stack could not say which port is forwarded.',
         'not_every_client' => 'Not every client takes it yet.',
     ],
-    'keeps_running' => 'What keeps it running',
+    'keeps_running' => 'Keeps it running',
     'from_outside' => 'From outside',
     'in_the_queue' => 'In the queue',
     'keeps_running_open' => 'What keeps running here',

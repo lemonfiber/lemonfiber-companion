@@ -95,7 +95,7 @@ return [
         'waiting-indefinitely' => 'Wacht op iets dat nooit overeenkomt',
         'slow' => 'Traag, maar nog in beweging',
     ],
-    'stopped_heading' => 'Vastgelopen in de wachtrij',
+    'stopped_heading' => 'Vast in wachtrij',
     'stopped_stands_for' => '{1} Eén item heeft deze oorzaak|[2,*] :count items delen deze oorzaak',
     'stopped_blocking' => 'De dienst zei: :words',
     'slow_heading' => 'Traag, niet vastgelopen',
@@ -130,7 +130,7 @@ return [
         'unmanaged' => 'Niet gedaan: je hebt dit als onbeheerd opgegeven',
     ],
     'nothing_was_carried_out' => 'Er bleek niets te doen.',
-    'look_again' => 'Kijk opnieuw wat er te herstellen valt',
+    'look_again' => 'Kijk opnieuw',
     // Wat niet meer binnenkomt. De fase is waar het bleef steken, en
     // dat is het hele verschil tussen een indexer die niets vindt en een
     // bestand dat de bibliotheek nooit heeft opgepakt.
@@ -143,13 +143,13 @@ return [
     // Waar één item is gebleven. `:stage` en `:item` zijn de woorden van de
     // stack, ingevoegd zoals ze kwamen.
     'trace' => [
-        'road_in' => 'Waar is “:item” gebleven?',
+        'road_in' => 'Zoek “:item”',
         'nothing_named' => 'Typ een titel om hem door de diensten te volgen',
         'nothing_asked_for' => 'Niets waar op gelet wordt heet “:item”: niemand heeft erom gevraagd',
         'following' => '“:item” volgen',
         'in_season' => 'Alleen seizoen :season',
         'every_season' => 'Elk seizoen volgen',
-        'follow_season' => 'Alleen seizoen :season volgen',
+        'follow_season' => 'Alleen seizoen :season',
         'search_would_settle' => 'De indexers vragen zou niets op jouw kwaliteit onderscheiden van helemaal niets',
         'search_spends' => 'Het kost: :spends',
         'search_covers' => 'Het omvat: :covers',
@@ -171,19 +171,19 @@ return [
         ],
         'furthest' => 'Het verst: :stage',
         'stopped' => 'Waarom het stopte: :why',
-        'series_here' => ':have van de :wanted gevraagde afleveringen zijn er',
+        'series_here' => ':have van :wanted',
         'nobody_asked_for' => '{1} Eén aflevering waar niemand om vroeg telt niet mee|[2,*] :count afleveringen waar niemand om vroeg tellen niet mee',
         'season' => 'Seizoen :season: :have van :wanted aanwezig',
         'episode' => 'Aflevering :number, “:title”: :stage',
         'season_all_here' => 'Elke gevraagde aflevering is er',
         'no_seasons' => 'Er is geen seizoen van geteld',
-        'the_way' => 'De weg die het aflegde',
+        'the_way' => 'De route',
         'recorded_at' => ':service, :when',
         'recorded_untimed' => ':service, zonder tijd',
         'no_stages' => 'Het heeft nog geen fase bereikt',
-        'tried' => 'Wat er is geprobeerd',
+        'tried' => 'Tot nu toe geprobeerd',
         'nothing_tried' => 'Er is nog niets geprobeerd',
-        'disagree' => 'Waar de diensten het oneens zijn',
+        'disagree' => 'Waar ze verschillen',
         'agree' => 'De diensten zijn het erover eens',
         'search_label' => 'Iets anders volgen',
         'search_placeholder' => 'Een titel',
@@ -192,7 +192,7 @@ return [
     'walkthrough' => [
         'offer' => 'Kijk hoe één ding binnenkomt, van de zoektocht tot de bibliotheek',
         'offer_explained' => 'De stack haalt één ding op en zegt bij elke stap wat hij doet, zodat je de hele weg één keer ziet. Is er een stap stuk, dan zie je het hier.',
-        'road' => 'De weg die een walkthrough aflegt:',
+        'road' => 'De stappen',
         'no_road' => 'De walkthrough noemt geen stappen.',
         'walk_label' => 'Wat ophalen',
         'walk_placeholder' => 'Een titel',
@@ -216,13 +216,13 @@ return [
         'try' => 'Probeer dit: :remedy',
         'logs' => 'Wat de diensten zeiden',
         'no_logs' => 'De diensten zeiden op dat moment niets.',
-        'record' => 'Wat het zei, op volgorde',
+        'record' => 'Wat het zei',
         'said_nothing' => 'Het zei niets.',
         'in_background' => 'De download gaat op de achtergrond door in plaats van dat erop gewacht wordt.',
         'what_next' => 'Wat nu',
         'where_to_watch' => 'Met welke app kijken',
         'nothing_next' => 'Het noemde niets om hierna te doen.',
-        'suggested' => 'Iets dat waarschijnlijk lukt',
+        'suggested' => 'Lukt waarschijnlijk',
         'walk_this' => 'Kijk hoe “:item” binnenkomt',
         'nothing_suggested' => 'Het stelde niets voor.',
         'state' => [
@@ -296,9 +296,9 @@ return [
         'stderr' => 'Opgemerkt',
     ],
     'about_the_service' => ':about · :service',
-    'what_a_service_said' => 'Bekijk wat deze dienst zei',
+    'what_a_service_said' => 'Wat hij zei',
     'what_that_service_said' => 'Bekijk wat :service zei',
-    'logs_for' => 'Wat :service heeft gezegd',
+    'logs_for' => 'Logs van :service',
     'the_check_reported' => 'De controle meldde :code',
     'exit_figure' => 'afsluitcode :code',
     'it_stopped_with_exit_code' => 'Hij stopte met afsluitcode :code',
@@ -314,7 +314,7 @@ return [
     'service_said_nothing_action' => 'Hij draait rustig door, of is net gestart.',
     'no_moment' => 'Geen tijd opgegeven',
     'decorative_lines' => '{1} 1 decoratieve regel|[2,*] :count decoratieve regels',
-    'show_from_the_first_error' => 'Vanaf de eerste fout tonen',
+    'show_from_the_first_error' => 'Vanaf eerste fout',
     'show_every_line' => 'Alle regels tonen',
     'level' => [
         'trace' => 'Trace',
@@ -367,16 +367,16 @@ return [
     'it_stopped_with_an_error' => 'Hij stopte met een fout',
     'it_stopped_cleanly' => 'Hij stopte zonder fout',
     'host_runs_it' => 'Deze machine draait hem, niet de stack',
-    'read_its_logs' => 'Lees wat hij gezegd heeft',
+    'read_its_logs' => 'Lees de logs',
     'nothing_is_running' => 'Er draait niets op deze machine',
     'no_forms_at_all' => 'Deze stack declareert geen forms',
-    'by_form' => 'Of een hele form tegelijk',
+    'by_form' => 'Een hele form',
 
     // The second granularity, on the screen about one of them. A route
     // can name something the machine has since stopped running, which is an
     // answer rather than a blank frame.
     'nothing_of_that_name' => 'Deze machine draait niets dat :name heet',
-    'back_to_what_runs' => 'Terug naar wat er draait',
+    'back_to_what_runs' => 'Terug naar diensten',
     'open_service' => ':name openen',
     'open_form' => 'Form :name openen',
     'a_whole_form' => 'Een form is elke dienst erin. De knoppen hieronder raken ze allemaal.',
@@ -402,11 +402,11 @@ return [
     'runs_for_no_form' => 'Geen draaiende form vroeg erom',
     'not_installed' => 'Niet geïnstalleerd (:count)',
     'services_heading' => 'Services',
-    'left_out_heading' => 'Bewust overgeslagen',
+    'left_out_heading' => 'Overgeslagen',
     'left_out_by' => 'Gevraagd door :forms, maar :needs',
     'nothing_left_out' => 'De draaiende forms sloegen niets over.',
     'rehearsal' => [
-        'heading' => 'Wat starten zou doen',
+        'heading' => 'Als hij start',
         'nothing_started' => 'Er is niets gestart. Dit is wat de stack zegt dat starten zou doen.',
         'would_start' => ':name zou starten',
         'already_running' => ':name draait al',
@@ -428,7 +428,7 @@ return [
     // niet alles terugbracht heet nooit klaar, en wat niet terugkwam wordt
     // genoemd.
     'installs' => [
-        'heading' => 'Wat een start zou installeren',
+        'heading' => 'Wat starten installeert',
         'by_its_form' => 'Een start van één service installeert niets. Start de form om hiermee in te stemmen, of start hem in de terminal.',
         'unreadable' => 'Er kan niets worden geïnstalleerd zolang een van deze niet te lezen was. Bij elk staat waarom.',
         'offline' => 'Elk wordt offline vanuit deze build geïnstalleerd, en daarna start de form.',
@@ -436,10 +436,10 @@ return [
         'would_install' => 'Hij zou :plugin installeren vanuit deze build',
     ],
     'render' => [
-        'heading' => 'Draait zonder hardwaretranscodering',
+        'heading' => 'Softwaretranscodering',
     ],
     'came_to' => [
-        'heading' => 'Wat het laatste verzoek hier opleverde',
+        'heading' => 'Laatste verzoek',
         'running' => 'De stack voert het uit.',
         'no_outcome' => 'De stack heeft hier geen uitkomst meer van. Het kan best gelukt zijn; wat er nu draait staat hieronder.',
         'a_rehearsal' => 'Een generale repetitie: er is niets gestart of gestopt',
@@ -459,7 +459,7 @@ return [
     'disturbs' => [
         'run' => 'Deze controle uitvoeren',
         'run_this' => 'Deze controle uitvoeren: :title',
-        'title' => 'Een controle uitvoeren die iets verstoort',
+        'title' => 'Verstorende controle',
         'what' => 'Uitvoeren verstoort',
         'no_bound' => 'De stack geeft hiervoor geen grens, dus hier wordt er geen geschat.',
         'interrupts' => 'Deze downloads lopen nu, en uitvoeren onderbreekt ze:',
@@ -490,7 +490,7 @@ return [
     'choice' => [
         'accept' => 'Deze keuze accepteren',
         'accept_this' => 'Deze keuze accepteren: :title',
-        'title' => 'Een keuze accepteren waar de stack voor waarschuwt',
+        'title' => 'Waarschuwing accepteren',
         'costs' => 'Wat deze keuze volgens de stack kost',
         'what_accepting_does' => 'Accepteren houdt deze waarschuwing in het rapport, gemarkeerd als geaccepteerd. Ze staat niet meer bovenaan, en ze is niet opgelost.',
         'accept_it' => 'Ik accepteer dit',

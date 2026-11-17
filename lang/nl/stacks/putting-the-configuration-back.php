@@ -29,7 +29,7 @@ return [
     // wijs en nooit alsof het gebeurd is; alleen een verslag waarvan de stack
     // zegt dat het is uitgevoerd staat in de verleden tijd.
     'reset' => [
-        'heading' => 'De configuratie terugzetten',
+        'heading' => 'Configuratie terugzetten',
         'a_preview' => 'Een voorproef. Er is niets teruggezet.',
         'put_back' => 'De configuratie is teruggezet.',
         'would_revert_files' => 'Deze bestanden zouden teruggaan naar die van lemonfiber. Regels met - zijn bewerkingen die verloren zouden gaan; regels met + zijn wat lemonfiber zou schrijven.',

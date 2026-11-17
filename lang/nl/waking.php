@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'heading' => 'Wekken',
-    'switch' => 'Deze telefoon wekken voor deze stack',
+    'switch' => 'Deze telefoon wekken',
     'none_installed' => 'Installeer een UnifiedPush-distributor, zoals ntfy, om deze telefoon te wekken als de stack iets te melden heeft. Zonder distributor beslist Android wanneer lemonfiber mag luisteren.',
     'off' => 'Deze stack kan deze telefoon via :distributor wekken als hij iets te melden heeft. Alleen het wekken gaat via :distributor; wat je te horen krijgt, wordt bij de stack gelezen.',
     'off_choosing' => 'Deze stack kan deze telefoon via een UnifiedPush-distributor wekken als hij iets te melden heeft. Alleen het wekken gaat via de distributor; wat je te horen krijgt, wordt bij de stack gelezen.',

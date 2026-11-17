@@ -199,7 +199,7 @@ it('labels a report the stack says was rehearsed as a rehearsal, never as paused
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
-    expect($drawn)->toContain(__('stacks.pausing.a_rehearsal'))
+    expect($drawn)->toContain(__('stacks.a_rehearsal'))
         ->and($drawn)->not->toContain(__('stacks.pausing.done.pause'));
 });
 

@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 return [
+    // Over what a rehearsal shows: nothing below it has happened.
+    'a_rehearsal' => 'Een repetitie',
+
     'room' => [
         'level' => [
             'unknown' => 'Hoe vol hij is kon niet gelezen worden',
@@ -24,7 +27,7 @@ return [
         'projected' => ':figure :unit vrij als dat binnen is',
         'as_of' => 'Zoals laatst gelezen :ago',
         'no_volumes' => 'De stack noemt geen volume dat hij bewaakt',
-        'account' => 'Waar de plek naartoe ging',
+        'account' => 'Waar ruimte heen ging',
         'about' => [
             'tree' => ':tree',
             'landing' => 'Downloads die nog geschreven worden',
@@ -46,7 +49,7 @@ return [
             'you_said_not' => 'Niet terug te krijgen, omdat je dat zei',
         ],
         'nothing_accounted' => 'Niets neemt plek in',
-        'downloads' => 'Afgeronde downloads op deze machine',
+        'downloads' => 'Afgeronde downloads',
         'takes' => 'Neemt :figure :unit in',
         'standing' => [
             'never_imported' => 'Nooit in een bibliotheek opgenomen',
@@ -59,7 +62,7 @@ return [
         'stop_seeding' => 'Stop met seeden',
         'stop_seeding_that' => 'Stop met seeden van :download',
         'at_the_machine' => 'Stoppen met seeden kan hier per download, en ruimte die niets kost per categorie. Al het andere verwijderen gebeurt op de machine, niet vanaf hier',
-        'costs_nothing' => 'Ruimte die niets kost om terug te geven',
+        'costs_nothing' => 'Vrije ruimte',
         'nothing_costs_nothing' => 'Niets op deze machine kost niets om terug te geven',
         'give_back' => 'Geef terug',
         'give_back_that' => 'Geef :category terug',
@@ -67,15 +70,16 @@ return [
 
     'give_back' => [
         'names_no_category' => 'Dit noemt niets wat de stack aanbiedt om terug te geven',
-        'what_goes' => 'Wat teruggeven hiervan verwijdert',
+        'what_goes' => 'Wat dit verwijdert',
         'files' => '{1} Het bevat één bestand|[0,*] Het bevat :count bestanden',
         'cannot_be_undone' => 'Dit kan niet ongedaan worden gemaakt.',
         'give_it_back' => 'Geef het terug',
         'not_on_offer' => 'De stack biedt dit niet meer aan als iets wat niets kost, dus er valt niets terug te geven',
-        'moved' => 'Het aanbod is veranderd, dus er is niets verwijderd. Zo staat het er nu voor.',
+        'moved' => 'Het aanbod veranderde',
+        'moved_said' => 'Er is niets verwijderd. Zo staat het er nu voor.',
         'giving_back' => 'De stack geeft de ruimte terug',
         'no_outcome' => 'De stack weet niet meer wat er van het teruggeven is geworden. Hoe vol de machine is, laat zien wat er nog staat.',
-        'refused' => 'De stack wilde het niet teruggeven',
+        'refused' => 'Niet teruggegeven',
         'returned' => ':figure :unit is teruggekomen',
         'went' => '{1} Eén item is weg|[0,*] :count items zijn weg',
         'left' => '{1} Eén item is achtergebleven|[0,*] :count items zijn achtergebleven',
@@ -87,13 +91,13 @@ return [
         'see_the_room' => 'Bekijk hoe vol de machine is',
         'working_it_out' => 'De stack wordt gevraagd wat stoppen met seeden van :download zou kosten',
         'offer_ended' => 'De stack weet niet meer wat stoppen met seeden van :download zou kosten. Vraag het opnieuw.',
-        'what_it_costs' => 'Wat stoppen met seeden hiervan kost',
+        'what_it_costs' => 'Wat stoppen kost',
         'its_own_act' => 'Stoppen met seeden is een handeling op zichzelf: de downloadclient wordt gevraagd deze ene download los te laten en niet meer te delen. Verder wordt er niets van de machine verwijderd.',
         'stop_it' => 'Stop met seeden',
         'letting_go' => 'Bezig met stoppen met seeden van :download',
         'no_outcome' => 'De stack weet niet meer wat er geworden is van stoppen met seeden van :download',
         'no_outcome_action' => 'Misschien heeft de client hem losgelaten. Hoe vol de machine is laat zien of hij er nog staat.',
-        'a_rehearsal' => 'Een generale repetitie: er is niets losgelaten',
+        'a_rehearsal_said' => 'Er is niets losgelaten.',
         'rehearsed' => 'De stack houdt een generale repetitie, dus de client houdt :download nog vast en seedt hem nog.',
         'nothing_freed' => 'Er is geen ruimte vrijgekomen. Hij neemt nog :figure :unit in.',
         'let_go' => 'De client heeft :download losgelaten',
@@ -102,15 +106,15 @@ return [
 
     'keeps' => [
         'road_in' => 'Wat deze machine bewaart',
-        'roots' => 'Waar alles bewaard wordt',
+        'roots' => 'Waar het staat',
         'no_roots' => 'De stack noemt geen plek waar hij iets bewaart',
-        'kept' => 'Wat de stack bewaart',
+        'kept' => 'Wat hij bewaart',
         'nothing_kept' => 'De stack bewaart hier niets',
         'secret' => [
             'secret' => 'Bevat een geheim, dat hier nooit getoond wordt',
             'plain' => 'Bevat geen geheim',
         ],
-        'beside' => 'Hier, en niet van de stack',
+        'beside' => 'Niet van de stack',
         'nothing_beside' => 'Niets hier is van iemand anders',
         'copies' => 'Kopieën van de stack',
         'no_copies' => 'Er is nog geen kopie gemaakt',
@@ -122,9 +126,9 @@ return [
     ],
 
     'copy' => [
-        'what_to_copy' => 'Waarvan een kopie maken',
+        'what_to_copy' => 'Wat te kopiëren',
         'the_whole_stack' => 'De hele stack',
-        'or_one_service' => 'Of één dienst op zichzelf',
+        'or_one_service' => 'Of één dienst',
         'only_this_service' => 'Maak alleen een kopie van :name',
         'no_services' => 'De stack draait geen dienst om los te kopiëren',
         'about_to' => 'Op het punt een kopie te maken van :scope',
@@ -133,7 +137,7 @@ return [
         'no_progress_while_running' => 'De stack zegt hoe groot een kopie werd als hij klaar is, en niets over hoe ver hij is terwijl hij loopt.',
         'no_outcome' => 'De stack weet niet meer wat er van de kopie van :scope geworden is',
         'no_outcome_action' => 'Misschien is hij gemaakt. De lijst met kopieën laat zien of hij er staat.',
-        'a_rehearsal' => 'Een generale repetitie: er is niets geschreven',
+        'a_rehearsal_said' => 'Er is niets geschreven.',
         'copied' => 'Kopie gemaakt van :scope',
         'would_copy' => 'Dit zou een kopie maken van :scope',
         'removed' => '{0} Er is geen oudere kopie weggehaald|{1} Er is één oudere kopie weggehaald om ruimte te maken|[2,*] Er zijn :count oudere kopieën weggehaald om ruimte te maken',
@@ -159,7 +163,7 @@ return [
 
     'put_back' => [
         'names_no_copy' => 'Dit noemt geen kopie om terug te zetten',
-        'a_rehearsal' => 'Een generale repetitie: er is niets teruggezet',
+        'a_rehearsal_said' => 'Er is niets teruggezet.',
         'would_put_back' => 'Deze kopie terugzetten zou :scope herstellen',
         'taken_by' => 'Gemaakt door lemonfiber :version, :when',
         'older' => 'Hij komt van een oudere hoofdversie van lemonfiber. Terugzetten mag, en kan daarna nog wat bijstellen vragen.',
@@ -176,16 +180,16 @@ return [
         'put_back' => ':scope teruggezet, uit een kopie gemaakt door lemonfiber :version',
         'moved' => 'De gegevens gingen naar :now, niet naar :was waar ze vandaan kwamen.',
         'where_it_was' => 'De gegevens gingen terug naar waar ze vandaan kwamen.',
-        'would_not_list' => 'De stack zet deze kopie niet terug, en zegt waarom',
-        'refused' => 'De stack heeft het terugzetten van deze kopie niet afgemaakt, en zegt waarom',
+        'would_not_list' => 'Geweigerd',
+        'refused' => 'Niet teruggezet',
         'same_answer' => 'Opnieuw vragen geeft hetzelfde antwoord zolang wat hij zegt niet veranderd is.',
-        'look_again' => 'Lees wat terugzetten nu zou doen',
+        'look_again' => 'Kijk opnieuw',
     ],
     'forget' => [
-        'title' => 'Alles verwijderen wat lemonfiber hier bewaart',
+        'title' => 'Deze stack vergeten',
         'untouched' => 'Je bibliotheek, je downloads en de draaiende containers worden niet aangeraakt. Alleen wat lemonfiber zelf op deze machine bewaart, verdwijnt.',
         'ends_this_session' => 'Het verwijdert ook wat deze app toegang geeft, dus de sessie van deze app met de stack eindigt zodra het draait.',
-        'what_would_go' => 'Bekijk wat zou verdwijnen',
+        'what_would_go' => 'Bekijk wat verdwijnt',
         'would_go' => 'Er is nog niets verdwenen. Dit is wat volgens de stack zou verdwijnen.',
         'forget_it' => 'Alles in de lijst verwijderen',
         'working' => 'De stack is ermee bezig',

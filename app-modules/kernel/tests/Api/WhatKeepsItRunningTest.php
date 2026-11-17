@@ -32,7 +32,7 @@ it('the two managers this product sets up are both configured', function (): voi
         }
     }
 
-    expect($configures)->toBe(['launchd', 'systemd']);
+    expect($configures)->toBe(['launchd', 'systemd', 'task-scheduler']);
 });
 
 // L7 — every catalogue key the application names is a key the catalogue holds
