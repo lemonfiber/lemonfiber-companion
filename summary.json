@@ -1,10 +1,254 @@
 {
     "format": 1,
-    "commit": "934073465e51092eddac4b946289f4d03a85ccda",
-    "time": "2026-11-16T22:48:42Z",
+    "commit": "3b5685bec7812ee98a5f46fe9f3c877c537cbab8",
+    "time": "2026-11-17T01:47:36Z",
     "verdict": "passed",
-    "trees": [],
+    "score": 100.0,
+    "trees": [
+        {
+            "path": "bootstrap/Composition",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/backups/src",
+            "floor": 100.0
+        },
+        {
+            "path": "app-modules/codes/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/connection/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/design/src"
+        },
+        {
+            "path": "app-modules/device/src"
+        },
+        {
+            "path": "app-modules/dx/src"
+        },
+        {
+            "path": "app-modules/health/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/household/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/kernel/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/news/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/operator/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/requests/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/sdk/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/seal/src",
+            "floor": 100.0
+        },
+        {
+            "path": "app-modules/services/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/stacks/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/store-kit/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/updates/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/vault/src"
+        },
+        {
+            "path": "app-modules/watching/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "app-modules/wayfinding/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "bridge/src",
+            "floor": 100.0,
+            "score": 100.0
+        },
+        {
+            "path": "bootstrap/Composition/NativePHP/TheRunloop.php"
+        }
+    ],
     "newCode": {
         "floor": 100.0
-    }
+    },
+    "mutators": [
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\ControlStructures\\IfNegated",
+            "seconds": 37488.83554496864,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\Removal\\RemoveArrayItem",
+            "seconds": 31232.974730431233,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\Logical\\RemoveNot",
+            "seconds": 26143.26936586608,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\Logical\\InstanceOfToTrue",
+            "seconds": 24438.25957889118,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\Logical\\InstanceOfToFalse",
+            "seconds": 24091.53463287777,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\Equality\\IdenticalToNotIdentical",
+            "seconds": 21959.287932510993,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\ControlStructures\\TernaryNegated",
+            "seconds": 21609.20827745846,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\String\\EmptyStringToNotEmpty",
+            "seconds": 19639.24076015943,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\Removal\\RemoveMethodCall",
+            "seconds": 18421.323697350977,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\Array\\UnwrapArrayValues",
+            "seconds": 15670.197209567172,
+            "survived": 0,
+            "killRate": 100.0
+        }
+    ],
+    "heatmap": [
+        {
+            "path": "app-modules/codes/src/Api/QrCodes.php",
+            "score": 100.0,
+            "base": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/ChoosingWhatReachesThePhone.php",
+            "score": 100.0,
+            "base": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/ChoosingWhoWakesThisPhone.php",
+            "score": 100.0,
+            "base": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/ClearingWhatCannotBeRead.php",
+            "score": 100.0,
+            "base": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/ClearingWhatThePhoneKeeps.php",
+            "score": 100.0,
+            "base": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/HowThePairingWent.php",
+            "score": 100.0,
+            "base": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/HowTheSignInWent.php",
+            "score": 100.0,
+            "base": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/Introducing.php",
+            "score": 100.0,
+            "base": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/KeepingReadingsFor.php",
+            "score": 100.0,
+            "base": 100.0,
+            "notKilled": 0
+        },
+        {
+            "path": "app-modules/connection/src/Api/LetsGoOfARefusedSession.php",
+            "score": 100.0,
+            "base": 100.0,
+            "notKilled": 0
+        }
+    ]
 }
