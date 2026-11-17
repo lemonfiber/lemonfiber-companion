@@ -92,7 +92,7 @@ final readonly class Titles
                 Optional::text($title, TitleField::Overview, TitleIsUnreadable::missing(TitleField::Overview)),
                 self::runs($title, TitleIsUnreadable::missing(TitleField::Minutes)),
                 self::genres($title),
-                Optional::text($title, TitleField::Certificate, TitleIsUnreadable::missing(TitleField::Certificate)),
+                Optional::text($title, WireField::Certificate, TitleIsUnreadable::missing(WireField::Certificate)),
                 self::released($title),
             ),
             Located::in($title, $refused),

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Native\Player\ChannelAtTheDoor;
 use Lemonfiber\Native\Player\OfferedTrack;
 use Lemonfiber\Native\Player\Player;
 use Lemonfiber\Native\Player\PlayerCommand;
@@ -64,6 +65,52 @@ it('hands the device every field of the title, the grant among them', function (
             'audio' => 'nl',
             'subtitle' => 'off',
         ]]);
+});
+
+it('hands the device both addresses of a channel, its door and its name', function (): void {
+    $bridge = FakeBridge::enable()->respondTo('Lemonfiber.Player.Tune', ['outcome' => 'showing']);
+
+    $opened = new Player()->tune(new ChannelAtTheDoor(
+        direct: 'https://door.example:8920/live/s1/stream.ts?lfpass=p',
+        transcoded: 'https://door.example:8920/live/s1/main.m3u8?lfpass=p',
+        fingerprint: str_repeat('ab', 32),
+        title: 'NPO 1',
+    ))->either(
+        opened: static fn(): ArrayObject => new ArrayObject(['opened']),
+        refused: static fn(WhyThePlayerDidNotOpen $why): ArrayObject => new ArrayObject([$why]),
+    );
+
+    expect($opened->getArrayCopy())->toBe(['opened'])
+        ->and(whatThePlayerWasHanded($bridge, 'Lemonfiber.Player.Tune'))->toBe([[
+            'direct' => 'https://door.example:8920/live/s1/stream.ts?lfpass=p',
+            'transcoded' => 'https://door.example:8920/live/s1/main.m3u8?lfpass=p',
+            'fingerprint' => str_repeat('ab', 32),
+            'title' => 'NPO 1',
+        ]]);
+});
+
+it('reads why the device would not tune the player to a channel', function (): void {
+    FakeBridge::enable()->respondTo('Lemonfiber.Player.Tune', ['outcome' => 'refused', 'because' => 'nowhere_to_play']);
+
+    $why = new Player()->tune(new ChannelAtTheDoor('', '', str_repeat('ab', 32), 'NPO 1'))->either(
+        opened: static fn(): ArrayObject => new ArrayObject(['opened']),
+        refused: static fn(WhyThePlayerDidNotOpen $why): ArrayObject => new ArrayObject([$why]),
+    );
+
+    expect($why->getArrayCopy())->toBe([WhyThePlayerDidNotOpen::NowhereToPlay]);
+});
+
+it('never says a channel\'s addresses where something prints it', function (): void {
+    $channel = new ChannelAtTheDoor('https://door.example/live?lfpass=secret', 'https://door.example/live.m3u8?lfpass=secret', str_repeat('ab', 32), 'NPO 1');
+    $printed = print_r($channel, return: true);
+
+    expect($printed)->not->toContain('secret')
+        ->and($channel->__debugInfo())->toBe([
+            'direct' => '(withheld)',
+            'transcoded' => '(withheld)',
+            'fingerprint' => str_repeat('ab', 32),
+            'title' => 'NPO 1',
+        ]);
 });
 
 it('reads why the device would not open the player', function (): void {

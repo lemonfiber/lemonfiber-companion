@@ -373,6 +373,15 @@ return [
         'not_let_in' => 'Dit is gestopt omdat het huis het hier niet liet afspelen. Druk op Afspelen om het opnieuw te proberen.',
     ],
 
+    // De plank Live tv op Thuis: elk kanaal met wat er nu op is.
+    'live' => [
+        'heading' => 'Live tv',
+        'until' => 'tot :time',
+        'nothing_in_the_guide' => 'Nu niets in de gids',
+        'reads' => ':channel, :programme',
+        'reads_until' => ':channel, :programme, tot :time',
+    ],
+
     'month' => [
         'january' => 'januari',
         'february' => 'februari',

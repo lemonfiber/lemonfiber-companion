@@ -32,6 +32,7 @@ use Tests\Support\Fakes\AStackThatOffers;
 use Tests\Support\Fakes\AZoneThatIsSet;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheChannelsOnScreen;
 use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\TheTitlesOnScreen;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -197,6 +198,7 @@ it('tells a member the house needs an update, never which software or version', 
         AMemberWhoIsOwed::owedNothing(),
         $keychain,
         TheTitlesOnScreen::over(AShelfThatWasRead::holdingNothing(), $keychain),
+        TheChannelsOnScreen::none($keychain),
         AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain),
         new AppsSettingsThatOpen(),
     );

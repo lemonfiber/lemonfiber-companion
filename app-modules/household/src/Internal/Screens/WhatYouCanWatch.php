@@ -11,6 +11,7 @@ use Modules\Household\Internal\Playing\PutsATitleOnScreen;
 use Modules\Household\Internal\Presenters\HowAShelfReads;
 use Modules\Household\Internal\Presenters\HowTheirOwnTitlesRead;
 use Modules\Household\Internal\Presenters\HowWhereTheyLeftOffReads;
+use Modules\Household\Internal\TheLiveTvShelf;
 use Modules\Household\Internal\ThePicturesItDraws;
 use Modules\Household\Internal\ViewModels\WhatAMemberTurnedOutToBeAbleToWatch;
 use Modules\Household\Internal\ViewModels\WhatTheirOwnTitlesTurnedOutToBe;
@@ -75,7 +76,7 @@ use Override;
 final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
 {
     use WritesItsTaps;
-    use PlaysTitles;
+    use PlaysChannels;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use FindsItsWayAroundTheHouse;
@@ -107,6 +108,7 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
         private readonly Owing $owing,
         private readonly SecureStorage $storage,
         private readonly PutsATitleOnScreen $titles,
+        private readonly TheLiveTvShelf $channelsShelf,
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
     ) {}
@@ -159,6 +161,7 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
         $this->answered = null;
         $this->theirs = null;
         $this->leftOff = null;
+        $this->live = null;
     }
 
     /** Play the title across the screen, by the id the core lists it under. */
@@ -200,6 +203,11 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
             held: fn(Session $session, Whose $whose): WhatAMemberTurnedOutToBeAbleToWatch => $this->pictured($answered, $stack, $session, $whose),
             notHeld: static fn(): WhatAMemberTurnedOutToBeAbleToWatch => $answered,
         );
+    }
+
+    protected function liveTv(): TheLiveTvShelf
+    {
+        return $this->channelsShelf;
     }
 
     protected function titlesOnScreen(): PutsATitleOnScreen

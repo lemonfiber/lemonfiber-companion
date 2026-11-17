@@ -89,6 +89,18 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
+            'path' => 'ChannelsEnvelope.rehearsed',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
+        ],
+        [
+            'path' => 'ChannelsEnvelope.id',
+            'because' => 'The member it was read for, by the media server\'s id, echoed back, for `HeldEnvelope.member`\'s reason: the app named the member in the request.',
+        ],
+        [
+            'path' => 'ChannelsEnvelope.member',
+            'because' => 'The member it was read for, by name, echoed back, for `HeldEnvelope.member`\'s reason.',
+        ],
+        [
             'path' => 'CredentialsEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],

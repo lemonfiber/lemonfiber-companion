@@ -80,6 +80,7 @@ use Modules\Device\Internal\Words;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
+use Modules\Household\Internal\Playing\TheChannelOnScreen;
 use Modules\Household\Internal\Playing\WhatIsPlaying;
 use Modules\Kernel\Api\AJoinLink;
 use Modules\Kernel\Api\Capture;
@@ -566,6 +567,7 @@ final class CompositionRoot extends ServiceProvider
         // plays on over whichever screen is under it, and what the page that
         // put it there pressed is what each move of it is told against.
         $this->app->singleton(WhatIsPlaying::class);
+        $this->app->singleton(TheChannelOnScreen::class);
 
         // How long readings are kept is one of the phone's settings, kept in
         // `connection`'s row beside the lock's time away, and asked for through

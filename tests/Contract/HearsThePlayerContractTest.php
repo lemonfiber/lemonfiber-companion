@@ -16,6 +16,7 @@ use Tests\Support\Fakes\APlayerOnAHandset;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsThePlace;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheChannelsOnScreen;
 use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\TheTitlesOnScreen;
 
@@ -41,7 +42,7 @@ function everyScreenThatHearsThePlayer(APlayerOnAHandset $player, WhatIsPlaying 
     $page = new WhatThisTitleIs($watching, ThePicturesOnScreen::none(), $keychain, $titles, $around, new AppsSettingsThatOpen());
     $page->setParams(['stack' => $stack->id()->stored(), 'about' => 'a1']);
 
-    $home = new WhatYouCanWatch($watching, ThePicturesOnScreen::none(), AMemberWhoIsOwed::owedNothing(), $keychain, $titles, $around, new AppsSettingsThatOpen());
+    $home = new WhatYouCanWatch($watching, ThePicturesOnScreen::none(), AMemberWhoIsOwed::owedNothing(), $keychain, $titles, TheChannelsOnScreen::none($keychain), $around, new AppsSettingsThatOpen());
     $home->setParams(['stack' => $stack->id()->stored()]);
 
     return [

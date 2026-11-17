@@ -201,6 +201,7 @@ const VERBS_THE_APP_ASKS_FOR = [
     // The player telling the core where the member is, so the core keeps their
     // place. It changes nothing on the machine but that member's place.
     'watched' => 'tells the core where the member is in what they are watching',
+    'tune' => 'opens a channel\'s live stream for the member, renews its passes before they lapse, and closes it when it stops',
 
     // The household's two, which are not verbs about a machine at all. They settle
     // one thing somebody in the house already asked for, and they are here

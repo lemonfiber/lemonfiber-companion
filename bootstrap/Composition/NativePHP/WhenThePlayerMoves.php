@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bootstrap\Composition\NativePHP;
 
 use Lemonfiber\Native\Events\ThePlayerMoved;
+use Modules\Household\Internal\Playing\KeepsTheChannelOpen;
 use Modules\Household\Internal\Playing\KeepsTheMembersPlace;
 use Modules\Household\Internal\Screens\HearsThePlayer;
 use Native\Mobile\Edge\NativeComponent;
@@ -14,7 +15,7 @@ use Native\Mobile\Edge\NativeComponent;
  *
  * The device wakes the app with {@see ThePlayerMoved}, which carries nothing,
  * and the member's place is read afresh from the player and told to the core,
- * whichever screen is under it. The screen on view looks again where it shows
+ * whichever screen is under it, and a channel on it is renewed or let go of. The screen on view looks again where it shows
  * Play, so a title that stopped says why.
  *
  * So an event from anywhere, forged or replayed, can make the app ask the
@@ -26,7 +27,7 @@ use Native\Mobile\Edge\NativeComponent;
  */
 final readonly class WhenThePlayerMoves
 {
-    public function __construct(private KeepsTheMembersPlace $place) {}
+    public function __construct(private KeepsTheMembersPlace $place, private KeepsTheChannelOpen $channel) {}
 
     /** Heard from the dispatcher, over the screen driving the runloop. */
     public function handle(): void
@@ -38,6 +39,7 @@ final readonly class WhenThePlayerMoves
     public function over(?NativeComponent $screen): void
     {
         $this->place->heard();
+        $this->channel->heard();
 
         if ($screen instanceof HearsThePlayer) {
             $screen->playerMoved();

@@ -31,6 +31,7 @@ use Modules\Kernel\Api\AKeysName;
 use Modules\Kernel\Api\AKeyToMint;
 use Modules\Kernel\Api\ALift;
 use Modules\Kernel\Api\ALineChange;
+use Modules\Kernel\Api\ALiveStream;
 use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\AMoveAgreed;
@@ -75,6 +76,7 @@ use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\Change;
+use Modules\Kernel\Api\ChannelId;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Confirmed;
 use Modules\Kernel\Api\ConnectionsReverted;
@@ -97,6 +99,7 @@ use Modules\Kernel\Api\HowServicesTookIt;
 use Modules\Kernel\Api\HowTheHouseholdAsks;
 use Modules\Kernel\Api\HowTheNotesStand;
 use Modules\Kernel\Api\IdempotencyKey;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KeyMaterial;
 use Modules\Kernel\Api\KindOfTitle;
@@ -205,6 +208,7 @@ use Modules\Sdk\Api\Allowers;
 use Modules\Sdk\Api\Archivists;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Askers;
+use Modules\Sdk\Api\Broadcasters;
 use Modules\Sdk\Api\Bundlers;
 use Modules\Sdk\Api\Cataloguers;
 use Modules\Sdk\Api\CertificateReplacers;
@@ -339,6 +343,10 @@ final readonly class EveryAdapterCallThatReads
                 => new Copiers($clients, $entropy)->take($stack, $session, ACopyAsked::ofTheWholeStack()),
             'Copiers::whatBecameOf' => static fn(): object
                 => new Copiers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
+            'Broadcasters::theChannelsOf' => static fn(): object => new Broadcasters($clients, $entropy)->theChannelsOf($stack, $session, Whose::member('robin')),
+            'Broadcasters::tune' => static fn(): object => new Broadcasters($clients, $entropy)->tune($stack, $session, Whose::member('robin'), ChannelId::called('c1')),
+            'Broadcasters::renew' => static fn(): object => new Broadcasters($clients, $entropy)->renew($stack, $session, Whose::member('robin'), self::aLiveStream()),
+            'Broadcasters::stop' => static fn(): object => new Broadcasters($clients, $entropy)->stop($stack, $session, Whose::member('robin'), self::aLiveStream()),
             'Bundlers::ask' => static fn(): object => new Bundlers($clients, $entropy)->ask(
                 $stack,
                 $session,
@@ -784,5 +792,11 @@ final readonly class EveryAdapterCallThatReads
             ),
             WhereTakingItOffGot::surveyed(),
         ), WhetherToWait::GoAheadNow, acknowledgedTheVolume: false);
+    }
+
+    /** A live stream a renewal or a stop names. */
+    private static function aLiveStream(): ALiveStream
+    {
+        return ALiveStream::opened('s1', 'https://192.168.1.20:8920/live/s1/stream.ts?lfpass=p', '', Fingerprint::of(str_repeat('c', Fingerprint::CHARACTERS)), Instant::atEpochSeconds(1_893_456_300));
     }
 }

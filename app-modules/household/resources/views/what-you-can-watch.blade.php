@@ -61,6 +61,35 @@
         </x-design::section>
     @endforelse
 
+    {{-- Live TV after the member's own and the house's rows, drawn only
+         where the core lists a channel this member may watch. What came of
+         pressing one, or how it stopped, is said under it, and the shelf is
+         the way back to the channels. --}}
+    @if ($this->channels()->isDrawn())
+        <native:column class="w-full gap-2">
+            <x-design::heading>{{ __('household.live.heading') }}</x-design::heading>
+            <native:scroll-view class="w-full" horizontal :shows-indicators="false">
+            <native:row class="gap-3">
+                @forelse ($this->channels()->channels as $channel)
+                <x-household::channel :channel="$channel" />
+                @empty
+                {{-- Nothing: a shelf with no channel is not drawn at all. --}}
+                @endforelse
+            </native:row>
+            </native:scroll-view>
+        </native:column>
+        @if ($this->channels()->came?->stopped !== null)
+            <x-design::notice tone="quiet">
+                <x-design::strong>{{ $this->channels()->came->channel }}</x-design::strong>
+                <x-household::what-stood-in-the-way :stopped="$this->channels()->came->stopped" />
+            </x-design::notice>
+        @elseif ($this->channels()->came !== null && $this->channels()->came->inTheHousesWords !== '')
+            <x-design::note>{{ $this->channels()->came->channel }}: {{ $this->channels()->came->inTheHousesWords }}</x-design::note>
+        @elseif ($this->channels()->came !== null)
+            <x-design::note>{{ $this->channels()->came->channel }}: {{ __($this->channels()->came->key) }}</x-design::note>
+        @endif
+    @endif
+
     <x-design::action :label="__('household.ask_again')" tap="askAgain()" tone="tonal" />
 @elseif ($this->answer()->isOutOfReach)
     {{-- Not an empty shelf, and drawn so it can never be mistaken for one. The

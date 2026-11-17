@@ -13,10 +13,8 @@ namespace Modules\Sdk\Api;
  * the case's value is the word the core writes for a state. A reader spelling
  * `'severity'` in quotes says the same thing without saying where it came from.
  *
- * **Not derived from the contract document**, which carries envelope kinds and
- * versions and not the shape inside them. This is the nearest thing to a single
- * place the names live, and being an enum makes the set enumerable — which is
- * what lets a test ask whether every name here is one a reader actually reads.
+ * **Not derived from the contract document**, which carries kinds, not shapes.
+ * Being an enum makes the set enumerable, so a test asks each name is read.
  *
  * **Only the shared words are here.** A word one envelope carries lives in
  * that envelope's own enum under `Fields`, so a name there says which payload
@@ -106,13 +104,9 @@ enum WireField: string implements NamesAWireField
     case Reason = 'reason';
 
     /**
-     * That something was turned down, in the two places the wire says it.
-     *
-     * What a household request's decline carried, and whether the
-     * stack has already said it will not make one of an update's changes. One
-     * case because it is one word on the wire, and named here for both so the
-     * next reader does not add a second case for the meaning this docblock
-     * left out.
+     * That something was turned down: what a household request's decline
+     * carried, and whether the stack will not make one of an update's changes.
+     * One word on the wire, so one case for both meanings.
      */
     case Refused = 'refused';
 
@@ -237,12 +231,9 @@ enum WireField: string implements NamesAWireField
      * Which of the two things an update reading is about — and, on a listing's
      * limits, the thing the stack cannot act on.
      *
-     * One case for both, which is the opposite decision from {@see self::Refusal}
-     * and made for the opposite reason: there the wire spends two words on two
-     * ideas, and here it spends one word on one idea in two places. *What this
-     * is about* is the same question whether the answer is a copy of lemonfiber
-     * or a service a survey found, and a second case would assert a distinction
-     * the contract does not draw.
+     * One case for both, unlike {@see self::Refusal}: here the wire spends one
+     * word on one idea in two places, and a second case would assert a
+     * distinction the contract does not draw.
      */
     case What = 'what';
 
@@ -872,8 +863,17 @@ enum WireField: string implements NamesAWireField
     /** Where a title, an episode or something part-way through streams from at the household's door. */
     case StreamFrom = 'stream_from';
 
-    /** Why no location is stated beside a title, an episode or something part-way through, where none is. */
+    /** Why no location is stated beside a title, an episode, something part-way through or a channel, where none is. */
     case Unlocated = 'unlocated';
+
+    /** The certificate a title or a programme on a channel carries where the operator lives. */
+    case Certificate = 'certificate';
+
+    /** When something lapses, in seconds since the Unix epoch: a key's claim link, and a live stream's passes. */
+    case Lapses = 'lapses';
+
+    /** A service log line's mouth, and the live stream a channel opened for a member is renewed and stopped by. */
+    case Stream = 'stream';
 
     /** The name a stack gives what it showed before a yes: an update's reading, a restart's rehearsal. */
     case Offer = 'offer';

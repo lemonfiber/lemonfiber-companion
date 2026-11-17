@@ -15,6 +15,15 @@
 /// that form and nothing else, and turns it into what the media server reads.
 /// The player names no media server's own header, token form or query key.
 ///
+/// **A channel is the one exception, and it is read apart** (`readChannel`):
+/// the core opens its live stream and answers where it is served with the
+/// pass the door lets it through on written into each address, which is how
+/// the door asks for it. So a channel carries no grant and no header, both
+/// its addresses are held to one door and pinned, and they are never logged,
+/// cached or put in an intent. The player here cannot play the tuner's raw MPEG-TS
+/// stream, so here the transcoded playlist is played where there is one, and
+/// there is nothing to fall back to; `WhatToPlay.kt` tries the tuner's first.
+///
 /// Nothing here is ever logged. A refusal is one of the closed words below.
 ///
 /// Deliberately mirrors `WhatToPlay.kt` line for line.
@@ -28,8 +37,16 @@ public struct WhatToPlay: Sendable {
     /// The certificate that door promised.
     public let pin: DoorPin
 
-    /// The member's grant, sent with every request and kept nowhere else.
+    /// The member's grant, sent with every request and kept nowhere else; empty for a channel, whose pass is in its address.
     public let grant: String
+
+    /// Whether this is a channel's live stream, which reports while paused and has no place to keep.
+    public let isLive: Bool
+
+    /// Whether a grant goes with every request: a title's does, and a channel carries its pass in its address instead.
+    public var carriesAGrant: Bool {
+        !grant.isEmpty
+    }
 
     /// The header every request carries the grant in.
     public static let grantHeader = "Authorization"
@@ -74,6 +91,9 @@ public struct WhatToPlay: Sendable {
         /// Where to start is not a time.
         case noStartingPoint = "no_starting_point"
 
+        /// A channel came with neither the tuner's own stream nor a transcoded playlist.
+        case nowhereToPlay = "nowhere_to_play"
+
         /// What this refusal is called on the wire.
         public var word: String { rawValue }
     }
@@ -88,7 +108,8 @@ public struct WhatToPlay: Sendable {
     }
 
     private init(
-        location: String, door: Door, pin: DoorPin, grant: String, startAt: Double, shown: HowToShowIt
+        location: String, door: Door, pin: DoorPin, grant: String, startAt: Double, shown: HowToShowIt,
+        isLive: Bool = false
     ) {
         self.location = location
         self.door = door
@@ -96,6 +117,7 @@ public struct WhatToPlay: Sendable {
         self.grant = grant
         self.startAt = startAt
         self.shown = shown
+        self.isLive = isLive
     }
 
     /// The request the bridge carried, checked.
@@ -133,6 +155,36 @@ public struct WhatToPlay: Sendable {
                     title: parameters["title"] as? String ?? "",
                     audio: parameters["audio"] as? String ?? "",
                     subtitle: parameters["subtitle"] as? String ?? "")))
+    }
+
+    /// A channel the bridge carried, checked: its transcoded playlist where there is one, and the tuner's own stream otherwise.
+    ///
+    /// - Parameter parameters: what the app sent.
+    /// - Returns: what to play, or why not.
+    public static func readChannel(_ parameters: [String: Any]) -> Read {
+        let direct = parameters["direct"] as? String ?? ""
+        let transcoded = parameters["transcoded"] as? String ?? ""
+        let location = transcoded.isEmpty ? direct : transcoded
+
+        guard !location.isEmpty else {
+            return .refused(.nowhereToPlay)
+        }
+
+        guard let door = Door.of(location),
+            [direct, transcoded].allSatisfy({ $0.isEmpty || Door.of($0) == door })
+        else {
+            return .refused(.notAtADoor)
+        }
+
+        guard let pin = DoorPin.of(parameters["fingerprint"] as? String ?? "") else {
+            return .refused(.unpinned)
+        }
+
+        return .toPlay(
+            WhatToPlay(
+                location: location, door: door, pin: pin, grant: "", startAt: 0,
+                shown: HowToShowIt(title: parameters["title"] as? String ?? "", audio: "", subtitle: ""),
+                isLive: true))
     }
 
     /// Whether a grant is one as the media server issues it: 32 lowercase hexadecimal digits.

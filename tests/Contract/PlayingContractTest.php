@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 use Lemonfiber\Native\Player\Player;
 use Modules\Device\Api\PlatformPlayer;
+use Modules\Kernel\Api\AChannelToPlay;
 use Modules\Kernel\Api\AGrant;
+use Modules\Kernel\Api\ALiveStream;
 use Modules\Kernel\Api\ATitleToPlay;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HearIn;
@@ -109,6 +111,44 @@ it('tells a device with no player from one that would not play what the core sta
     'nothing to pin' => ['unpinned', WhyPlayingDidNotStart::WhatTheHouseSaidCannotBePlayed],
     'no grant' => ['no_grant', WhyPlayingDidNotStart::WhatTheHouseSaidCannotBePlayed],
     'a refusal' => ['refused', WhyPlayingDidNotStart::WhatTheHouseSaidCannotBePlayed],
+]);
+
+/** One channel as the core opened it, served both ways, under the name the lock screen calls it. */
+function aChannelTheCoreOpened(): AChannelToPlay
+{
+    return AChannelToPlay::of(ALiveStream::opened(
+        's1',
+        'https://door.example:8920/live/s1/stream.ts?lfpass=p',
+        'https://door.example:8920/live/s1/main.m3u8?lfpass=p',
+        Fingerprint::of(str_repeat('ab', 32)),
+        Instant::atEpochSeconds(2_000_000_000),
+    ), 'NPO 1');
+}
+
+it('tunes the player to a channel with both its addresses, its door and its name, and no grant', function (): void {
+    $adapter = aPlayerOverABridgeThatSays('Lemonfiber.Player.Tune', ['outcome' => 'showing']);
+
+    foreach (['the fake' => APlayerOnAHandset::working(), 'the adapter' => $adapter] as $which => $playing) {
+        expect(whatOpeningWas($playing->tune(aChannelTheCoreOpened())))->toBe('opened', $which);
+    }
+
+    expect(array_column(FakeBridge::enable()->callsTo('Lemonfiber.Player.Tune'), 'params'))->toBe([[
+        'direct' => 'https://door.example:8920/live/s1/stream.ts?lfpass=p',
+        'transcoded' => 'https://door.example:8920/live/s1/main.m3u8?lfpass=p',
+        'fingerprint' => str_repeat('ab', 32),
+        'title' => 'NPO 1',
+    ]]);
+});
+
+it('tells a device with no player from one that would not tune to what the core opened', function (string $because, WhyPlayingDidNotStart $why): void {
+    $adapter = aPlayerOverABridgeThatSays('Lemonfiber.Player.Tune', ['outcome' => 'refused', 'because' => $because]);
+
+    foreach (['the fake' => APlayerOnAHandset::refusing($why), 'the adapter' => $adapter] as $which => $playing) {
+        expect(whatOpeningWas($playing->tune(aChannelTheCoreOpened())))->toBe($why->name, $which);
+    }
+})->with([
+    'no player' => ['no_player', WhyPlayingDidNotStart::ThereIsNoPlayerHere],
+    'nowhere to play it' => ['nowhere_to_play', WhyPlayingDidNotStart::WhatTheHouseSaidCannotBePlayed],
 ]);
 
 it('says where the player stands, in whole seconds', function (string $stands, string $why, PlaybackIs $is): void {

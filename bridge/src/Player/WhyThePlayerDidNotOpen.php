@@ -28,6 +28,9 @@ enum WhyThePlayerDidNotOpen: string
     /** There is no place to start from. */
     case NoStartingPoint = 'no_starting_point';
 
+    /** A channel came with neither the tuner's own stream nor a transcoded playlist. */
+    case NowhereToPlay = 'nowhere_to_play';
+
     /** Nothing the player was built with could play from that location. */
     case Refused = 'refused';
 

@@ -26,8 +26,6 @@ enum TitleField: string implements NamesAWireField
     /** The genres the server files it under. */
     case Genres = 'genres';
 
-    /** The certificate it carries where the operator lives. */
-    case Certificate = 'certificate';
 
     /** When it came out, as `YYYY-MM-DD`. */
     case Released = 'released';

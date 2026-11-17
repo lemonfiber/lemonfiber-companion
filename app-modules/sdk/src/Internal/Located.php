@@ -12,6 +12,7 @@ use Modules\Kernel\Api\FingerprintIsNotAFingerprint;
 use Modules\Kernel\Api\Location;
 use Modules\Kernel\Api\LocationIsUnfit;
 use Modules\Kernel\Api\WhereItPlays;
+use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\WireField;
 
 /**
@@ -43,6 +44,22 @@ final readonly class Located
         try {
             return WhereItPlays::at(Location::of($from), Fingerprint::of(Required::text($door, WireField::Fingerprint, $refused)));
         } catch (LocationIsUnfit|FingerprintIsNotAFingerprint) {
+            throw $refused;
+        }
+    }
+
+    /**
+     * An address the core stated for a live stream, held to the door as a title's location is, or empty where it stated none.
+     *
+     * @param array<mixed> $item
+     */
+    public static function live(array $item, NamesAWireField $field, InvalidArgumentException $refused): string
+    {
+        $at = Optional::text($item, $field, $refused);
+
+        try {
+            return $at === '' ? '' : Location::of($at)->forThePlayer();
+        } catch (LocationIsUnfit) {
             throw $refused;
         }
     }

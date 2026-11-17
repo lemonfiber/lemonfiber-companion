@@ -6,11 +6,14 @@ namespace Modules\Device\Api;
 
 use function floor;
 
+use Lemonfiber\Native\Player\ChannelAtTheDoor;
+use Lemonfiber\Native\Player\Opening;
 use Lemonfiber\Native\Player\Player;
 use Lemonfiber\Native\Player\TitleAtTheDoor;
 use Lemonfiber\Native\Player\WherePlaybackStands;
 use Lemonfiber\Native\Player\WhyPlaybackStopped;
 use Lemonfiber\Native\Player\WhyThePlayerDidNotOpen;
+use Modules\Kernel\Api\AChannelToPlay;
 use Modules\Kernel\Api\ATitleToPlay;
 use Modules\Kernel\Api\HearIn;
 use Modules\Kernel\Api\HowFarIn;
@@ -36,7 +39,7 @@ final readonly class PlatformPlayer implements Playing
 
     public function open(ATitleToPlay $title): WhatOpeningCameTo
     {
-        return $this->player->open(new TitleAtTheDoor(
+        return $this->opened($this->player->open(new TitleAtTheDoor(
             location: $title->location()->forThePlayer(),
             fingerprint: $title->door()->forThePlayer(),
             grant: $title->grant()->forTheDoor(),
@@ -44,14 +47,19 @@ final readonly class PlatformPlayer implements Playing
             title: $title->named(),
             audio: $this->heard($title->languages()->hear()),
             subtitle: $this->read($title->languages()->read()),
-        ))->either(
-            opened: static fn(): WhatOpeningCameTo => WhatOpeningCameTo::opened(),
-            refused: static fn(WhyThePlayerDidNotOpen $why): WhatOpeningCameTo => WhatOpeningCameTo::refused(
-                $why === WhyThePlayerDidNotOpen::NoPlayerHere
-                    ? WhyPlayingDidNotStart::ThereIsNoPlayerHere
-                    : WhyPlayingDidNotStart::WhatTheHouseSaidCannotBePlayed,
-            ),
-        );
+        )));
+    }
+
+    public function tune(AChannelToPlay $channel): WhatOpeningCameTo
+    {
+        $stream = $channel->stream();
+
+        return $this->opened($this->player->tune(new ChannelAtTheDoor(
+            direct: $stream->directForThePlayer(),
+            transcoded: $stream->transcodedForThePlayer(),
+            fingerprint: $stream->door()->forThePlayer(),
+            title: $channel->named(),
+        )));
     }
 
     public function whereItStands(): WherePlayingStands
@@ -69,6 +77,19 @@ final readonly class PlatformPlayer implements Playing
         $this->player->close();
 
         return $this->whereItStands();
+    }
+
+    /** Whether the device put the player on screen, in the terms this application reasons in. */
+    private function opened(Opening $opening): WhatOpeningCameTo
+    {
+        return $opening->either(
+            opened: static fn(): WhatOpeningCameTo => WhatOpeningCameTo::opened(),
+            refused: static fn(WhyThePlayerDidNotOpen $why): WhatOpeningCameTo => WhatOpeningCameTo::refused(
+                $why === WhyThePlayerDidNotOpen::NoPlayerHere
+                    ? WhyPlayingDidNotStart::ThereIsNoPlayerHere
+                    : WhyPlayingDidNotStart::WhatTheHouseSaidCannotBePlayed,
+            ),
+        );
     }
 
     /** Where the device says playback stands, in the terms this application reasons in. */

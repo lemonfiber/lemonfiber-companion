@@ -19,6 +19,9 @@ enum WhatThePlayerAsks: string implements AnAction
     /** Where the member is in what they are watching, so the core keeps their place. */
     case Watched = 'watched';
 
+    /** A channel's live stream opened for the member, its passes renewed, or closed. */
+    case Tune = 'tune';
+
     public function asked(): string
     {
         return $this->value;

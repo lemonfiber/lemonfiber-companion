@@ -213,6 +213,13 @@ enum Call: string
      */
     case PlayerOpen = 'Lemonfiber.Player.Open';
 
+    /**
+     * Put the player on screen for a channel's live stream the core opened, or say why not.
+     *
+     * Carries the stream's addresses, whose passes neither native half writes to a log line.
+     */
+    case PlayerTune = 'Lemonfiber.Player.Tune';
+
     /** Play, pause, seek, or change the sound or the subtitles of the player on screen. */
     case PlayerCommand = 'Lemonfiber.Player.Command';
 

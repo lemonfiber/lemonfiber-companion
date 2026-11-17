@@ -38,7 +38,8 @@ use Modules\Watching\Api\KeepingTheirLanguages;
  * every open, so a choice changed between two titles is the one the next plays in.
  *
  * A session the stack refused, asking for the title or for the grant, is let
- * go of here, where the refusal is in hand.
+ * go of here, where the refusal is in hand. A title on the player ends the
+ * channel that was on it, which the core closes when its pass lapses unrenewed.
  */
 final readonly class PutsATitleOnScreen
 {
@@ -51,6 +52,7 @@ final readonly class PutsATitleOnScreen
         private Playing $player,
         private WhatIsPlaying $playing,
         private KeepingTheirLanguages $languages,
+        private TheChannelOnScreen $channel,
     ) {}
 
     /** Play a title from its start, as whoever is signed in to the stack: itself, or the episode its own Play plays. */
@@ -174,6 +176,7 @@ final readonly class PutsATitleOnScreen
 
         return $this->player->open($playback->toPlay($grant, $from, $languages))->either(
             opened: function () use ($playback): WhatPressingPlayCameTo {
+                $this->channel->over();
                 $this->playing->began($playback);
 
                 return WhatPressingPlayCameTo::onScreen();

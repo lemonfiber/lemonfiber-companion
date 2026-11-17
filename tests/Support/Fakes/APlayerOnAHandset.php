@@ -8,6 +8,7 @@ use function array_shift;
 use function array_values;
 use function count;
 
+use Modules\Kernel\Api\AChannelToPlay;
 use Modules\Kernel\Api\ATitleToPlay;
 use Modules\Kernel\Api\HowFarIn;
 use Modules\Kernel\Api\PlaybackIs;
@@ -30,6 +31,9 @@ final class APlayerOnAHandset implements Playing
 
     /** @var list<WherePlayingStands> */
     private array $standing;
+
+    /** @var list<string> */
+    private array $tuned = [];
 
     private int $closed = 0;
 
@@ -67,6 +71,17 @@ final class APlayerOnAHandset implements Playing
         return WhatOpeningCameTo::opened();
     }
 
+    public function tune(AChannelToPlay $channel): WhatOpeningCameTo
+    {
+        if ($this->why instanceof WhyPlayingDidNotStart) {
+            return WhatOpeningCameTo::refused($this->why);
+        }
+
+        $this->tuned[] = $channel->named();
+
+        return WhatOpeningCameTo::opened();
+    }
+
     public function whereItStands(): WherePlayingStands
     {
         return count($this->standing) > 1 ? array_shift($this->standing) : $this->standing[0];
@@ -87,6 +102,16 @@ final class APlayerOnAHandset implements Playing
     public function opened(): array
     {
         return $this->opened;
+    }
+
+    /**
+     * Every channel it was tuned to, by the name it was handed, in order.
+     *
+     * @return list<string>
+     */
+    public function tuned(): array
+    {
+        return $this->tuned;
     }
 
     /** How many times it was taken off screen. */

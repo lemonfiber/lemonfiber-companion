@@ -13,6 +13,7 @@ use Modules\Sdk\Api\Fields\BootField;
 use Modules\Sdk\Api\Fields\BundleField;
 use Modules\Sdk\Api\Fields\CapabilitiesField;
 use Modules\Sdk\Api\Fields\CatalogueField;
+use Modules\Sdk\Api\Fields\ChannelsField;
 use Modules\Sdk\Api\Fields\ClientsField;
 use Modules\Sdk\Api\Fields\ConfigField;
 use Modules\Sdk\Api\Fields\CredentialsField;
@@ -29,7 +30,6 @@ use Modules\Sdk\Api\Fields\HostingField;
 use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Api\Fields\ImportField;
 use Modules\Sdk\Api\Fields\InvitationField;
-use Modules\Sdk\Api\Fields\KeyClaimField;
 use Modules\Sdk\Api\Fields\KeysField;
 use Modules\Sdk\Api\Fields\LifecycleField;
 use Modules\Sdk\Api\Fields\LogField;
@@ -65,6 +65,7 @@ use Modules\Sdk\Api\Fields\StoredField;
 use Modules\Sdk\Api\Fields\SubstitutionField;
 use Modules\Sdk\Api\Fields\TitleField;
 use Modules\Sdk\Api\Fields\TraceField;
+use Modules\Sdk\Api\Fields\TunedField;
 use Modules\Sdk\Api\Fields\UninstallField;
 use Modules\Sdk\Api\Fields\UpdateField;
 use Modules\Sdk\Api\Fields\UpgradeField;
@@ -98,6 +99,7 @@ function everyFieldNamedOnTheWire(): array
         ...BandwidthField::cases(),
         ...BootField::cases(),
         ...CatalogueField::cases(),
+        ...ChannelsField::cases(),
         ...BundleField::cases(),
         ...CapabilitiesField::cases(),
         ...ClientsField::cases(),
@@ -105,7 +107,6 @@ function everyFieldNamedOnTheWire(): array
         ...CredentialsField::cases(),
         ...KeysField::cases(),
         ...DeviceChallengeField::cases(),
-        ...KeyClaimField::cases(),
         ...PushEndpointField::cases(),
         ...DashboardField::cases(),
         ...DoctorField::cases(),
@@ -154,6 +155,7 @@ function everyFieldNamedOnTheWire(): array
         ...NewsItemsField::cases(),
         ...SubstitutionField::cases(),
         ...TraceField::cases(),
+        ...TunedField::cases(),
         ...UninstallField::cases(),
         ...UpdateField::cases(),
         ...UpgradeField::cases(),

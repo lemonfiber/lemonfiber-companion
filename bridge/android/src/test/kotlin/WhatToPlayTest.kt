@@ -127,5 +127,104 @@ class WhatToPlayTest {
         assertEquals("no_grant", WhatToPlay.WhyNot.NO_GRANT.word)
         assertEquals("grant_in_the_address", WhatToPlay.WhyNot.GRANT_IN_THE_ADDRESS.word)
         assertEquals("no_starting_point", WhatToPlay.WhyNot.NO_STARTING_POINT.word)
+        assertEquals("nowhere_to_play", WhatToPlay.WhyNot.NOWHERE_TO_PLAY.word)
+    }
+
+    private val theDirect = "https://door.home:8920/live/s1/stream.ts?lfpass=p.1.m"
+
+    private val theTranscoded = "https://door.home:8920/live/s1/main.m3u8?lfpass=p.1.m"
+
+    private val theDirectInTheClear = "http://door.home:8920/live/s1/stream.ts?lfpass=p"
+
+    private val theTranscodedElsewhere = "https://elsewhere.home:8920/live/s1/main.m3u8?lfpass=p"
+
+    private val theLocationWithAGrant =
+        "https://door.home:8443/library/1/main.m3u8?t=0123456789abcdef0123456789abcdef"
+
+    private fun aChannel(changed: Map<String, Any> = emptyMap()): Map<String, Any> =
+        mapOf(
+            "direct" to theDirect,
+            "transcoded" to theTranscoded,
+            "fingerprint" to theFingerprint,
+            "title" to "NPO 1",
+        ) + changed
+
+    @Test
+    fun `a channel plays what the player here decodes best, with no grant beside its pass`() {
+        val asked = toPlay(WhatToPlay.readChannel(aChannel()))
+
+        assertEquals(theDirect, asked?.location)
+        assertEquals(theTranscoded, asked?.fallback)
+        assertEquals(false, asked?.carriesAGrant)
+        assertEquals(true, asked?.isLive)
+        assertEquals(0.0, asked?.startAt)
+        assertEquals("NPO 1", asked?.shown?.title)
+    }
+
+    @Test
+    fun `a channel never carries a grant, even one sent beside it`() {
+        val sent = aChannel(mapOf("grant" to "0123456789abcdef0123456789abcdef"))
+        val asked = toPlay(WhatToPlay.readChannel(sent))
+
+        assertEquals("", asked?.grant)
+        assertEquals(false, asked?.carriesAGrant)
+    }
+
+    @Test
+    fun `a channel ends on its transcoded playlist, with nothing past it to fall back to`() {
+        val instead = toPlay(WhatToPlay.readChannel(aChannel()))?.fallenBack()
+
+        assertEquals(theTranscoded, instead?.location)
+        assertEquals(true, instead?.isLive)
+        assertEquals(null, instead?.fallenBack())
+    }
+
+    @Test
+    fun `a channel served only one way plays that one, with nothing to fall back to`() {
+        val transcodedOnly = toPlay(WhatToPlay.readChannel(aChannel(mapOf("direct" to ""))))
+        val directOnly = toPlay(WhatToPlay.readChannel(aChannel(mapOf("transcoded" to ""))))
+
+        assertEquals(theTranscoded, transcodedOnly?.location)
+        assertEquals(null, transcodedOnly?.fallenBack())
+        assertEquals(theDirect, directOnly?.location)
+        assertEquals(null, directOnly?.fallenBack())
+    }
+
+    @Test
+    fun `a channel served nowhere, off a door, at two doors or unpinned is refused`() {
+        assertEquals(
+            WhatToPlay.WhyNot.NOWHERE_TO_PLAY,
+            whyNot(WhatToPlay.readChannel(aChannel(mapOf("direct" to "", "transcoded" to "")))),
+        )
+        assertEquals(
+            WhatToPlay.WhyNot.NOT_AT_A_DOOR,
+            whyNot(WhatToPlay.readChannel(aChannel(mapOf("direct" to theDirectInTheClear)))),
+        )
+        assertEquals(
+            WhatToPlay.WhyNot.NOT_AT_A_DOOR,
+            whyNot(WhatToPlay.readChannel(aChannel(mapOf("transcoded" to theTranscodedElsewhere)))),
+        )
+        assertEquals(
+            WhatToPlay.WhyNot.UNPINNED,
+            whyNot(WhatToPlay.readChannel(aChannel(mapOf("fingerprint" to "abc")))),
+        )
+    }
+
+    @Test
+    fun `a channel reads a field it was not sent as empty`() {
+        assertEquals(WhatToPlay.WhyNot.NOWHERE_TO_PLAY, whyNot(WhatToPlay.readChannel(emptyMap())))
+        assertEquals(WhatToPlay.WhyNot.UNPINNED, whyNot(WhatToPlay.readChannel(mapOf("direct" to theDirect))))
+        val sent = mapOf("transcoded" to theTranscoded, "fingerprint" to theFingerprint)
+        val untitled = toPlay(WhatToPlay.readChannel(sent))
+
+        assertEquals("", untitled?.shown?.title)
+    }
+
+    @Test
+    fun `a title is still refused with a grant in its address, which only a channel's pass may be`() {
+        assertEquals(
+            WhatToPlay.WhyNot.GRANT_IN_THE_ADDRESS,
+            whyNot(WhatToPlay.read(aRequest(mapOf("location" to theLocationWithAGrant)))),
+        )
     }
 }

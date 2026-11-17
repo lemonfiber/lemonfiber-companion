@@ -27,11 +27,13 @@ final readonly class Player
     /** Put the player on screen for one title, or say why not. */
     public function open(TitleAtTheDoor $title): Opening
     {
-        $said = WhatTheBridgeAnswered::to(Call::PlayerOpen, $title->asCarried());
+        return $this->opening(WhatTheBridgeAnswered::to(Call::PlayerOpen, $title->asCarried()));
+    }
 
-        return HowThePlayerAnswered::in($said) === HowThePlayerAnswered::Showing
-            ? Opening::opened()
-            : Opening::refused(WhyThePlayerDidNotOpen::orNoPlayerHere($said->word(WhatAnAnswerHolds::Because)));
+    /** Put the player on screen for a channel's live stream, or say why not. */
+    public function tune(ChannelAtTheDoor $channel): Opening
+    {
+        return $this->opening(WhatTheBridgeAnswered::to(Call::PlayerTune, $channel->asCarried()));
     }
 
     /**
@@ -76,6 +78,14 @@ final readonly class Player
             chosenSubtitle: $this->chosen($said->word(WhatAnAnswerHolds::ChosenSubtitle)),
             why: WhyPlaybackStopped::orNone($said->word(WhatAnAnswerHolds::Why)),
         );
+    }
+
+    /** Whether the player came on screen, or why not. */
+    private function opening(WhatTheBridgeAnswered $said): Opening
+    {
+        return HowThePlayerAnswered::in($said) === HowThePlayerAnswered::Showing
+            ? Opening::opened()
+            : Opening::refused(WhyThePlayerDidNotOpen::orNoPlayerHere($said->word(WhatAnAnswerHolds::Because)));
     }
 
     /** A chosen track, or none where the device said none. */

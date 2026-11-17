@@ -39,42 +39,54 @@ enum PlayerFunctions {
     /// Put the player on screen for what the app asked to play.
     class Open: BridgeFunction {
         func execute(parameters: [String: Any]) throws -> [String: Any] {
-            let asked: WhatToPlay
-
-            switch WhatToPlay.read(parameters) {
-            case .refused(let why):
-                NSLog("%@ player: refused, %@", tag, why.word)
-
-                return Envelope.refusing("refused", because: why.word).asAnswer()
-            case .toPlay(let read):
-                asked = read
-            }
-
-            let opened = onMain { () -> Bool in
-                screen?.close()
-                screen?.dismiss(animated: false)
-
-                let opening = PlayerScreen(asked: asked, extensions: extensions) {
-                    LaravelBridge.shared.send?(moved, [:])
-                }
-
-                guard opening.open(), let top = topmost() else {
-                    return false
-                }
-
-                opening.modalPresentationStyle = .fullScreen
-                top.present(opening, animated: true)
-                screen = opening
-
-                return true
-            }
-
-            NSLog("%@ player: %@", tag, opened ? "showing" : "nothing to open")
-
-            return opened
-                ? Envelope.of("showing").asAnswer()
-                : Envelope.refusing("refused", because: WhyPlaybackStopped.refused.word).asAnswer()
+            show(WhatToPlay.read(parameters))
         }
+    }
+
+    /// Put the player on screen for a channel's live stream the core opened.
+    class Tune: BridgeFunction {
+        func execute(parameters: [String: Any]) throws -> [String: Any] {
+            show(WhatToPlay.readChannel(parameters))
+        }
+    }
+
+    /// Put the player on screen for what was read, or answer why not.
+    private static func show(_ read: WhatToPlay.Read) -> [String: Any] {
+        let asked: WhatToPlay
+
+        switch read {
+        case .refused(let why):
+            NSLog("%@ player: refused, %@", tag, why.word)
+
+            return Envelope.refusing("refused", because: why.word).asAnswer()
+        case .toPlay(let read):
+            asked = read
+        }
+
+        let opened = onMain { () -> Bool in
+            screen?.close()
+            screen?.dismiss(animated: false)
+
+            let opening = PlayerScreen(asked: asked, extensions: extensions) {
+                LaravelBridge.shared.send?(moved, [:])
+            }
+
+            guard opening.open(), let top = topmost() else {
+                return false
+            }
+
+            opening.modalPresentationStyle = .fullScreen
+            top.present(opening, animated: true)
+            screen = opening
+
+            return true
+        }
+
+        NSLog("%@ player: %@", tag, opened ? "showing" : "nothing to open")
+
+        return opened
+            ? Envelope.of("showing").asAnswer()
+            : Envelope.refusing("refused", because: WhyPlaybackStopped.refused.word).asAnswer()
     }
 
     /// Carry out one thing the app asked of the player on screen.

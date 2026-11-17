@@ -224,6 +224,12 @@
             "description": "Put the player on screen for a title the core stated, pinned to its door, or say why it would not open"
         },
         {
+            "name": "Lemonfiber.Player.Tune",
+            "android": "app.lemonfiber.native.PlayerFunctions.Tune",
+            "ios": "PlayerFunctions.Tune",
+            "description": "Put the player on screen for a channel's live stream the core opened, the tuner's own stream first and its transcoded playlist where that will not decode, pinned to its door, or say why it would not open"
+        },
+        {
             "name": "Lemonfiber.Player.Command",
             "android": "app.lemonfiber.native.PlayerFunctions.Command",
             "ios": "PlayerFunctions.Command",

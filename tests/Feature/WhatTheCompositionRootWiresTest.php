@@ -13,6 +13,7 @@ use Lemonfiber\Native\Events\ThePlayerMoved;
 use Modules\Connection\Api\TurningNotificationsOn;
 use Modules\Device\Api\PlatformNotifier;
 use Modules\Device\Internal\WhatWasToldLately;
+use Modules\Household\Internal\Playing\TheChannelOnScreen;
 use Modules\Household\Internal\Playing\WhatIsPlaying;
 use Modules\Kernel\Api\AJoinLink;
 use Modules\News\Internal\WhatEachStackLastNamed;
@@ -52,6 +53,7 @@ it('holds one of each memory a screen hears and the next draws, for the life of 
     'what was told lately' => WhatWasToldLately::class,
     'what each stack last named' => WhatEachStackLastNamed::class,
     'what is playing' => WhatIsPlaying::class,
+    'the channel on screen' => TheChannelOnScreen::class,
     'what each stack offers' => WhatEachStackOffers::class,
 ]);
 

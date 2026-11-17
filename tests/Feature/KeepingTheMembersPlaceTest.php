@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use Bootstrap\Composition\NativePHP\WhenThePlayerMoves;
+use Modules\Household\Internal\Playing\KeepsTheChannelOpen;
 use Modules\Household\Internal\Playing\KeepsTheMembersPlace;
+use Modules\Household\Internal\Playing\TheChannelOnScreen;
 use Modules\Household\Internal\Playing\WhatIsPlaying;
 use Modules\Household\Internal\Screens\WhatThisTitleIs;
 use Modules\Kernel\Api\AGrant;
@@ -15,6 +17,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PlaybackIs;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\TheChannels;
 use Modules\Kernel\Api\WherePlayingStands;
 use Modules\Kernel\Api\Whose;
 use Tests\Support\APlaybackHeard;
@@ -25,6 +28,8 @@ use Tests\Support\Fakes\APlayerOnAHandset;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatGrants;
 use Tests\Support\Fakes\AStackThatKeepsThePlace;
+use Tests\Support\Fakes\ATunerThatAnswered;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\TheTitlesOnScreen;
@@ -52,6 +57,12 @@ function aPlaybackUnderWay(?AStackThatKeepsThePlace $core = null, ?AKeychainInMe
     $titles->theTitle(ATitleThatPlays::theStack(), HoldingId::called('a1'));
 
     return new APlaybackHeard(new KeepsTheMembersPlace($player, $playing, $core, $keychain, $titles), $playing, $player, $core, $keychain);
+}
+
+/** What keeps a channel open, with none on the player. */
+function noChannelOn(APlayerOnAHandset $player, AKeychainInMemory $keychain): KeepsTheChannelOpen
+{
+    return new KeepsTheChannelOpen($player, new TheChannelOnScreen(), ATunerThatAnswered::listing(TheChannels::these()), $keychain, FrozenClock::at(Instant::atEpochSeconds(1_000_000_000)));
 }
 
 /** Where the player stands. */
@@ -199,7 +210,7 @@ it('tells the place and has the page say why, when the device says the player mo
     $titles = TheTitlesOnScreen::over($watching, $keychain, $player, $playing);
     $page = new WhatThisTitleIs($watching, ThePicturesOnScreen::none(), $keychain, $titles, AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain), new AppsSettingsThatOpen());
     $page->setParams(['stack' => $stack->id()->stored(), 'about' => 'a1']);
-    $moved = new WhenThePlayerMoves(new KeepsTheMembersPlace($player, $playing, $core, $keychain, $titles));
+    $moved = new WhenThePlayerMoves(new KeepsTheMembersPlace($player, $playing, $core, $keychain, $titles), noChannelOn($player, $keychain));
 
     $page->play();
     $player->standing(standing(PlaybackIs::Playing, 30), standing(PlaybackIs::StoppedOutOfReach, 40));
@@ -214,7 +225,7 @@ it('tells the place when heard from the dispatcher, whatever screen is on view',
     $under = aPlaybackUnderWay();
     $under->player->standing(standing(PlaybackIs::Playing, 30));
 
-    new WhenThePlayerMoves($under->place)->handle();
+    new WhenThePlayerMoves($under->place, noChannelOn($under->player, $under->keychain))->handle();
 
     expect($under->core->told())->toBe(['a1 at 30']);
 });

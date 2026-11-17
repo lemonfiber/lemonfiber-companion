@@ -16,6 +16,9 @@ use Modules\Kernel\Api\WhyPlayingDidNotStart;
  */
 final readonly class HowPlayingIsTold
 {
+    /** Nobody is signed in to the house, so nothing was asked. */
+    public const string SIGNED_OUT = 'household.signed_out';
+
     /** The device would not play what the house said. */
     private const string CANNOT_BE_PLAYED = 'household.play.cannot_be_played';
 

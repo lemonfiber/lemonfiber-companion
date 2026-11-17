@@ -177,7 +177,9 @@ public class PlaybackService : MediaSessionService() {
         playing: Player,
         moved: Boolean,
     ) {
-        if (!PlaybackRule.reportsProgress(now() - lastReported, playing.isPlaying, moved)) {
+        val moving = playing.isPlaying || asked?.isLive == true
+
+        if (!PlaybackRule.reportsProgress(now() - lastReported, moving, moved)) {
             return
         }
 
@@ -300,6 +302,15 @@ public class PlaybackService : MediaSessionService() {
         }
 
         override fun onPlayerError(error: PlaybackException) {
+            val instead = asked?.fallenBack()
+
+            if (error.errorCode in DECODING && instead != null) {
+                PlayerSession.begin(instead)
+                play(instead)
+
+                return
+            }
+
             val why =
                 when (error.errorCode) {
                     in DECODING -> WhyPlaybackStopped.UNSUPPORTED_FORMAT
