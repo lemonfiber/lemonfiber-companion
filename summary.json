@@ -1,7 +1,7 @@
 {
     "format": 1,
-    "commit": "3b5685bec7812ee98a5f46fe9f3c877c537cbab8",
-    "time": "2026-11-17T01:47:36Z",
+    "commit": "53842c0d57abb9b3674b38ac74085c2b91dd76da",
+    "time": "2026-11-17T08:22:09Z",
     "verdict": "passed",
     "score": 100.0,
     "trees": [
@@ -121,70 +121,70 @@
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\ControlStructures\\IfNegated",
-            "seconds": 37488.83554496864,
+            "seconds": 40679.618461026446,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Removal\\RemoveArrayItem",
-            "seconds": 31232.974730431233,
+            "seconds": 33752.49376153388,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Logical\\RemoveNot",
-            "seconds": 26143.26936586608,
+            "seconds": 28459.661617847567,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Logical\\InstanceOfToTrue",
-            "seconds": 24438.25957889118,
+            "seconds": 27941.518709030162,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Logical\\InstanceOfToFalse",
-            "seconds": 24091.53463287777,
-            "survived": 0,
-            "killRate": 100.0
-        },
-        {
-            "runner": "pest",
-            "mutator": "Pest\\Mutate\\Mutators\\Equality\\IdenticalToNotIdentical",
-            "seconds": 21959.287932510993,
+            "seconds": 27578.890309513754,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\ControlStructures\\TernaryNegated",
-            "seconds": 21609.20827745846,
+            "seconds": 24665.490364727506,
+            "survived": 0,
+            "killRate": 100.0
+        },
+        {
+            "runner": "pest",
+            "mutator": "Pest\\Mutate\\Mutators\\Equality\\IdenticalToNotIdentical",
+            "seconds": 23659.26893972019,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\String\\EmptyStringToNotEmpty",
-            "seconds": 19639.24076015943,
+            "seconds": 20786.197714067297,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
             "mutator": "Pest\\Mutate\\Mutators\\Removal\\RemoveMethodCall",
-            "seconds": 18421.323697350977,
+            "seconds": 19112.73412753244,
             "survived": 0,
             "killRate": 100.0
         },
         {
             "runner": "pest",
-            "mutator": "Pest\\Mutate\\Mutators\\Array\\UnwrapArrayValues",
-            "seconds": 15670.197209567172,
+            "mutator": "Pest\\Mutate\\Mutators\\ControlStructures\\ForeachEmptyIterable",
+            "seconds": 17512.81628212767,
             "survived": 0,
             "killRate": 100.0
         }
