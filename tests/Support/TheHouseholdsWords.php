@@ -9,8 +9,6 @@ use function array_find;
 use function array_map;
 use function array_slice;
 use function array_values;
-use function class_exists;
-use function constant;
 use function count;
 use function explode;
 use function file_get_contents;
@@ -18,12 +16,14 @@ use function in_array;
 use function is_array;
 use function is_string;
 use function json_decode;
+
+use Lemonfiber\Sdk\Generated\HouseholdWords;
+
 use function mb_strtolower;
 use function preg_match;
 use function preg_replace;
 use function preg_split;
 use function rtrim;
-use function sprintf;
 use function str_contains;
 use function str_replace;
 use function strlen;
@@ -34,19 +34,14 @@ use function substr;
  *
  * What a member's surface may not show: a service's name, a domain term, a
  * size, a rate, an address or a version. The list is the core's, as the SDK
- * generates it; until the SDK carries it, the copy beside this file, taken
- * from the core at the revision it names, stands in.
+ * generates it; where the SDK's lists are empty, because the contract it
+ * vendors publishes none, the copy beside this file, taken from the core at
+ * the revision it names, stands in.
  */
 final readonly class TheHouseholdsWords
 {
-    /** The class the SDK generates the core's list into. */
-    public const string AS_THE_SDK_GENERATES_IT = 'Lemonfiber\\Sdk\\Generated\\HouseholdWords';
-
     /** The copy taken from the core, read where the SDK carries none. */
     public const string AS_TAKEN = 'tests/Support/household-words.json';
-
-    /** What each part of the list is called, as a key of the copy and a constant of the SDK's class. */
-    private const array PARTS = ['names' => 'NAMES', 'terms' => 'TERMS', 'sizes' => 'SIZES', 'marks' => 'MARKS'];
 
     /**
      * @param list<string> $names
@@ -59,7 +54,8 @@ final readonly class TheHouseholdsWords
     /** The list as the SDK generates it, or the copy taken from the core where it generates none. */
     public static function read(): self
     {
-        $said = class_exists(self::AS_THE_SDK_GENERATES_IT) ? self::generated() : self::taken();
+        $generated = ['names' => HouseholdWords::NAMES, 'terms' => HouseholdWords::TERMS, 'sizes' => HouseholdWords::SIZES, 'marks' => HouseholdWords::MARKS];
+        $said = self::carriesAny($generated) ? $generated : self::taken();
 
         return new self(self::listed($said, 'names'), self::listed($said, 'terms'), self::listed($said, 'sizes'), self::listed($said, 'marks'));
     }
@@ -78,16 +74,10 @@ final readonly class TheHouseholdsWords
         return $this->termIn($lower) ?? $this->figureIn($lower) ?? $this->markIn($lower);
     }
 
-    /** @return array<string, mixed> */
-    private static function generated(): array
+    /** @param array<string, list<string>> $said */
+    private static function carriesAny(array $said): bool
     {
-        $said = [];
-
-        foreach (self::PARTS as $part => $constant) {
-            $said[$part] = constant(sprintf('%s::%s', self::AS_THE_SDK_GENERATES_IT, $constant));
-        }
-
-        return $said;
+        return array_any($said, static fn(array $words): bool => $words !== []);
     }
 
     /** @return array<mixed> */
