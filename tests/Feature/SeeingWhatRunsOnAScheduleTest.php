@@ -336,7 +336,7 @@ it('shows a run that ended without a code as failed', function (): void {
         ->and($screen->ranNow?->healthSaid)->toBe('scheduled.health.failed');
 });
 
-it('says where nothing ran, with the stack\'s reason in its words', function (): void {
+it('says where nothing ran, with the reason the stack gave', function (): void {
     $why = 'a run of it is still going, which accounts for this minute when it ends';
     $screen = unpackerrRunNow(aStackThatRunsOneNow(WhatBecameOfTheWork::answered(WhatRunningItNowCameTo::held($why))));
     $said = WhatTheDeviceWouldDraw::by($screen)->said();
