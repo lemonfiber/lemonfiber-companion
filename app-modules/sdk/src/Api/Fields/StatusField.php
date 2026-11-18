@@ -41,9 +41,6 @@ enum StatusField: string implements NamesAWireField
     /** How many times fell due while a run was still going, each skipped. */
     case Skipped = 'skipped';
 
-    /** The last lines a run wrote, oldest first. */
-    case Log = 'log';
-
     /** Bringing services up. */
     case Starting = 'starting';
 

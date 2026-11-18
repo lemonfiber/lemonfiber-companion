@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARunAndExit;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowItsLastRunWent;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\ItsLastRun;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -18,6 +20,9 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TheLastLines;
 use Modules\Kernel\Api\TheScheduledServices;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
+use Modules\Kernel\Api\WhatRunningItNowCameTo;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\TheScheduledRuns;
 use Modules\Stacks\Api\AStacksScreen;
@@ -188,4 +193,211 @@ it('asks once a frame, and again when asked again', function (): void {
 it('is reached from the operator\'s menu', function (): void {
     expect(theScheduleScreen(AStackThatSaysWhatRunsOnASchedule::with(TheScheduledServices::these()))->goes()->to(AStacksScreen::Scheduled))
         ->toBe(sprintf('/stacks/%s/scheduled', theScheduledStack()->id()->stored()));
+});
+
+/** The two services the stack lists: one that last succeeded and one that last failed. */
+function twoScheduledServices(): TheScheduledServices
+{
+    return TheScheduledServices::these(
+        ARunAndExit::lastRan(ServiceId::called('configarr'), 'Configarr', HowItsLastRunWent::Succeeded, aRunThatEnded(60, 0, 'synced'), running: false, fired: true, skipped: 0),
+        ARunAndExit::lastRan(ServiceId::called('unpackerr'), 'Unpackerr', HowItsLastRunWent::Failed, aRunThatEnded(240, 3, 'the key [withheld] was refused'), running: false, fired: true, skipped: 0),
+    );
+}
+
+/**
+ * A stack listing those services that takes a run at once on and says `$became` of it.
+ *
+ * @param WhatBecameOfTheWork<WhatRunningItNowCameTo> $became
+ */
+function aStackThatRunsOneNow(WhatBecameOfTheWork $became): AStackThatSaysWhatRunsOnASchedule
+{
+    return AStackThatSaysWhatRunsOnASchedule::with(twoScheduledServices())->running($became);
+}
+
+/** The schedule screen, asked to run Unpackerr, given the yes, and looking once while it runs. */
+function unpackerrRunNow(AStackThatSaysWhatRunsOnASchedule $asking): TheScheduledRuns
+{
+    $screen = theScheduleScreen($asking);
+    $screen->askToRun('unpackerr');
+    $screen->runItNow();
+    $screen->whileItRunsNow();
+
+    return $screen;
+}
+
+/** A run of Unpackerr that just ended after a minute, with this exit and these lines. */
+function aRunJustNow(?int $exit, string ...$lines): ItsLastRun
+{
+    $started = Instant::atEpochSeconds(WHEN_THE_SCHEDULE_IS_READ - 60);
+    $ended = Instant::atEpochSeconds(WHEN_THE_SCHEDULE_IS_READ);
+
+    return $exit === null
+        ? ItsLastRun::endedWithoutACode($started, $ended, TheLastLines::these(...$lines))
+        : ItsLastRun::exited($started, $ended, $exit, TheLastLines::these(...$lines));
+}
+
+it('offers each service a run now, named for it, sending nothing before the yes', function (): void {
+    $asking = aStackThatRunsOneNow(WhatBecameOfTheWork::ended());
+    $screen = theScheduleScreen($asking);
+    $offers = WhatTheDeviceWouldDraw::by($screen)->offers();
+    $tree = (string) json_encode(WhatTheDeviceWouldDraw::tree($screen));
+
+    expect(array_count_values($offers)[aScheduleLine('scheduled.now.run')] ?? 0)->toBe(2)
+        ->and($tree)->toContain(aScheduleLine('scheduled.now.run_named', ['service' => 'Configarr']))
+        ->and($tree)->toContain(aScheduleLine('scheduled.now.run_named', ['service' => 'Unpackerr']))
+        ->and($asking->runsAsked())->toBe([]);
+});
+
+it('asks one yes naming the service, and sends nothing until it is given', function (): void {
+    $asking = aStackThatRunsOneNow(WhatBecameOfTheWork::ended());
+    $screen = theScheduleScreen($asking);
+    $screen->askToRun('unpackerr');
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->said())->toContain(aScheduleLine('scheduled.now.about_to', ['service' => 'Unpackerr']))
+        ->and($drawn->said())->toContain(aScheduleLine('scheduled.now.whatever_is_due'))
+        ->and($drawn->offers())->toContain(aScheduleLine('scheduled.now.run'))
+        ->and($drawn->offers())->toContain(aScheduleLine('scheduled.now.leave_it'))
+        ->and($drawn->said())->not->toContain('Configarr')
+        ->and($asking->runsAsked())->toBe([]);
+});
+
+it('sends nothing where the yes is left, or was never asked for', function (): void {
+    $asking = aStackThatRunsOneNow(WhatBecameOfTheWork::ended());
+    $screen = theScheduleScreen($asking);
+    $screen->runItNow();
+    $screen->askToRun('unpackerr');
+    $screen->leaveTheRun();
+    $screen->runItNow();
+
+    expect($asking->runsAsked())->toBe([])
+        ->and($screen->toRun)->toBeNull()
+        ->and($screen->runNamed)->toBe('')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aScheduleLine('scheduled.title'));
+});
+
+it('asks nothing about a service the reading does not list', function (): void {
+    $asking = aStackThatRunsOneNow(WhatBecameOfTheWork::ended());
+    $screen = theScheduleScreen($asking);
+    $screen->askToRun('recyclarr');
+    $screen->runItNow();
+
+    expect($screen->toRun)->toBeNull()
+        ->and($asking->runsAsked())->toBe([]);
+});
+
+it('sends the run for that service alone, and shows it running without changing the service before the stack answers', function (): void {
+    $asking = AStackThatSaysWhatRunsOnASchedule::with(twoScheduledServices())->running(WhatBecameOfTheWork::underway(Job::named(AStackThatSaysWhatRunsOnASchedule::THE_RUN)));
+    $screen = unpackerrRunNow($asking);
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($asking->runsAsked())->toBe(['unpackerr'])
+        ->and($screen->awaitsAnOutcome())->toBeTrue()
+        ->and($drawn->said())->toContain(aScheduleLine('scheduled.now.running', ['service' => 'Unpackerr']))
+        ->and($drawn->said())->toContain(aScheduleLine('scheduled.health.failed'))
+        ->and($drawn->said())->not->toContain(aScheduleLine('scheduled.now.ran', ['service' => 'Unpackerr']))
+        ->and($drawn->offers())->not->toContain(aScheduleLine('scheduled.now.run_named', ['service' => 'Configarr']))
+        ->and($asking->askings())->toBe(1);
+});
+
+it('follows the run by its handle, and shows a failed one with its exit code and its last lines, reading the schedule again', function (): void {
+    $asking = aStackThatRunsOneNow(WhatBecameOfTheWork::answered(WhatRunningItNowCameTo::ran(aRunJustNow(4, 'reading the queue', 'gave up'))));
+    $screen = unpackerrRunNow($asking);
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($asking->followed())->toBe([AStackThatSaysWhatRunsOnASchedule::THE_RUN])
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($screen->runFollowed)->toBeNull()
+        ->and($drawn->said())->toContain(aScheduleLine('scheduled.now.ran', ['service' => 'Unpackerr']))
+        ->and($drawn->said())->toContain(aScheduleLine('scheduled.exit.code', ['code' => '4']))
+        ->and($drawn->said())->toContain('reading the queue')
+        ->and($drawn->said())->toContain('gave up')
+        ->and($drawn->said())->toContain(trans_choice('scheduled.took.minutes', 1))
+        ->and($screen->ranNow?->tone)->toBe('trouble')
+        ->and($asking->askings())->toBe(2);
+});
+
+it('shows a run that exited zero as succeeded, without its code or its lines', function (): void {
+    $screen = unpackerrRunNow(aStackThatRunsOneNow(WhatBecameOfTheWork::answered(WhatRunningItNowCameTo::ran(aRunJustNow(0, 'all queued')))));
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($said)->toContain(aScheduleLine('scheduled.now.ran', ['service' => 'Unpackerr']))
+        ->and($said)->toContain(aScheduleLine('scheduled.health.succeeded'))
+        ->and($said)->not->toContain(aScheduleLine('scheduled.exit.code', ['code' => '0']))
+        ->and($said)->not->toContain('all queued')
+        ->and($screen->ranNow?->tone)->toBe('fine')
+        ->and($screen->ranNow?->held)->toBe('');
+});
+
+it('shows a run that ended without a code as failed', function (): void {
+    $screen = unpackerrRunNow(aStackThatRunsOneNow(WhatBecameOfTheWork::answered(WhatRunningItNowCameTo::ran(aRunJustNow(null)))));
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aScheduleLine('scheduled.exit.none'))
+        ->and($screen->ranNow?->healthSaid)->toBe('scheduled.health.failed');
+});
+
+it('says where nothing ran, with the reason the stack gave', function (): void {
+    $why = 'a run of it is still going, which accounts for this minute when it ends';
+    $screen = unpackerrRunNow(aStackThatRunsOneNow(WhatBecameOfTheWork::answered(WhatRunningItNowCameTo::held($why))));
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($said)->toContain(aScheduleLine('scheduled.now.held', ['service' => 'Unpackerr']))
+        ->and($said)->toContain($why)
+        ->and($said)->not->toContain(aScheduleLine('scheduled.now.ran', ['service' => 'Unpackerr']))
+        ->and($screen->ranNow?->tone)->toBe('attention')
+        ->and($screen->ranNow?->healthSaid)->toBe('');
+
+    $screen->leaveTheRun();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain($why)
+        ->and($screen->ranNow)->toBeNull();
+});
+
+it('says what the stack refused, where the run was no outcome, and lets the answer go', function (): void {
+    $refused = unpackerrRunNow(aStackThatRunsOneNow(WhatBecameOfTheWork::refused(ARefusalInItsWords::said('unpackerr is no run-and-exit service', '', WhatTheRefusalNamed::nothing(), 'List what is installed'))));
+    $ended = unpackerrRunNow(aStackThatRunsOneNow(WhatBecameOfTheWork::ended()));
+
+    expect(WhatTheDeviceWouldDraw::by($refused)->said())->toContain(aScheduleLine('scheduled.now.refused', ['service' => 'Unpackerr']))
+        ->and(WhatTheDeviceWouldDraw::by($refused)->said())->toContain('unpackerr is no run-and-exit service')
+        ->and($refused->runFollowed)->toBeNull()
+        ->and(WhatTheDeviceWouldDraw::by($ended)->said())->toContain(aScheduleLine('scheduled.now.no_outcome', ['service' => 'Unpackerr']));
+
+    $ended->leaveTheRun();
+
+    expect(WhatTheDeviceWouldDraw::by($ended)->said())->not->toContain(aScheduleLine('scheduled.now.no_outcome', ['service' => 'Unpackerr']));
+});
+
+it('says what stood in the way where the run could not be sent', function (): void {
+    $asking = AStackThatSaysWhatRunsOnASchedule::with(twoScheduledServices())->answeringTheRun(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
+    $screen = unpackerrRunNow($asking);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aScheduleLine(KindOfObstacle::StackDidNotAnswer->said()))
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
+});
+
+it('looks again while the run goes, and lets the reading stand once it has ended', function (): void {
+    $asking = AStackThatSaysWhatRunsOnASchedule::with(twoScheduledServices())->running(WhatBecameOfTheWork::underway(Job::named(AStackThatSaysWhatRunsOnASchedule::THE_RUN)));
+    $screen = unpackerrRunNow($asking);
+    $screen->whileItRunsNow();
+    $screen->whileItRunsNow();
+
+    expect($asking->followed())->toBe([AStackThatSaysWhatRunsOnASchedule::THE_RUN, AStackThatSaysWhatRunsOnASchedule::THE_RUN])
+        ->and($screen->awaitsAnOutcome())->toBeTrue()
+        ->and($screen->runFollowed)->toBe(AStackThatSaysWhatRunsOnASchedule::THE_RUN);
+
+    $screen->askToRun('configarr');
+    $screen->leaveTheRun();
+
+    expect($screen->toRun)->toBeNull()
+        ->and($screen->runNamed)->toBe('Unpackerr')
+        ->and($screen->runFollowed)->toBe(AStackThatSaysWhatRunsOnASchedule::THE_RUN);
+});
+
+it('lets go of a run it can no longer follow, saying what stood in the way', function (): void {
+    $asking = AStackThatSaysWhatRunsOnASchedule::with(twoScheduledServices())->running(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
+    $screen = unpackerrRunNow($asking);
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aScheduleLine(KindOfObstacle::StackDidNotAnswer->said()))
+        ->and($screen->runFollowed)->toBeNull()
+        ->and($asking->followed())->toBe([AStackThatSaysWhatRunsOnASchedule::THE_RUN]);
 });

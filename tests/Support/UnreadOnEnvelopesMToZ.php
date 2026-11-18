@@ -72,6 +72,22 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],
         [
+            'path' => 'RanEnvelope.due',
+            'because' => 'Whether a time fell due or a run was asked for at once. This app asks only at once, where it always holds; whether anything ran is read off `ran` and `held` (`N2-R41`).',
+        ],
+        [
+            'path' => 'RanEnvelope.rehearsed',
+            'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
+        ],
+        [
+            'path' => 'RanEnvelope.service',
+            'because' => 'The service the run was of, which is the one this app just asked to run and names from the schedule it read.',
+        ],
+        [
+            'path' => 'RanEnvelope.skipped',
+            'because' => 'The times that fell due while this run went. The schedule is read again once the stack answers, and it carries each service\'s count (`N2-R39`).',
+        ],
+        [
             'path' => 'RemovalEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],

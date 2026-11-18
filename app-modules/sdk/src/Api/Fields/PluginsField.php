@@ -149,9 +149,6 @@ enum PluginsField: string implements NamesAWireField
     /** The recipe a run is about, and, inside what it came to, that recipe's id. */
     case Recipe = 'recipe';
 
-    /** What running a demand recipe came to. */
-    case Ran = 'ran';
-
     /** What one step of a recipe that ran came to. */
     case Came = 'came';
 }
