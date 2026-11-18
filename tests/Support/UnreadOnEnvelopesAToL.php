@@ -614,6 +614,14 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'them is a second answer about the same run and names nothing `N16-R6` asks to be named.',
         ],
         [
+            'path' => 'LifecycleEnvelope.plan.installing',
+            'because' => 'Empty on every plan but a preview\'s, for `PreviewEnvelope.installing`\'s reason.',
+        ],
+        [
+            'path' => 'LifecycleEnvelope.plan.offer',
+            'because' => 'Unset on every plan but a preview\'s, for `PreviewEnvelope.offer`\'s reason.',
+        ],
+        [
             'path' => 'LifecycleEnvelope.plan.dropped',
             'because' => 'The profiles the verb left out, each with what it would need. `filtered` says the '
                 . 'same service by service, which is what the report draws, for `PreviewEnvelope.dropped`\'s '

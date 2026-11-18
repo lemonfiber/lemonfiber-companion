@@ -375,6 +375,16 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'so no answer it asks for carries one.',
         ],
         [
+            'path' => 'PreviewEnvelope.installing',
+            'because' => 'Each part this build would install, offered before a start writes anything. A start '
+                . 'answers with the same parts at the top of `lifecycle`, under `installing` and `offer`, '
+                . 'and that is where the app reads them and asks for the yes.',
+        ],
+        [
+            'path' => 'PreviewEnvelope.offer',
+            'because' => 'The offer that takes the parts this build would install, for `PreviewEnvelope.installing`\'s reason.',
+        ],
+        [
             'path' => 'PreviewEnvelope.dropped',
             'because' => 'The profiles a start would leave out, each with what it would need. `filtered` '
                 . 'says the same service by service, which is what an operator knows the stack by, and it '
