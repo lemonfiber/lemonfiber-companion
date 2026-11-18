@@ -29,4 +29,7 @@ enum WhatAFoundTitleIsOpenedWith: string
 
     /** Where it stands in the house. */
     case Stands = 'found-stands';
+
+    /** The token the search vouched for it with, empty where it carried none. */
+    case Vouched = 'found-vouched';
 }

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Generated\HouseholdWords;
 use Tests\Support\TheHouseholdsWords;
 use Tests\Support\Tree;
 
@@ -135,6 +136,20 @@ it('reads the core\'s list, and the list knows a name, a term, a size, an addres
         ->and($words->unhoused('Open it at the-house.lan://'))->toBe('://')
         ->and($words->unhoused('Running v1.18'))->toBe('v1.18')
         ->and($words->unhoused('There is no room for new things in the house right now.'))->toBeNull();
+});
+
+it('names in each of the core\'s examples what it says a member may not be shown', function (): void {
+    $words = TheHouseholdsWords::read();
+    $missed = [];
+
+    foreach (HouseholdWords::EXAMPLES as ['text' => $text, 'names' => $names]) {
+        if ($words->unhoused($text) !== $names) {
+            $missed[] = sprintf('`%s` names `%s`, not `%s`', $text, (string) $words->unhoused($text), $names);
+        }
+    }
+
+    expect(HouseholdWords::EXAMPLES)->not->toBeEmpty()
+        ->and($missed)->toBe([]);
 });
 
 it('finds the member\'s lines and templates it holds to the household\'s words', function (): void {

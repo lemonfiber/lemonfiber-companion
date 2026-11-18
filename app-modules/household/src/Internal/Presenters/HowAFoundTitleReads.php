@@ -137,6 +137,7 @@ final readonly class HowAFoundTitleReads
                 WhatAFoundTitleIsOpenedWith::By->value => $by,
                 WhatAFoundTitleIsOpenedWith::Year->value => $year,
                 WhatAFoundTitleIsOpenedWith::Stands->value => $title->stands()->value,
+                WhatAFoundTitleIsOpenedWith::Vouched->value => $title->vouched()->token(),
             ],
         );
     }

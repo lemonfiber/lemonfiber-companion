@@ -16,6 +16,7 @@ use Modules\Kernel\Api\AFoundTitle;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Kernel\Api\WhatASearchFound;
+use Modules\Kernel\Api\WhatTheSearchVouched;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhereTheNextPageBegins;
@@ -95,10 +96,11 @@ final readonly class WhatASearchCameTo
         $kind = self::kind($row, $where);
         $title = self::text($row, APath::beneath($where, WireField::Title->value), WireField::Title);
         $unit = self::unit($row, $where);
-
-        return $unit instanceof UnitOfTitle
+        $found = $unit instanceof UnitOfTitle
             ? AFoundTitle::curated($id, $kind, $unit, $title, Optional::text($row, WireField::By, SearchIsUnreadable::missing(APath::beneath($where, WireField::By->value))), self::year($row, $where), self::stands($row, $where))
             : AFoundTitle::listed($id, $kind, $title, self::year($row, $where), self::stands($row, $where));
+
+        return $found->vouchedFor(WhatTheSearchVouched::given(Optional::text($row, WireField::Found, SearchIsUnreadable::missing(APath::beneath($where, WireField::Found->value)))));
     }
 
     /**

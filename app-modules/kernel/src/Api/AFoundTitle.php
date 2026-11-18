@@ -26,6 +26,7 @@ final readonly class AFoundTitle implements WhatAScreenIsAbout
         private WhereAFoundTitleStands $stands,
         private WhichTitles $among,
         private string $by,
+        private WhatTheSearchVouched $vouched,
     ) {}
 
     /** A title the core listed, refused where its id or name is blank. */
@@ -39,7 +40,7 @@ final readonly class AFoundTitle implements WhatAScreenIsAbout
             throw FoundTitleSaysNothing::about('title');
         }
 
-        return new self($id, $kind, $title, $year, $stands, WhichTitles::filmsAndSeries(), '');
+        return new self($id, $kind, $title, $year, $stands, WhichTitles::filmsAndSeries(), '', WhatTheSearchVouched::nothing());
     }
 
     /** A title of music or books the core listed, with its unit and who made it where the core named somebody. */
@@ -47,7 +48,7 @@ final readonly class AFoundTitle implements WhatAScreenIsAbout
     {
         $listed = self::listed($id, $kind, $title, $year, $stands);
 
-        return new self($listed->id, $kind, $listed->title, $year, $stands, WhichTitles::of($kind, $unit), trim($by));
+        return new self($listed->id, $kind, $listed->title, $year, $stands, WhichTitles::of($kind, $unit), trim($by), WhatTheSearchVouched::nothing());
     }
 
     /** The id the search listed it under. */
@@ -99,6 +100,18 @@ final readonly class AFoundTitle implements WhatAScreenIsAbout
     public function by(Closure $named, Closure $unnamed): object
     {
         return $this->by === '' ? $unnamed() : $named($this->by);
+    }
+
+    /** The same title, with the token the search vouched for it with. */
+    public function vouchedFor(WhatTheSearchVouched $vouched): self
+    {
+        return new self($this->id, $this->kind, $this->title, $this->year, $this->stands, $this->among, $this->by, $vouched);
+    }
+
+    /** The token the search vouched for it with, or none. */
+    public function vouched(): WhatTheSearchVouched
+    {
+        return $this->vouched;
     }
 
     /** The id, kind and unit it is named to the core by, together, which no other title shares. */

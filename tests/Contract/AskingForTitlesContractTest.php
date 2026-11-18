@@ -19,6 +19,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAnAskCameTo;
+use Modules\Kernel\Api\WhatTheSearchVouched;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
@@ -187,6 +188,26 @@ it('asks for an album or a book with its unit, and for a film with none and no s
         ->and($forTheAlbum['body']['seasons'] ?? [])->toBe([])
         ->and($forTheFilm['body']['unit'] ?? null)->toBeNull()
         ->and($forTheFilm['body']['seasons'] ?? [])->toBe([]);
+});
+
+it('hands back the token the search vouched for the title with, and none where it vouched for nothing', function (): void {
+    $askers = anAskerAnswered(
+        MockResponse::make((string) json_encode(whatTheCoreSaidOfTheAsk(['rehearsed' => false]))),
+        MockResponse::make((string) json_encode(whatTheCoreSaidOfTheAsk(['rehearsed' => false]))),
+        MockResponse::make((string) json_encode(whatTheCoreSaidOfTheAsk(['rehearsed' => false]))),
+    );
+    $album = AFoundTitle::curated('mb-1', KindOfTitle::Music, UnitOfTitle::Album, 'Rumours', 'Fleetwood Mac', WhenItCameOut::in(1977), WhereAFoundTitleStands::Askable)
+        ->vouchedFor(WhatTheSearchVouched::given('a-signed-album'));
+
+    $askers->ask(aHouseToAskIn(), Session::of('a-session-not-a-secret'), aTitleToAskFor()->vouchedFor(WhatTheSearchVouched::given('a-signed-film')), IdempotencyKey::of('a-film'));
+    $askers->ask(aHouseToAskIn(), Session::of('a-session-not-a-secret'), $album, IdempotencyKey::of('an-album'));
+    $askers->ask(aHouseToAskIn(), Session::of('a-session-not-a-secret'), aTitleToAskFor(), IdempotencyKey::of('unvouched'));
+
+    [$film, $forTheAlbum, $unvouched] = array_map(whatWasSentToAsk(...), MockClient::global()->getRecordedResponses());
+
+    expect($film['body'])->toMatchArray(['id' => '438631', 'found' => 'a-signed-film'])
+        ->and($forTheAlbum['body'])->toMatchArray(['id' => 'mb-1', 'found' => 'a-signed-album'])
+        ->and($unvouched['body']['found'] ?? null)->toBeNull();
 });
 
 it('comes away with the obstacle, in the core\'s words where it gave any, where the core would not take the ask', function (): void {

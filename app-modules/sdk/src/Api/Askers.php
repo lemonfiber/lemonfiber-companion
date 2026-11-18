@@ -52,8 +52,8 @@ final readonly class Askers implements AskingForTitles
     private function askFor(AFoundTitle $title): AskAction
     {
         return $title->among()->either(
-            filmsAndSeries: static fn(): AskAction => new AskAction(id: $title->id(), kind: $title->kind()->value),
-            of: static fn(KindOfTitle $kind, UnitOfTitle $unit): AskAction => new AskAction(id: $title->id(), kind: $kind->value, unit: $unit->value),
+            filmsAndSeries: static fn(): AskAction => new AskAction(id: $title->id(), kind: $title->kind()->value, found: $title->vouched()->vouches() ? $title->vouched()->token() : null),
+            of: static fn(KindOfTitle $kind, UnitOfTitle $unit): AskAction => new AskAction(id: $title->id(), kind: $kind->value, unit: $unit->value, found: $title->vouched()->vouches() ? $title->vouched()->token() : null),
         );
     }
 

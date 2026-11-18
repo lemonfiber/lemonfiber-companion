@@ -30,6 +30,7 @@ use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAnAskCameTo;
 use Modules\Kernel\Api\WhatASearchFound;
 use Modules\Kernel\Api\WhatCanBeAskedFor;
+use Modules\Kernel\Api\WhatTheSearchVouched;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Kernel\Api\WhereTheNextPageBegins;
@@ -82,7 +83,7 @@ function theSearchTab(AStackThatFindsTitles $finding, ?AKeychainInMemory $keycha
 /** A film the member may ask for. */
 function dune(): AFoundTitle
 {
-    return AFoundTitle::listed('438631', KindOfTitle::Film, 'Dune', WhenItCameOut::in(2021), WhereAFoundTitleStands::Askable);
+    return AFoundTitle::listed('438631', KindOfTitle::Film, 'Dune', WhenItCameOut::in(2021), WhereAFoundTitleStands::Askable)->vouchedFor(WhatTheSearchVouched::given('a-signed-dune'));
 }
 
 /** A first page, with another after it. */
@@ -117,6 +118,7 @@ function theFoundPage(AStackThatTakesAsks $asking, AFoundTitle $title, bool $car
             WhatAFoundTitleIsOpenedWith::By->value => $title->by(named: static fn(string $by): TheWordCarriedOut => new TheWordCarriedOut($by), unnamed: static fn(): TheWordCarriedOut => new TheWordCarriedOut(''))->said,
             WhatAFoundTitleIsOpenedWith::Year->value => $title->year()->either(dated: static fn(int $year): TheWordCarriedOut => new TheWordCarriedOut((string) $year), unstated: static fn(): TheWordCarriedOut => new TheWordCarriedOut(''))->said,
             WhatAFoundTitleIsOpenedWith::Stands->value => $title->stands()->value,
+            WhatAFoundTitleIsOpenedWith::Vouched->value => $title->vouched()->token(),
         ]);
     }
 
@@ -186,7 +188,15 @@ it('shows every title on the page with its year, kind and standing, under the co
             WhatAFoundTitleIsOpenedWith::By->value => '',
             WhatAFoundTitleIsOpenedWith::Year->value => '2021',
             WhatAFoundTitleIsOpenedWith::Stands->value => 'askable',
+            WhatAFoundTitleIsOpenedWith::Vouched->value => 'a-signed-dune',
         ]);
+});
+
+it('opens a found title with the token its search vouched for it with, and with none where it carried none', function (): void {
+    $asking = AStackThatTakesAsks::answering(aRehearsalSaid('Asking for Dune waits for a yes.'), aRehearsalSaid('Dune is asked for.'));
+
+    expect(theFoundPage($asking, dune())->title()?->vouched()->token())->toBe('a-signed-dune')
+        ->and(theFoundPage($asking, rumours())->title()?->vouched()->vouches())->toBeFalse();
 });
 
 it('names music and books by their own kind on the page', function (): void {

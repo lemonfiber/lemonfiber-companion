@@ -9,7 +9,7 @@ requirement = [
   { id = "G2-R1", state = "partial", evidence = ["app-modules/operator/src/Internal/ShowsWhatItsWordsMean.php", "tests/Feature/SeeingWhatTheWordsMeanTest.php"] },
   { id = "G2-R3", state = "partial", evidence = ["tests/Arch/TheNamesThisProductGivesTest.php"] },
   { id = "G2-R13", state = "partial", evidence = ["tests/Arch/EveryAcronymAnOperatorReadsTest.php"] },
-  { id = "G2-R14", state = "partial", evidence = ["tests/Arch/TheNamesThisProductGivesTest.php"] },
+  { id = "G2-R14", state = "done", evidence = ["tests/Arch/TheNamesThisProductGivesTest.php", "tests/Support/TheHouseholdsWords.php"] },
   { id = "G2-R15", state = "done", evidence = ["tests/Arch/EveryLabelNamesWhatItOpensTest.php", "lang/en/stacks.php", "lang/en/health.php", "lang/en/plugins.php"] },
-  { id = "G2-R16", state = "done", evidence = ["tests/Arch/AMemberIsShownTheHouseholdsWordsTest.php", "tests/Support/TheHouseholdsWords.php", "tests/Support/household-words.json", "lang/en/household.php"] },
+  { id = "G2-R16", state = "done", evidence = ["tests/Arch/AMemberIsShownTheHouseholdsWordsTest.php", "tests/Support/TheHouseholdsWords.php", "lang/en/household.php"] },
 ]

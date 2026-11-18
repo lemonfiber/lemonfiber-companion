@@ -8,14 +8,10 @@ use function array_any;
 use function array_find;
 use function array_map;
 use function array_slice;
-use function array_values;
 use function count;
 use function explode;
-use function file_get_contents;
 use function in_array;
 use function is_array;
-use function is_string;
-use function json_decode;
 
 use Lemonfiber\Sdk\Generated\HouseholdWords;
 
@@ -34,15 +30,10 @@ use function substr;
  *
  * What a member's surface may not show: a service's name, a domain term, a
  * size, a rate, an address or a version. The list is the core's, as the SDK
- * generates it; where the SDK's lists are empty, because the contract it
- * vendors publishes none, the copy beside this file, taken from the core at
- * the revision it names, stands in.
+ * generates it.
  */
 final readonly class TheHouseholdsWords
 {
-    /** The copy taken from the core, read where the SDK carries none. */
-    public const string AS_TAKEN = 'tests/Support/household-words.json';
-
     /**
      * @param list<string> $names
      * @param list<string> $terms
@@ -51,13 +42,10 @@ final readonly class TheHouseholdsWords
      */
     private function __construct(private array $names, private array $terms, private array $sizes, private array $marks) {}
 
-    /** The list as the SDK generates it, or the copy taken from the core where it generates none. */
+    /** The list as the SDK generates it. */
     public static function read(): self
     {
-        $generated = ['names' => HouseholdWords::NAMES, 'terms' => HouseholdWords::TERMS, 'sizes' => HouseholdWords::SIZES, 'marks' => HouseholdWords::MARKS];
-        $said = self::carriesAny($generated) ? $generated : self::taken();
-
-        return new self(self::listed($said, 'names'), self::listed($said, 'terms'), self::listed($said, 'sizes'), self::listed($said, 'marks'));
+        return new self(self::listed(HouseholdWords::NAMES), self::listed(HouseholdWords::TERMS), self::listed(HouseholdWords::SIZES), self::listed(HouseholdWords::MARKS));
     }
 
     /** How many names, terms, sizes and marks it holds, so a list that read as nothing is caught. */
@@ -74,19 +62,7 @@ final readonly class TheHouseholdsWords
         return $this->termIn($lower) ?? $this->figureIn($lower) ?? $this->markIn($lower);
     }
 
-    /** @param array<string, list<string>> $said */
-    private static function carriesAny(array $said): bool
-    {
-        return array_any($said, static fn(array $words): bool => $words !== []);
-    }
 
-    /** @return array<mixed> */
-    private static function taken(): array
-    {
-        $said = json_decode((string) file_get_contents(Tree::at(self::AS_TAKEN)), associative: true);
-
-        return is_array($said) ? $said : [];
-    }
 
     /** The first name or term said among the words of `$lower`. */
     private function termIn(string $lower): ?string
@@ -128,14 +104,12 @@ final readonly class TheHouseholdsWords
     }
 
     /**
-     * @param  array<mixed> $said
+     * @param  list<string> $listed
      * @return list<string>
      */
-    private static function listed(array $said, string $key): array
+    private static function listed(array $listed): array
     {
-        $listed = is_array($said[$key] ?? null) ? $said[$key] : [];
-
-        return array_map(static fn(mixed $one): string => is_string($one) ? str_replace('-', ' ', $one) : '', array_values($listed));
+        return array_map(static fn(string $one): string => str_replace('-', ' ', $one), $listed);
     }
 
     /** @param list<string> $words */

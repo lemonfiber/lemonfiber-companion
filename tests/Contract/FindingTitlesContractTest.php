@@ -18,6 +18,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Kernel\Api\WhatASearchFound;
 use Modules\Kernel\Api\WhatCanBeAskedFor;
+use Modules\Kernel\Api\WhatTheSearchVouched;
 use Modules\Kernel\Api\WhatToLookFor;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
@@ -64,8 +65,8 @@ function whatTheCoreFound(array $changed = [], ?array $titles = null): array
         'asking' => ['films' => ['limit' => 4, 'remaining' => 2, 'used' => 2], 'television' => ['limit' => 1, 'remaining' => 1, 'used' => 0], 'policy' => 'trusted', 'standing' => 'within-quota'],
         'next' => 'page-2',
         'titles' => $titles ?? [
-            ['id' => '438631', 'kind' => 'movies', 'title' => 'Dune', 'year' => 2021, 'stands' => 'askable'],
-            ['id' => '693134', 'kind' => 'movies', 'title' => 'Dune: Part Two', 'year' => null, 'stands' => 'on-its-way'],
+            ['id' => '438631', 'kind' => 'movies', 'title' => 'Dune', 'year' => 2021, 'stands' => 'askable', 'found' => 'a-signed-dune'],
+            ['id' => '693134', 'kind' => 'movies', 'title' => 'Dune: Part Two', 'year' => null, 'stands' => 'on-its-way', 'found' => null],
             ['id' => '90228', 'kind' => 'tv', 'title' => 'Dune: Prophecy', 'stands' => 'partly-here'],
         ],
         ...$changed,
@@ -78,7 +79,7 @@ function theSamePageFound(): WhatASearchFound
     return WhatASearchFound::before(
         WhereTheNextPageBegins::at('page-2'),
         'What you ask for arrives without waiting for a yes.',
-        AFoundTitle::listed('438631', KindOfTitle::Film, 'Dune', WhenItCameOut::in(2021), WhereAFoundTitleStands::Askable),
+        AFoundTitle::listed('438631', KindOfTitle::Film, 'Dune', WhenItCameOut::in(2021), WhereAFoundTitleStands::Askable)->vouchedFor(WhatTheSearchVouched::given('a-signed-dune')),
         AFoundTitle::listed('693134', KindOfTitle::Film, 'Dune: Part Two', WhenItCameOut::unstated(), WhereAFoundTitleStands::OnItsWay),
         AFoundTitle::listed('90228', KindOfTitle::Series, 'Dune: Prophecy', WhenItCameOut::unstated(), WhereAFoundTitleStands::PartlyHere),
     );
@@ -113,12 +114,13 @@ function whatTheSearchSaid(WhatASearchFound $page): string
 
     foreach ($page as $title) {
         $titles[] = sprintf(
-            '%s:%s:%s:%s:%s',
+            '%s:%s:%s:%s:%s:%s',
             $title->id(),
             $title->kind()->value,
             $title->title(),
             $title->year()->either(dated: static fn(int $year): TheWordCarriedOut => new TheWordCarriedOut((string) $year), unstated: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'))->said,
             $title->stands()->value,
+            ($title->vouched()->vouches() ? $title->vouched()->token() : '-'),
         );
     }
 
@@ -144,7 +146,7 @@ function howTheSearchWent(FindingTitles $finding, ?WhereTheNextPageBegins $after
 it('reads every part of a page either way: each title, the core\'s sentence on approval, and where the next page begins', function (): void {
     foreach (everyWayOfSearching(MockResponse::make((string) json_encode(whatTheCoreFound())), theSamePageFound()) as $which => $build) {
         expect(howTheSearchWent($build()))
-            ->toBe('What you ask for arrives without waiting for a yes.|page-2|438631:movies:Dune:2021:askable,693134:movies:Dune: Part Two:-:on-its-way,90228:tv:Dune: Prophecy:-:partly-here', $which);
+            ->toBe('What you ask for arrives without waiting for a yes.|page-2|438631:movies:Dune:2021:askable:a-signed-dune,693134:movies:Dune: Part Two:-:on-its-way:-,90228:tv:Dune: Prophecy:-:partly-here:-', $which);
     }
 });
 
@@ -195,6 +197,7 @@ it('a page this app cannot read is an answer it could not read, never a shorter 
     'a kind this app has no word for' => [[], [['id' => '1', 'kind' => 'games', 'title' => 'Dune', 'stands' => 'askable']]],
     'a standing this app has no word for' => [[], [['id' => '1', 'kind' => 'movies', 'title' => 'Dune', 'stands' => 'gone']]],
     'a year that is not a number' => [[], [['id' => '1', 'kind' => 'movies', 'title' => 'Dune', 'year' => '2021', 'stands' => 'askable']]],
+    'a token that is not text' => [[], [['id' => '1', 'kind' => 'movies', 'title' => 'Dune', 'stands' => 'askable', 'found' => 7]]],
 ]);
 
 it('an answer that is not a page at all is an answer it could not read', function (): void {
