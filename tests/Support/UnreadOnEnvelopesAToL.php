@@ -596,6 +596,14 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'The adapter that writes the configuration a moved service reads, once the move is taken. `N2-R31` asks a move in place to name the stack\'s own service and the plugin that would take its place, which are read; no `N` requirement asks it to name the adapter (`N1-R17`).',
         ],
         [
+            'path' => 'LifecycleEnvelope.networks_created',
+            'because' => 'Every network of the project the engine held none of, created before a start or named by a rehearsal. No `N` requirement asks what a verb came to to name a network, for `LifecycleEnvelope.swept`\'s reason (`N1-R17`).',
+        ],
+        [
+            'path' => 'LifecycleEnvelope.networks_recreated',
+            'because' => 'Every network the engine held in another shape than the project gives it, taken away and created again before a start or named by a rehearsal. No `N` requirement asks what a verb came to to name a network, for `LifecycleEnvelope.swept`\'s reason (`N1-R17`).',
+        ],
+        [
             'path' => 'LifecycleEnvelope.swept',
             'because' => 'Every network the engine held for the project that the project no longer declares, taken away before a start or named by a rehearsal. No `N` requirement asks what a verb came to to name a network: what `N16-R6` asks a start to name is what did not come back, which is read.',
         ],

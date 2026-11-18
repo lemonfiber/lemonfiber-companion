@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Generated\HouseholdWords;
 use Tests\Support\Catalogue;
 
 // A translated screen keeps the words that are also names.
@@ -36,23 +37,6 @@ use Tests\Support\Catalogue;
 // a catalogue is where a name is translated. A screen holds a key.
 
 /**
- * The names lemonfiber gives its own things.
- *
- * Declared rather than inferred, which is asked for and is the only
- * way this can work: nothing in a sentence says whether a noun is text or a
- * label, and a name added to the product without being written down here is a
- * name a translator will reasonably translate.
- *
- * A name earns a line by appearing somewhere this product does not control —
- * a filename, a subcommand, an argument — where it has one spelling and an
- * operator will meet it again.
- */
-const THE_NAMES_THIS_PRODUCT_GIVES = [
-    'form' => 'names a combination of profiles a stack declares, and an argument to the verbs that act on one',
-    'stack' => 'names the machine in every command, every path and every page of the documentation',
-];
-
-/**
  * Whether a line uses the name as a word rather than as the start of one.
  *
  * Both boundaries, and the near miss is the reason: *formulier* begins with
@@ -82,7 +66,7 @@ it('every locale keeps the names this product gives its own things', function ()
         }
 
         foreach (Catalogue::all($locale) as $key => $said) {
-            foreach (array_keys(THE_NAMES_THIS_PRODUCT_GIVES) as $name) {
+            foreach (array_keys(HouseholdWords::DECLARED) as $name) {
                 if (! aLineNaming($source[$key] ?? '', $name) || aLineNaming($said, $name)) {
                     continue;
                 }
@@ -102,7 +86,7 @@ it('every locale keeps the names this product gives its own things', function ()
         . 'and nothing that says they are the same thing. Translate the sentence and leave the '
         . "name alone (G2-R14).\n\n"
         . 'If the line is right and this is wrong, the name is not a label after all: take it out '
-        . 'of `THE_NAMES_THIS_PRODUCT_GIVES` and say why there.',
+        . 'of the names the core declares, in its household words, and say why there.',
         implode("\n  ", $translated),
     ));
 });

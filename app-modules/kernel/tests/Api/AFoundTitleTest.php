@@ -15,9 +15,11 @@ use Modules\Kernel\Api\HowASearchWent;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAnAskCameTo;
 use Modules\Kernel\Api\WhatASearchFound;
+use Modules\Kernel\Api\WhatTheSearchVouched;
 use Modules\Kernel\Api\WhatToLookFor;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
@@ -106,4 +108,17 @@ it('keeps what an ask became and whether it was a rehearsal, and refuses one wit
         ->and($rehearsal->wasRehearsed())->toBeTrue()
         ->and($asked->wasRehearsed())->toBeFalse()
         ->and(fn(): WhatAnAskCameTo => WhatAnAskCameTo::answered(WhatAnAskBecame::Asked, WhetherItWasRehearsed::CarriedOut, ' '))->toThrow(FoundTitleSaysNothing::class, '`said`');
+});
+
+it('carries the token the search vouched for it with, none where it vouched for nothing or a blank one, and keeps the rest', function (): void {
+    $title = AFoundTitle::curated('mb-1', KindOfTitle::Music, UnitOfTitle::Album, 'Rumours', 'Fleetwood Mac', WhenItCameOut::in(1977), WhereAFoundTitleStands::Askable);
+    $vouched = $title->vouchedFor(WhatTheSearchVouched::given('a-signed-album'));
+
+    expect($title->vouched()->vouches())->toBeFalse()
+        ->and($vouched->vouched()->token())->toBe('a-signed-album')
+        ->and($title->vouchedFor(WhatTheSearchVouched::given(' '))->vouched()->vouches())->toBeFalse()
+        ->and(WhatTheSearchVouched::nothing()->vouches())->toBeFalse()
+        ->and([$vouched->id(), $vouched->kind(), $vouched->title(), $vouched->year(), $vouched->stands(), $vouched->among(), $vouched->named()])
+        ->toEqual([$title->id(), $title->kind(), $title->title(), $title->year(), $title->stands(), $title->among(), $title->named()])
+        ->and($vouched->by(named: static fn(string $by): TheWordCarriedOut => new TheWordCarriedOut($by), unnamed: static fn(): TheWordCarriedOut => new TheWordCarriedOut('-'))->said)->toBe('Fleetwood Mac');
 });

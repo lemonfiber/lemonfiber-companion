@@ -35,6 +35,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Kernel\Api\WhatAnAskCameTo;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Kernel\Api\WhatTheSearchVouched;
 use Modules\Kernel\Api\WhenItCameOut;
 use Modules\Kernel\Api\WhereAFoundTitleStands;
 use Modules\Stacks\Api\AStacksScreen;
@@ -106,9 +107,11 @@ final class AskingForATitle extends NativeComponent
         $unit = UnitOfTitle::tryFrom($this->carried(WhatAFoundTitleIsOpenedWith::Unit));
 
         try {
-            return $unit instanceof UnitOfTitle
+            $found = $unit instanceof UnitOfTitle
                 ? AFoundTitle::curated($id, $kind, $unit, $title, $this->carried(WhatAFoundTitleIsOpenedWith::By), $year, $stands)
                 : AFoundTitle::listed($id, $kind, $title, $year, $stands);
+
+            return $found->vouchedFor(WhatTheSearchVouched::given($this->carried(WhatAFoundTitleIsOpenedWith::Vouched)));
         } catch (FoundTitleSaysNothing) {
             return null;
         }
