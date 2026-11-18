@@ -51,7 +51,7 @@ final readonly class TheRequestsAsKept
 
     private const string KIND = 'kind_of_request';
 
-    private const string ASKED = 'asked';
+    private const string ASKED = 'when_asked';
 
     private const string ALSO_ASKED = 'also_asked';
 

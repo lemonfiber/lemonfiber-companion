@@ -280,8 +280,8 @@ it('lets go of a kept reading that opens to something that is not a reading of w
     'no refused field' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["getting"]}]}'],
     'a kind this build does not know' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","kind_of_request":"podcast","size":{},"standing":["getting"],"refused":[]}]}'],
     'a kind that is not a word' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","kind_of_request":7,"size":{},"standing":["getting"],"refused":[]}]}'],
-    'asked at a moment that is not a list' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[],"asked":1790000000}]}'],
-    'asked at a moment that is neither seconds nor text' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[],"asked":[true]}]}'],
+    'asked at a moment that is not a list' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[],"when_asked":1790000000}]}'],
+    'asked at a moment that is neither seconds nor text' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[],"when_asked":[true]}]}'],
     'also asked by members that are not a list' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[],"also_asked":"Sam"}]}'],
     'also asked by a member that is not a name' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[],"also_asked":["Sam",7]}]}'],
 ]);
