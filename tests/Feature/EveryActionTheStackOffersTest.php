@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Lemonfiber\Sdk\Admission;
+use Lemonfiber\Sdk\Contract\HouseholdReads;
+use Lemonfiber\Sdk\Contract\MachineReads;
 use Lemonfiber\Sdk\Generated\Kind;
 use Lemonfiber\Sdk\Http\AdmissionRequest;
 use Lemonfiber\Sdk\JobStanding;
@@ -254,6 +256,42 @@ it('holds every kind offered through the SDK to a class that reads it, used here
             ->and($used === $reader || str_contains($sends, sprintf('new %s(', new ReflectionClass($reader)->getShortName())))->toBeTrue($kind)
             ->and($source)->toContain(sprintf('use %s;', $used));
     }
+});
+
+/**
+ * The kinds a read the stack serves answers with, as the SDK names them beside each endpoint.
+ *
+ * @return list<string>
+ */
+function everyKindAServedReadAnswers(): array
+{
+    $kinds = [];
+
+    foreach ([MachineReads::class, HouseholdReads::class] as $reads) {
+        preg_match_all('/Generated\\\\([A-Z][A-Za-z]+)Envelope\b/', (string) file_get_contents((string) new ReflectionClass($reads)->getFileName()), $named);
+
+        foreach ($named[1] as $kind) {
+            $kinds[] = $kind;
+        }
+    }
+
+    $kinds = array_values(array_unique($kinds));
+    sort($kinds);
+
+    return $kinds;
+}
+
+it('no kind a served read answers waits unread', function (): void {
+    $unread = array_values(array_intersect(NOT_YET, everyKindAServedReadAnswers()));
+
+    expect(everyKindAServedReadAnswers())->not->toBeEmpty()
+        ->and($unread)->toBe([], sprintf(
+            "The stack serves a read answering with these, and nothing here reads them:\n  %s\n\n"
+            . 'A served read is an answer the app can ask for today, so `NOT_YET` is not '
+            . 'where it waits. Read it, or put it in `ELSEWHERE` with the requirement that '
+            . 'excuses it (N1-R2).',
+            implode("\n  ", $unread),
+        ));
 });
 
 it('every excuse names a requirement', function (): void {
