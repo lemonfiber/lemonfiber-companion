@@ -16,6 +16,8 @@ use Closure;
  */
 final readonly class HowPausingIsGoing
 {
+    use EndsBeforeItFinishes;
+
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?WhatPausingComesTo $answered = null,
@@ -34,18 +36,6 @@ final readonly class HowPausingIsGoing
     public static function answered(WhatPausingComesTo $report): self
     {
         return new self(answered: $report);
-    }
-
-    /** The stack has no outcome for it any more, and says why. */
-    public static function ended(WhyTheWorkEnded $why): self
-    {
-        return new self(ending: $why);
-    }
-
-    /** The stack has no outcome for it any more, and says nothing of why. */
-    public static function noOutcome(): self
-    {
-        return new self();
     }
 
     /** The stack could not be reached to ask, and this is what was met. */

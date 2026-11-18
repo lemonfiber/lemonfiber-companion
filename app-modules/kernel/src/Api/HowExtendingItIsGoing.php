@@ -24,6 +24,8 @@ use Closure;
  */
 final readonly class HowExtendingItIsGoing
 {
+    use EndsBeforeItFinishes;
+
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?ThePlugins $done = null,
@@ -49,18 +51,6 @@ final readonly class HowExtendingItIsGoing
     public static function refused(ARefusalInItsWords $why): self
     {
         return new self(refused: $why);
-    }
-
-    /** The stack has no outcome for it any more, and says why. */
-    public static function ended(WhyTheWorkEnded $why): self
-    {
-        return new self(ending: $why);
-    }
-
-    /** The stack has no outcome for it any more, and says nothing of why. */
-    public static function noOutcome(): self
-    {
-        return new self();
     }
 
     /** The stack could not be reached to ask, or refused the session, and this is what was met. */

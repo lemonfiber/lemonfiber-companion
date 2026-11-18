@@ -24,6 +24,8 @@ use Closure;
  */
 final readonly class HowTheGuardIsGoing
 {
+    use EndsBeforeItFinishes;
+
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?WhatTheGuardSaw $saw = null,
@@ -50,18 +52,6 @@ final readonly class HowTheGuardIsGoing
     public static function refused(string $said): self
     {
         return new self(refused: $said);
-    }
-
-    /** The stack has no outcome for it any more, and says why. */
-    public static function ended(WhyTheWorkEnded $why): self
-    {
-        return new self(ending: $why);
-    }
-
-    /** The stack has no outcome for it any more, and says nothing of why. */
-    public static function noOutcome(): self
-    {
-        return new self();
     }
 
     /** The stack no longer knows it. */

@@ -16,6 +16,8 @@ use Closure;
  */
 final readonly class HowTheOfferToLetGoIsGoing
 {
+    use EndsBeforeItFinishes;
+
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?WhatLettingItGoCosts $offered = null,
@@ -34,18 +36,6 @@ final readonly class HowTheOfferToLetGoIsGoing
     public static function offering(WhatLettingItGoCosts $offer): self
     {
         return new self(offered: $offer);
-    }
-
-    /** The stack has no outcome for it any more, and says why. */
-    public static function ended(WhyTheWorkEnded $why): self
-    {
-        return new self(ending: $why);
-    }
-
-    /** The stack has no outcome for it any more, and says nothing of why. */
-    public static function noOutcome(): self
-    {
-        return new self();
     }
 
     /** The stack could not be reached to ask, and this is what was met. */

@@ -8,21 +8,23 @@ use function array_map;
 use function array_unique;
 use function array_values;
 use function basename;
+use function class_exists;
 use function expect;
-use function file_get_contents;
 use function glob;
 use function in_array;
 use function is_object;
 use function it;
 
 use LogicException;
+
+use function method_exists;
+
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
 
 use function sprintf;
-use function str_contains;
 
 use Tests\Support\TheWordCarriedOut;
 
@@ -38,9 +40,9 @@ function everyOutcomeThatEnds(): array
     $files = glob(sprintf('%s/../../src/Api/*.php', __DIR__));
 
     foreach ($files === false ? [] : $files as $file) {
-        if (str_contains((string) file_get_contents($file), 'public static function ended(WhyTheWorkEnded $why): self')) {
-            /** @var class-string $class */
-            $class = sprintf('Modules\\Kernel\\Api\\%s', basename($file, '.php'));
+        $class = sprintf('Modules\\Kernel\\Api\\%s', basename($file, '.php'));
+
+        if (class_exists($class) && method_exists($class, 'noOutcome')) {
             $classes[] = $class;
         }
     }
