@@ -20,6 +20,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheOthersOnAnAsk;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
@@ -187,6 +188,18 @@ it('says how long ago each request was asked for, and nothing where the stack di
 
     expect([[$rows[0]->asked->said, $rows[0]->asked->count], [$rows[1]->asked->said, $rows[1]->asked->count]])->toBe([['health.ago.days', 2], ['', 0]])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.asked_when', ['when' => trans_choice('health.ago.days', 2)]));
+});
+
+it('names every other member one ask is also for, and nobody else where one member asked', function (): void {
+    $screen = theRequestsScreen(AHouseholdThatAsked::wanting(Requested::of(
+        Wanted::of(RequestId::named('tv-1'), 'Sanne', 'Dune', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::ForApproval))
+            ->alsoFor(TheOthersOnAnAsk::these('Robin', 'Mira')),
+        Wanted::of(RequestId::named('2'), 'Robin', 'Solaris', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::Here)),
+    )));
+    $rows = $screen->answer()->requests;
+
+    expect([$rows[0]->alsoBy, $rows[1]->alsoBy])->toBe([['Robin', 'Mira'], []])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('household.also_asked_by', ['who' => 'Robin']), __('household.also_asked_by', ['who' => 'Mira']));
 });
 
 it('an estimate is labelled as one, and a measurement is not', function (): void {

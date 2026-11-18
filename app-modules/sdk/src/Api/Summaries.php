@@ -72,14 +72,14 @@ final readonly class Summaries
      */
     private static function health(array $data): array
     {
-        if (! array_key_exists(DashboardField::Health->value, $data)) {
-            throw SummaryIsUnreadable::missing(DashboardField::Health);
+        if (! array_key_exists(WireField::Health->value, $data)) {
+            throw SummaryIsUnreadable::missing(WireField::Health);
         }
 
-        $health = $data[DashboardField::Health->value];
+        $health = $data[WireField::Health->value];
 
         if (! is_array($health)) {
-            throw SummaryIsUnreadable::missing(DashboardField::Health);
+            throw SummaryIsUnreadable::missing(WireField::Health);
         }
 
         return $health;

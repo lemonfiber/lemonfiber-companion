@@ -35,4 +35,7 @@ enum HouseholdField: string implements NamesAWireField
 
     /** Whether somebody has set a password on their account, rather than an invitation nobody took up. */
     case Claimed = 'claimed';
+
+    /** The other members one ask the core keeps is also for, by name. */
+    case AlsoAsked = 'also_asked';
 }

@@ -14,6 +14,7 @@ use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\KindOfRequest;
 use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Size;
+use Modules\Kernel\Api\TheOthersOnAnAsk;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
@@ -57,7 +58,11 @@ final readonly class WhatWasAskedFor
      */
     public static function request(array $row, string $by, int $position): Wanted
     {
-        return self::wanted($row, $by, $position)->askedAt(Optional::moment($row, WireField::Asked, HouseholdIsUnreadable::request($by, $position)));
+        $refused = HouseholdIsUnreadable::request($by, $position);
+
+        return self::wanted($row, $by, $position)
+            ->askedAt(Optional::moment($row, WireField::Asked, $refused))
+            ->alsoFor(TheOthersOnAnAsk::these(...Optional::texts($row, HouseholdField::AlsoAsked, $refused)));
     }
 
     /**

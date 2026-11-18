@@ -32,6 +32,17 @@ enum StatusField: string implements NamesAWireField
     /** What a disturbance with no clock on it waits for. */
     case Until = 'until';
 
+    /** The run-and-exit services, as their runs left them. */
+    case Scheduled = 'scheduled';
+
+    /** Whether this machine's scheduler holds a run-and-exit service's job. */
+    case Fired = 'fired';
+
+    /** How many times fell due while a run was still going, each skipped. */
+    case Skipped = 'skipped';
+
+    /** The last lines a run wrote, oldest first. */
+    case Log = 'log';
 
     /** Bringing services up. */
     case Starting = 'starting';

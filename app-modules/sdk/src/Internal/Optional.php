@@ -80,6 +80,23 @@ final readonly class Optional
     }
 
     /**
+     * Text after text, in the order sent, or none where nothing was said.
+     *
+     * @param  array<mixed> $table
+     * @return list<string>
+     */
+    public static function texts(array $table, NamesAWireField $field, InvalidArgumentException $refused): array
+    {
+        $texts = [];
+
+        foreach (self::rows($table, $field, $refused) as $text) {
+            $texts[] = is_string($text) ? $text : throw $refused;
+        }
+
+        return $texts;
+    }
+
+    /**
      * A whole number, or null where nothing was said.
      *
      * @param array<mixed> $table

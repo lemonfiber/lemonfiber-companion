@@ -85,6 +85,7 @@ return [
     'nothing_asked_for' => 'Je hebt nog niets aangevraagd.',
     'waiting_count' => '{0} Niets wacht op je akkoord|{1} Eén verzoek wacht op je akkoord|[2,*] :count verzoeken wachten op je akkoord',
     'asked_by' => 'Gevraagd door :who',
+    'also_asked_by' => 'Ook gevraagd door :who',
     'asked_when' => 'Gevraagd :when',
     'always_waits' => [
         'artist' => 'Wacht altijd op jou: een hele artiest',

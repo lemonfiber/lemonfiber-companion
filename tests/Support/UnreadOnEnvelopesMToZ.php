@@ -391,10 +391,6 @@ final readonly class UnreadOnEnvelopesMToZ
                 . 'profile is the stack\'s grouping of them rather than something an operator starts.',
         ],
         [
-            'path' => 'StatusEnvelope.scheduled',
-            'because' => 'The run-and-exit services and how their last run went, for `DashboardEnvelope.scheduled`\'s reason: no companion requirement asks for scheduled runs.',
-        ],
-        [
             'path' => 'StatusEnvelope.forms',
             'because' => 'The forms this reading was asked about, which is not the forms the stack declares. '
                 . '`/api/status` asks about none, so on the one reading of it this app makes the field is '

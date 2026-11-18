@@ -409,7 +409,7 @@ final readonly class UnreadOnEnvelopesAToL
         ],
         [
             'path' => 'DashboardEnvelope.scheduled',
-            'because' => 'The run-and-exit services and how their last run went. No companion requirement asks for scheduled runs, so the front page draws none of them.',
+            'because' => 'The run-and-exit services and how their last run went, which the schedule screen reads off `StatusEnvelope.scheduled` when it is opened (`N2-R39`); the front page stays the stack\'s one line.',
         ],
         [
             'path' => 'DashboardEnvelope.downloaders',

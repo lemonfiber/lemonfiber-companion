@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheOthersOnAnAsk;
 use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\Wanted;
 use Modules\Kernel\Api\Wanting;
@@ -69,7 +70,8 @@ function theSessionTheHouseholdIsAskedWith(): Session
 function theSameRequests(): Requested
 {
     return Requested::of(
-        Wanted::of(RequestId::named('41'), 'Sam', 'A film nobody has seen', KindOfRequest::Something, Size::guessedAt(4_000_000_000), HowARequestStands::said(Waiting::ForApproval)),
+        Wanted::of(RequestId::named('41'), 'Sam', 'A film nobody has seen', KindOfRequest::Something, Size::guessedAt(4_000_000_000), HowARequestStands::said(Waiting::ForApproval))
+            ->alsoFor(TheOthersOnAnAsk::these('Robin', 'Mira')),
         Wanted::of(RequestId::named('42'), 'Robin', 'A series somebody has', KindOfRequest::Something, Size::unknown(), HowARequestStands::said(Waiting::Here)),
     );
 }
@@ -110,6 +112,7 @@ function whatAHouseholdThatAskedSends(): array
                         'title' => 'A film nobody has seen',
                         'state' => 'waiting-for-approval',
                         'estimate' => ['bytes' => 4_000_000_000, 'measured' => false],
+                        'also_asked' => ['Robin', 'Mira'],
                     ]],
                 ],
                 [
@@ -357,6 +360,23 @@ it('carries who asked, onto every row, in the order the stack listed them', func
             '41/Sam/A film nobody has seen/waiting-for-approval | 42/Robin/A series somebody has/here',
             $which,
         );
+    }
+});
+
+it('carries every other member one ask is also for, and none where one member asked', function (): void {
+    foreach (everyWayOfAskingTheHousehold(aHouseholdAnswer()) as $which => $make) {
+        expect($make()->askedOf(aStackWithAHousehold(), theSessionTheHouseholdIsAskedWith())->either(
+            these: static function (Requested $wanted): TheWordCarriedOut {
+                $rows = [];
+
+                foreach ($wanted as $one) {
+                    $rows[] = sprintf('%s:%s', $one->id()->reference(), implode(',', iterator_to_array($one->alsoAskedBy(), preserve_keys: true)));
+                }
+
+                return new TheWordCarriedOut(implode(' | ', $rows));
+            },
+            met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
+        )->said)->toBe('41:Robin,Mira | 42:', $which);
     }
 });
 

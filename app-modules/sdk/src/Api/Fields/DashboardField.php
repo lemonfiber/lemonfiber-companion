@@ -17,9 +17,6 @@ enum DashboardField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** The one-line health summary, as the core computed it for every surface. */
-    case Health = 'health';
-
     /** How many things want attention, counted by cause rather than by symptom. */
     case WantingAttention = 'wanting_attention';
 

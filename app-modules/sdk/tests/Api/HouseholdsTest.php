@@ -538,6 +538,27 @@ it('refuses a request asked for at a moment written as text', function (): void 
     ]])), preserve_keys: false))->toThrow(HouseholdIsUnreadable::class, 'Request 0 belonging to `Robin`');
 });
 
+it('reads every other member one ask is also for, in the order sent, through a decline as well, and none where the stack said none', function (): void {
+    $wanted = iterator_to_array(Households::in(householdSaying(['members' => [
+        aMember('Robin', [
+            ['id' => 'tv-1', 'title' => 'A film', 'state' => 'waiting-for-approval', 'also_asked' => ['Sam', 'Mira']],
+            ['id' => 'tv-2', 'title' => 'Another film', 'state' => 'declined', 'also_asked' => ['Sam'], 'refused' => ['reason' => 'No room']],
+            ['id' => '3', 'title' => 'A third', 'state' => 'getting'],
+            ['id' => '4', 'title' => 'A fourth', 'state' => 'getting', 'also_asked' => null],
+        ]),
+    ]])), preserve_keys: false);
+
+    expect(array_map(static fn(Wanted $one): array => iterator_to_array($one->alsoAskedBy(), preserve_keys: true), $wanted))->toBe([['Sam', 'Mira'], ['Sam'], [], []]);
+});
+
+it('refuses members an ask is also for that are not a list of names', function (): void {
+    foreach (['Sam', ['Sam', 7]] as $also) {
+        expect(fn(): array => iterator_to_array(Households::in(householdSaying(['members' => [
+            aMember('Robin', [['id' => 'tv-1', 'title' => 'A film', 'state' => 'waiting-for-approval', 'also_asked' => $also]]),
+        ]])), preserve_keys: false))->toThrow(HouseholdIsUnreadable::class, 'Request 0 belonging to `Robin`');
+    }
+});
+
 it('a refusal the stack did not time is read without one', function (): void {
     $wanted = iterator_to_array(Households::in(householdSaying(['members' => [
         aMember('Robin', [[

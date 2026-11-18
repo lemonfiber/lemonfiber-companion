@@ -85,6 +85,7 @@ return [
     'nothing_asked_for' => 'You have not asked for anything yet.',
     'waiting_count' => '{0} Nothing is waiting for you|{1} One request is waiting for you|[2,*] :count requests are waiting for you',
     'asked_by' => 'Asked for by :who',
+    'also_asked_by' => 'Also asked for by :who',
     'asked_when' => 'Asked :when',
     'always_waits' => [
         'artist' => 'Always waits for you: a whole artist',

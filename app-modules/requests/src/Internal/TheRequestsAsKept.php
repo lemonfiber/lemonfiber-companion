@@ -22,6 +22,7 @@ use Modules\Kernel\Api\Requested;
 use Modules\Kernel\Api\RequestId;
 use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\Size;
+use Modules\Kernel\Api\TheOthersOnAnAsk;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Unsealed;
 use Modules\Kernel\Api\Waiting;
@@ -31,9 +32,10 @@ use Modules\Kernel\Api\Wanted;
  * What a household asked its stack for, as the phone writes it before sealing it and reads it back after.
  *
  * **Written in {@see Shape::One}, field for field what the stack reported**:
- * each request's number, who asked, what for, how big it is and whether that
- * was measured or guessed, where it stands, and, where it was turned down, the
- * reason the stack gave and when. Nothing is worked out, so a reading read back
+ * each request's number, who asked, the other members it is also for, what
+ * for, when it was asked for, how big it is and whether that was measured or
+ * guessed, where it stands, and, where it was turned down, the reason the
+ * stack gave and when. Nothing is worked out, so a reading read back
  * draws as the one that was read.
  *
  * **Only the reading.** An approval, a decline, the reason an operator typed
@@ -48,6 +50,10 @@ final readonly class TheRequestsAsKept
     private const string NOT_YET_NAMED = 'not_yet_named';
 
     private const string KIND = 'kind_of_request';
+
+    private const string ASKED = 'when_asked';
+
+    private const string ALSO_ASKED = 'also_asked';
 
     /**
      * The reading as a value to seal, or nothing where it cannot be written.
@@ -89,7 +95,7 @@ final readonly class TheRequestsAsKept
         $requests = [];
 
         foreach (self::listAt($written, 'requests') as $request) {
-            $requests[] = self::wantedIn(self::fieldsIn($request));
+            $requests[] = self::askedIn(self::fieldsIn($request));
         }
 
         return Requested::of(...$requests);
@@ -120,14 +126,51 @@ final readonly class TheRequestsAsKept
             'refused' => $wanted->refusal(
                 was: static fn(TurnedDown $why): Written => new Written([[
                     'reason' => $why->reason(),
-                    'at' => $why->when()->read(
-                        read: static fn(Instant $when): Written => new Written([$when->epochSeconds()]),
-                        unreadable: static fn(): Written => new Written([]),
-                    )->held,
+                    'at' => self::momentWritten($why->when()),
                 ]]),
                 wasNot: static fn(): Written => new Written([]),
             )->held,
+            self::ASKED => self::momentWritten($wanted->asked()),
+            self::ALSO_ASKED => self::othersWritten($wanted->alsoAskedBy()),
         ];
+    }
+
+    /** @return list<string> */
+    private static function othersWritten(TheOthersOnAnAsk $others): array
+    {
+        $names = [];
+
+        foreach ($others as $name) {
+            $names[] = $name;
+        }
+
+        return $names;
+    }
+
+    /** @return array<array-key, mixed> */
+    private static function momentWritten(AMomentAsWritten $moment): array
+    {
+        return $moment->read(
+            read: static fn(Instant $when): Written => new Written([$when->epochSeconds()]),
+            unreadable: static fn(): Written => new Written([]),
+        )->held;
+    }
+
+    /**
+     * One request kept, with when it was asked for and the other members it is also for, where those were kept.
+     *
+     * @param array<array-key, mixed> $fields
+     */
+    private static function askedIn(array $fields): Wanted
+    {
+        $asked = array_key_exists(self::ASKED, $fields) ? self::momentIn(self::listAt($fields, self::ASKED), self::ASKED) : AMomentAsWritten::unwritten();
+        $also = [];
+
+        foreach (array_key_exists(self::ALSO_ASKED, $fields) ? self::listAt($fields, self::ALSO_ASKED) : [] as $member) {
+            $also[] = is_string($member) ? $member : throw KeptRequestsDoNotRead::at(self::ALSO_ASKED);
+        }
+
+        return self::wantedIn($fields)->askedAt($asked)->alsoFor(TheOthersOnAnAsk::these(...$also));
     }
 
     /** @param array<array-key, mixed> $fields */
@@ -200,17 +243,25 @@ final readonly class TheRequestsAsKept
     /** @param array<array-key, mixed> $fields */
     private static function turnedDownIn(array $fields): TurnedDown
     {
-        $reason = self::textAt($fields, 'reason');
+        return TurnedDown::at(self::momentIn(self::listAt($fields, 'at'), 'at'), self::textAt($fields, 'reason'));
+    }
 
-        foreach (self::listAt($fields, 'at') as $when) {
-            return TurnedDown::at(match (true) {
+    /**
+     * The moment a kept list holds, or one unwritten where it holds none.
+     *
+     * @param array<array-key, mixed> $said
+     */
+    private static function momentIn(array $said, string $field): AMomentAsWritten
+    {
+        foreach ($said as $when) {
+            return match (true) {
                 is_int($when) => AMomentAsWritten::byTheStack($when),
                 is_string($when) => AMomentAsWritten::of($when),
-                default => throw KeptRequestsDoNotRead::at('at'),
-            }, $reason);
+                default => throw KeptRequestsDoNotRead::at($field),
+            };
         }
 
-        return TurnedDown::because($reason);
+        return AMomentAsWritten::unwritten();
     }
 
     /** @return array<array-key, mixed> */

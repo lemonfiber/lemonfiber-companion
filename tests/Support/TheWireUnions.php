@@ -30,6 +30,7 @@ use Modules\Kernel\Api\HowFarItGoesBack;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
+use Modules\Kernel\Api\HowItsLastRunWent;
 use Modules\Kernel\Api\HowItStands;
 use Modules\Kernel\Api\HowItStopped;
 use Modules\Kernel\Api\HowItWasReached;
@@ -144,6 +145,7 @@ final readonly class TheWireUnions
         HowAMonitorStands::class => 'state',
         WhichWayItLooks::class => 'path',
         WhetherHealingActs::class => 'healing',
+        HowItsLastRunWent::class => 'health',
         WhyItIsWedged::class => 'class',
         AHealingAct::class => 'act',
         WhatBecameOfAnAct::class => 'outcome',

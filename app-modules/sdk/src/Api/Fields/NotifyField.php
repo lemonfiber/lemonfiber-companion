@@ -33,9 +33,6 @@ enum NotifyField: string implements NamesAWireField
     /** A back-end's proof, once it is proven. */
     case Proven = 'proven';
 
-    /** A back-end's newest delivery. */
-    case Last = 'last';
-
     /** Every delivery failed since a back-end's last confirmed one. */
     case Failures = 'failures';
 

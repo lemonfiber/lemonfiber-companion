@@ -70,6 +70,10 @@
                 <x-design::note>{{ __($request->kind) }}</x-design::note>
             @endif
             <x-design::note>{{ __('household.asked_by', ['who' => $request->by]) }}</x-design::note>
+            @forelse ($request->alsoBy as $member)
+                <x-design::note>{{ __('household.also_asked_by', ['who' => $member]) }}</x-design::note>
+            @empty
+            @endforelse
             @if ($request->asked->said !== '')
                 <x-design::note>{{ __('household.asked_when', ['when' => trans_choice($request->asked->said, $request->asked->count)]) }}</x-design::note>
             @endif

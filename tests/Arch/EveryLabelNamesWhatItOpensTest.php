@@ -7,16 +7,6 @@ use Modules\Wayfinding\Api\TheTabs;
 use Modules\Wayfinding\Internal\TheMenu;
 use Tests\Support\Tree;
 
-// A label names what it opens or does in at most three words, and is never a
-// sentence; a sentence may explain beside it.
-//
-// Read off where a line is drawn rather than how its key is spelled: the prop
-// that names a control or a section, the slot a section heading is drawn in,
-// the title of a screen's top bar, and every tab and menu item. A placeholder
-// is one word, being the name or figure the label names, and a name this
-// product gives its own things is one word by being one. The English catalogue
-// is the one read; the others are held to it key for key next door.
-
 /** The most words a label holds before it is a sentence. */
 const A_LABEL = 3;
 

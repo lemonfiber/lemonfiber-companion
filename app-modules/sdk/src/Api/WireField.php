@@ -4,14 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-/**
- * What the wire calls each field that more than one envelope this module reads carries.
- *
- * The case's value *is* the name on the wire. A word one envelope carries
- * lives in that envelope's own enum under `Fields`; a word read out of two or
- * more envelopes lives here, and so does `data`, the payload every envelope
- * has. `EveryWireFieldIsReadTest` holds each word to the enum it belongs in.
- */
+/** What the wire calls each field that more than one envelope this module reads carries. */
 enum WireField: string implements NamesAWireField
 {
     use SaysWhereItSits;
@@ -30,6 +23,12 @@ enum WireField: string implements NamesAWireField
 
     /** The stable identifier for a kind of problem, quotable and searchable. */
     case Code = 'code';
+
+    /** A health as the stack computed it: the dashboard's one line, or how a run-and-exit service's last run exited. */
+    case Health = 'health';
+
+    /** The newest of something: a back-end's delivery, or a run-and-exit service's run. */
+    case Last = 'last';
 
     /** The body of an envelope, under its kind and version. */
     case Data = 'data';

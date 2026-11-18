@@ -36,4 +36,5 @@ requirement = [
   { id = "N4-R28", state = "done", evidence = ["app-modules/operator/resources/views/how-this-phone-is-set.blade.php", "lang/en/settings.php", "tests/Feature/SettingHowThisPhoneIsSetTest.php"] },
   { id = "N4-R29", state = "done", evidence = ["app-modules/operator/src/Internal/WakesThisPhoneForTheStack.php", "app-modules/operator/src/Internal/ChoosesWhoWakesThisPhone.php", "app-modules/connection/src/Api/ChoosingWhoWakesThisPhone.php", "app-modules/kernel/src/Api/APushName.php", "bridge/resources/android/WakingFunctions.kt", "tests/Feature/WakingThisPhoneThroughADistributorTest.php", "tests/Feature/SettingHowThisPhoneIsSetTest.php"] },
   { id = "N4-R30", state = "done", evidence = ["app-modules/connection/src/Api/WakingThisPhone.php", "app-modules/wayfinding/src/Api/WhatItListensWith.php", "app-modules/operator/src/Internal/Screens/ThisStackOnThisPhone.php", "app-modules/connection/tests/Api/WakingThisPhoneTest.php", "tests/Feature/WakingThisPhoneThroughADistributorTest.php"] },
+  { id = "N4-R31", state = "done", evidence = ["bridge/resources/android/WakingFunctions.kt", "tests/Feature/EveryActionTheStackTakesTest.php"] },
 ]

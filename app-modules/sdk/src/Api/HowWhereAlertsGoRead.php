@@ -166,10 +166,10 @@ final readonly class HowWhereAlertsGoRead
     /** @param array<mixed> $table */
     private static function deliveries(array $table, string $where): HowItsDeliveriesWent
     {
-        $last = self::optional($table, NotifyField::Last);
+        $last = self::optional($table, WireField::Last);
         $went = $last === null
             ? HowItsDeliveriesWent::nothingYet()
-            : HowItsDeliveriesWent::lastly(self::delivery($last, APath::beneath($where, NotifyField::Last->value)));
+            : HowItsDeliveriesWent::lastly(self::delivery($last, APath::beneath($where, WireField::Last->value)));
 
         $failures = [];
 

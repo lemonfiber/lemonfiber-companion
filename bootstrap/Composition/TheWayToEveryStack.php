@@ -77,6 +77,7 @@ use Modules\Kernel\Api\RemovingSomebody;
 use Modules\Kernel\Api\ReplacingTheInternalCertificate;
 use Modules\Kernel\Api\ResettingTheConfiguration;
 use Modules\Kernel\Api\RunningACheck;
+use Modules\Kernel\Api\RunningOnASchedule;
 use Modules\Kernel\Api\Safekeeping;
 use Modules\Kernel\Api\Saying;
 use Modules\Kernel\Api\SelfChecking;
@@ -169,6 +170,7 @@ use Modules\Sdk\Api\Restarts;
 use Modules\Sdk\Api\Restorers;
 use Modules\Sdk\Api\Reversers;
 use Modules\Sdk\Api\RoomGivers;
+use Modules\Sdk\Api\Schedulers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Searchers;
@@ -388,6 +390,7 @@ final class TheWayToEveryStack extends ServiceProvider
         $this->app->bind(AskingHowItCameBack::class, Restarts::class);
         $this->app->bind(AskingTheWatcher::class, Watchers::class);
         $this->app->bind(AskingTheQueue::class, Healers::class);
+        $this->app->bind(RunningOnASchedule::class, Schedulers::class);
         $this->app->bind(AskingHowItRunsWithoutLemonfiber::class, Foundations::class);
 
         // How the line is shared, read beside the rest and bound for the same

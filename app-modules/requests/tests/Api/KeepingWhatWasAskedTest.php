@@ -10,6 +10,7 @@ use function implode;
 use function it;
 use function iterator_to_array;
 
+use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\Code;
 use Modules\Kernel\Api\HowARequestStands;
 use Modules\Kernel\Api\Instant;
@@ -23,6 +24,7 @@ use Modules\Kernel\Api\SealedStack;
 use Modules\Kernel\Api\Shape;
 use Modules\Kernel\Api\Size;
 use Modules\Kernel\Api\StackId;
+use Modules\Kernel\Api\TheOthersOnAnAsk;
 use Modules\Kernel\Api\TurnedDown;
 use Modules\Kernel\Api\Unsealed;
 use Modules\Kernel\Api\Waiting;
@@ -38,6 +40,7 @@ use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\WhatARequestIsCalledAsAWord;
 use Tests\Support\WhatIsKeptOfRequests;
+use Tests\Support\WhatTheTimestampNamed;
 
 /** The moment a kept reading in these tests was read at. */
 const WHEN_THE_REQUESTS_WERE_READ = 1_790_000_000;
@@ -261,23 +264,57 @@ it('lets go of a kept reading that opens to something that is not a reading of w
     'requests that are not a list' => ['{"requests":"none"}'],
     'a request that is not fields' => ['{"requests":["Dune"]}'],
     'a request with no number' => ['{"requests":[{"by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[]}]}'],
-    'a number that is not a number' => ['{"requests":[{"number":"one","by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[]}]}'],
-    'nobody behind it' => ['{"requests":[{"number":1,"by":" ","for":"Dune","size":{},"standing":["getting"],"refused":[]}]}'],
-    'asked for nothing' => ['{"requests":[{"number":1,"by":"Mira","for":" ","size":{},"standing":["getting"],"refused":[]}]}'],
-    'who asked that is not text' => ['{"requests":[{"number":1,"by":7,"for":"Dune","size":{},"standing":["getting"],"refused":[]}]}'],
-    'a size that is not fields' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":"big","standing":["getting"],"refused":[]}]}'],
-    'a measured size that is not a number' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{"measured":"4 GB"},"standing":["getting"],"refused":[]}]}'],
-    'a guessed size that is not a number' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{"guessed":"4 GB"},"standing":["getting"],"refused":[]}]}'],
-    'a standing this build does not know' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{},"standing":["lost"],"refused":[]}]}'],
-    'a standing that is not a word' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{},"standing":[1],"refused":[]}]}'],
-    'no standing' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{},"refused":[]}]}'],
-    'a refusal that is not fields' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{},"standing":["declined"],"refused":["no"]}]}'],
-    'a refusal for no reason' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{},"standing":["declined"],"refused":[{"reason":" ","at":[]}]}]}'],
-    'a refusal at a moment that is not text' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{},"standing":["declined"],"refused":[{"reason":"No","at":[7]}]}]}'],
-    'no refused field' => ['{"requests":[{"number":1,"by":"Mira","for":"Dune","size":{},"standing":["getting"]}]}'],
+    'a reference that is not text' => ['{"requests":[{"id":1,"by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[]}]}'],
+    'nobody behind it' => ['{"requests":[{"id":"1","by":" ","for":"Dune","size":{},"standing":["getting"],"refused":[]}]}'],
+    'asked for nothing' => ['{"requests":[{"id":"1","by":"Mira","for":" ","size":{},"standing":["getting"],"refused":[]}]}'],
+    'who asked that is not text' => ['{"requests":[{"id":"1","by":7,"for":"Dune","size":{},"standing":["getting"],"refused":[]}]}'],
+    'a size that is not fields' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":"big","standing":["getting"],"refused":[]}]}'],
+    'a measured size that is not a number' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{"measured":"4 GB"},"standing":["getting"],"refused":[]}]}'],
+    'a guessed size that is not a number' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{"guessed":"4 GB"},"standing":["getting"],"refused":[]}]}'],
+    'a standing this build does not know' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["lost"],"refused":[]}]}'],
+    'a standing that is not a word' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":[1],"refused":[]}]}'],
+    'no standing' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"refused":[]}]}'],
+    'a refusal that is not fields' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["declined"],"refused":["no"]}]}'],
+    'a refusal for no reason' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["declined"],"refused":[{"reason":" ","at":[]}]}]}'],
+    'a refusal at a moment neither seconds nor text' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["declined"],"refused":[{"reason":"No","at":[true]}]}]}'],
+    'no refused field' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["getting"]}]}'],
     'a kind this build does not know' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","kind_of_request":"podcast","size":{},"standing":["getting"],"refused":[]}]}'],
     'a kind that is not a word' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","kind_of_request":7,"size":{},"standing":["getting"],"refused":[]}]}'],
+    'asked at a moment that is not a list' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[],"when_asked":1790000000}]}'],
+    'asked at a moment that is neither seconds nor text' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[],"when_asked":[true]}]}'],
+    'also asked by members that are not a list' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[],"also_asked":"Sam"}]}'],
+    'also asked by a member that is not a name' => ['{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[],"also_asked":["Sam",7]}]}'],
 ]);
+
+/** When each kept request was asked for and the other members it is also for, as one line. */
+function whenAndForWhomTheKeptRequestsWereAsked(WhatWasKeptOfWhatWasAsked $kept): string
+{
+    return $kept->either(
+        kept: static fn(Requested $requested): Code => Code::of(implode(' | ', array_map(
+            static fn(Wanted $one): string => sprintf('%s %s', WhatTheTimestampNamed::in($one->asked())->seconds ?? 'unwritten', implode(',', iterator_to_array($one->alsoAskedBy(), preserve_keys: true))),
+            iterator_to_array($requested, preserve_keys: false),
+        ))),
+        nothing: static fn(): Code => Code::of('nothing'),
+    )->shown();
+}
+
+it('keeps when each request was asked for and the other members one ask is also for', function (): void {
+    $kept = aPhoneKeepingRequests();
+    $kept->keeping->keep(theStackTheRequestsAreKeptFor(), Requested::of(
+        Wanted::of(RequestId::named('tv-1'), 'Mira', 'Dune', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::ForApproval))
+            ->askedAt(AMomentAsWritten::byTheStack(1_789_999_000))
+            ->alsoFor(TheOthersOnAnAsk::these('Joost', 'Sam')),
+        Wanted::of(RequestId::named('2'), 'Joost', 'Solaris', KindOfRequest::Film, Size::unknown(), HowARequestStands::said(Waiting::Getting)),
+    ));
+
+    expect(whenAndForWhomTheKeptRequestsWereAsked($kept->keeping->lastKept(theStackTheRequestsAreKeptFor())))->toBe('1789999000 Joost,Sam | unwritten');
+});
+
+it('reads a request kept before either was kept as asked at no stated moment, by one member', function (): void {
+    $kept = aPhoneKeepingRequests()->holdsSealed('{"requests":[{"id":"1","by":"Mira","for":"Dune","size":{},"standing":["getting"],"refused":[]}]}', theStackTheRequestsAreKeptFor(), Instant::atEpochSeconds(WHEN_THE_REQUESTS_WERE_READ));
+
+    expect(whenAndForWhomTheKeptRequestsWereAsked($kept->keeping->lastKept(theStackTheRequestsAreKeptFor())))->toBe('unwritten');
+});
 
 it('lets go of the reading kept for one stack, and of no other\'s', function (): void {
     $kept = aPhoneKeepingRequests();

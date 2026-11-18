@@ -51,6 +51,7 @@ return [
         'after_a_restart' => 'After a restart',
         'watcher' => 'Outside watcher',
         'queue' => 'Queue healing',
+        'scheduled' => 'Scheduled runs',
         'while_nobody_was_looking' => 'Unwatched hours',
         'already_installed' => 'Already installed',
         'other_programs' => 'Other programs',
