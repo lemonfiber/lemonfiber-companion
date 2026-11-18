@@ -72,7 +72,7 @@ function theServicesScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatThisStackRuns($supervising, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noListingYet(), AStackThatSwitches::sayingAtOnce(WhatBecameOfTheWork::ended()));
+    $screen = new WhatThisStackRuns($supervising, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noListingYet(), AStackThatSwitches::sayingAtOnce(WhatBecameOfTheWork::noOutcome()));
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

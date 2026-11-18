@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\ARemoval;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\ARemovalAsShown;
 use Modules\Operator\Internal\ViewModels\TheRemovalTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
@@ -38,9 +39,9 @@ final readonly class HowTheRemovalReads
     }
 
     /** The stack has no outcome for it any more, which is not the same as refusing it or as it not having run. */
-    public function ended(string $name, bool $agreed): TheRemovalTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why, string $name, bool $agreed): TheRemovalTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::ended(), $name, wasAgreed: $agreed);
+        return $this->without(WhereTheWorkStands::ended($why), $name, wasAgreed: $agreed);
     }
 
     /** The stack refused, and this is its reason. */

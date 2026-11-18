@@ -386,7 +386,7 @@ const EVERY_SETTING_SAID = 'vpn.countries(gluetun)[gluetun:SERVER_COUNTRIES=Neth
 
 it('reads every setting and secret the services read, whose each is and who reads it, never a secret\'s value', function (): void {
     $ways = [
-        'the fake' => static fn(): SettingWhatServicesRead => AStackThatTunesItsSettings::answering(theSameSettingsTheServicesRead(), WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended()),
+        'the fake' => static fn(): SettingWhatServicesRead => AStackThatTunesItsSettings::answering(theSameSettingsTheServicesRead(), WhatBecameOfTheWork::noOutcome(), WhatBecameOfTheWork::noOutcome()),
         'the adapter' => static fn(): SettingWhatServicesRead => aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfItsSettings()))),
     ];
 
@@ -402,7 +402,7 @@ it('reads none at all as an answer, not as a listing it could not read', functio
 
 it('comes away from reading with the obstacle where the stack could not be asked or read', function (MockResponse $answered, KindOfObstacle $kind): void {
     expect(whatTheSettingsCameTo(aTunerAnswered($answered)->readOn(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith())))->toBe($kind->name)
-        ->and(whatTheSettingsCameTo(AStackThatTunesItsSettings::sayingAtOnce(WhatWasFoundOfTheSettings::met(Obstacle::of($kind)), WhatBecameOfTheWork::ended())->readOn(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith())))->toBe($kind->name);
+        ->and(whatTheSettingsCameTo(AStackThatTunesItsSettings::sayingAtOnce(WhatWasFoundOfTheSettings::met(Obstacle::of($kind)), WhatBecameOfTheWork::noOutcome())->readOn(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith())))->toBe($kind->name);
 })->with([
     'a refused session' => [MockResponse::make('{"error":"no"}', 401), KindOfObstacle::CredentialWasRefused],
     'a stack that failed' => [MockResponse::make('{"error":"still asking"}', 500), KindOfObstacle::StackDidNotAnswer],
@@ -488,7 +488,7 @@ it('reads where a secret came from in each of the stack\'s words', function (str
 
 it('comes away from rehearsing with the job the stack named', function (): void {
     $ways = [
-        'the fake' => static fn(): SettingWhatServicesRead => AStackThatTunesItsSettings::answering(theSameSettingsTheServicesRead(), WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended()),
+        'the fake' => static fn(): SettingWhatServicesRead => AStackThatTunesItsSettings::answering(theSameSettingsTheServicesRead(), WhatBecameOfTheWork::noOutcome(), WhatBecameOfTheWork::noOutcome()),
         'the adapter' => static fn(): SettingWhatServicesRead => aTunerAnswered(aChangeToASettingTakenOn(AStackThatTunesItsSettings::THE_REHEARSAL)),
     ];
 
@@ -500,7 +500,7 @@ it('comes away from rehearsing with the job the stack named', function (): void 
 
 it('reads what the work came to, the rehearsal labelled as one with what it regenerates and restarts', function (): void {
     $ways = [
-        'the fake' => static fn(): SettingWhatServicesRead => AStackThatTunesItsSettings::answering(theSameSettingsTheServicesRead(), WhatBecameOfTheWork::answered(theSameRehearsalOfASetting()), WhatBecameOfTheWork::ended()),
+        'the fake' => static fn(): SettingWhatServicesRead => AStackThatTunesItsSettings::answering(theSameSettingsTheServicesRead(), WhatBecameOfTheWork::answered(theSameRehearsalOfASetting()), WhatBecameOfTheWork::noOutcome()),
         'the adapter' => static fn(): SettingWhatServicesRead => aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfAChangeToASetting()))),
     ];
 
@@ -655,7 +655,7 @@ it('asks every setting one change moves in the one request', function (): void {
 });
 
 it('the fake remembers each reading, each change rehearsed and agreed to, and each handle followed', function (): void {
-    $tuning = AStackThatTunesItsSettings::answering(theSameSettingsTheServicesRead(), WhatBecameOfTheWork::answered(theSameRehearsalOfASetting()), WhatBecameOfTheWork::ended());
+    $tuning = AStackThatTunesItsSettings::answering(theSameSettingsTheServicesRead(), WhatBecameOfTheWork::answered(theSameRehearsalOfASetting()), WhatBecameOfTheWork::noOutcome());
     $change = ASettingChange::toHold('vpn.countries', 'Germany');
     $yes = theYesToGermany();
     $tuning->readOn(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith());

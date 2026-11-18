@@ -140,7 +140,7 @@ it('lists each grant beside the credential it crosses, and a grant of one the li
 });
 
 it('reads what ending a grant would do first, labelled as nothing ended yet, with what restarts and what stays', function (): void {
-    $ending = AStackThatEndsGrants::answering(WhatBecameOfTheWork::answered(theRevokeAsRead()), WhatBecameOfTheWork::ended());
+    $ending = AStackThatEndsGrants::answering(WhatBecameOfTheWork::answered(theRevokeAsRead()), WhatBecameOfTheWork::noOutcome());
     $screen = theGrantingScreen($ending);
     $screen->revoke(0);
     $running = WhatTheDeviceWouldDraw::by($screen)->said();
@@ -184,7 +184,7 @@ it('ends the grant on a yes carrying the reading\'s offer, and says what it came
 });
 
 it('sends nothing for a yes with no reading of that grant, nor for a grant the list does not hold', function (): void {
-    $ending = AStackThatEndsGrants::answering(WhatBecameOfTheWork::answered(theRevokeAsEnded()), WhatBecameOfTheWork::ended());
+    $ending = AStackThatEndsGrants::answering(WhatBecameOfTheWork::answered(theRevokeAsEnded()), WhatBecameOfTheWork::noOutcome());
     $screen = theGrantingScreen($ending);
     $screen->agree();
     $screen->revoke(7);
@@ -197,7 +197,7 @@ it('sends nothing for a yes with no reading of that grant, nor for a grant the l
 });
 
 it('asks nothing new while the stack is still at it', function (): void {
-    $ending = AStackThatEndsGrants::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatEndsGrants::THE_READING)), WhatBecameOfTheWork::ended());
+    $ending = AStackThatEndsGrants::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatEndsGrants::THE_READING)), WhatBecameOfTheWork::noOutcome());
     $screen = theGrantingScreen($ending);
     $screen->revoke(0);
     $screen->revoke(0);
@@ -210,7 +210,7 @@ it('draws a refusal in the stack\'s words, a lost outcome, and what stood in the
     $refusal = ARefusalInItsWords::said('tdarr holds no grant of plex.token', '', WhatTheRefusalNamed::nothing(), 'Read the passwords again');
     $refused = theGrantingScreen(AStackThatEndsGrants::sayingAtOnce(WhatBecameOfTheWork::refused($refusal)));
     $refused->revoke(0);
-    $lost = theGrantingScreen(AStackThatEndsGrants::sayingAtOnce(WhatBecameOfTheWork::ended()));
+    $lost = theGrantingScreen(AStackThatEndsGrants::sayingAtOnce(WhatBecameOfTheWork::noOutcome()));
     $lost->revoke(0);
     $met = theGrantingScreen(AStackThatEndsGrants::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
     $met->revoke(0);

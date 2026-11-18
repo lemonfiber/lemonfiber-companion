@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Presenters\HowARefusalReads;
 use Modules\Operator\Internal\Presenters\HowAVerbEndedReads;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
@@ -143,7 +144,7 @@ trait FollowsWhatTheVerbCameTo
             held: fn(Session $session): HowTheVerbWent => $this->supervising->whatBecameOf($stack, $session, Job::named($took))->either(
                 stillRunning: static fn(): HowTheVerbWent => new HowAVerbEndedReads()->running(),
                 done: static fn(WhatTheVerbCameTo $report): HowTheVerbWent => new HowAVerbEndedReads()->done($report, $sent->doing()),
-                ended: static fn(): HowTheVerbWent => new HowAVerbEndedReads()->ended(),
+                ended: static fn(?WhyTheWorkEnded $why): HowTheVerbWent => new HowAVerbEndedReads()->ended($why),
                 met: $this->lettingGoIfRefused($stack, new HowAVerbEndedReads()->met(...)),
                 // Refused and offered again, as a repair is: nothing was done,
                 // the yes was given for what has since moved, so what the stack

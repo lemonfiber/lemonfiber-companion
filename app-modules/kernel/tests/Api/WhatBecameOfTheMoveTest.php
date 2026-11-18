@@ -38,7 +38,7 @@ it('takes each arm it was built on, and no other', function (): void {
 
     expect(theWordForWhereTheMoveGotTo(WhatBecameOfTheMove::underway(Job::named('j-1'))))->toBe('underway j-1')
         ->and(theWordForWhereTheMoveGotTo(WhatBecameOfTheMove::answered($move)))->toBe('answered applied')
-        ->and(theWordForWhereTheMoveGotTo(WhatBecameOfTheMove::ended()))->toBe('ended')
+        ->and(theWordForWhereTheMoveGotTo(WhatBecameOfTheMove::noOutcome()))->toBe('ended')
         ->and(theWordForWhereTheMoveGotTo(WhatBecameOfTheMove::refused('Nothing here to take over')))->toBe('refused Nothing here to take over')
         ->and(theWordForWhereTheMoveGotTo(WhatBecameOfTheMove::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met %s', KindOfObstacle::StackDidNotAnswer->value));
 });

@@ -78,6 +78,6 @@ final class AStackThatTakesThemOut implements RemovingSomebody
     /** The next answer in line, or the stack having no outcome once they have all been given. */
     private function next(): WhatBecameOfTheRemoval
     {
-        return array_shift($this->answers) ?? WhatBecameOfTheRemoval::ended();
+        return array_shift($this->answers) ?? WhatBecameOfTheRemoval::noOutcome();
     }
 }

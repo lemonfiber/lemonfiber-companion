@@ -27,6 +27,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatTheRestoreRehearsalFound;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -134,10 +135,10 @@ final readonly class Restorers implements PuttingBack
                 stillRunning: static fn(): HowPuttingItBackIsGoing => HowPuttingItBackIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowPuttingItBackIsGoing
                     => HowPuttingItBackIsGoing::done(TheRestore::doneIn($envelope)),
-                ended: static fn(): HowPuttingItBackIsGoing => HowPuttingItBackIsGoing::ended(),
+                ended: static fn(string $why): HowPuttingItBackIsGoing => HowPuttingItBackIsGoing::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return HowPuttingItBackIsGoing::ended();
+            return HowPuttingItBackIsGoing::noOutcome();
         }
     }
 }

@@ -21,6 +21,7 @@ final readonly class HowTheOfferToLetGoIsGoing
         private ?WhatLettingItGoCosts $offered = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still working out what it would cost. */
@@ -35,8 +36,14 @@ final readonly class HowTheOfferToLetGoIsGoing
         return new self(offered: $offer);
     }
 
-    /** The stack has no outcome for that job any more, and the remedy is to ask again. */
-    public static function ended(): self
+    /** The stack has no outcome for it any more, and says why. */
+    public static function ended(WhyTheWorkEnded $why): self
+    {
+        return new self(ending: $why);
+    }
+
+    /** The stack has no outcome for it any more, and says nothing of why. */
+    public static function noOutcome(): self
     {
         return new self();
     }
@@ -56,7 +63,7 @@ final readonly class HowTheOfferToLetGoIsGoing
      *
      * @param Closure(): T                     $stillRunning
      * @param Closure(WhatLettingItGoCosts): T $offering
-     * @param Closure(): T                     $ended
+     * @param Closure(?WhyTheWorkEnded): T     $ended
      * @param Closure(Obstacle): T             $met
      *
      * @return T
@@ -67,7 +74,7 @@ final readonly class HowTheOfferToLetGoIsGoing
             $this->met instanceof Obstacle => $met($this->met),
             $this->running => $stillRunning(),
             $this->offered instanceof WhatLettingItGoCosts => $offering($this->offered),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

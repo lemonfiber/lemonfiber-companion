@@ -86,7 +86,7 @@ function theTraceScreen(AStackThatTraces $tracing, ?AKeychainInMemory $keychain 
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhereThisGotTo($tracing, $searching ?? AStackThatSearches::answering(WhatBecameOfTheWork::ended()), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_TRACE_IS_READ)));
+    $screen = new WhereThisGotTo($tracing, $searching ?? AStackThatSearches::answering(WhatBecameOfTheWork::noOutcome()), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_TRACE_IS_READ)));
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $named]);
 
     return $screen;
@@ -292,7 +292,7 @@ function aFilmASearchWouldSettle(): WhereItGotTo
 }
 
 it('offers asking the indexers only where the stack says a search would settle the trace, with what it spends and covers first', function (): void {
-    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::ended());
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::noOutcome());
     $offered = WhatTheDeviceWouldDraw::by(theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), named: 'Dune', searching: $searching));
     $notOffered = WhatTheDeviceWouldDraw::by(theTraceScreen(AStackThatTraces::with(aFilmThatArrived()), named: 'Dune'));
 
@@ -326,7 +326,7 @@ it('asks the indexers about what the trace followed, follows the search, and dra
 });
 
 it('asks nothing where no search would settle the trace', function (): void {
-    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::ended());
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::noOutcome());
     theTraceScreen(AStackThatTraces::with(aFilmThatArrived()), named: 'Dune', searching: $searching)->search();
 
     expect($searching->searched())->toBe([]);
@@ -334,7 +334,7 @@ it('asks nothing where no search would settle the trace', function (): void {
 
 it('reads the trace with the season it is narrowed to, and asks about that season', function (): void {
     $tracing = AStackThatTraces::with(aFilmASearchWouldSettle());
-    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::ended());
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::noOutcome());
     $screen = theTraceScreen($tracing, searching: $searching);
     $screen->followSeason(2);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
@@ -370,7 +370,7 @@ it('says the stack did not ask the indexers, in its own words', function (): voi
 });
 
 it('sends a search once, however often it is tapped while the indexers are asked', function (): void {
-    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::ended());
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::noOutcome());
     $screen = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), named: 'Dune', searching: $searching);
     $screen->search();
     $screen->search();
@@ -379,7 +379,7 @@ it('sends a search once, however often it is tapped while the indexers are asked
 });
 
 it('says the stack has no answer for a search it no longer knows, and what stood in the way of one', function (): void {
-    $ended = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), named: 'Dune', searching: AStackThatSearches::answering(WhatBecameOfTheWork::ended()));
+    $ended = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), named: 'Dune', searching: AStackThatSearches::answering(WhatBecameOfTheWork::noOutcome()));
     $ended->search();
     $ended->whileItRuns();
     $met = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), named: 'Dune', searching: AStackThatSearches::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
@@ -392,7 +392,7 @@ it('says the stack has no answer for a search it no longer knows, and what stood
 
 it('asks the indexers nothing once the session has ended', function (): void {
     $keychain = AKeychainInMemory::working();
-    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::ended());
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::noOutcome());
     $screen = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), keychain: $keychain, named: 'Dune', searching: $searching);
     $screen->answer();
     $keychain->forget(theStackWhoseItemIsFollowed()->id());

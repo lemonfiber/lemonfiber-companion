@@ -11,6 +11,7 @@ use Modules\Kernel\Api\HowPlayingWasRead;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatAReplacementCameTo;
 use Modules\Kernel\Api\WhatTheHouseholdIsPlaying;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\AHolderAsShown;
 use Modules\Operator\Internal\ViewModels\AReplacementAsShown;
 use Modules\Operator\Internal\ViewModels\TheReplacementTurnedOutToBe;
@@ -41,9 +42,9 @@ final readonly class HowAReplacementReads
     }
 
     /** The stack has no outcome for it any more. */
-    public function ended(): TheReplacementTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why): TheReplacementTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::ended());
+        return $this->without(WhereTheWorkStands::ended($why));
     }
 
     /** The stack refused it, in its own words. */

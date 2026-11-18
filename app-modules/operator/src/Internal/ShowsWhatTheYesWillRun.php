@@ -82,7 +82,7 @@ trait ShowsWhatTheYesWillRun
         $stack = $this->stack();
         $became = $this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowAgreedWorkIsGoing => $this->supervising->whatBecameOf($stack, $session, Job::named($asked)),
-            notHeld: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::ended(),
+            notHeld: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::noOutcome(),
         );
 
         // Held only while the stack is still working it out: a rehearsal that

@@ -42,6 +42,6 @@ it('takes the arm for each state, and carries the report, the refusal and the ob
         ->toBe('refused:The recorded quality choice could not be read:/srv/lemonfiber/quality.json')
         ->and(howTheResetIsGoingReads(HowTheResetIsGoing::refused(ARefusalInItsWords::said('A file could not be written', '', WhatTheRefusalNamed::nothing()))))
         ->toBe('refused:A file could not be written:')
-        ->and(howTheResetIsGoingReads(HowTheResetIsGoing::ended()))->toBe('ended')
+        ->and(howTheResetIsGoingReads(HowTheResetIsGoing::noOutcome()))->toBe('ended')
         ->and(howTheResetIsGoingReads(HowTheResetIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

@@ -20,6 +20,7 @@
     @elseif ($this->done()->stands->isWorking())
         <x-operator::emphasis>{{ __('stacks.give_back.giving_back') }}</x-operator::emphasis>
     @elseif ($this->done()->stands->hasEnded())
+        <x-operator::why-it-ended :stands="$this->done()->stands" />
         <x-operator::emphasis>{{ __('stacks.give_back.no_outcome') }}</x-operator::emphasis>
         <x-operator::action :label="__('stacks.let_go.see_the_room')" :goes="$this->goes()->to(AStacksScreen::Room)" />
     @elseif ($this->done()->refused !== null)

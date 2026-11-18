@@ -29,6 +29,7 @@ use Modules\Kernel\Api\TheCredentialsHeld;
 use Modules\Kernel\Api\WhatARevokeCameTo;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowACredentialRevokeReads;
@@ -268,10 +269,10 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
 
                 return new HowACredentialRevokeReads()->answered($came, $this->clock->now());
             },
-            ended: function (): TheCredentialRevokeTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why): TheCredentialRevokeTurnedOutToBe {
                 $this->following = null;
 
-                return new HowACredentialRevokeReads()->ended();
+                return new HowACredentialRevokeReads()->ended($why);
             },
             refused: function (ARefusalInItsWords $why): TheCredentialRevokeTurnedOutToBe {
                 $this->following = null;

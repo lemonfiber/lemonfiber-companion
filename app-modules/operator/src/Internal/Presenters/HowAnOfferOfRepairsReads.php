@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Offer;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheStackWouldPutRight;
 use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
@@ -59,9 +60,9 @@ final readonly class HowAnOfferOfRepairsReads
     }
 
     /** The stack has no outcome for that job any more. */
-    public function ended(): WhatTheStackWouldPutRight
+    public function ended(?WhyTheWorkEnded $why): WhatTheStackWouldPutRight
     {
-        return new WhatTheStackWouldPutRight(stands: WhereTheWorkStands::ended());
+        return new WhatTheStackWouldPutRight(stands: WhereTheWorkStands::ended($why));
     }
 
     /**

@@ -15,6 +15,7 @@ use Modules\Kernel\Api\WhatTheVerbCameTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhereTheServicesEndedUp;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\AnInstallOfferedAsShown;
 use Modules\Operator\Internal\ViewModels\APortHeldAsShown;
@@ -66,9 +67,9 @@ final readonly class HowAVerbEndedReads
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
-    public function ended(): HowTheVerbWent
+    public function ended(?WhyTheWorkEnded $why): HowTheVerbWent
     {
-        return $this->following(WhereTheWorkStands::ended());
+        return $this->following(WhereTheWorkStands::ended($why));
     }
 
     /** The stack's report of the verb, judged against what the verb was for. */

@@ -31,6 +31,7 @@
              nobody measured. --}}
         <x-design::body>{{ __('stacks.copy.no_progress_while_running') }}</x-design::body>
     @elseif ($this->lastCopy()->stands->hasEnded())
+        <x-operator::why-it-ended :stands="$this->lastCopy()->stands" />
         {{-- Not a failure: the copy may well exist, and the list of copies
              is where to look. --}}
         <x-design::notice tone="unknown">

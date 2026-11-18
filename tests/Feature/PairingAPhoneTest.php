@@ -241,7 +241,7 @@ it('says a refusal in the stack\'s own words, and offers to ask again', function
 });
 
 it('goes back to offering a code where the stack has no outcome for the one asked for', function (): void {
-    $screen = thePairingScreen(AStackThatMakesPairingCodes::whichTookItOn(WhatBecameOfThePairingCode::ended()));
+    $screen = thePairingScreen(AStackThatMakesPairingCodes::whichTookItOn(WhatBecameOfThePairingCode::noOutcome()));
     $screen->make();
     $screen->whileItRuns();
 
@@ -284,7 +284,7 @@ it('stops asking after a code whose session ended while it was being made', func
 });
 
 it('is the screen the menu opens under Access', function (): void {
-    $screen = thePairingScreen(AStackThatMakesPairingCodes::whichTookItOn(WhatBecameOfThePairingCode::ended()));
+    $screen = thePairingScreen(AStackThatMakesPairingCodes::whichTookItOn(WhatBecameOfThePairingCode::noOutcome()));
 
     expect(NativeRouter::resolve(TheMenu::PairAPhone->screen()->forTheStack($screen->stack()->id())))->not->toBeNull()
         ->and(TheMenu::PairAPhone->group())->toBe(WhereInTheMenu::Access);

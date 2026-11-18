@@ -31,7 +31,7 @@ it('says each state of a run apart, and only its own', function (): void {
 
     expect(everythingTheRunHolds($reads->notAsked()))->toBe([true, true, false, false, false, false])
         ->and(everythingTheRunHolds($reads->running()))->toBe([true, true, true, false, false, false])
-        ->and(everythingTheRunHolds($reads->ended()))->toBe([true, true, false, true, false, false])
+        ->and(everythingTheRunHolds($reads->ended(null)))->toBe([true, true, false, true, false, false])
         ->and(everythingTheRunHolds($reads->refused($refusal)))->toBe([true, true, false, false, true, false])
         ->and(everythingTheRunHolds($reads->answered()))->toBe([true, true, false, false, false, true])
         ->and(everythingTheRunHolds($reads->signedOut()))->toBe([false, false, false, false, false, false])

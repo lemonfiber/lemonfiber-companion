@@ -31,6 +31,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AnInvitationFollowed;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesWhatAnInvitationAsks;
@@ -387,10 +388,10 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
 
                 return new HowTheInvitationReads()->answered($invitation, TheCodesDrawn::of($this->encoding, $invitation->toHand()->address()->joining(), $invitation->toHand()->address(), $invitation->toHand()->address()->declining()));
             },
-            ended: function () use ($name): TheInvitationTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why) use ($name): TheInvitationTurnedOutToBe {
                 $this->following = null;
 
-                return new HowTheInvitationReads()->ended($name);
+                return new HowTheInvitationReads()->ended($why, $name);
             },
             refused: function (string $because) use ($name): TheInvitationTurnedOutToBe {
                 $this->following = null;

@@ -20,6 +20,7 @@ final readonly class HowLettingItGoIsGoing
         private ?ADownloadLetGo $done = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still asking the client. */
@@ -34,8 +35,14 @@ final readonly class HowLettingItGoIsGoing
         return new self(done: $report);
     }
 
-    /** The stack has no outcome for it any more. */
-    public static function ended(): self
+    /** The stack has no outcome for it any more, and says why. */
+    public static function ended(WhyTheWorkEnded $why): self
+    {
+        return new self(ending: $why);
+    }
+
+    /** The stack has no outcome for it any more, and says nothing of why. */
+    public static function noOutcome(): self
     {
         return new self();
     }
@@ -53,10 +60,10 @@ final readonly class HowLettingItGoIsGoing
      *
      * @template T of object
      *
-     * @param Closure(): T               $stillRunning
-     * @param Closure(ADownloadLetGo): T $done
-     * @param Closure(): T               $ended
-     * @param Closure(Obstacle): T       $met
+     * @param Closure(): T                 $stillRunning
+     * @param Closure(ADownloadLetGo): T   $done
+     * @param Closure(?WhyTheWorkEnded): T $ended
+     * @param Closure(Obstacle): T         $met
      *
      * @return T
      */
@@ -66,7 +73,7 @@ final readonly class HowLettingItGoIsGoing
             $this->met instanceof Obstacle => $met($this->met),
             $this->running => $stillRunning(),
             $this->done instanceof ADownloadLetGo => $done($this->done),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

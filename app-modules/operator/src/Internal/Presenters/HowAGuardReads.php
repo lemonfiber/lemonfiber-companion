@@ -9,6 +9,7 @@ use function in_array;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatTheGuardSaw;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Listed;
 use Modules\Operator\Internal\ViewModels\AFormToGuardAsShown;
 use Modules\Operator\Internal\ViewModels\HowAGuardEnded;
@@ -89,10 +90,15 @@ final readonly class HowAGuardReads
         return $this->endedAs(new HowAGuardEnded('stacks.guard.did_not_start', $said));
     }
 
-    /** It ended without seeing anything: released, or let go because nothing asked. */
-    public function ended(): HowTheGuardWent
+    /** It ended without seeing anything, and why, where the stack said. */
+    public function ended(?WhyTheWorkEnded $why): HowTheGuardWent
     {
-        return $this->endedAs(new HowAGuardEnded('stacks.guard.let_go'));
+        return $this->endedAs(new HowAGuardEnded(match ($why) {
+            WhyTheWorkEnded::Released => 'stacks.guard.released',
+            WhyTheWorkEnded::LetGo => 'stacks.guard.let_go',
+            WhyTheWorkEnded::Quiet => 'stacks.guard.quiet',
+            null => 'stacks.guard.ended',
+        }));
     }
 
     /** The stack no longer knows it. */

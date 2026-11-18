@@ -22,6 +22,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowPuttingItBackReads;
@@ -271,7 +272,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
         $held = $this->handle;
 
         if (! is_string($held)) {
-            return new HowPuttingItBackReads()->ended();
+            return new HowPuttingItBackReads()->ended(null);
         }
 
         $stack = $this->stack();
@@ -281,7 +282,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
                 stillRunning: static fn(): HowPuttingItBackWent => new HowPuttingItBackReads()->running(),
                 done: static fn(ACopyPutBack $report): HowPuttingItBackWent => new HowPuttingItBackReads()->done($report),
                 refused: static fn(ARefusalInItsWords $why): HowPuttingItBackWent => new HowPuttingItBackReads()->refused($why),
-                ended: static fn(): HowPuttingItBackWent => new HowPuttingItBackReads()->ended(),
+                ended: static fn(?WhyTheWorkEnded $why): HowPuttingItBackWent => new HowPuttingItBackReads()->ended($why),
                 met: $this->lettingGoIfRefused($stack, new HowPuttingItBackReads()->met(...)),
             ),
             notHeld: static fn(): HowPuttingItBackWent => new HowPuttingItBackReads()->signedOut(),

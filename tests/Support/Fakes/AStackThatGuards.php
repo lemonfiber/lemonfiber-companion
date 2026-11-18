@@ -16,6 +16,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 
 /**
  * A stack that guards its data location without one existing.
@@ -85,7 +86,7 @@ final class AStackThatGuards implements Guarding
     {
         $this->letGo[] = $job;
 
-        return HowTheGuardIsGoing::ended();
+        return HowTheGuardIsGoing::ended(WhyTheWorkEnded::Released);
     }
 
     /** @return list<AGuardAskedFor> every guard asked for, in order */

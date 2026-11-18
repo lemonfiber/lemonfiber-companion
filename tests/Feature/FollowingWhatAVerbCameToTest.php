@@ -117,7 +117,7 @@ it('reads the machine again once a verb it was following has ended, and not whil
     $screen->render();
     $screen->answer();
     $whileItRan = $supervising->askings();
-    $supervising->fromNowOnComingTo(HowAgreedWorkIsGoing::ended());
+    $supervising->fromNowOnComingTo(HowAgreedWorkIsGoing::noOutcome());
     $screen->whatItCameTo();
     $screen->whileItSettles();
     $screen->render();
@@ -313,7 +313,7 @@ it('names what the plan left out with what each needed, and what holds each port
 });
 
 it('says the stack has no outcome for a verb any more, rather than that it failed', function (): void {
-    $screen = TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::ended()));
+    $screen = TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::noOutcome()));
     $drawn = TheThingScreenOfTheShed::whatStartingSonarrDrew($screen);
 
     expect($screen->whatItCameTo()->stands->hasEnded())->toBeTrue()
@@ -494,7 +494,7 @@ it('does not ask after an earlier verb once a later one could not be sent', func
 });
 
 it('a verb that has finished is not polled for, and neither is a standing listing', function (): void {
-    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::ended());
+    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::noOutcome());
     $screen = TheThingScreenOfTheShed::theScreen($supervising);
 
     // The listing drawn before the verb was known to have ended is read
@@ -762,7 +762,7 @@ it('asks the question without the command where the stack would not rehearse it,
         ->and($screen->rehearsalOfTheYes)->toBeNull();
 })->with([
     'refused' => [Underway::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
-    'forgotten' => [HowAgreedWorkIsGoing::ended()],
+    'forgotten' => [HowAgreedWorkIsGoing::noOutcome()],
     'met asking after it' => [HowAgreedWorkIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
     'said to have moved, which a rehearsal cannot be' => [HowAgreedWorkIsGoing::moved(ARefusalInItsWords::said(WhatAMovedOfferSays::SUMMARY, WhatAMovedOfferSays::MEANING, WhatTheRefusalNamed::nothing()))],
 ]);
@@ -819,7 +819,7 @@ it('puts the rehearsal away with the question, whichever way it is answered', fu
 });
 
 it('puts away that a rehearsal could not be read with the question it was about', function (): void {
-    $screen = TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::ended()));
+    $screen = TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::noOutcome()));
 
     whatAskingToRestartSonarrDrew($screen);
     $unreadWhileAsked = $screen->willRun;

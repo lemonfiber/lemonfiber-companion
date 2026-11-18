@@ -20,6 +20,7 @@ use Modules\Kernel\Api\StoppingSeeding;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowLettingItGoReads;
@@ -274,7 +275,7 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
 
                 return new HowLettingItGoReads()->offering($offer);
             },
-            ended: static fn(): WhatLettingItGoWouldShow => new HowLettingItGoReads()->offerEnded(),
+            ended: static fn(?WhyTheWorkEnded $why): WhatLettingItGoWouldShow => new HowLettingItGoReads()->offerEnded($why),
             met: $this->lettingGoIfRefused($stack, new HowLettingItGoReads()->notOffered(...)),
         );
     }
@@ -285,7 +286,7 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
         $held = $this->handle;
 
         if (! is_string($held)) {
-            return new HowLettingItGoReads()->ended();
+            return new HowLettingItGoReads()->ended(null);
         }
 
         $stack = $this->stack();
@@ -294,7 +295,7 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
             held: fn(Session $session): HowLettingItGoWent => $this->stopping->whatBecameOf($stack, $session, Job::named($held))->either(
                 stillRunning: static fn(): HowLettingItGoWent => new HowLettingItGoReads()->running(),
                 done: static fn(ADownloadLetGo $report): HowLettingItGoWent => new HowLettingItGoReads()->done($report),
-                ended: static fn(): HowLettingItGoWent => new HowLettingItGoReads()->ended(),
+                ended: static fn(?WhyTheWorkEnded $why): HowLettingItGoWent => new HowLettingItGoReads()->ended($why),
                 met: $this->lettingGoIfRefused($stack, new HowLettingItGoReads()->met(...)),
             ),
             notHeld: static fn(): HowLettingItGoWent => new HowLettingItGoReads()->signedOut(),

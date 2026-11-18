@@ -188,7 +188,7 @@ it('reads work that came back unreadable as an answer it could not read', functi
 ]);
 
 it('the fake remembers each reading, each yes and each handle followed', function (): void {
-    $replacing = AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended());
+    $replacing = AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::noOutcome(), WhatBecameOfTheWork::noOutcome());
     $replacing->read(aStackWhoseCertificateIsReplaced(), theSessionACertificateIsReplacedWith());
     $replacing->replace(aStackWhoseCertificateIsReplaced(), theSessionACertificateIsReplacedWith(), theYesToReplacingTheCertificate());
     $became = $replacing->whatBecameOf(aStackWhoseCertificateIsReplaced(), theSessionACertificateIsReplacedWith(), Job::named(AStackThatReplacesItsCertificate::THE_REPLACEMENT));

@@ -326,11 +326,11 @@ it('a run still going back is its own answer', function (): void {
 });
 
 it('a run the stack no longer has a job for is ended, not unreachable and not running', function (MockResponse $forgotten): void {
-    foreach (everyWayOfPuttingARunBack($forgotten, HowPuttingARunBackIsGoing::ended()) as $which => $build) {
+    foreach (everyWayOfPuttingARunBack($forgotten, HowPuttingARunBackIsGoing::noOutcome()) as $which => $build) {
         expect(whatBecameOfPuttingARunBack($build()))->toBe('ended', $which);
     }
 })->with([
-    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'undo', 'job' => AStackThatPutsRunsBack::THE_JOB]]))],
+    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['action' => 'undo', 'job' => AStackThatPutsRunsBack::THE_JOB, 'ended' => 'let-go']]))],
     'never known' => [MockResponse::make('{"error":"no such job"}', 404)],
 ]);
 

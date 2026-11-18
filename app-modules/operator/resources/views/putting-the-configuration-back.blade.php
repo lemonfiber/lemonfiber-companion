@@ -12,6 +12,7 @@
     {{-- The stack says nothing of a job until it finishes, so the screen
          asks again on its cadence rather than drawing progress. --}}
 @elseif ($this->answer()->stands->hasEnded())
+    <x-operator::why-it-ended :stands="$this->answer()->stands" />
     {{-- Not a failure. After a yes the files may well have gone back, and
          the settings are where to look before asking for anything again. --}}
     <x-operator::emphasis>{{ __($this->answer()->words->ended) }}</x-operator::emphasis>

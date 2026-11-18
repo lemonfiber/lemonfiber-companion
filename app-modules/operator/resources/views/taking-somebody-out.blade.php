@@ -19,6 +19,7 @@
             <x-design::body>{{ __('stacks.removal.reading', ['name' => $this->answer()->name]) }}</x-design::body>
         @endif
     @elseif ($this->answer()->stands->hasEnded())
+        <x-operator::why-it-ended :stands="$this->answer()->stands" />
         {{-- Not a failure and not a refusal: the stack has no outcome for it
              any more. After a yes that is not the same as it not having run,
              and it is said as what could not be read. --}}

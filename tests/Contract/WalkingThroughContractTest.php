@@ -275,12 +275,12 @@ it('says a walk the stack no longer knows is ended, not unreachable and not runn
     $forgotten = MockResponse::make('{"error":"no such job"}', 404);
     $letGo = MockResponse::make((string) json_encode([
         'api_version' => 1,
-        'kind' => 'job',
-        'data' => ['action' => 'walkthrough', 'job' => AStackThatWalksThrough::THE_JOB],
+        'kind' => 'ended',
+        'data' => ['action' => 'walkthrough', 'job' => AStackThatWalksThrough::THE_JOB, 'ended' => 'let-go'],
     ]), 200);
 
     foreach ([$forgotten, $letGo] as $answered) {
-        foreach (everyWayOfWalkingThrough($answered, HowTheWalkthroughIsGoing::ended()) as $which => $build) {
+        foreach (everyWayOfWalkingThrough($answered, HowTheWalkthroughIsGoing::noOutcome()) as $which => $build) {
             expect(whatTheWalkBecame($build()))->toBe('ended', $which);
         }
     }

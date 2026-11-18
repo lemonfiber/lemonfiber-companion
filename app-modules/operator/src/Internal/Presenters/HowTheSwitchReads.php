@@ -10,6 +10,7 @@ use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\TheServicesNamed;
 use Modules\Kernel\Api\TheSwitch;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\TheSwitchAsShown;
 use Modules\Operator\Internal\ViewModels\TheSwitchTurnedOutToBe;
@@ -46,9 +47,9 @@ final readonly class HowTheSwitchReads
         return new TheSwitchTurnedOutToBe(WhereTheWorkStands::running());
     }
 
-    public function ended(): TheSwitchTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why): TheSwitchTurnedOutToBe
     {
-        return new TheSwitchTurnedOutToBe(WhereTheWorkStands::ended());
+        return new TheSwitchTurnedOutToBe(WhereTheWorkStands::ended($why));
     }
 
     public function refused(ARefusalInItsWords $why): TheSwitchTurnedOutToBe

@@ -15,6 +15,7 @@ use Modules\Kernel\Api\TheLineAsChanged;
 use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatTheLineRunDid;
 use Modules\Kernel\Api\WhereALiftStands;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\AClientHoldingAsShown;
 use Modules\Operator\Internal\ViewModels\ADirectionHeldAsShown;
@@ -68,9 +69,9 @@ final readonly class HowTheLineChangeReads
     }
 
     /** The stack has no outcome for it any more. */
-    public function ended(): TheLineChangeTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why): TheLineChangeTurnedOutToBe
     {
-        return new TheLineChangeTurnedOutToBe(WhereTheWorkStands::ended());
+        return new TheLineChangeTurnedOutToBe(WhereTheWorkStands::ended($why));
     }
 
     /** The stack refused it, in its own words. */

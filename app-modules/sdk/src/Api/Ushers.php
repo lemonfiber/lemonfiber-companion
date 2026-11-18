@@ -29,6 +29,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatWasFoundOfTheMembers;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatStoodInTheWayOfTheHousehold;
@@ -181,10 +182,10 @@ final readonly class Ushers implements Inviting
                 stillRunning: static fn(): WhatBecameOfTheInvitation => WhatBecameOfTheInvitation::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheInvitation
                     => WhatBecameOfTheInvitation::answered(Invitations::in($envelope)),
-                ended: static fn(): WhatBecameOfTheInvitation => WhatBecameOfTheInvitation::ended(),
+                ended: static fn(string $why): WhatBecameOfTheInvitation => WhatBecameOfTheInvitation::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return WhatBecameOfTheInvitation::ended();
+            return WhatBecameOfTheInvitation::noOutcome();
         }
     }
 

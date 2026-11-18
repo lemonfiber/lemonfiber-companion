@@ -54,6 +54,6 @@ it('takes the arm for each state, and carries the bundle, the refusal and the ob
         ->toBe('refused:The bundle still held something that reads as a credential:sonarr/config.xml line 12')
         ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::refused(ARefusalInItsWords::said('Showing a setting as it is has to be confirmed', '', WhatTheRefusalNamed::nothing()))))
         ->toBe('refused:Showing a setting as it is has to be confirmed:')
-        ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::ended()))->toBe('ended')
+        ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::noOutcome()))->toBe('ended')
         ->and(howTheBundleIsGoingReads(HowTheBundleIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

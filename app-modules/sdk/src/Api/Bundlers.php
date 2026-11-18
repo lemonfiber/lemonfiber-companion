@@ -28,6 +28,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatFilenamesShow;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -144,10 +145,10 @@ final readonly class Bundlers implements AskingForHelp
                 stillRunning: static fn(): HowTheBundleIsGoing => HowTheBundleIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheBundleIsGoing
                     => HowTheBundleIsGoing::done(TheBundle::in($envelope)),
-                ended: static fn(): HowTheBundleIsGoing => HowTheBundleIsGoing::ended(),
+                ended: static fn(string $why): HowTheBundleIsGoing => HowTheBundleIsGoing::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return HowTheBundleIsGoing::ended();
+            return HowTheBundleIsGoing::noOutcome();
         }
     }
 }

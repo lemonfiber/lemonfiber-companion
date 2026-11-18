@@ -100,6 +100,7 @@
                 <x-design::strong>{{ __('stacks.forget.way_in_went') }}</x-design::strong>
             </x-design::notice>
         @elseif ($this->howForgettingIsGoing()->stands->hasEnded())
+            <x-operator::why-it-ended :stands="$this->howForgettingIsGoing()->stands" />
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.forget.no_outcome') }}</x-design::strong>
             </x-design::notice>

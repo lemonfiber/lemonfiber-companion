@@ -43,13 +43,13 @@ final class AStackThatSaysWhatRunsOnASchedule implements RunningOnASchedule
     /** A stack whose run-and-exit services are these. */
     public static function with(TheScheduledServices $said): self
     {
-        return new self(static fn(): WhatRunsOnASchedule => WhatRunsOnASchedule::said($said), WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended());
+        return new self(static fn(): WhatRunsOnASchedule => WhatRunsOnASchedule::said($said), WhatBecameOfTheWork::noOutcome(), WhatBecameOfTheWork::noOutcome());
     }
 
     /** A stack the operator could not reach, for the reason given. */
     public static function met(Obstacle $why): self
     {
-        return new self(static fn(): WhatRunsOnASchedule => WhatRunsOnASchedule::met($why), WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended());
+        return new self(static fn(): WhatRunsOnASchedule => WhatRunsOnASchedule::met($why), WhatBecameOfTheWork::noOutcome(), WhatBecameOfTheWork::noOutcome());
     }
 
     /**

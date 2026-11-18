@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyNothingWasShared;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesWhatABundleHolds;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -293,7 +294,7 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
                 stillRunning: static fn(): HowTheBundleWent => new HowABundleReads()->running(),
                 done: fn(ABundle $bundle): HowTheBundleWent => new HowABundleReads()->done($bundle, $this->clock->now()),
                 refused: static fn(ARefusalInItsWords $why): HowTheBundleWent => new HowABundleReads()->refused($why),
-                ended: static fn(): HowTheBundleWent => new HowABundleReads()->ended(),
+                ended: static fn(?WhyTheWorkEnded $why): HowTheBundleWent => new HowABundleReads()->ended($why),
                 met: $this->lettingGoIfRefused($stack, new HowABundleReads()->met(...)),
             ),
             notHeld: static fn(): HowTheBundleWent => new HowABundleReads()->signedOut(),

@@ -176,11 +176,11 @@ it('a copy still being taken is its own answer', function (): void {
 });
 
 it('a copy the stack no longer has a job for is ended, not unreachable and not running', function (MockResponse $forgotten): void {
-    foreach (everyWayOfTakingACopy($forgotten, HowTheCopyIsGoing::ended()) as $which => $build) {
+    foreach (everyWayOfTakingACopy($forgotten, HowTheCopyIsGoing::noOutcome()) as $which => $build) {
         expect(whatBecameOfTheCopy($build()))->toBe('ended', $which);
     }
 })->with([
-    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'backup', 'job' => AStackThatTakesCopies::THE_JOB]]))],
+    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['action' => 'backup', 'job' => AStackThatTakesCopies::THE_JOB, 'ended' => 'let-go']]))],
     'never known' => [MockResponse::make('{"error":"no such job"}', 404)],
 ]);
 

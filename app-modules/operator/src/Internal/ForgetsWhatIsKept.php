@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheForgetting;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Presenters\HowForgettingReads;
 use Modules\Operator\Internal\ViewModels\TheForgettingTurnedOutToBe;
 use Native\Mobile\Attributes\Poll;
@@ -108,10 +109,10 @@ trait ForgetsWhatIsKept
 
                 return new HowForgettingReads()->answered($forgetting);
             },
-            ended: function (): TheForgettingTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why): TheForgettingTurnedOutToBe {
                 $this->forgettingFollowed = null;
 
-                return new HowForgettingReads()->ended();
+                return new HowForgettingReads()->ended($why);
             },
             refused: function (ARefusalInItsWords $why): TheForgettingTurnedOutToBe {
                 $this->forgettingFollowed = null;

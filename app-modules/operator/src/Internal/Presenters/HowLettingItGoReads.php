@@ -9,6 +9,7 @@ use Modules\Kernel\Api\HowBig;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\ASizeAsShown;
 use Modules\Operator\Internal\ViewModels\HowLettingItGoWent;
 use Modules\Operator\Internal\ViewModels\WhatLettingItGoWouldShow;
@@ -43,9 +44,9 @@ final readonly class HowLettingItGoReads
     }
 
     /** The stack has no outcome for the asking any more, and asking again starts afresh. */
-    public function offerEnded(): WhatLettingItGoWouldShow
+    public function offerEnded(?WhyTheWorkEnded $why): WhatLettingItGoWouldShow
     {
-        return $this->nothingOffered(WhereTheWorkStands::ended());
+        return $this->nothingOffered(WhereTheWorkStands::ended($why));
     }
 
     /** Asking, or reading what it came to, met this instead. */
@@ -73,9 +74,9 @@ final readonly class HowLettingItGoReads
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
-    public function ended(): HowLettingItGoWent
+    public function ended(?WhyTheWorkEnded $why): HowLettingItGoWent
     {
-        return $this->following(WhereTheWorkStands::ended());
+        return $this->following(WhereTheWorkStands::ended($why));
     }
 
     /** Stopping, or asking after it, met this instead. */

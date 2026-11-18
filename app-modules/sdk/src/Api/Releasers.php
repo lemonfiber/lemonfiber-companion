@@ -26,6 +26,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StoppingSeeding;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -113,10 +114,10 @@ final readonly class Releasers implements StoppingSeeding
                 stillRunning: static fn(): HowTheOfferToLetGoIsGoing => HowTheOfferToLetGoIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheOfferToLetGoIsGoing
                     => HowTheOfferToLetGoIsGoing::offering(WhatLettingItGoComesTo::offerIn($envelope)),
-                ended: static fn(): HowTheOfferToLetGoIsGoing => HowTheOfferToLetGoIsGoing::ended(),
+                ended: static fn(string $why): HowTheOfferToLetGoIsGoing => HowTheOfferToLetGoIsGoing::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return HowTheOfferToLetGoIsGoing::ended();
+            return HowTheOfferToLetGoIsGoing::noOutcome();
         }
     }
 
@@ -131,10 +132,10 @@ final readonly class Releasers implements StoppingSeeding
                 stillRunning: static fn(): HowLettingItGoIsGoing => HowLettingItGoIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowLettingItGoIsGoing
                     => HowLettingItGoIsGoing::done(WhatLettingItGoComesTo::goneIn($envelope)),
-                ended: static fn(): HowLettingItGoIsGoing => HowLettingItGoIsGoing::ended(),
+                ended: static fn(string $why): HowLettingItGoIsGoing => HowLettingItGoIsGoing::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return HowLettingItGoIsGoing::ended();
+            return HowLettingItGoIsGoing::noOutcome();
         }
     }
 }

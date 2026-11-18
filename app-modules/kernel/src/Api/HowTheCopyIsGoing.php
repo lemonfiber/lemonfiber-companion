@@ -21,6 +21,7 @@ final readonly class HowTheCopyIsGoing
         private ?ACopyTaken $done = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still taking it. */
@@ -35,8 +36,14 @@ final readonly class HowTheCopyIsGoing
         return new self(done: $report);
     }
 
-    /** The stack has no outcome for that copy any more. */
-    public static function ended(): self
+    /** The stack has no outcome for it any more, and says why. */
+    public static function ended(WhyTheWorkEnded $why): self
+    {
+        return new self(ending: $why);
+    }
+
+    /** The stack has no outcome for it any more, and says nothing of why. */
+    public static function noOutcome(): self
     {
         return new self();
     }
@@ -54,10 +61,10 @@ final readonly class HowTheCopyIsGoing
      *
      * @template T of object
      *
-     * @param Closure(): T           $stillRunning
-     * @param Closure(ACopyTaken): T $done
-     * @param Closure(): T           $ended
-     * @param Closure(Obstacle): T   $met
+     * @param Closure(): T                 $stillRunning
+     * @param Closure(ACopyTaken): T       $done
+     * @param Closure(?WhyTheWorkEnded): T $ended
+     * @param Closure(Obstacle): T         $met
      *
      * @return T
      */
@@ -67,7 +74,7 @@ final readonly class HowTheCopyIsGoing
             $this->met instanceof Obstacle => $met($this->met),
             $this->running => $stillRunning(),
             $this->done instanceof ACopyTaken => $done($this->done),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

@@ -299,7 +299,7 @@ function aRunAtOnceFollowed(MockResponse $finished): string
 
 it('comes away from a run at once with the job the stack named, and sends `run` with `now` for that service alone', function (): void {
     $scheduler = aSchedulerAnswered(aRunAtOnceTakenOn(AStackThatSaysWhatRunsOnASchedule::THE_RUN));
-    $fake = AStackThatSaysWhatRunsOnASchedule::with(theSameSchedule())->running(WhatBecameOfTheWork::ended());
+    $fake = AStackThatSaysWhatRunsOnASchedule::with(theSameSchedule())->running(WhatBecameOfTheWork::noOutcome());
 
     $said = [
         'the adapter' => whatRunningItNowCameTo($scheduler->runNow(aStackWithAScheduledService(), Session::of('a-session-not-a-secret'), ServiceId::called('unpackerr'))),

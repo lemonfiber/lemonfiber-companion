@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatItReaches;
 use Modules\Kernel\Api\WhatTakingItOffComesTo;
 use Modules\Kernel\Api\WhatWasLeftBehind;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\ASizeAsShown;
 use Modules\Operator\Internal\ViewModels\OneLineItReachesAsShown;
@@ -58,9 +59,9 @@ final readonly class HowTakingItOffReads
     }
 
     /** The stack has no outcome for the yes any more, which is not the same as it not having happened. */
-    public function ended(bool $endsThisSession): TakingItOffTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why, bool $endsThisSession): TakingItOffTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::ended(), wasAgreed: true, endsThisSession: $endsThisSession);
+        return $this->without(WhereTheWorkStands::ended($why), wasAgreed: true, endsThisSession: $endsThisSession);
     }
 
     /** The stack refused the yes, and this is its reason. */

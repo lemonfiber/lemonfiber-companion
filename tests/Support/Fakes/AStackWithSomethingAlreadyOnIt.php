@@ -132,6 +132,6 @@ final class AStackWithSomethingAlreadyOnIt implements MovingIn
     /** The next answer in line, or the stack having no outcome once they have all been given. */
     private function next(): WhatBecameOfTheMove
     {
-        return array_shift($this->moves) ?? WhatBecameOfTheMove::ended();
+        return array_shift($this->moves) ?? WhatBecameOfTheMove::noOutcome();
     }
 }

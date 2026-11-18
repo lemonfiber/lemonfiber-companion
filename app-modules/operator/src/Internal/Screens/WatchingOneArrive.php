@@ -25,6 +25,7 @@ use Modules\Kernel\Api\TheGlossary;
 use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToWalk;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Kernel\Api\WorkLeftRunning;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\AwaitsAnOutcome;
@@ -289,7 +290,7 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
             held: fn(Session $session): WhatTheWalkthroughTurnedOutToBe => $this->walking->whatBecameOf($stack, $session, Job::named($took))->either(
                 stillRunning: static fn(): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->running(),
                 done: static fn(AWalkthrough $report): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->done($report),
-                ended: fn(): WhatTheWalkthroughTurnedOutToBe => $this->endedWithNoOutcome($stack),
+                ended: fn(?WhyTheWorkEnded $why): WhatTheWalkthroughTurnedOutToBe => $this->endedWithNoOutcome($stack, $why),
                 met: $this->lettingGoIfRefused($stack, new HowAWalkthroughReads()->met(...)),
             ),
             notHeld: static fn(): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->signedOut(),
@@ -302,11 +303,11 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
      * Said on this screen, and let go of on the device, so the next opening
      * offers a new walk rather than the same missing outcome.
      */
-    private function endedWithNoOutcome(Stack $stack): WhatTheWalkthroughTurnedOutToBe
+    private function endedWithNoOutcome(Stack $stack, ?WhyTheWorkEnded $why): WhatTheWalkthroughTurnedOutToBe
     {
         $this->leftRunning->forget($stack->id(), KindOfWork::Walkthrough);
 
-        return new HowAWalkthroughReads()->ended();
+        return new HowAWalkthroughReads()->ended($why);
     }
 
     /**

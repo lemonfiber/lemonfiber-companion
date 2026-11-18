@@ -503,7 +503,7 @@ it('names the trees an existing setup\'s copy put back', function (): void {
 });
 
 it('says a restore the stack has no outcome for is not known, rather than failed', function (): void {
-    $screen = thePuttingBackScreen(AStackThatPutsCopiesBack::listing(aListingOfTheCopy(toTheNewRoot()), HowPuttingItBackIsGoing::ended()));
+    $screen = thePuttingBackScreen(AStackThatPutsCopiesBack::listing(aListingOfTheCopy(toTheNewRoot()), HowPuttingItBackIsGoing::noOutcome()));
     $screen->answer();
     $screen->agree();
     $screen->whileItRuns();

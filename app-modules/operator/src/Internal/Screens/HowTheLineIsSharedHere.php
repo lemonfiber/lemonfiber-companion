@@ -26,6 +26,7 @@ use Modules\Kernel\Api\TheLineAsChanged;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheLineRunDid;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesHowTheLineIsShared;
 use Modules\Operator\Internal\LooksAgainWhileItMoves;
@@ -254,10 +255,10 @@ final class HowTheLineIsSharedHere extends NativeComponent implements AwaitsAnOu
 
                 return new HowTheLineChangeReads()->answered($report, $this->clock->now());
             },
-            ended: function (): TheLineChangeTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why): TheLineChangeTurnedOutToBe {
                 $this->following = null;
 
-                return new HowTheLineChangeReads()->ended();
+                return new HowTheLineChangeReads()->ended($why);
             },
             refused: function (ARefusalInItsWords $why): TheLineChangeTurnedOutToBe {
                 $this->following = null;

@@ -74,6 +74,7 @@
     />
     <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 @elseif ($this->answer()->stands->hasEnded())
+    <x-operator::why-it-ended :stands="$this->answer()->stands" />
     {{-- Not a failure: the stack no longer says what became of it. --}}
     <x-design::notice tone="unknown">
         <x-design::strong>{{ __('stacks.help.no_outcome') }}</x-design::strong>

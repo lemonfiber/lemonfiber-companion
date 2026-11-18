@@ -478,7 +478,7 @@ it('says nothing went back where the stack put nothing back', function (): void 
 });
 
 it('says a run the stack has no outcome for is not known, rather than failed', function (): void {
-    $screen = aRunAgreedToAndAskedAfter(HowPuttingARunBackIsGoing::ended());
+    $screen = aRunAgreedToAndAskedAfter(HowPuttingARunBackIsGoing::noOutcome());
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect(everythingPuttingTheRunBackShows($screen->done()))->toBe(nothingReportedOfTheRun(['hasEnded' => true]))

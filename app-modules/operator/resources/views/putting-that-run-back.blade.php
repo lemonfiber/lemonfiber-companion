@@ -33,6 +33,7 @@
         <x-design::body>{{ __('stacks.run_back.refused_same_answer') }}</x-design::body>
         <x-operator::action :label="__('stacks.record.road_in')" :goes="$this->goes()->to(AStacksScreen::Record)" />
     @elseif ($this->done()->stands->hasEnded())
+        <x-operator::why-it-ended :stands="$this->done()->stands" />
         {{-- Not a failure: it may well have gone back, and the record is where
              to look. --}}
         <x-operator::emphasis>{{ __('stacks.run_back.no_outcome') }}</x-operator::emphasis>

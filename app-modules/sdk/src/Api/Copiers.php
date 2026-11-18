@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingCopies;
 use Modules\Kernel\Api\Underway;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -99,10 +100,10 @@ final readonly class Copiers implements TakingCopies
                 stillRunning: static fn(): HowTheCopyIsGoing => HowTheCopyIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheCopyIsGoing
                     => HowTheCopyIsGoing::done(TheCopyTaken::in($envelope)),
-                ended: static fn(): HowTheCopyIsGoing => HowTheCopyIsGoing::ended(),
+                ended: static fn(string $why): HowTheCopyIsGoing => HowTheCopyIsGoing::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return HowTheCopyIsGoing::ended();
+            return HowTheCopyIsGoing::noOutcome();
         }
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Lemonfiber\Sdk\Admission;
 use Lemonfiber\Sdk\Generated\Kind;
 use Lemonfiber\Sdk\Http\AdmissionRequest;
+use Lemonfiber\Sdk\JobStanding;
 use Modules\Dx\Internal\WhatTheContractDeclares;
 use Tests\Support\Tree;
 use Tests\Support\WhatTheReadersRead;
@@ -50,14 +51,17 @@ const OFFERED = [
  *
  * Signing in is one: the door the SDK opens sends a request that reads
  * `AdmissionEnvelope` and hands back a session, so no reader here opens it and
- * `OFFERED` cannot hold it. Each entry names the SDK class this app uses and
- * the SDK class that reads the envelope, and is held to the second reading it,
- * the first sending it, and this app using the first.
+ * `OFFERED` cannot hold it. Work that ended before it finished is another: the
+ * standing the SDK reads hands why to the arm this app gives it. Each entry
+ * names the SDK class this app uses and the SDK class that reads the kind, and
+ * is held to the second reading it, the first sending it where they differ, and
+ * this app using the first.
  *
  * @var array<string, array{class-string, class-string}>
  */
 const THROUGH_THE_SDK = [
     'Admission' => [Admission::class, AdmissionRequest::class],
+    'Ended' => [JobStanding::class, JobStanding::class],
 ];
 
 /**
@@ -95,7 +99,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Certificate', 'Ended', 'InFlight', 'Logs', 'MintedKey', 'Password', 'Play', 'PluginClaims', 'PluginConformance', 'PluginProvenance', 'PluginRecording', 'Served', 'Settled', 'SignInCode', 'WalkthroughOffer',
+    'Certificate', 'InFlight', 'Logs', 'MintedKey', 'Password', 'Play', 'PluginClaims', 'PluginConformance', 'PluginProvenance', 'PluginRecording', 'Served', 'Settled', 'SignInCode', 'WalkthroughOffer',
 ];
 
 it('every kind the stack offers has been looked at', function (): void {
@@ -246,8 +250,8 @@ it('holds every kind offered through the SDK to a class that reads it, used here
         $reads = (string) file_get_contents((string) new ReflectionClass($reader)->getFileName());
         $sends = (string) file_get_contents((string) new ReflectionClass($used)->getFileName());
 
-        expect($reads)->toContain(sprintf('%sEnvelope::in(', $kind))
-            ->and($sends)->toContain(sprintf('new %s(', new ReflectionClass($reader)->getShortName()))
+        expect(str_contains($reads, sprintf('%sEnvelope::in(', $kind)) || str_contains($reads, sprintf('Kind::%s->value', $kind)))->toBeTrue($kind)
+            ->and($used === $reader || str_contains($sends, sprintf('new %s(', new ReflectionClass($reader)->getShortName())))->toBeTrue($kind)
             ->and($source)->toContain(sprintf('use %s;', $used));
     }
 });

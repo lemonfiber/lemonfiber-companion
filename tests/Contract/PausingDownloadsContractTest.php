@@ -265,11 +265,11 @@ it('a job still running is its own answer', function (): void {
 });
 
 it('a job the stack no longer has is ended, not unreachable and not running', function (MockResponse $forgotten): void {
-    foreach (everyWayOfPausing($forgotten, HowPausingIsGoing::ended(), HowPausingIsGoing::ended()) as $which => $build) {
+    foreach (everyWayOfPausing($forgotten, HowPausingIsGoing::noOutcome(), HowPausingIsGoing::noOutcome()) as $which => $build) {
         expect(whatBecameOfPausing($build()))->toBe('ended', $which);
     }
 })->with([
-    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'downloads-pause', 'job' => AStackThatPausesDownloads::THE_REHEARSAL]]))],
+    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['action' => 'downloads-pause', 'job' => AStackThatPausesDownloads::THE_REHEARSAL, 'ended' => 'let-go']]))],
     'never known' => [MockResponse::make('{"error":"no such job"}', 404)],
 ]);
 

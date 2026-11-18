@@ -158,6 +158,7 @@
                     <x-design::body>{{ __('health.came_to.running') }}</x-design::body>
                 @endif
             @elseif ($this->whatItCameTo()->stands->hasEnded())
+                <x-operator::why-it-ended :stands="$this->whatItCameTo()->stands" />
                 {{-- Not a failure: it may well have worked, and the listing is
                      where to look. --}}
                 <x-design::body>{{ __('health.came_to.no_outcome') }}</x-design::body>

@@ -90,7 +90,7 @@ it('holds nothing of a report in every state that has none', function (): void {
         ->and($reads->signedOut())->toEqual(aVerbWithNoReport(WhereTheWorkStands::signedOut()))
         ->and($reads->met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))->toEqual(aVerbWithNoReport(WhereTheWorkStands::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))
         ->and($reads->running())->toEqual(aVerbWithNoReport(WhereTheWorkStands::running()))
-        ->and($reads->ended())->toEqual(aVerbWithNoReport(WhereTheWorkStands::ended()));
+        ->and($reads->ended(null))->toEqual(aVerbWithNoReport(WhereTheWorkStands::ended(null)));
 });
 
 it('draws a restart that left one behind whole, naming it with where it stood', function (): void {

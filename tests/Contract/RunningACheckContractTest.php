@@ -122,7 +122,7 @@ function whatRunningCameTo(WhatBecameOfTheWork $became): string
 }
 
 it('comes away from a run with the job the stack named, sending diagnose narrowed to the check with the checks that disturb included', function (): void {
-    foreach (['the fake' => AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()), 'the adapter' => aCheckRunnerAnswered(aCheckRunTakenOn(AStackThatRunsChecks::THE_RUN))] as $which => $running) {
+    foreach (['the fake' => AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome()), 'the adapter' => aCheckRunnerAnswered(aCheckRunTakenOn(AStackThatRunsChecks::THE_RUN))] as $which => $running) {
         expect(whatRunningCameTo($running->run(aStackWhoseCheckIsRun(), Session::of('a-session-not-a-secret'), theKillswitchCheck())))
             ->toBe(sprintf('following %s', AStackThatRunsChecks::THE_RUN), $which);
     }
@@ -134,7 +134,7 @@ it('comes away from a run with the job the stack named, sending diagnose narrowe
 });
 
 it('comes away from a run of every check, or of a family, with the job the stack named, sending diagnose with the checks that disturb included', function (WhatARunCovers $covers, array $body): void {
-    foreach (['the fake' => AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()), 'the adapter' => aCheckRunnerAnswered(aCheckRunTakenOn(AStackThatRunsChecks::THE_RUN))] as $which => $running) {
+    foreach (['the fake' => AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome()), 'the adapter' => aCheckRunnerAnswered(aCheckRunTakenOn(AStackThatRunsChecks::THE_RUN))] as $which => $running) {
         expect(whatRunningCameTo($running->runEvery(aStackWhoseCheckIsRun(), Session::of('a-session-not-a-secret'), $covers)))
             ->toBe(sprintf('following %s', AStackThatRunsChecks::THE_RUN), $which);
     }
@@ -176,7 +176,7 @@ it('comes away with the obstacle where the stack could not be asked or read', fu
 ]);
 
 it('the fake remembers each run and each handle followed', function (): void {
-    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended());
+    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome());
     $running->run(aStackWhoseCheckIsRun(), Session::of('a-session-not-a-secret'), theKillswitchCheck());
     $running->whatBecameOf(aStackWhoseCheckIsRun(), Session::of('a-session-not-a-secret'), Job::named(AStackThatRunsChecks::THE_RUN));
 

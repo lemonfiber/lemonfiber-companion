@@ -14,6 +14,7 @@ use Modules\Kernel\Api\TheRecords;
 use Modules\Kernel\Api\TheReplacement;
 use Modules\Kernel\Api\TheStandingBeside;
 use Modules\Kernel\Api\WhatWasNamed;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\ALineOfTheSurvey;
 use Modules\Operator\Internal\ViewModels\AMoveAsShown;
 use Modules\Operator\Internal\ViewModels\TheMoveTurnedOutToBe;
@@ -60,9 +61,9 @@ final readonly class HowAMoveReads
     }
 
     /** The stack has no outcome for it any more, which is not the same as refusing it. */
-    public function ended(string $mode): TheMoveTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why, string $mode): TheMoveTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::ended(), $mode);
+        return $this->without(WhereTheWorkStands::ended($why), $mode);
     }
 
     /** The stack turned the request down, and this is its reason. */

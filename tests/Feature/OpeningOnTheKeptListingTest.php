@@ -108,7 +108,7 @@ function theAtticsServices(AStackThatSupervises $stack, KeepingWhatItRuns $kept,
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
         $kept,
-        AStackThatSwitches::sayingAtOnce(WhatBecameOfTheWork::ended()),
+        AStackThatSwitches::sayingAtOnce(WhatBecameOfTheWork::noOutcome()),
     );
     $screen->setParams(['stack' => $attic->id()->stored()]);
 

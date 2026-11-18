@@ -27,6 +27,7 @@
         @if ($this->howItIsGoing()->stands->isWorking())
             <x-design::standing :said="__('health.disturbs.working')" tone="working" />
         @elseif ($this->howItIsGoing()->stands->hasEnded())
+            <x-operator::why-it-ended :stands="$this->howItIsGoing()->stands" />
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('health.disturbs.no_outcome') }}</x-design::strong>
             </x-design::notice>

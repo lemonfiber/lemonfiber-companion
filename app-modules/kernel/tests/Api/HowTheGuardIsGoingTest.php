@@ -37,7 +37,7 @@ it('each way a guard stands takes its own arm, and ended and unknown are two', f
     expect(whichArmAGuardTakes(HowTheGuardIsGoing::stillGuarding()))->toBe('guarding')
         ->and(whichArmAGuardTakes(HowTheGuardIsGoing::sawItGo($saw)))->toBe('saw it go:not stopped')
         ->and(whichArmAGuardTakes(HowTheGuardIsGoing::refused('Nothing to guard.')))->toBe('refused:Nothing to guard.')
-        ->and(whichArmAGuardTakes(HowTheGuardIsGoing::ended()))->toBe('ended')
+        ->and(whichArmAGuardTakes(HowTheGuardIsGoing::noOutcome()))->toBe('ended')
         ->and(whichArmAGuardTakes(HowTheGuardIsGoing::unknown()))->toBe('unknown')
         ->and(whichArmAGuardTakes(HowTheGuardIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

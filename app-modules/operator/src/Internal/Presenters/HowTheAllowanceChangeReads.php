@@ -8,6 +8,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheAllowanceAsChanged;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\TheAllowanceChangeAsShown;
 use Modules\Operator\Internal\ViewModels\TheAllowanceChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
@@ -48,9 +49,9 @@ final readonly class HowTheAllowanceChangeReads
     }
 
     /** The stack has no outcome for it any more. */
-    public function ended(): TheAllowanceChangeTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why): TheAllowanceChangeTurnedOutToBe
     {
-        return new TheAllowanceChangeTurnedOutToBe(WhereTheWorkStands::ended());
+        return new TheAllowanceChangeTurnedOutToBe(WhereTheWorkStands::ended($why));
     }
 
     /** The stack refused it, in its own words. */

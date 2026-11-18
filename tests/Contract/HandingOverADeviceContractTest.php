@@ -202,7 +202,7 @@ function aHandoffTakenOn(): MockResponse
 }
 
 it('comes away from asking with the job the stack named', function (): void {
-    foreach (everyWayOfHandingADeviceOver(aHandoffTakenOn(), WhatBecameOfTheHandoff::ended()) as $which => $build) {
+    foreach (everyWayOfHandingADeviceOver(aHandoffTakenOn(), WhatBecameOfTheHandoff::noOutcome()) as $which => $build) {
         expect(howTheHandoffWasAskedFor($build()))->toBe(sprintf('following %s', AStackThatHandsDevicesOver::THE_JOB), $which);
     }
 });
@@ -311,14 +311,14 @@ it('an asking answered with a handle it cannot follow is an answer it could not 
 });
 
 it('a hand-off still being worked out is its own answer, and one the stack forgot is ended', function (MockResponse $answered, string $said): void {
-    $became = $said === 'ended' ? WhatBecameOfTheHandoff::ended() : WhatBecameOfTheHandoff::underway(Job::named(AStackThatHandsDevicesOver::THE_JOB));
+    $became = $said === 'ended' ? WhatBecameOfTheHandoff::noOutcome() : WhatBecameOfTheHandoff::underway(Job::named(AStackThatHandsDevicesOver::THE_JOB));
 
     foreach (everyWayOfHandingADeviceOver($answered, $became) as $which => $build) {
         expect(whatBecameOfTheHandoff($build()))->toBe($said, $which);
     }
 })->with([
     'still running' => [aHandoffTakenOn(), sprintf('following %s', AStackThatHandsDevicesOver::THE_JOB)],
-    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'household-handoff', 'job' => AStackThatHandsDevicesOver::THE_JOB]])), 'ended'],
+    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['action' => 'household-handoff', 'job' => AStackThatHandsDevicesOver::THE_JOB, 'ended' => 'let-go']])), 'ended'],
     'never known' => [MockResponse::make('{"error":"no such job"}', 404), 'ended'],
 ]);
 
@@ -356,7 +356,7 @@ it('a payload that is not a hand-off at all is an answer it could not read', fun
 });
 
 it('the fake names each person asked for and each handle asked after', function (): void {
-    $handing = AStackThatHandsDevicesOver::whichTookItOn(WhatBecameOfTheHandoff::ended());
+    $handing = AStackThatHandsDevicesOver::whichTookItOn(WhatBecameOfTheHandoff::noOutcome());
     howTheHandoffWasAskedFor($handing);
     howTheHandoffWasAskedFor($handing);
     whatBecameOfTheHandoff($handing);

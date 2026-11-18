@@ -9,6 +9,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\WhatARevokeCameTo;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Listed;
 use Modules\Operator\Internal\ViewModels\ACredentialRevokeAsShown;
 use Modules\Operator\Internal\ViewModels\TheCredentialRevokeTurnedOutToBe;
@@ -38,9 +39,9 @@ final readonly class HowACredentialRevokeReads
     }
 
     /** The stack has no outcome for it any more. */
-    public function ended(): TheCredentialRevokeTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why): TheCredentialRevokeTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::ended());
+        return $this->without(WhereTheWorkStands::ended($why));
     }
 
     /** The stack refused it, in its own words. */

@@ -23,6 +23,7 @@ use Modules\Kernel\Api\PuttingARunBack;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -93,10 +94,10 @@ final readonly class Reversers implements PuttingARunBack
                 stillRunning: static fn(): HowPuttingARunBackIsGoing => HowPuttingARunBackIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowPuttingARunBackIsGoing
                     => HowPuttingARunBackIsGoing::done(TheRunPutBack::in($envelope)),
-                ended: static fn(): HowPuttingARunBackIsGoing => HowPuttingARunBackIsGoing::ended(),
+                ended: static fn(string $why): HowPuttingARunBackIsGoing => HowPuttingARunBackIsGoing::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return HowPuttingARunBackIsGoing::ended();
+            return HowPuttingARunBackIsGoing::noOutcome();
         }
     }
 }

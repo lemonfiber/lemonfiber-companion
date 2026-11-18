@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhereTheDataGoes;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\ARelocationAsShown;
@@ -75,9 +76,9 @@ final readonly class HowPuttingItBackReads
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
-    public function ended(): HowPuttingItBackWent
+    public function ended(?WhyTheWorkEnded $why): HowPuttingItBackWent
     {
-        return $this->following(WhereTheWorkStands::ended());
+        return $this->following(WhereTheWorkStands::ended($why));
     }
 
     /** The stack did not finish putting it back, and said why in its own words. */

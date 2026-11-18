@@ -44,6 +44,6 @@ it('says each of its four states through its own arm', function (): void {
 
     expect(whichWayItIsGoing(HowTheWalkthroughIsGoing::stillRunning()))->toBe('running')
         ->and(whichWayItIsGoing(HowTheWalkthroughIsGoing::done($walk)))->toBe('done:complete')
-        ->and(whichWayItIsGoing(HowTheWalkthroughIsGoing::ended()))->toBe('ended')
+        ->and(whichWayItIsGoing(HowTheWalkthroughIsGoing::noOutcome()))->toBe('ended')
         ->and(whichWayItIsGoing(HowTheWalkthroughIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('met:StackDidNotAnswer');
 });

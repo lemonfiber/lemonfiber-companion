@@ -141,7 +141,7 @@ it('sends no yes without the list on the screen', function (): void {
     $forgetting = aStackThatListsThenRemoves();
     theScreenThatForgets($forgetting)->forgetEverything();
 
-    $notAListing = AStackThatForgets::answering(WhatBecameOfTheWork::answered(TheForgetting::said(whatWouldGoFromTheLoft(), WhereForgettingGot::notAsked())), WhatBecameOfTheWork::ended());
+    $notAListing = AStackThatForgets::answering(WhatBecameOfTheWork::answered(TheForgetting::said(whatWouldGoFromTheLoft(), WhereForgettingGot::notAsked())), WhatBecameOfTheWork::noOutcome());
     $screen = theListShownToForget($notAListing);
     $screen->forgetEverything();
 
@@ -177,8 +177,8 @@ it('says the session ended where it went while what would go was asked', functio
 
 it('draws a refusal in the stack\'s own words, an outcome the stack no longer has, and what stood in the way before a yes', function (): void {
     $why = ARefusalInItsWords::said('this run cannot say where lemonfiber keeps its own files', '', WhatTheRefusalNamed::nothing(), 'Run this as the account that installed lemonfiber');
-    $refused = theListShownToForget(AStackThatForgets::answering(WhatBecameOfTheWork::refused($why), WhatBecameOfTheWork::ended()));
-    $ended = theListShownToForget(AStackThatForgets::answering(WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended()));
+    $refused = theListShownToForget(AStackThatForgets::answering(WhatBecameOfTheWork::refused($why), WhatBecameOfTheWork::noOutcome()));
+    $ended = theListShownToForget(AStackThatForgets::answering(WhatBecameOfTheWork::noOutcome(), WhatBecameOfTheWork::noOutcome()));
     $met = theScreenThatForgets(AStackThatForgets::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
     $met->whatWouldGo();
 

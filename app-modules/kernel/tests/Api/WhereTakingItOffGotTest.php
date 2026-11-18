@@ -82,7 +82,7 @@ it('answers on the arm for where it got, and is a reading only when surveyed', f
 it('answers the work on the arm for where it is', function (): void {
     expect(theArmTheUninstallWorkIsOn(WhatBecameOfTheUninstall::underway(Job::named('j-1'))))->toBe('underway j-1')
         ->and(theArmTheUninstallWorkIsOn(WhatBecameOfTheUninstall::answered(aReadingOfStopping())))->toBe('answered stop-0')
-        ->and(theArmTheUninstallWorkIsOn(WhatBecameOfTheUninstall::ended()))->toBe('ended')
+        ->and(theArmTheUninstallWorkIsOn(WhatBecameOfTheUninstall::noOutcome()))->toBe('ended')
         ->and(theArmTheUninstallWorkIsOn(WhatBecameOfTheUninstall::refused('No')))->toBe('refused No')
         ->and(theArmTheUninstallWorkIsOn(WhatBecameOfTheUninstall::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met %s', KindOfObstacle::StackDidNotAnswer->value))
         ->and(fn(): WhatBecameOfTheUninstall => WhatBecameOfTheUninstall::refused(' '))->toThrow(UninstallSaysNothing::class, 'its `reason` blank');

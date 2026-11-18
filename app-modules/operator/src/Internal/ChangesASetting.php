@@ -24,6 +24,7 @@ use Modules\Kernel\Api\TheServicesSettings;
 use Modules\Kernel\Api\TheSettingAsChanged;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Presenters\HowASettingChangeReads;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
@@ -313,10 +314,10 @@ trait ChangesASetting
 
                 return new HowASettingChangeReads()->answered($report);
             },
-            ended: function (): TheSettingChangeTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why): TheSettingChangeTurnedOutToBe {
                 $this->following = null;
 
-                return new HowASettingChangeReads()->ended();
+                return new HowASettingChangeReads()->ended($why);
             },
             refused: function (ARefusalInItsWords $why): TheSettingChangeTurnedOutToBe {
                 $this->following = null;

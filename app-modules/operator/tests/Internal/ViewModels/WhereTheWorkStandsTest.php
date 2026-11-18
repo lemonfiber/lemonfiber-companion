@@ -16,7 +16,7 @@ it('says of each step whether it was asked, is running or ended, and whether the
 })->with([
     'not asked' => [WhereTheWorkStands::notAsked(), [true, false, false, false]],
     'running' => [WhereTheWorkStands::running(), [true, true, true, false]],
-    'ended' => [WhereTheWorkStands::ended(), [true, true, false, true]],
+    'ended' => [WhereTheWorkStands::ended(null), [true, true, false, true]],
     'answered' => [WhereTheWorkStands::answered(), [true, true, false, false]],
     'signed out' => [WhereTheWorkStands::signedOut(), [false, true, false, false]],
     'met' => [WhereTheWorkStands::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), [false, true, false, false]],

@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatRunningItNowCameTo;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Presenters\HowTheRunReads;
 use Modules\Operator\Internal\Presenters\HowTheScheduleReads;
 use Modules\Operator\Internal\ViewModels\TheRunTurnedOutToBe;
@@ -146,10 +147,10 @@ trait RunsOneNow
 
                 return new HowTheRunReads()->answered();
             },
-            ended: function (): TheRunTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why): TheRunTurnedOutToBe {
                 $this->runFollowed = null;
 
-                return new HowTheRunReads()->ended();
+                return new HowTheRunReads()->ended($why);
             },
             refused: function (ARefusalInItsWords $why): TheRunTurnedOutToBe {
                 $this->runFollowed = null;

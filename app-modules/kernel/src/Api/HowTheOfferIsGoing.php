@@ -46,6 +46,7 @@ final readonly class HowTheOfferIsGoing
         private ?Offer $offered = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still working out what it would do. */
@@ -60,15 +61,14 @@ final readonly class HowTheOfferIsGoing
         return new self(offered: $offer);
     }
 
-    /**
-     * The stack has no outcome for that job any more.
-     *
-     * Not a failure and not an answer. The remedy is to ask again, which is a
-     * thing the operator does rather than something this app should do on their
-     * behalf — a screen is kept from being a poller, and a job that
-     * ended is exactly where an automatic retry becomes one.
-     */
-    public static function ended(): self
+    /** The stack has no outcome for it any more, and says why. */
+    public static function ended(WhyTheWorkEnded $why): self
+    {
+        return new self(ending: $why);
+    }
+
+    /** The stack has no outcome for it any more, and says nothing of why. */
+    public static function noOutcome(): self
     {
         return new self();
     }
@@ -90,10 +90,10 @@ final readonly class HowTheOfferIsGoing
      * @template TEnded of object
      * @template TMet of object
      *
-     * @param Closure(): TRunning     $stillRunning
-     * @param Closure(Offer): TOffered $offering
-     * @param Closure(): TEnded       $ended
-     * @param Closure(Obstacle): TMet $met
+     * @param Closure(): TRunning               $stillRunning
+     * @param Closure(Offer): TOffered          $offering
+     * @param Closure(?WhyTheWorkEnded): TEnded $ended
+     * @param Closure(Obstacle): TMet           $met
      *
      * @return TRunning|TOffered|TEnded|TMet
      */
@@ -108,7 +108,7 @@ final readonly class HowTheOfferIsGoing
             $this->met instanceof Obstacle => $met($this->met),
             $this->running => $stillRunning(),
             $this->offered instanceof Offer => $offering($this->offered),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

@@ -24,6 +24,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheSurvey;
 use Modules\Kernel\Api\WhatBecameOfTheMove;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAMoveReads;
@@ -306,10 +307,10 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
 
                 return new HowAMoveReads()->answered($move);
             },
-            ended: function () use ($mode): TheMoveTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why) use ($mode): TheMoveTurnedOutToBe {
                 $this->following = null;
 
-                return new HowAMoveReads()->ended($mode);
+                return new HowAMoveReads()->ended($why, $mode);
             },
             refused: function (string $because) use ($mode): TheMoveTurnedOutToBe {
                 $this->following = null;

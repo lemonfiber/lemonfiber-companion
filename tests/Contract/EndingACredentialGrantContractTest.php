@@ -191,7 +191,7 @@ it('reads work that came back unreadable as an answer it could not read', functi
 ]);
 
 it('the fake remembers each reading, each yes and each handle followed', function (): void {
-    $ending = AStackThatEndsGrants::answering(WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended());
+    $ending = AStackThatEndsGrants::answering(WhatBecameOfTheWork::noOutcome(), WhatBecameOfTheWork::noOutcome());
     $ending->read(aStackWhoseGrantIsEnded(), theSessionAGrantIsEndedWith(), thePlexTokensGrant());
     $ending->end(aStackWhoseGrantIsEnded(), theSessionAGrantIsEndedWith(), theYesToEndingThePlexTokensGrant());
     $became = $ending->whatBecameOf(aStackWhoseGrantIsEnded(), theSessionAGrantIsEndedWith(), Job::named(AStackThatEndsGrants::THE_END));

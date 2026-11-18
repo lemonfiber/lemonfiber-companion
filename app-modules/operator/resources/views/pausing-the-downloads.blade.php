@@ -19,6 +19,7 @@
     @elseif ($this->done()->stands->isWorking())
         <x-operator::emphasis>{{ __($this->says()->working) }}</x-operator::emphasis>
     @elseif ($this->done()->stands->hasEnded())
+        <x-operator::why-it-ended :stands="$this->done()->stands" />
         <x-operator::emphasis>{{ __('stacks.pausing.no_outcome') }}</x-operator::emphasis>
         <x-design::body>{{ __('stacks.pausing.no_outcome_action') }}</x-design::body>
     @elseif ($this->done()->said !== null)
@@ -55,6 +56,7 @@
     <x-operator::emphasis>{{ __('stacks.pausing.working_it_out') }}</x-operator::emphasis>
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @elseif ($this->answer()->stands->hasEnded())
+    <x-operator::why-it-ended :stands="$this->answer()->stands" />
     <x-operator::emphasis>{{ __('stacks.pausing.offer_ended') }}</x-operator::emphasis>
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @elseif ($this->answer()->said !== null)

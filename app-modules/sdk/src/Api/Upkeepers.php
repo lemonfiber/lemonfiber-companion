@@ -29,6 +29,7 @@ use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatIsCurrent;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\Quoted;
 use Modules\Sdk\Internal\WhatARefusalMeant;
@@ -125,10 +126,10 @@ final readonly class Upkeepers implements KeepingCurrent
                 stillRunning: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowAgreedWorkIsGoing
                     => HowAgreedWorkIsGoing::done(Standings::in($envelope)),
-                ended: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::ended(),
+                ended: static fn(string $why): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return HowAgreedWorkIsGoing::ended();
+            return HowAgreedWorkIsGoing::noOutcome();
         }
     }
 }

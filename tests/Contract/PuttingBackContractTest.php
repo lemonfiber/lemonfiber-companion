@@ -412,11 +412,11 @@ it('a restore still running is its own answer', function (): void {
 });
 
 it('a restore the stack no longer has a job for is ended, not unreachable and not running', function (MockResponse $forgotten): void {
-    foreach (everyWayOfPuttingACopyBack($forgotten, HowPuttingItBackIsGoing::ended()) as $which => $build) {
+    foreach (everyWayOfPuttingACopyBack($forgotten, HowPuttingItBackIsGoing::noOutcome()) as $which => $build) {
         expect(whatBecameOfPuttingItBack($build()))->toBe('ended', $which);
     }
 })->with([
-    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'restore', 'job' => AStackThatPutsCopiesBack::THE_JOB]]))],
+    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['action' => 'restore', 'job' => AStackThatPutsCopiesBack::THE_JOB, 'ended' => 'let-go']]))],
     'never known' => [MockResponse::make('{"error":"no such job"}', 404)],
 ]);
 

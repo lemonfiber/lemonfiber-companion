@@ -33,6 +33,7 @@ use Modules\Kernel\Api\WhatFormsThereAre;
 use Modules\Kernel\Api\WhatIsRunning;
 use Modules\Kernel\Api\WhatTheVerbCameTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\Quoted;
 use Modules\Sdk\Internal\WhatARefusalMeant;
@@ -187,10 +188,10 @@ final readonly class Supervisors implements Supervising
                 stillRunning: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowAgreedWorkIsGoing
                     => HowAgreedWorkIsGoing::done(Lifecycles::in($envelope)),
-                ended: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::ended(),
+                ended: static fn(string $why): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return HowAgreedWorkIsGoing::ended();
+            return HowAgreedWorkIsGoing::noOutcome();
         }
     }
 

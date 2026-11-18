@@ -593,7 +593,7 @@ it('says an unread answer after the configuration\'s yes is the way in having go
 });
 
 it('says the stack has no outcome for a yes it no longer knows, the way in gone with it where the configuration was agreed to', function (): void {
-    $removing = aStackReadingTheRemoval(aReadingOfTakingItOff(WhichRemoval::Configuration), WhatBecameOfTheUninstall::underway(Job::named('j-1')), WhatBecameOfTheUninstall::ended());
+    $removing = aStackReadingTheRemoval(aReadingOfTakingItOff(WhichRemoval::Configuration), WhatBecameOfTheUninstall::underway(Job::named('j-1')), WhatBecameOfTheUninstall::noOutcome());
     $screen = aRemovalChosenAndRead($removing, WhichRemoval::Configuration);
     $screen->goAhead();
     $screen->whileItRuns();
@@ -612,7 +612,7 @@ it('says the stack has no outcome for a yes it no longer knows, the way in gone 
 });
 
 it('says no outcome without the way in where another removal was agreed to', function (): void {
-    $screen = aRemovalChosenAndRead(aStackReadingTheRemoval(aReadingOfTakingItOff(), WhatBecameOfTheUninstall::ended()), WhichRemoval::Services);
+    $screen = aRemovalChosenAndRead(aStackReadingTheRemoval(aReadingOfTakingItOff(), WhatBecameOfTheUninstall::noOutcome()), WhichRemoval::Services);
     $screen->goAhead();
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('uninstall.after_configuration'))

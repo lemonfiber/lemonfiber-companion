@@ -24,6 +24,7 @@ final readonly class HowTheWalkthroughIsGoing
         private ?AWalkthrough $done = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still walking it. */
@@ -38,8 +39,14 @@ final readonly class HowTheWalkthroughIsGoing
         return new self(done: $report);
     }
 
-    /** The stack has no outcome for that walkthrough any more. */
-    public static function ended(): self
+    /** The stack has no outcome for it any more, and says why. */
+    public static function ended(WhyTheWorkEnded $why): self
+    {
+        return new self(ending: $why);
+    }
+
+    /** The stack has no outcome for it any more, and says nothing of why. */
+    public static function noOutcome(): self
     {
         return new self();
     }
@@ -57,10 +64,10 @@ final readonly class HowTheWalkthroughIsGoing
      *
      * @template T of object
      *
-     * @param Closure(): T             $stillRunning
-     * @param Closure(AWalkthrough): T $done
-     * @param Closure(): T             $ended
-     * @param Closure(Obstacle): T     $met
+     * @param Closure(): T                 $stillRunning
+     * @param Closure(AWalkthrough): T     $done
+     * @param Closure(?WhyTheWorkEnded): T $ended
+     * @param Closure(Obstacle): T         $met
      *
      * @return T
      */
@@ -70,7 +77,7 @@ final readonly class HowTheWalkthroughIsGoing
             $this->met instanceof Obstacle => $met($this->met),
             $this->running => $stillRunning(),
             $this->done instanceof AWalkthrough => $done($this->done),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

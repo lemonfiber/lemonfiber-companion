@@ -26,6 +26,7 @@ use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhereTheRoomWent;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowARefusalReads;
@@ -250,7 +251,7 @@ final class GivingRoomBack extends NativeComponent implements AwaitsAnOutcome
         $held = $this->handle;
 
         if (! is_string($held)) {
-            return new HowGivingRoomBackReads()->ended();
+            return new HowGivingRoomBackReads()->ended(null);
         }
 
         $stack = $this->stack();
@@ -278,7 +279,7 @@ final class GivingRoomBack extends NativeComponent implements AwaitsAnOutcome
                 return new HowGivingRoomBackReads()->running();
             },
             answered: static fn(TheRoomGivenBack $report): HowGivingItBackWent => new HowGivingRoomBackReads()->done($report),
-            ended: static fn(): HowGivingItBackWent => new HowGivingRoomBackReads()->ended(),
+            ended: static fn(?WhyTheWorkEnded $why): HowGivingItBackWent => new HowGivingRoomBackReads()->ended($why),
             refused: static fn(ARefusalInItsWords $why): HowGivingItBackWent => new HowGivingRoomBackReads()->refused($why),
             met: $this->lettingGoIfRefused($stack, static fn(Obstacle $why): HowGivingItBackWent => new HowGivingRoomBackReads()->met($why)),
             moved: function (ARefusalInItsWords $why): HowGivingItBackWent {
@@ -288,7 +289,7 @@ final class GivingRoomBack extends NativeComponent implements AwaitsAnOutcome
                 $this->offered = null;
                 $this->answered = null;
 
-                return new HowGivingRoomBackReads()->ended();
+                return new HowGivingRoomBackReads()->ended(null);
             },
         );
     }

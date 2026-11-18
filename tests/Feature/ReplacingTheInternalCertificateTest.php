@@ -181,7 +181,7 @@ it('lists the internal certificate by the one in force at a glance, says the pai
 });
 
 it('reads what replacing it would do first, labelled as nothing replaced yet, in the stack\'s words, with who is watching now', function (): void {
-    $replacing = AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::answered(theReplacementAsRead()), WhatBecameOfTheWork::ended());
+    $replacing = AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::answered(theReplacementAsRead()), WhatBecameOfTheWork::noOutcome());
     $playing = sanneWatching();
     $screen = theReplacingScreen($replacing, $playing);
     $screen->replaceTheCertificate();
@@ -204,7 +204,7 @@ it('reads what replacing it would do first, labelled as nothing replaced yet, in
 });
 
 it('says nobody is watching, that who is watching could not be read, and never asks with a member\'s session', function (): void {
-    $replacing = static fn(): AStackThatReplacesItsCertificate => AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::answered(theReplacementAsRead()), WhatBecameOfTheWork::ended());
+    $replacing = static fn(): AStackThatReplacesItsCertificate => AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::answered(theReplacementAsRead()), WhatBecameOfTheWork::noOutcome());
     $nobody = theReplacementReadOn($replacing(), AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these())));
     $unread = theReplacementReadOn($replacing(), AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::unread(AnObstacleOnTheWire::read('Jellyfin did not answer.')))));
     $refused = theReplacementReadOn($replacing(), AStackThatPlays::holdingOpen(HowPlayingWasRead::refused(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
@@ -294,7 +294,7 @@ it('reads it again where the yes was refused because the reading moved, never as
 });
 
 it('sends no yes without a reading, and asks nothing new while the stack is still at it', function (): void {
-    $replacing = AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatReplacesItsCertificate::THE_READING)), WhatBecameOfTheWork::ended());
+    $replacing = AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatReplacesItsCertificate::THE_READING)), WhatBecameOfTheWork::noOutcome());
     $screen = theReplacingScreen($replacing);
     $screen->agreeToReplace();
     $screen->replaceTheCertificate();
@@ -311,7 +311,7 @@ it('draws a refusal in the stack\'s words, a lost outcome, and what stood in the
     $refused = theReplacingScreen(AStackThatReplacesItsCertificate::sayingAtOnce(WhatBecameOfTheWork::refused($refusal)));
     $refused->replaceTheCertificate();
     $readAgain = $refused->held;
-    $lost = theReplacingScreen(AStackThatReplacesItsCertificate::sayingAtOnce(WhatBecameOfTheWork::ended()));
+    $lost = theReplacingScreen(AStackThatReplacesItsCertificate::sayingAtOnce(WhatBecameOfTheWork::noOutcome()));
     $lost->replaceTheCertificate();
     $met = theReplacingScreen(AStackThatReplacesItsCertificate::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
     $met->replaceTheCertificate();
@@ -332,7 +332,7 @@ it('a phone that holds no session says so, and asks nobody who is watching', fun
 });
 
 it('leaves the replacement for the list, keeping nothing it read', function (): void {
-    $replacing = AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::answered(theReplacementAsRead()), WhatBecameOfTheWork::ended());
+    $replacing = AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::answered(theReplacementAsRead()), WhatBecameOfTheWork::noOutcome());
     $screen = theReplacementReadOn($replacing);
     $screen->backToTheCredentials();
 
@@ -341,7 +341,7 @@ it('leaves the replacement for the list, keeping nothing it read', function (): 
 });
 
 it('leaves a grant being ended for the replacement, so the replacement is what is drawn', function (): void {
-    $replacing = AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::answered(theReplacementAsRead()), WhatBecameOfTheWork::ended());
+    $replacing = AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::answered(theReplacementAsRead()), WhatBecameOfTheWork::noOutcome());
     $screen = theReplacingScreen($replacing);
     $screen->held = TheCredentialsHeld::of(
         WhatTheStoreProtects::said('Plain files readable only by you', Remarks::of(), Remarks::of()),

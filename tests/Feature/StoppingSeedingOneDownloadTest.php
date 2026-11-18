@@ -255,7 +255,7 @@ it('says the stack is still working out the cost, on the cadence it reads again 
 });
 
 it('says an asking the stack has no outcome for is gone, and asks afresh when asked again', function (): void {
-    $stopping = AStackThatStopsSeeding::offering(HowTheOfferToLetGoIsGoing::ended(), HowLettingItGoIsGoing::stillRunning());
+    $stopping = AStackThatStopsSeeding::offering(HowTheOfferToLetGoIsGoing::noOutcome(), HowLettingItGoIsGoing::stillRunning());
     $screen = theLettingGoScreen($stopping);
 
     expect(everythingTheOfferToLetGoShows($screen->answer()))->toBe(nothingOfferedToLetGo(['hasEnded' => true]))
@@ -397,7 +397,7 @@ it('labels a rehearsal as one and never reports it as room freed', function (): 
 });
 
 it('says stopping the stack has no outcome for is not known, rather than failed', function (): void {
-    $screen = theLettingGoScreen(aStackOfferingToLetTheFilmGo(HowLettingItGoIsGoing::ended()));
+    $screen = theLettingGoScreen(aStackOfferingToLetTheFilmGo(HowLettingItGoIsGoing::noOutcome()));
     $screen->answer();
     $screen->agree();
     $screen->whileItRuns();

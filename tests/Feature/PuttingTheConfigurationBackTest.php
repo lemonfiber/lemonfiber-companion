@@ -337,7 +337,7 @@ it('says a preview the stack no longer has a job for is not known, and a preview
         ->and($drawn->said())->toContain(__($said))
         ->and($drawn->offers())->not->toContain(__('stacks.reset.put_them_back'));
 })->with([
-    'ended' => [HowTheResetIsGoing::ended(), ['hasEnded' => true], 'stacks.reset.no_preview'],
+    'ended' => [HowTheResetIsGoing::noOutcome(), ['hasEnded' => true], 'stacks.reset.no_preview'],
     'refused' => [
         HowTheResetIsGoing::refused(ARefusalInItsWords::said('The recorded quality choice could not be read', '', WhatTheRefusalNamed::as('quality.json'))),
         ['refused' => ['The recorded quality choice could not be read', '', 'quality.json']],
@@ -480,7 +480,7 @@ it('says a reset the stack has no outcome for may have been done, and a refused 
     expect(everythingTheResetShows($screen->answer()))->toBe(nothingReportedOfTheReset(afterTheYes: true, changed: $changed))
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__($said));
 })->with([
-    'ended' => [HowTheResetIsGoing::ended(), ['hasEnded' => true], 'stacks.reset.no_outcome'],
+    'ended' => [HowTheResetIsGoing::noOutcome(), ['hasEnded' => true], 'stacks.reset.no_outcome'],
     'refused' => [
         HowTheResetIsGoing::refused(ARefusalInItsWords::said('A stack file could not be written', '', WhatTheRefusalNamed::as('compose.yaml'))),
         ['refused' => ['A stack file could not be written', '', 'compose.yaml']],

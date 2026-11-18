@@ -23,6 +23,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WalkingThrough;
 use Modules\Kernel\Api\WhatToWalk;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -87,10 +88,10 @@ final readonly class Guides implements WalkingThrough
                 stillRunning: static fn(): HowTheWalkthroughIsGoing => HowTheWalkthroughIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheWalkthroughIsGoing
                     => HowTheWalkthroughIsGoing::done(Walkthroughs::in($envelope)),
-                ended: static fn(): HowTheWalkthroughIsGoing => HowTheWalkthroughIsGoing::ended(),
+                ended: static fn(string $why): HowTheWalkthroughIsGoing => HowTheWalkthroughIsGoing::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return HowTheWalkthroughIsGoing::ended();
+            return HowTheWalkthroughIsGoing::noOutcome();
         }
     }
 }

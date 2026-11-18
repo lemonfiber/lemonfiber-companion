@@ -51,7 +51,7 @@ function theAllowanceScreen(AMemberWhoIsOwed $owing, ?AKeychainInMemory $keychai
 
     $screen = new WhatTheHouseholdIsAllowed(
         $owing,
-        AStackThatChoosesWhatIsAllowed::sayingAtOnce(WhatBecameOfTheWork::ended()),
+        AStackThatChoosesWhatIsAllowed::sayingAtOnce(WhatBecameOfTheWork::noOutcome()),
         AStackThatInvites::answering(),
         $keychain,
         AroundThePhone::holding(StacksInMemory::holding($stack)),

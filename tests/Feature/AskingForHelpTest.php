@@ -450,7 +450,7 @@ it('goes back to the choices, keeping them, and forgets the bundle it was follow
 });
 
 it('says the stack no longer knows what became of a bundle, which is not a failure', function (): void {
-    $screen = aBundleDescribedOnTheScreen(AStackThatBundles::whichGathered(HowTheBundleIsGoing::ended()));
+    $screen = aBundleDescribedOnTheScreen(AStackThatBundles::whichGathered(HowTheBundleIsGoing::noOutcome()));
 
     expect($screen->answer()->stands->hasEnded())->toBeTrue()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.help.no_outcome'));

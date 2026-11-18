@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatBecameOfTheRemoval;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheRemovalReads;
@@ -238,10 +239,10 @@ final class TakingSomebodyOut extends NativeComponent implements AwaitsAnOutcome
 
                 return new HowTheRemovalReads()->answered($removal);
             },
-            ended: function () use ($name, $agreed): TheRemovalTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why) use ($name, $agreed): TheRemovalTurnedOutToBe {
                 $this->following = null;
 
-                return new HowTheRemovalReads()->ended($name, $agreed);
+                return new HowTheRemovalReads()->ended($why, $name, $agreed);
             },
             refused: function (string $because) use ($name, $agreed): TheRemovalTurnedOutToBe {
                 $this->following = null;

@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\TheRunTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
@@ -27,9 +28,9 @@ final readonly class HowTheRunReads
         return $this->without(WhereTheWorkStands::running());
     }
 
-    public function ended(): TheRunTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why): TheRunTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::ended());
+        return $this->without(WhereTheWorkStands::ended($why));
     }
 
     public function refused(ARefusalInItsWords $why): TheRunTurnedOutToBe

@@ -111,15 +111,8 @@ final readonly class WhatTheWireWouldAnswer
      * contract nor the name says which: a repair minted the job, or an action
      * did, and a stand-in that reads only the path cannot tell them apart. The
      * SDK decides by *kind* — {@see \Lemonfiber\Sdk\JobStanding::of()} reads a
-     * `job` envelope as *still going* at `202` and as *ended* at anything else,
-     * and anything that is not a `job` as the outcome itself.
-     *
-     * So answering with `job` at `200` tells every screen the work expired. It
-     * is a real state and it is the wrong one to be stuck in: the repairs
-     * screen is the one that draws a redemption on a frame — the contract states
-     * what a stack would put right and what became of each — and it
-     * drew *that question has expired* and nothing else, against a machine
-     * answering everything.
+     * `job` envelope at `202` as *still going*, `ended` as *ended*, and anything
+     * else as the outcome itself.
      *
      * Repairs rather than actions, and the choice is forced rather than
      * preferred. An action's redemption is what a tap produces; a repair's is

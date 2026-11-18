@@ -204,7 +204,7 @@ it('labels a report the stack says was rehearsed as a rehearsal, never as paused
 });
 
 it('says a yes the stack has no outcome for is not known, rather than failed', function (): void {
-    $screen = thePausingScreen(aStackRehearsingAPause(HowPausingIsGoing::ended()));
+    $screen = thePausingScreen(aStackRehearsingAPause(HowPausingIsGoing::noOutcome()));
     $screen->answer();
     $screen->agree();
     $screen->whileItRuns();
@@ -254,7 +254,7 @@ it('says the stack is still rehearsing, and reads the same rehearsal again on it
 });
 
 it('says a rehearsal the stack no longer has is gone, and rehearses afresh when asked again', function (): void {
-    $pausing = AStackThatPausesDownloads::rehearsing(HowPausingIsGoing::ended(), HowPausingIsGoing::stillRunning());
+    $pausing = AStackThatPausesDownloads::rehearsing(HowPausingIsGoing::noOutcome(), HowPausingIsGoing::stillRunning());
     $screen = thePausingScreen($pausing);
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.pausing.offer_ended'));

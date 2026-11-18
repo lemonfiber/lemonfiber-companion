@@ -19,6 +19,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatPausingComesTo;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowPausingReads;
@@ -265,7 +266,7 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
 
                 return new HowPausingReads()->offering($offer);
             },
-            ended: static fn(): WhatPausingWouldShow => new HowPausingReads()->offerEnded(),
+            ended: static fn(?WhyTheWorkEnded $why): WhatPausingWouldShow => new HowPausingReads()->offerEnded($why),
             met: $this->lettingGoIfRefused($stack, new HowPausingReads()->notOffered(...)),
         );
     }
@@ -276,7 +277,7 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
         $held = $this->yes?->handle;
 
         if ($held === null) {
-            return new HowPausingReads()->ended();
+            return new HowPausingReads()->ended(null);
         }
 
         $stack = $this->stack();
@@ -285,7 +286,7 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
             held: fn(Session $session): HowPausingWent => $this->pausing->whatBecameOf($stack, $session, Job::named($held))->either(
                 stillRunning: static fn(): HowPausingWent => new HowPausingReads()->running(),
                 answered: static fn(WhatPausingComesTo $report): HowPausingWent => new HowPausingReads()->done($report),
-                ended: static fn(): HowPausingWent => new HowPausingReads()->ended(),
+                ended: static fn(?WhyTheWorkEnded $why): HowPausingWent => new HowPausingReads()->ended($why),
                 met: $this->lettingGoIfRefused($stack, new HowPausingReads()->met(...)),
             ),
             notHeld: static fn(): HowPausingWent => new HowPausingReads()->signedOut(),

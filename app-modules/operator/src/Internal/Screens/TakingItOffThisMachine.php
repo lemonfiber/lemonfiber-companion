@@ -25,6 +25,7 @@ use Modules\Kernel\Api\WhatBecameOfTheUninstall;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhetherToWait;
 use Modules\Kernel\Api\WhichRemoval;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTakingItOffReads;
@@ -306,10 +307,10 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
 
                 return new HowTakingItOffReads()->answered($uninstall, agreed: true);
             },
-            ended: function () use ($endsThisSession): TakingItOffTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why) use ($endsThisSession): TakingItOffTurnedOutToBe {
                 $this->following = null;
 
-                return new HowTakingItOffReads()->ended($endsThisSession);
+                return new HowTakingItOffReads()->ended($why, $endsThisSession);
             },
             refused: function (string $because): TakingItOffTurnedOutToBe {
                 $this->following = null;

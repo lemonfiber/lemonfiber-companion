@@ -359,7 +359,7 @@ it('has nothing to report for a yes nobody gave', function (): void {
 });
 
 it('says the stack no longer knows what became of it, and offers the room to see what is still there', function (): void {
-    $screen = theGivingBackScreen(AStackThatMeasuresItsRoom::with(aRoomOffering(theOrphansOnOffer())), AStackThatGivesBackRoom::answering(WhatBecameOfTheWork::ended()));
+    $screen = theGivingBackScreen(AStackThatMeasuresItsRoom::with(aRoomOffering(theOrphansOnOffer())), AStackThatGivesBackRoom::answering(WhatBecameOfTheWork::noOutcome()));
     $screen->answer();
     $screen->agree();
     $screen->whileItRuns();

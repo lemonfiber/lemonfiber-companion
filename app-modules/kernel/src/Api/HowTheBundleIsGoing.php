@@ -22,6 +22,7 @@ final readonly class HowTheBundleIsGoing
         private ?ARefusalInItsWords $refused = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still gathering it. */
@@ -42,8 +43,14 @@ final readonly class HowTheBundleIsGoing
         return new self(refused: $why);
     }
 
-    /** The stack has no outcome for it any more. */
-    public static function ended(): self
+    /** The stack has no outcome for it any more, and says why. */
+    public static function ended(WhyTheWorkEnded $why): self
+    {
+        return new self(ending: $why);
+    }
+
+    /** The stack has no outcome for it any more, and says nothing of why. */
+    public static function noOutcome(): self
     {
         return new self();
     }
@@ -61,11 +68,11 @@ final readonly class HowTheBundleIsGoing
      *
      * @template T of object
      *
-     * @param Closure(): T         $stillRunning
-     * @param Closure(ABundle): T  $done
+     * @param Closure(): T                   $stillRunning
+     * @param Closure(ABundle): T            $done
      * @param Closure(ARefusalInItsWords): T $refused
-     * @param Closure(): T         $ended
-     * @param Closure(Obstacle): T $met
+     * @param Closure(?WhyTheWorkEnded): T   $ended
+     * @param Closure(Obstacle): T           $met
      *
      * @return T
      */
@@ -76,7 +83,7 @@ final readonly class HowTheBundleIsGoing
             $this->running => $stillRunning(),
             $this->done instanceof ABundle => $done($this->done),
             $this->refused instanceof ARefusalInItsWords => $refused($this->refused),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

@@ -30,6 +30,7 @@ final readonly class HowExtendingItIsGoing
         private ?ARefusalInItsWords $refused = null,
         private ?Obstacle $met = null,
         private ?Job $running = null,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack took it on, or is still at it, and this is what to ask after it by. */
@@ -50,8 +51,14 @@ final readonly class HowExtendingItIsGoing
         return new self(refused: $why);
     }
 
-    /** The stack has no outcome for it any more. */
-    public static function ended(): self
+    /** The stack has no outcome for it any more, and says why. */
+    public static function ended(WhyTheWorkEnded $why): self
+    {
+        return new self(ending: $why);
+    }
+
+    /** The stack has no outcome for it any more, and says nothing of why. */
+    public static function noOutcome(): self
     {
         return new self();
     }
@@ -74,7 +81,7 @@ final readonly class HowExtendingItIsGoing
      * @param Closure(Job): T                $underway
      * @param Closure(ThePlugins): T         $done
      * @param Closure(ARefusalInItsWords): T $refused
-     * @param Closure(): T                   $ended
+     * @param Closure(?WhyTheWorkEnded): T   $ended
      * @param Closure(Obstacle): T           $met
      *
      * @return T
@@ -86,7 +93,7 @@ final readonly class HowExtendingItIsGoing
             $this->running instanceof Job => $underway($this->running),
             $this->done instanceof ThePlugins => $done($this->done),
             $this->refused instanceof ARefusalInItsWords => $refused($this->refused),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

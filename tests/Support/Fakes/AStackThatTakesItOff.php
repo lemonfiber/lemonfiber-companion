@@ -78,6 +78,6 @@ final class AStackThatTakesItOff implements TakingLemonfiberOff
     /** The next answer in line, or the stack having no outcome once they have all been given. */
     private function next(): WhatBecameOfTheUninstall
     {
-        return array_shift($this->answers) ?? WhatBecameOfTheUninstall::ended();
+        return array_shift($this->answers) ?? WhatBecameOfTheUninstall::noOutcome();
     }
 }

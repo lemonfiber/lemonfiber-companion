@@ -27,6 +27,7 @@ use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesWhatIsAllowed;
 use Modules\Operator\Internal\LooksAgainWhileOpen;
@@ -228,10 +229,10 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
 
                 return new HowTheAllowanceChangeReads()->answered($report);
             },
-            ended: function (): TheAllowanceChangeTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why): TheAllowanceChangeTurnedOutToBe {
                 $this->following = null;
 
-                return new HowTheAllowanceChangeReads()->ended();
+                return new HowTheAllowanceChangeReads()->ended($why);
             },
             refused: function (ARefusalInItsWords $why): TheAllowanceChangeTurnedOutToBe {
                 $this->following = null;

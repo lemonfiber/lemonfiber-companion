@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\HowTheLastUpdateWent;
 use Modules\Operator\Internal\ViewModels\WhatTheUpdateTakenCameTo;
 use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
@@ -38,9 +39,9 @@ final readonly class HowTheLastUpdateReads
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
-    public function ended(): HowTheLastUpdateWent
+    public function ended(?WhyTheWorkEnded $why): HowTheLastUpdateWent
     {
-        return new HowTheLastUpdateWent(WhereTheWorkStands::ended());
+        return new HowTheLastUpdateWent(WhereTheWorkStands::ended($why));
     }
 
     /** Taking it, or asking after it, met this instead. */

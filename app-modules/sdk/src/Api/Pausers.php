@@ -27,6 +27,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatPausingComesTo;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -100,10 +101,10 @@ final readonly class Pausers implements PausingDownloads
             return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): HowPausingIsGoing => HowPausingIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowPausingIsGoing => HowPausingIsGoing::answered(WhatPausingCameTo::in($envelope)),
-                ended: static fn(): HowPausingIsGoing => HowPausingIsGoing::ended(),
+                ended: static fn(string $why): HowPausingIsGoing => HowPausingIsGoing::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return HowPausingIsGoing::ended();
+            return HowPausingIsGoing::noOutcome();
         }
     }
 }

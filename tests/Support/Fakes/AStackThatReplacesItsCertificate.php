@@ -71,7 +71,7 @@ final class AStackThatReplacesItsCertificate implements ReplacingTheInternalCert
     /** A stack nobody should ask. */
     public static function untouched(): self
     {
-        return self::sayingAtOnce(WhatBecameOfTheWork::ended());
+        return self::sayingAtOnce(WhatBecameOfTheWork::noOutcome());
     }
 
     /**

@@ -26,6 +26,7 @@ final readonly class HowTheResetIsGoing
         private ?ARefusalInItsWords $refused = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still at it. */
@@ -46,8 +47,14 @@ final readonly class HowTheResetIsGoing
         return new self(refused: $why);
     }
 
-    /** The stack has no outcome for it any more. */
-    public static function ended(): self
+    /** The stack has no outcome for it any more, and says why. */
+    public static function ended(WhyTheWorkEnded $why): self
+    {
+        return new self(ending: $why);
+    }
+
+    /** The stack has no outcome for it any more, and says nothing of why. */
+    public static function noOutcome(): self
     {
         return new self();
     }
@@ -68,7 +75,7 @@ final readonly class HowTheResetIsGoing
      * @param Closure(): T                   $stillRunning
      * @param Closure(TheReset): T           $done
      * @param Closure(ARefusalInItsWords): T $refused
-     * @param Closure(): T                   $ended
+     * @param Closure(?WhyTheWorkEnded): T   $ended
      * @param Closure(Obstacle): T           $met
      *
      * @return T
@@ -80,7 +87,7 @@ final readonly class HowTheResetIsGoing
             $this->running => $stillRunning(),
             $this->done instanceof TheReset => $done($this->done),
             $this->refused instanceof ARefusalInItsWords => $refused($this->refused),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

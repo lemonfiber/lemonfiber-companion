@@ -54,7 +54,7 @@ final class AStackThatGivesBackRoom implements GivingBackRoom
     /** A stack nobody should ask. */
     public static function untouched(): self
     {
-        return self::sayingAtOnce(WhatBecameOfTheWork::ended());
+        return self::sayingAtOnce(WhatBecameOfTheWork::noOutcome());
     }
 
     /**

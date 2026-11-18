@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhenItWasMade;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\AChangeAndWhyAsShown;
 use Modules\Operator\Internal\ViewModels\AChangeGoneBackAsShown;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
@@ -86,9 +87,9 @@ final readonly class HowARunBackReads
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
-    public function ended(): HowPuttingARunBackWent
+    public function ended(?WhyTheWorkEnded $why): HowPuttingARunBackWent
     {
-        return $this->following(WhereTheWorkStands::ended());
+        return $this->following(WhereTheWorkStands::ended($why));
     }
 
     /** Putting it back, or asking after it, met this instead. */

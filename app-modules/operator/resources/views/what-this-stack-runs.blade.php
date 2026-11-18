@@ -123,6 +123,7 @@
                 @if ($this->howTheSwitchIsGoing()->stands->isWorking())
                     <x-design::standing :said="__('stacks.switch.working')" tone="working" />
                 @elseif ($this->howTheSwitchIsGoing()->stands->hasEnded())
+                    <x-operator::why-it-ended :stands="$this->howTheSwitchIsGoing()->stands" />
                     <x-design::notice tone="unknown">
                         <x-design::strong>{{ __('stacks.switch.no_outcome') }}</x-design::strong>
                     </x-design::notice>

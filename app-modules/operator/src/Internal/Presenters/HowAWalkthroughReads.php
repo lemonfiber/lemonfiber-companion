@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WalkthroughStep;
 use Modules\Kernel\Api\WhatToDoNext;
 use Modules\Kernel\Api\WhereItStopped;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\AStepOnAsShown;
 use Modules\Operator\Internal\ViewModels\AWalkthroughLineAsShown;
@@ -62,9 +63,9 @@ final readonly class HowAWalkthroughReads
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
-    public function ended(): WhatTheWalkthroughTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why): WhatTheWalkthroughTurnedOutToBe
     {
-        return $this->following(WhereTheWorkStands::ended());
+        return $this->following(WhereTheWorkStands::ended($why));
     }
 
     /** Starting it, or asking after it, met this instead. */

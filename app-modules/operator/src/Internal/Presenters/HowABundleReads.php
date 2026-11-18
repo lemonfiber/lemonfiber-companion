@@ -10,6 +10,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhereABundleIs;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
 use Modules\Operator\Internal\ViewModels\APieceAsShown;
@@ -51,9 +52,9 @@ final readonly class HowABundleReads
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
-    public function ended(): HowTheBundleWent
+    public function ended(?WhyTheWorkEnded $why): HowTheBundleWent
     {
-        return $this->following(WhereTheWorkStands::ended());
+        return $this->following(WhereTheWorkStands::ended($why));
     }
 
     /** The stack refused the bundle, and this is why, in its words. */
