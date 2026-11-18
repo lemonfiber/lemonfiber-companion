@@ -22,6 +22,7 @@ use Modules\Operator\Internal\Screens\PuttingTheConfigurationBack;
 use Modules\Operator\Internal\Screens\TakingACopyHere;
 use Modules\Operator\Internal\Screens\TakingItOffThisMachine;
 use Modules\Operator\Internal\Screens\TakingSomebodyOut;
+use Modules\Operator\Internal\Screens\TheScheduledRuns;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatAcceptingItCosts;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
@@ -67,6 +68,7 @@ const EVERY_SCREEN_FOLLOWING_WORK = [
     TakingACopyHere::class,
     TakingItOffThisMachine::class,
     TakingSomebodyOut::class,
+    TheScheduledRuns::class,
     WatchingOneArrive::class,
     WhatIsAlreadyOnThisMachine::class,
     WhatThisMachineKeepsHere::class,

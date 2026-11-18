@@ -28,6 +28,7 @@ use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\Releases;
 use Modules\Kernel\Api\ReplacingACertificate;
 use Modules\Kernel\Api\RevokingAGrant;
+use Modules\Kernel\Api\RunningItNow;
 use Modules\Kernel\Api\SearchingTheIndexers;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
@@ -294,6 +295,7 @@ const VERBS_THE_APP_ASKS_FOR = [
     // no rehearsal over the wire, so the only thing that spells it is an
     // agreement built from the record's own rows for that run — and a run the
     // record says cannot go back builds none.
+    'run' => 'runs one run-and-exit service at once, named from the schedule the stack read, after one yes naming it; never rehearsed',
     'undo' => 'puts back one run the record shows, named by its stamp, after the record\'s rows for it were agreed to',
     // One removal at a time, and only against the reading of it the operator
     // was shown: the yes quotes that reading by name, so a reading that has
@@ -627,6 +629,7 @@ it('every action this app asks for has a reason, and every reason an action', fu
         ...array_map(static fn(ForgettingWhatIsKept $forgetting): string => $forgetting->asked(), ForgettingWhatIsKept::cases()),
         ...array_map(static fn(SwitchingTheForms $switching): string => $switching->asked(), SwitchingTheForms::cases()),
         ...array_map(static fn(WhatToDoWithARun $run): string => $run->asked(), WhatToDoWithARun::cases()),
+        ...array_map(static fn(RunningItNow $now): string => $now->asked(), RunningItNow::cases()),
         ...array_map(static fn(TakingItOff $off): string => $off->asked(), TakingItOff::cases()),
         ...array_map(static fn(AskingForIt $ask): string => $ask->asked(), AskingForIt::cases()),
         ...array_map(static fn(ChoosingHowToBeTold $told): string => $told->asked(), ChoosingHowToBeTold::cases()),

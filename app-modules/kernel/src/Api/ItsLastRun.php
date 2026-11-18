@@ -52,6 +52,12 @@ final readonly class ItsLastRun
         return $this->exit === null ? $unsaid() : $said($this->exit);
     }
 
+    /** Whether it exited zero. */
+    public function succeeded(): bool
+    {
+        return $this->exit === 0;
+    }
+
     /** The last lines it wrote. */
     public function log(): TheLastLines
     {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\ViewModels;
 
-/** Where running a check that disturbs has got to, flattened for a template. */
+/** Where a run the stack was asked for, of a check that disturbs or of a run-and-exit service at once, has got to, flattened for a template. */
 final readonly class TheRunTurnedOutToBe
 {
     /**

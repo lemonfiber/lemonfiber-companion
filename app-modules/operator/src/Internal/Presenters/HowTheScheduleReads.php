@@ -13,11 +13,13 @@ use Modules\Kernel\Api\ItsLastRun;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheLastLines;
 use Modules\Kernel\Api\TheScheduledServices;
+use Modules\Kernel\Api\WhatRunningItNowCameTo;
 use Modules\Operator\Internal\ViewModels\ALastRunAsShown;
 use Modules\Operator\Internal\ViewModels\AnExitAsShown;
 use Modules\Operator\Internal\ViewModels\ARunAndExitAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\TheScheduleAsShown;
+use Modules\Operator\Internal\ViewModels\WhatRanNowAsShown;
 
 use function sprintf;
 
@@ -59,11 +61,25 @@ final readonly class HowTheScheduleReads
         return new TheScheduleAsShown(HowTheReadingWent::itCameBack(), $shown);
     }
 
+    /** What running one at once came to: how its run ended, or the stack's reason nothing ran. */
+    public function ranNow(WhatRunningItNowCameTo $came, string $name, Instant $now): WhatRanNowAsShown
+    {
+        return $came->either(
+            ran: function (ItsLastRun $run) use ($name, $now): WhatRanNowAsShown {
+                $health = $run->succeeded() ? HowItsLastRunWent::Succeeded : HowItsLastRunWent::Failed;
+
+                return new WhatRanNowAsShown($name, $health->saidOnTheScreen(), $this->tone($health), $this->ran($run, ! $run->succeeded(), $now), '');
+            },
+            held: static fn(string $why): WhatRanNowAsShown => new WhatRanNowAsShown($name, '', Tone::Attention->value, ALastRunAsShown::none(), $why),
+        );
+    }
+
     private function service(ARunAndExit $service, Instant $now): ARunAndExitAsShown
     {
         $failed = $service->health() === HowItsLastRunWent::Failed;
 
         return new ARunAndExitAsShown(
+            id: $service->id()->named(),
             name: $service->name(),
             healthSaid: $service->health()->saidOnTheScreen(),
             tone: $this->tone($service->health()),

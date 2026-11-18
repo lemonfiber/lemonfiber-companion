@@ -10,6 +10,7 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class ARunAndExitAsShown
 {
     public function __construct(
+        public string $id,
         public string $name,
         public string $healthSaid,
         public string $tone,

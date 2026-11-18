@@ -12,6 +12,18 @@ return [
     'skipped' => '{1} One time fell due while a run was still going, and was skipped|[2,*] :count times fell due while a run was still going, and were skipped',
     'log' => 'Its last lines',
     'no_log' => 'It wrote no lines',
+    'now' => [
+        'run' => 'Run now',
+        'run_named' => 'Run :service now',
+        'about_to' => 'Run :service now?',
+        'whatever_is_due' => 'It runs once now, whether or not one of its times is due. Its times stay as they are.',
+        'leave_it' => 'Leave it',
+        'running' => ':service is running',
+        'ran' => ':service ran',
+        'held' => ':service did not run. The stack says why:',
+        'refused' => 'The stack refused to run :service',
+        'no_outcome' => 'The stack no longer knows how the run of :service went',
+    ],
     'health' => [
         'not-run' => 'Not run yet',
         'succeeded' => 'Its last run succeeded',

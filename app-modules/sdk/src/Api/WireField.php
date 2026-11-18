@@ -135,10 +135,6 @@ enum WireField: string implements NamesAWireField
     /**
      * What is not there: the program a hosted command's definition names where
      * nothing is there any more, and what a support bundle could not collect.
-     *
-     * On a hosted command it is read only on the `orphaned` arm. On every other
-     * standing the wire carries nothing here and there is nothing to carry — a
-     * row that is running has no missing program.
      */
     case Missing = 'missing';
 
@@ -575,11 +571,14 @@ enum WireField: string implements NamesAWireField
      */
     case Condition = 'condition';
 
-    /**
-     * Two things held under one word: every credential a stack holds, and why
-     * a start the stack declined ran nothing.
-     */
+    /** Three things held under one word: every credential a stack holds, and why a start or a run at once ran nothing. */
     case Held = 'held';
+
+    /** What a run came to: a plugin's demand recipe's, or a run-and-exit service's asked to run at once. */
+    case Ran = 'ran';
+
+    /** The last lines a run-and-exit service's run wrote, oldest first. */
+    case Log = 'log';
 
     /** The host port a conflict is about, on a survey and on a verb's report. */
     case Port = 'port';

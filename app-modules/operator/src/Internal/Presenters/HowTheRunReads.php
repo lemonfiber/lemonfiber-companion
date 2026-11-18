@@ -9,7 +9,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Operator\Internal\ViewModels\TheRunTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 
-/** Where running a check that disturbs has got to, as the fields a screen draws: one method per state. */
+/** Where a run the stack was asked for, of a check that disturbs or of a run-and-exit service at once, has got to, as the fields a screen draws: one method per state. */
 final readonly class HowTheRunReads
 {
     public function notAsked(): TheRunTurnedOutToBe

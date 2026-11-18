@@ -12,6 +12,18 @@ return [
     'skipped' => '{1} Eén tijd viel terwijl een keer nog bezig was, en is overgeslagen|[2,*] :count tijden vielen terwijl een keer nog bezig was, en zijn overgeslagen',
     'log' => 'De laatste regels',
     'no_log' => 'Er zijn geen regels geschreven',
+    'now' => [
+        'run' => 'Nu draaien',
+        'run_named' => ':service nu draaien',
+        'about_to' => ':service nu draaien?',
+        'whatever_is_due' => 'Het draait nu één keer, of een van de tijden nu valt of niet. De tijden blijven zoals ze zijn.',
+        'leave_it' => 'Laat het',
+        'running' => ':service draait',
+        'ran' => ':service heeft gedraaid',
+        'held' => ':service draaide niet. De stack zegt waarom:',
+        'refused' => 'De stack weigerde :service te draaien',
+        'no_outcome' => 'De stack weet niet meer hoe de keer van :service ging',
+    ],
     'health' => [
         'not-run' => 'Nog niet gedraaid',
         'succeeded' => 'De laatste keer is gelukt',

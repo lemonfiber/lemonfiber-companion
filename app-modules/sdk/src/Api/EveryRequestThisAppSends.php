@@ -29,6 +29,7 @@ use Modules\Kernel\Api\HandingOver;
 use Modules\Kernel\Api\MovingInBy;
 use Modules\Kernel\Api\ReplacingACertificate;
 use Modules\Kernel\Api\RevokingAGrant;
+use Modules\Kernel\Api\RunningItNow;
 use Modules\Kernel\Api\SearchingTheIndexers;
 use Modules\Kernel\Api\SwitchingTheForms;
 use Modules\Kernel\Api\TakingAnUpdate;
@@ -112,7 +113,7 @@ final readonly class EveryRequestThisAppSends implements IteratorAggregate
     private static function actions(): array
     {
         $cases = [
-            ...AcceptingAChoice::cases(), ...ChoosingHowToBeTold::cases(), ...CheckingWhatDisturbs::cases(), ...RevokingAGrant::cases(), ...ReplacingACertificate::cases(), ...GivingBackTheRoom::cases(), ...SearchingTheIndexers::cases(), ...AskingForIt::cases(), ...AskingThemIn::cases(), ...ChangingASetting::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...ForgettingWhatIsKept::cases(), ...HandingOver::cases(),
+            ...AcceptingAChoice::cases(), ...ChoosingHowToBeTold::cases(), ...CheckingWhatDisturbs::cases(), ...RevokingAGrant::cases(), ...ReplacingACertificate::cases(), ...GivingBackTheRoom::cases(), ...SearchingTheIndexers::cases(), ...AskingForIt::cases(), ...AskingThemIn::cases(), ...ChangingASetting::cases(), ...ChangingTheLine::cases(), ...ChoosingWhatIsAllowed::cases(), ...ConnectingADevice::cases(), ...ExtendingIt::cases(), ...ForgettingWhatIsKept::cases(), ...HandingOver::cases(), ...RunningItNow::cases(),
             ...MovingInBy::cases(), ...SwitchingTheForms::cases(), ...TakingItOff::cases(), ...TakingThemOut::cases(), ...WhatToChange::cases(), ...WhatToDoAboutPairing::cases(),
             ...WhatToDoAboutQuality::cases(), ...WhatToDoAboutWiring::cases(), ...WhatToDoWithACopy::cases(),
             ...WhatToDoWithADownload::cases(), ...WhatToDoWithTheDownloads::cases(), ...WhatToDoWithARun::cases(), ...WhatToDoWithIt::cases(),
