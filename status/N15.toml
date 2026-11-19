@@ -6,7 +6,7 @@
 # request that changes whether a requirement is met changes its row.
 
 requirement = [
-  { id = "N15-R1", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatThisStackIsSetTo.php", "app-modules/operator/tests/Internal/WhereTheTabsAreDrawnTest.php", "tests/Feature/SeeingWhatAStackIsSetToTest.php"] },
+  { id = "N15-R1", state = "done", evidence = ["app-modules/sdk/src/Api/Setups.php", "app-modules/operator/src/Internal/Screens/WhatThisStackWasSetUpWith.php", "app-modules/operator/src/Internal/Screens/WhatThisStackIsSetTo.php", "tests/Feature/SeeingWhatSetupSettledTest.php", "tests/Contract/AskingWhatSetupSettledContractTest.php"] },
   { id = "N15-R2", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/WhatThisStackIsSetTo.php", "tests/Feature/SeeingWhatAStackIsSetToTest.php"] },
   { id = "N15-R3", state = "done", evidence = ["app-modules/operator/src/Internal/ShowsWhatItsWordsMean.php"] },
   { id = "N15-R4", state = "done", evidence = ["app-modules/kernel/src/Api/AWord.php", "app-modules/kernel/tests/Api/AWordTest.php", "app-modules/kernel/tests/Api/TheGlossaryTest.php"] },

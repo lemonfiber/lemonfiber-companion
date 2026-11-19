@@ -52,6 +52,7 @@ return [
         'watcher' => 'Outside watcher',
         'queue' => 'Queue healing',
         'scheduled' => 'Scheduled runs',
+        'set_up_with' => 'Set up with',
         'while_nobody_was_looking' => 'Unwatched hours',
         'already_installed' => 'Already installed',
         'other_programs' => 'Other programs',

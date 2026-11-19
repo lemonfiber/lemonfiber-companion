@@ -96,6 +96,7 @@ use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
+use Modules\Kernel\Api\WhereTheServiceUserComesFrom;
 use Modules\Kernel\Api\WhereTheWalkthroughIs;
 use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Kernel\Api\WhetherHealingActs;
@@ -284,6 +285,10 @@ function everyDerivedKey(): array
         WhatKindOfThingIsCovered::class => aPairPerCase(
             WhatKindOfThingIsCovered::cases(),
             static fn(WhatKindOfThingIsCovered $kind): array => [$kind->saidOnTheScreen()],
+        ),
+        WhereTheServiceUserComesFrom::class => aPairPerCase(
+            WhereTheServiceUserComesFrom::cases(),
+            static fn(WhereTheServiceUserComesFrom $from): array => [$from->saidOnTheScreen()],
         ),
         HowItsLastRunWent::class => aPairPerCase(
             HowItsLastRunWent::cases(),

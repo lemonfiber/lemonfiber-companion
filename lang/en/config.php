@@ -14,7 +14,6 @@ return [
     // What setup decided when the stack was first set up is among the
     // settings the stack lists, shown as it holds them now. The stack does not
     // say which of them setup wrote, so this names none of them.
-    'what_setup_settled' => 'What setup decided when this stack was first set up is among these settings, as the stack holds it now. Changing one here is changing a setting, not setting the stack up again.',
 
     // First-run setup is declined in words, where somebody looking for it
     // would look, rather than left out for them to wonder about.

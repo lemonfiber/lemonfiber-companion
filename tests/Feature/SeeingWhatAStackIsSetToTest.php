@@ -1,8 +1,6 @@
 <?php
 
 declare(strict_types=1);
-
-use Illuminate\Contracts\Translation\Translator;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ADownloadItWouldInterrupt;
 use Modules\Kernel\Api\ALibraryAMoveReaches;
@@ -34,14 +32,13 @@ use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisStackIsSetTo;
 use Modules\Stacks\Api\AStacksScreen;
-use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
-use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatIsSet;
 use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
+use Tests\Support\Fakes\AStackThatSaysWhatSetupSettled;
 use Tests\Support\Fakes\AStackToldToChangeSomething;
-use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheSettingsOfTheLoft;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheFieldsHold;
 
@@ -91,29 +88,9 @@ function theSettingsScreen(
     bool $signedIn = true,
     ?AStackThatSaysHowItRunsWithout $without = null,
     ?AShareSheetThatWasOffered $sheet = null,
+    ?AStackThatSaysWhatSetupSettled $settled = null,
 ): WhatThisStackIsSetTo {
-    $stack = theStackWhoseSettingsAreRead();
-    $keychain ??= AKeychainInMemory::working();
-    $adjusting ??= AStackToldToChangeSomething::saying(aCheapChangeStaged());
-
-    if ($signedIn) {
-        $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
-    }
-
-    $screen = new WhatThisStackIsSetTo(
-        $arranging,
-        $adjusting,
-        $keychain,
-        AroundThePhone::holding(StacksInMemory::holding($stack)),
-        new AppsSettingsThatOpen(),
-        AroundThePhone::listening(),
-        $without ?? AStackThatSaysHowItRunsWithout::bundled(),
-        $sheet ?? AShareSheetThatWasOffered::working(),
-        app(Translator::class),
-    );
-    $screen->setParams(['stack' => $stack->id()->stored()]);
-
-    return $screen;
+    return TheSettingsOfTheLoft::screen($arranging, $adjusting ?? AStackToldToChangeSomething::saying(aCheapChangeStaged()), $keychain, $signedIn, $without, $sheet, $settled);
 }
 
 /**
@@ -191,13 +168,6 @@ it('reports what stood in the way rather than an empty listing', function (): vo
         ->and($screen->answer()->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($screen->answer()->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
         ->and($screen->answer()->howMany())->toBe(0);
-});
-
-it('says what setup decided is among the settings, as facts, and that changing one is not setting up again', function (): void {
-    $drawn = WhatTheDeviceWouldDraw::by(theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo())))->said();
-
-    expect($drawn)->toContain(__('config.what_setup_settled'), '/data/media')
-        ->and($drawn)->not->toContain(__('onboarding.at_the_machine'));
 });
 
 it('declines first-run setup with the reason, rather than leaving it out, on a stack with settings and one with none', function (Settings $set): void {
@@ -391,7 +361,7 @@ it('draws both sides of a staged change, and offers to make it or to leave it', 
     $screen->change('LIBRARY_PATH');
     typedIntoTheField($screen, '/data/films');
     $screen->wouldBe('LIBRARY_PATH');
-    $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
 
     expect($drawn->said())->toContain(__('config.holds_now', ['value' => '/data/media']))
         ->and($drawn->said())->toContain(__('config.would_hold', ['value' => '/data/films']))
@@ -767,7 +737,7 @@ it('draws a change refused because the operator declared the area unmanaged in t
     $screen->change('LIBRARY_PATH');
     typedIntoTheField($screen, '/data/films');
     $screen->wouldBe('LIBRARY_PATH');
-    $drawn = WhatTheDeviceWouldDraw::by($screen);
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
 
     expect($drawn->said())->toContain(__(Stance::Blocked->saidOnTheScreen()), $refusal)
         ->and($screen->proposal()?->canBeAgreedTo)->toBeFalse()
