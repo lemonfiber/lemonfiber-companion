@@ -487,6 +487,10 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'What else was placed for one of the plugin\'s services. Its id is read, to list the settings and secrets its services read (`N25-R12`, `N25-R13`); updating and removing name the services they stop from lists of their own, and nothing else here asks for this.',
         ],
         [
+            'path' => 'PluginsEnvelope.installed[].services[].built_on',
+            'because' => 'The upstream image and release a service\'s image is built on. What else was placed for one of the plugin\'s services: its id is read, to list the settings and secrets its services read (`N25-R12`, `N25-R13`), and no companion requirement asks for what an image was built from — `N1-R17`.',
+        ],
+        [
             'path' => 'PluginsEnvelope.installed[].services[].listens',
             'because' => 'What else was placed for one of the plugin\'s services. Its id is read, to list the settings and secrets its services read (`N25-R12`, `N25-R13`); updating and removing name the services they stop from lists of their own, and nothing else here asks for this.',
         ],
@@ -595,6 +599,10 @@ final readonly class UnreadOnThePluginsEnvelope
             'because' => 'As `PluginsEnvelope.installed[].services[].image`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
         ],
         [
+            'path' => 'PluginsEnvelope.install.would.services[].built_on',
+            'because' => 'As `PluginsEnvelope.installed[].services[].built_on`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
+        ],
+        [
             'path' => 'PluginsEnvelope.install.would.services[].listens',
             'because' => 'As `PluginsEnvelope.installed[].services[].listens`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
         ],
@@ -701,6 +709,10 @@ final readonly class UnreadOnThePluginsEnvelope
         [
             'path' => 'PluginsEnvelope.update.install.would.services[].image',
             'because' => 'As `PluginsEnvelope.installed[].services[].image`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
+        ],
+        [
+            'path' => 'PluginsEnvelope.update.install.would.services[].built_on',
+            'because' => 'As `PluginsEnvelope.installed[].services[].built_on`: the record an install would settle is the record of an installed plugin, and the one reader reads both.',
         ],
         [
             'path' => 'PluginsEnvelope.update.install.would.services[].listens',
