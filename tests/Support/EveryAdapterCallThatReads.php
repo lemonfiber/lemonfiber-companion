@@ -269,6 +269,7 @@ use Modules\Sdk\Api\Schedulers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Searchers;
+use Modules\Sdk\Api\Setups;
 use Modules\Sdk\Api\Shelves;
 use Modules\Sdk\Api\Stalls;
 use Modules\Sdk\Api\StartLines;
@@ -419,6 +420,7 @@ final readonly class EveryAdapterCallThatReads
             'Schedulers::runNow' => static fn(): object => new Schedulers($clients, $entropy)->runNow($stack, $session, ServiceId::called('configarr')),
             'Schedulers::whatBecameOf' => static fn(): object => new Schedulers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Foundations::withoutLemonfiber' => static fn(): object => new Foundations($clients)->withoutLemonfiber($stack, $session),
+            'Setups::settled' => static fn(): object => new Setups($clients)->settled($stack, $session),
             'Inspectors::checkedOn' => static fn(): object => new Inspectors($clients)->checkedOn($stack, $session),
             'Chroniclers::versionsOn' => static fn(): object => new Chroniclers($clients)->versionsOn($stack, $session),
             'Keepers::keptRunningOn' => static fn(): object => new Keepers($clients, $entropy)->keptRunningOn($stack, $session),

@@ -1,43 +1,29 @@
 <?php
 
 declare(strict_types=1);
-
-use Illuminate\Contracts\Translation\Translator;
 use Modules\Kernel\Api\APartTheWordsLeaveOut;
-use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\HowItRunsWithoutLemonfiber;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Overall;
-use Modules\Kernel\Api\ProposedChange;
 use Modules\Kernel\Api\Report;
-use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Setting;
 use Modules\Kernel\Api\Settings;
-use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\ThePartsTheWordsLeaveOut;
-use Modules\Kernel\Api\WhatAChangeComesTo;
 use Modules\Kernel\Api\WhatASettingHolds;
-use Modules\Kernel\Api\WhatItHoldsNow;
-use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Kernel\Api\WhoPutItThere;
-use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhoseStackItIs;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\Screens\WhatThisStackIsSetTo;
-use Tests\Support\AroundThePhone;
 use Tests\Support\Catalogue;
-use Tests\Support\Fakes\AKeychainInMemory;
-use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatIsSet;
 use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
 use Tests\Support\Fakes\AStackThatWasAsked;
-use Tests\Support\Fakes\AStackToldToChangeSomething;
-use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TheHealthScreenOfTheLoft;
+use Tests\Support\TheSettingsOfTheLoft;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // How a stack runs without lemonfiber, on its settings, and whose stack it is, on its home.
@@ -58,24 +44,7 @@ function theOperatorsOwnStack(): HowItRunsWithoutLemonfiber
 /** The settings screen of the loft, saying how it runs without lemonfiber as the fake says. */
 function theSettingsOfAStackThatRunsWithout(AStackThatSaysHowItRunsWithout $without, ?AShareSheetThatWasOffered $sheet = null): WhatThisStackIsSetTo
 {
-    $stack = TheHealthScreenOfTheLoft::theStackBeingLookedAt();
-    $keychain = AKeychainInMemory::working();
-    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
-
-    $screen = new WhatThisStackIsSetTo(
-        AStackThatIsSet::to(Settings::of(Setting::called('BIND', WhatASettingHolds::shown('lan'), WhoPutItThere::bundled()))),
-        AStackToldToChangeSomething::saying(WhereTheChangeStands::at(ProposedChange::of('BIND', 'any', WhatItHoldsNow::shown('lan'), Cost::Cheap), Stance::Pending, WhatAChangeComesTo::nothing())),
-        $keychain,
-        AroundThePhone::holding(StacksInMemory::holding($stack)),
-        new AppsSettingsThatOpen(),
-        AroundThePhone::listening(),
-        $without,
-        $sheet ?? AShareSheetThatWasOffered::working(),
-        app(Translator::class),
-    );
-    $screen->setParams(['stack' => $stack->id()->stored()]);
-
-    return $screen;
+    return TheSettingsOfTheLoft::screen(AStackThatIsSet::to(Settings::of(Setting::called('BIND', WhatASettingHolds::shown('lan'), WhoPutItThere::bundled()))), without: $without, sheet: $sheet);
 }
 
 /**
@@ -101,7 +70,7 @@ function aLineWithout(string $key, array $with = []): string
 }
 
 it('says the stack runs without lemonfiber, with the words that bring it up, where it lives, how an action asks nothing, and what the words leave out', function (): void {
-    $said = WhatTheDeviceWouldDraw::onTheSecondFrame(theSettingsOfAStackThatRunsWithout(AStackThatSaysHowItRunsWithout::with(theOperatorsOwnStack())))->said();
+    $said = WhatTheDeviceWouldDraw::onTheThirdFrame(theSettingsOfAStackThatRunsWithout(AStackThatSaysHowItRunsWithout::with(theOperatorsOwnStack())))->said();
 
     expect($said)->toContain(aLineWithout('without.runs_without'))
         ->and($said)->toContain('docker compose --project-directory /home/anna/stack up -d')
@@ -115,8 +84,8 @@ it('says the stack runs without lemonfiber, with the words that bring it up, whe
 });
 
 it('says on the settings that the operator runs their own stack, and nothing of the kind for the bundled one', function (): void {
-    $own = WhatTheDeviceWouldDraw::onTheSecondFrame(theSettingsOfAStackThatRunsWithout(AStackThatSaysHowItRunsWithout::with(theOperatorsOwnStack())))->said();
-    $bundled = WhatTheDeviceWouldDraw::onTheSecondFrame(theSettingsOfAStackThatRunsWithout(AStackThatSaysHowItRunsWithout::bundled()))->said();
+    $own = WhatTheDeviceWouldDraw::onTheThirdFrame(theSettingsOfAStackThatRunsWithout(AStackThatSaysHowItRunsWithout::with(theOperatorsOwnStack())))->said();
+    $bundled = WhatTheDeviceWouldDraw::onTheThirdFrame(theSettingsOfAStackThatRunsWithout(AStackThatSaysHowItRunsWithout::bundled()))->said();
 
     expect($own)->toContain(aLineWithout('without.own_stack', ['path' => '/home/anna/stack']))
         ->and(saysItIsTheirOwn($own))->toBeTrue()
@@ -124,10 +93,10 @@ it('says on the settings that the operator runs their own stack, and nothing of 
         ->and($bundled)->toContain(aLineWithout('without.nothing_left_out'));
 });
 
-it('reads the settings on one frame and how it runs without lemonfiber on the next', function (): void {
+it('reads the settings, what setup settled and how it runs without lemonfiber, each on a frame of its own', function (): void {
     $without = AStackThatSaysHowItRunsWithout::bundled();
     $screen = theSettingsOfAStackThatRunsWithout($without);
-    $first = WhatTheDeviceWouldDraw::by($screen)->said();
+    $first = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
 
     expect($first)->toContain(aLineWithout('without.reading'))
         ->and($without->askings())->toBe(0);
@@ -137,14 +106,13 @@ it('reads the settings on one frame and how it runs without lemonfiber on the ne
     expect($without->askings())->toBe(1);
 
     $screen->again();
-    WhatTheDeviceWouldDraw::by($screen);
-    WhatTheDeviceWouldDraw::by($screen);
+    WhatTheDeviceWouldDraw::onTheThirdFrame($screen);
 
     expect($without->askings())->toBe(2);
 });
 
 it('says how it runs without lemonfiber could not be read, rather than that there is nothing to say', function (): void {
-    $said = WhatTheDeviceWouldDraw::onTheSecondFrame(theSettingsOfAStackThatRunsWithout(AStackThatSaysHowItRunsWithout::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->said();
+    $said = WhatTheDeviceWouldDraw::onTheThirdFrame(theSettingsOfAStackThatRunsWithout(AStackThatSaysHowItRunsWithout::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->said();
 
     expect($said)->toContain(aLineWithout('without.unread'))
         ->and($said)->not->toContain(aLineWithout('without.runs_without'));
@@ -157,7 +125,7 @@ it('hands the words to the share sheet to copy out, under their name, and says w
 
     expect($sheet->copied())->toBeNull();
 
-    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    WhatTheDeviceWouldDraw::onTheThirdFrame($screen);
     $screen->copyTheWords();
 
     expect($sheet->copied()?->text())->toBe('docker compose --project-directory /home/anna/stack up -d')
@@ -167,7 +135,7 @@ it('hands the words to the share sheet to copy out, under their name, and says w
 
 it('says the words are on the screen where the share sheet would not open', function (): void {
     $screen = theSettingsOfAStackThatRunsWithout(AStackThatSaysHowItRunsWithout::bundled(), AShareSheetThatWasOffered::refusing(WhyNothingWasShared::TheDeviceWouldNotOffer));
-    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    WhatTheDeviceWouldDraw::onTheThirdFrame($screen);
     $screen->copyTheWords();
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aLineWithout('without.not_copied'));

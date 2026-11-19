@@ -38,7 +38,6 @@ use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\TheHouseholdsTabs;
 use Native\Mobile\Edge\CallbackRegistry;
-use Native\Mobile\Edge\NativeComponent;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -52,6 +51,7 @@ use Tests\Support\TheChannelsOnScreen;
 use Tests\Support\ThePicturesOnScreen;
 use Tests\Support\TheTitlesOnScreen;
 use Tests\Support\WhatMarkupDraws;
+use Tests\Support\WhatPullingDownCalls;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhatTheKeychainStillHolds;
 
@@ -384,40 +384,11 @@ it('asks for both again when asked to, and once a frame otherwise', function ():
         ->and($owing->askings())->toBe(2);
 });
 
-/**
- * The callbacks a frame hands the device for being pulled down, one per container that can be.
- *
- * @return list<int>
- */
-function whatPullingDownCalls(NativeComponent $screen): array
-{
-    $pulled = [];
-    $waiting = [WhatTheDeviceWouldDraw::tree($screen)];
-
-    while ($waiting !== []) {
-        $node = array_pop($waiting);
-
-        if (! is_array($node)) {
-            continue;
-        }
-
-        if (($node['type'] ?? null) === 'refreshable') {
-            $pulled[] = data_get($node, 'props.on_refresh');
-        }
-
-        foreach (is_array($node['children'] ?? null) ? $node['children'] : [] as $child) {
-            $waiting[] = $child;
-        }
-    }
-
-    return array_values(array_filter($pulled, is_int(...)));
-}
-
 it('reads the house again when Home is pulled down, so a title added since shows without leaving it', function (): void {
     $watching = AShelfThatWasRead::holding(aShelfOfThree());
     $screen = theShelfScreen($watching);
 
-    expect(whatPullingDownCalls($screen))->toBe([new CallbackRegistry()->register('again()')]);
+    expect(WhatPullingDownCalls::on($screen))->toBe([new CallbackRegistry()->register('again()')]);
 
     $screen->again();
     $screen->answer();

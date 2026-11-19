@@ -24,6 +24,7 @@ use Modules\Kernel\Api\AskingHowItRunsWithoutLemonfiber;
 use Modules\Kernel\Api\AskingTheIndexers;
 use Modules\Kernel\Api\AskingTheQueue;
 use Modules\Kernel\Api\AskingTheWatcher;
+use Modules\Kernel\Api\AskingWhatSetupSettled;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\ChoosingAFiller;
 use Modules\Kernel\Api\ChoosingHowTheyAreTold;
@@ -174,6 +175,7 @@ use Modules\Sdk\Api\Schedulers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Searchers;
+use Modules\Sdk\Api\Setups;
 use Modules\Sdk\Api\Shelves;
 use Modules\Sdk\Api\Stalls;
 use Modules\Sdk\Api\StartLines;
@@ -391,6 +393,7 @@ final class TheWayToEveryStack extends ServiceProvider
         $this->app->bind(AskingTheWatcher::class, Watchers::class);
         $this->app->bind(AskingTheQueue::class, Healers::class);
         $this->app->bind(RunningOnASchedule::class, Schedulers::class);
+        $this->app->bind(AskingWhatSetupSettled::class, Setups::class);
         $this->app->bind(AskingHowItRunsWithoutLemonfiber::class, Foundations::class);
 
         // How the line is shared, read beside the rest and bound for the same

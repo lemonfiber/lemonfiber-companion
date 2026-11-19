@@ -16,6 +16,7 @@ use Modules\Kernel\Api\ACommandToHand;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\AskingHowItRunsWithoutLemonfiber;
+use Modules\Kernel\Api\AskingWhatSetupSettled;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowItRunsWithoutLemonfiber;
 use Modules\Kernel\Api\ItsContent;
@@ -34,6 +35,7 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAChangeReads;
 use Modules\Operator\Internal\Presenters\HowTheSettingsRead;
 use Modules\Operator\Internal\ReadsHowItRunsWithout;
+use Modules\Operator\Internal\ReadsWhatSetupSettled;
 use Modules\Operator\Internal\ViewModels\WhatAChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatThisStackIsSetToTurnedOutToBe;
 use Modules\Operator\Internal\WhatTheSheetSaid;
@@ -59,10 +61,9 @@ use function view;
  * this app's own: a key and what it holds, in the order the stack said them.
  * Anything prettier would be this side deciding something the other side owns.
  *
- * **It says setup is done at the machine, on every stack.** What setup settled
- * is carried whole only by what the command line writes, and nothing this app
- * can read says whether a stack has setup left to do, so the sentence is drawn
- * on every stack rather than only on one that has setup left.
+ * **What setup settled is drawn above the listing, read-only.** It is read
+ * from the stack, and where setup is not finished the screen says to finish it
+ * at the machine; setup is never offered here.
  *
  * **{@see Concealed} because a withheld row is still about a credential.** The
  * stack withholds the value and sends a note in its place, so nothing secret
@@ -81,6 +82,7 @@ final class WhatThisStackIsSetTo extends NativeComponent
     use FindsItsWayAround;
     use ReadsAStackOnceAFrame;
     use ReadsHowItRunsWithout;
+    use ReadsWhatSetupSettled;
 
     /** The key for the name the share sheet shows the words under. */
     private const string COPY_NAMED = 'without.copy_named';
@@ -119,6 +121,7 @@ final class WhatThisStackIsSetTo extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
         protected readonly AskingHowItRunsWithoutLemonfiber $askingWithout,
+        protected readonly AskingWhatSetupSettled $askingSettled,
         private readonly Sharing $sharing,
         private readonly Translator $catalogue,
     ) {}
@@ -143,6 +146,7 @@ final class WhatThisStackIsSetTo extends NativeComponent
         $this->proposed = null;
         $this->copied = null;
         $this->forgetHowItRunsWithout();
+        $this->forgetWhatSetupSettled();
     }
 
     /**
@@ -245,6 +249,7 @@ final class WhatThisStackIsSetTo extends NativeComponent
             WhatToSet $asked,
         ): WhatTheStackMadeOfIt => $adjusting->agreedTo($stack, $session, $asked));
         $this->answered = null;
+        $this->forgetWhatSetupSettled();
     }
 
     /** Where the proposal stands, or nothing where none has been put. */

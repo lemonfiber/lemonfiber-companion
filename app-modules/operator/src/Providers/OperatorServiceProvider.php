@@ -64,6 +64,7 @@ use Modules\Operator\Internal\Screens\WhatThisServiceSaid;
 use Modules\Operator\Internal\Screens\WhatThisServiceWaitsFor;
 use Modules\Operator\Internal\Screens\WhatThisStackIsSetTo;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
+use Modules\Operator\Internal\Screens\WhatThisStackWasSetUpWith;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Operator\Internal\Screens\WhatWasChangedHere;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
@@ -232,6 +233,7 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Watcher->value, TheOutsideWatcher::class);
             Router::native(AStacksScreen::Queue->value, TheQueueHealingItself::class);
             Router::native(AStacksScreen::Scheduled->value, TheScheduledRuns::class);
+            Router::native(AStacksScreen::Settled->value, WhatThisStackWasSetUpWith::class);
 
             // A guard on the data location, held while its screen asks. A
             // screen of its own rather than a row of the one above, because

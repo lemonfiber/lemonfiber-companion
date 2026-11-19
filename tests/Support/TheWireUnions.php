@@ -27,6 +27,7 @@ use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowDeliveryStands;
 use Modules\Kernel\Api\HowDriftWasJudged;
 use Modules\Kernel\Api\HowFarItGoesBack;
+use Modules\Kernel\Api\HowFarSetupGot;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\HowItEnded;
 use Modules\Kernel\Api\HowItIsHosted;
@@ -99,6 +100,7 @@ use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
+use Modules\Kernel\Api\WhereTheServiceUserComesFrom;
 use Modules\Kernel\Api\WhereTheWalkthroughIs;
 use Modules\Kernel\Api\WhereThisCopyStands;
 use Modules\Kernel\Api\WhetherHealingActs;
@@ -141,6 +143,8 @@ final readonly class TheWireUnions
         KindOfAlertBackEnd::class => 'kind',
         WhoSettledIt::class => 'whose',
         WhyTheWorkEnded::class => 'ended',
+        HowFarSetupGot::class => 'setup',
+        WhereTheServiceUserComesFrom::class => 'from',
         HowItWasReached::class => 'how',
         HowAServiceRuns::class => 'state',
         KindOfMonitor::class => 'kind',

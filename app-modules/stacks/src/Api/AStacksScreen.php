@@ -59,6 +59,9 @@ enum AStacksScreen: string
     /** Every run-and-exit service and how its last run went. */
     case Scheduled = '/stacks/{stack}/scheduled';
 
+    /** What setup settled, as facts about the stack. */
+    case Settled = '/stacks/{stack}/settled';
+
     /** A guard on this machine's data location, held only while its screen keeps asking. */
     case Guard = '/stacks/{stack}/guard';
 

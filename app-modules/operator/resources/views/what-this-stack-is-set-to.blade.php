@@ -4,6 +4,8 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
+    <x-operator::set-up-with :settled="$this->settled()" />
+
     {{-- How many there are, said before the list. An operator who came here
          to change one thing wants to know whether this is a screen they can
          read or one they have to search, and the count is the only honest
@@ -15,11 +17,6 @@
          operator to read silence, and this list is one they will compare
          against what they see in the stack's own interfaces. --}}
     <x-design::note>{{ __('config.listing_is_the_stacks') }}</x-design::note>
-
-    {{-- What setup settled is here as facts about the stack, among the rest
-         of what it is set to, and changing one is reconfiguration. The stack
-         does not say which settings setup wrote, so none is singled out. --}}
-    <x-design::note>{{ __('config.what_setup_settled') }}</x-design::note>
 
     @forelse ($this->answer()->set as $setting)
         <x-design::card>
