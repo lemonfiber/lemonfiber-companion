@@ -71,6 +71,7 @@ function whatAStackSaysItWires(array $changed = [], array $without = []): array
             ['by' => 'radarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'indexer', 'services' => ['prowlarr'], 'settled' => ['settled' => 'chosen', 'whose' => 'operator', 'over' => ['jackett'], 'why' => 'Jackett is too slow here'], 'origins' => ['prowlarr' => ['origin' => 'bundled'], 'jackett' => ['origin' => 'unknown', 'why' => 'the record would not read']]]],
             ['by' => 'bazarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'subtitles', 'services' => ['opensubtitles'], 'settled' => ['settled' => 'chosen', 'whose' => 'stack', 'over' => ['subscene']], 'origins' => []]],
             ['by' => 'lidarr', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'music-tagger', 'services' => [], 'settled' => ['settled' => 'unfilled'], 'origins' => []]],
+            ['by' => 'qbittorrent', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'asked', 'capability' => 'egress-guard', 'services' => [], 'settled' => ['settled' => 'declined', 'over' => ['gluetun']], 'origins' => []]],
             ['by' => 'jellyfin', 'origin' => ['origin' => 'bundled'], 'reaches' => ['how' => 'by-name', 'service' => 'tdarr', 'why' => 'Transcoding runs on the other machine']],
         ],
         'unfilled' => [['by' => 'lidarr', 'capability' => 'music-tagger']],
@@ -104,6 +105,7 @@ function theSameWiring(): TheLinks
         $asked('radarr', 'indexer', Services::these(ServiceId::called('prowlarr')), WhatSettledIt::chosen(Services::these(ServiceId::called('jackett')), WhoSettledIt::Operator, WhyItWasChosen::stated('Jackett is too slow here')), aClaimantOf('prowlarr', WhoPutItThere::bundled()), aClaimantOf('jackett', WhoPutItThere::unknown('the record would not read'))),
         $asked('bazarr', 'subtitles', Services::these(ServiceId::called('opensubtitles')), WhatSettledIt::chosen(Services::these(ServiceId::called('subscene')), WhoSettledIt::Stack, WhyItWasChosen::unstated())),
         $asked('lidarr', 'music-tagger', Services::none(), WhatSettledIt::unfilled()),
+        $asked('qbittorrent', 'egress-guard', Services::none(), WhatSettledIt::declined(Services::these(ServiceId::called('gluetun')))),
         ALink::from(ServiceId::called('jellyfin'), HowItReaches::byName(ServiceId::called('tdarr'), 'Transcoding runs on the other machine')),
     );
 }
@@ -155,6 +157,7 @@ function howTheAskSettled(WhatSettledIt $settled): string
             )->said,
         )),
         unfilled: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unfilled'),
+        declined: static fn(Services $over): TheWordCarriedOut => new TheWordCarriedOut(sprintf('declined over %s', theServicesNamed($over))),
     )->said;
 }
 
@@ -243,6 +246,7 @@ it('reads every link with how it was settled and where each claimant came from, 
             'radarr: asks indexer, reaches prowlarr, chosen by operator over jackett, Jackett is too slow here [prowlarr=bundled,jackett=unknown:the record would not read]',
             'bazarr: asks subtitles, reaches opensubtitles, chosen by stack over subscene, no reason []',
             'lidarr: asks music-tagger, reaches , unfilled []',
+            'qbittorrent: asks egress-guard, reaches , declined over gluetun []',
             'jellyfin: by name to tdarr, Transcoding runs on the other machine',
             'unfilled: lidarr asks music-tagger',
         ]), $which);

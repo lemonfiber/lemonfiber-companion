@@ -820,12 +820,12 @@ it('every way a wiring run can have judged drift has a case', function (): void 
 });
 
 it('every state a wired connection can end in has a case', function (): void {
-    // Fourteen arms, several with hyphens, and each drawn in a sentence of its
+    // Eighteen arms, several with hyphens, and each drawn in a sentence of its
     // own: a state this app did not know is refused rather than read as the
     // nearest, so a new one on the wire has to be met here first.
     $words = TheWireUnions::theArmsIn(TheGeneratedEnvelopes::theGeneratedEnvelope('SeedEnvelope'), 'state');
 
-    expect($words)->toHaveCount(16);
+    expect($words)->toHaveCount(18);
     expect(TheWireUnions::valuesOf(WhereAConnectionStands::cases()))->toBe($words);
 });
 

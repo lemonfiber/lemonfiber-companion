@@ -18,7 +18,7 @@ it('spells each case the way the contract spells it', function (): void {
     expect(array_map(
         static fn(HowItSettled $case): string => $case->value,
         HowItSettled::cases(),
-    ))->toBe(['outright', 'each', 'contested', 'chosen', 'unfilled']);
+    ))->toBe(['outright', 'each', 'contested', 'chosen', 'unfilled', 'declined']);
 });
 
 it('has a case for a contest, because the core declines to settle one', function (): void {

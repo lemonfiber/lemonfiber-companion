@@ -62,4 +62,8 @@ enum WhereAConnectionStands: string
 
     /** A hand edit to the configuration a quality preset is held through, left in place; no run writes over it. */
     case Kept = 'kept';
+    /** A download client lemonfiber created in a curator, taken back out because nothing answers where it points any more. */
+    case TakenBack = 'taken-back';
+    /** A download client a run that wrote would have taken back, where this one only said so. */
+    case WouldTakeBack = 'would-take-back';
 }

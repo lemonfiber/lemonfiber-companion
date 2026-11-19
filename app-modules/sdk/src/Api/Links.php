@@ -133,6 +133,7 @@ final readonly class Links
             HowItSettled::Contested => WhatSettledIt::contested(self::services($settled, WireField::Claimants, $position)),
             HowItSettled::Chosen => self::chosen($settled, $position),
             HowItSettled::Unfilled => WhatSettledIt::unfilled(),
+            HowItSettled::Declined => WhatSettledIt::declined(self::services($settled, WiringField::Over, $position)),
         };
     }
 

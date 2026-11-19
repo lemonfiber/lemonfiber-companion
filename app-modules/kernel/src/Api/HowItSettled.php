@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 /**
- * The five things the core can say about how a capability came to be filled.
+ * The six things the core can say about how a capability came to be filled.
  *
  * The word, as a closed set. {@see WhatSettledIt} is the reading built from it
  * — the arm that carries the claimants of a contest, the arm that carries who
@@ -24,7 +24,7 @@ namespace Modules\Kernel\Api;
  * claimant to get a screen drawn, would be settling something the core declined
  * to settle — which is exactly what this surface may not do.
  *
- * The five are the core's own, named in `contract/web-api.contract.json`. They
+ * The six are the core's own, named in `contract/web-api.contract.json`. They
  * are written out here rather than derived from it for {@see Severity}'s
  * reason: this module may not read a file and may not know the SDK exists.
  */
@@ -44,4 +44,6 @@ enum HowItSettled: string
 
     /** Nothing claims it. Not a fault — a state. */
     case Unfilled = 'unfilled';
+    /** The operator chose that nothing fills it; the arm says what it was chosen over. */
+    case Declined = 'declined';
 }

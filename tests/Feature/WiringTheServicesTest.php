@@ -124,6 +124,8 @@ function aRunOfEveryConnection(): TheWiring
         aConnectionEnded('M', HowAConnectionEnded::because(WhereAConnectionStands::Refused, 'Two arrs share one root folder')),
         aConnectionEnded('N', HowAConnectionEnded::because(WhereAConnectionStands::Unmatched, 'NZBGet names no adapter lemonfiber pairs with Sonarr')),
         aConnectionEnded('O', HowAConnectionEnded::plainly(WhereAConnectionStands::Restarted)),
+        aConnectionEnded('P', HowAConnectionEnded::plainly(WhereAConnectionStands::TakenBack)),
+        aConnectionEnded('Q', HowAConnectionEnded::plainly(WhereAConnectionStands::WouldTakeBack)),
     );
 }
 
@@ -233,8 +235,10 @@ it('draws every connection in the state the stack gave it, skipped apart from fa
         'stacks.wiring.state.refused',
         'stacks.wiring.state.unmatched',
         'stacks.wiring.state.restarted',
+        'stacks.wiring.state.taken_back',
+        'stacks.wiring.state.would_take_back',
     ])->and(array_map(static fn(AConnectionAsShown $connection): string => $connection->connection, $run->connections))
-        ->toBe(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'])
+        ->toBe(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q'])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.wiring.state.drifted'));
 });
 
@@ -389,7 +393,7 @@ it('asking again reads the services afresh and keeps the report a run came to', 
     $screen->again();
     $screen->answer();
 
-    expect(theRunDrawn($screen)->connections)->toHaveCount(15)
+    expect(theRunDrawn($screen)->connections)->toHaveCount(17)
         ->and($supervising->askings())->toBe(2)
         ->and($wiring->asked())->toBe(['wire', 'after:j-1']);
 });
@@ -492,6 +496,7 @@ function aStackWiringOneOfEach(): TheLinks
         aLinkAskingFor('radarr', 'indexer', Services::these(ServiceId::called('prowlarr')), WhatSettledIt::chosen(Services::these(ServiceId::called('jackett')), WhoSettledIt::Operator, WhyItWasChosen::stated('Jackett is too slow here')), $bundled('prowlarr'), $bundled('jackett')),
         aLinkAskingFor('bazarr', 'subtitles', Services::these(ServiceId::called('opensubtitles')), WhatSettledIt::chosen(Services::these(ServiceId::called('subscene')), WhoSettledIt::Stack, WhyItWasChosen::unstated())),
         aLinkAskingFor('lidarr', 'music-tagger', Services::none(), WhatSettledIt::unfilled()),
+        aLinkAskingFor('qbittorrent', 'egress-guard', Services::none(), WhatSettledIt::declined(Services::these(ServiceId::called('gluetun'), ServiceId::called('wireguard')))),
         ALink::from(ServiceId::called('jellyfin'), HowItReaches::byName(ServiceId::called('tdarr'), 'Transcoding runs on the other machine')),
     );
 }
@@ -505,6 +510,7 @@ it('opens on what answers what, above the services and the run, in the stack\'s 
         __('stacks.wiring.fills.outright', ['service' => 'qbittorrent']),
         __('stacks.wiring.fills.each', ['services' => 'sonarr, radarr']),
         __('stacks.wiring.fills.unfilled'),
+        __('stacks.wiring.fills.declined', ['over' => 'gluetun, wireguard']),
         __('stacks.wiring.fills.by_name', ['service' => 'tdarr']),
         __('stacks.wiring.fills.why', ['why' => 'Transcoding runs on the other machine']),
         __(WhoSetIt::Bundled->ofAService()),
