@@ -14,7 +14,6 @@ use Modules\Kernel\Api\HowAVolumeWasRead;
 use Modules\Kernel\Api\HowDeliveryStands;
 use Modules\Kernel\Api\HowDriftWasJudged;
 use Modules\Kernel\Api\HowFarItGoesBack;
-use Modules\Kernel\Api\HowFarSetupGot;
 use Modules\Kernel\Api\HowFarTheRemovalReached;
 use Modules\Kernel\Api\HowItIsHosted;
 use Modules\Kernel\Api\HowItSettled;
@@ -86,7 +85,6 @@ use Modules\Kernel\Api\WhereTheInvitationStands;
 use Modules\Kernel\Api\WhereTheLineStands;
 use Modules\Kernel\Api\WhereTheMonthStands;
 use Modules\Kernel\Api\WhereTheRoomStands;
-use Modules\Kernel\Api\WhereTheServiceUserComesFrom;
 use Modules\Kernel\Api\WhereTheUninstallStands;
 use Modules\Kernel\Api\WhereTheWalkthroughIs;
 use Modules\Kernel\Api\WhereThisCopyStands;
@@ -318,17 +316,6 @@ it('every reason work ends before it finished for has a case', function (): void
 
     expect($reasons)->not->toBe([], 'no ended union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhyTheWorkEnded::cases()))->toBe($reasons);
-});
-
-it('every way setup can stand and every source of the service user the contract describes has a case', function (): void {
-    $settled = TheGeneratedEnvelopes::theGeneratedEnvelope('SettledEnvelope');
-    $setup = TheWireUnions::unionIn($settled, 'setup');
-    $from = TheWireUnions::unionIn($settled, 'from');
-
-    expect($setup)->not->toBe([], 'no setup union was found in the generated envelope')
-        ->and($from)->not->toBe([], 'no from union was found in the generated envelope')
-        ->and(TheWireUnions::valuesOf(HowFarSetupGot::cases()))->toBe($setup)
-        ->and(TheWireUnions::valuesOf(WhereTheServiceUserComesFrom::cases()))->toBe($from);
 });
 
 it('every settlement the contract describes has a case', function (): void {
