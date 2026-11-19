@@ -11,6 +11,7 @@ use Modules\Kernel\Api\AJoinLink;
 use Modules\Kernel\Api\AMembersName;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowLong;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
@@ -19,6 +20,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhenToTryAgain;
 use Modules\Kernel\Api\Whose;
 use Modules\Sdk\Api\Admissions;
 use Modules\Sdk\Api\PinnedClients;
@@ -193,6 +195,27 @@ it('tells a refused password from a door that has stopped listening', function (
         }
     }
 });
+
+it('carries the wait a refusal for too many attempts named, in seconds it can count, and none it cannot', function (string $header, WhenToTryAgain $when): void {
+    $waited = static fn(Obstacle $why, WhenToTryAgain $tryAgain): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s %s', $why->kind()->value, $tryAgain->isSaid() ? sprintf('%d s', $tryAgain->wait()->inSeconds()) : 'unsaid'));
+    $why = Obstacle::of(KindOfObstacle::TooManyAttempts);
+    $answered = MockResponse::make('{"error":"wait"}', 429, $header === '' ? [] : ['Retry-After' => $header]);
+    $door = static fn(): Admitting => ADoorThatWasKnockedOn::refusingFor($why, $when);
+
+    foreach (['the fake' => $door, 'the adapter' => everyDoor($answered)['the adapter']] as $which => $make) {
+        expect($make()->admit(aStackWithADoor(), Credential::of('the-operators-password'))->either(
+            opened: static fn(): TheWordCarriedOut => new TheWordCarriedOut('opened'),
+            refused: $waited,
+        )->said)->toBe($waited($why, $when)->said, $which);
+    }
+})->with([
+    'ninety seconds' => ['90', WhenToTryAgain::after(HowLong::ofSeconds(90))],
+    'none to wait' => ['0', WhenToTryAgain::after(HowLong::ofSeconds(0))],
+    'none named' => ['', WhenToTryAgain::unsaid()],
+    'a date' => ['Wed, 21 Oct 2026 07:28:00 GMT', WhenToTryAgain::unsaid()],
+    'below nothing' => ['-5', WhenToTryAgain::unsaid()],
+    'one below nothing' => ['-1', WhenToTryAgain::unsaid()],
+]);
 
 it('spends the credential it was given, so nothing can offer it twice', function (): void {
     // The clause that takes a design rather than care. `Credential` empties

@@ -18,9 +18,12 @@ use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Kernel\Api\WhenToTryAgain;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 use Modules\Operator\Internal\OffersTheAppsSettings;
+use Modules\Operator\Internal\Presenters\HowTheWaitReads;
+use Modules\Operator\Internal\ViewModels\TheWaitAsShown;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhichSurfaceTheyAreGiven;
 use Modules\Stacks\Api\AStacksScreen;
@@ -116,6 +119,9 @@ final class SignIntoAStack extends NativeComponent
     /** What became of the attempt, once one has been made. */
     public HowTheSignInWent $went = HowTheSignInWent::NotYet;
 
+    /** How long the stack said to wait before trying again, worked out when the refusal arrived. */
+    public ?TheWaitAsShown $wait = null;
+
     /**
      * Which application the person who just signed in is given.
      *
@@ -200,6 +206,7 @@ final class SignIntoAStack extends NativeComponent
     public function startOver(): void
     {
         $this->went = HowTheSignInWent::NotYet;
+        $this->wait = null;
     }
 
     /**
@@ -269,6 +276,7 @@ final class SignIntoAStack extends NativeComponent
             return;
         }
 
+        $this->wait = null;
         $this->went = $this->runsTheHouse ? $this->asTheOperator() : $this->asAMember(AMembersName::of($this->theirName));
         $this->theirName = $this->went->isSignedIn() ? '' : $this->theirName;
 
@@ -374,7 +382,11 @@ final class SignIntoAStack extends NativeComponent
         return $this->admitting->admit($this->stack(), $said)->either(
             opened: fn(Session $session, Instant $until, Whose $whose): HowTheSignInWent
                 => $this->kept($session, $whose),
-            refused: static fn(Obstacle $why): HowTheSignInWent => HowTheSignInWent::met($why),
+            refused: function (Obstacle $why, WhenToTryAgain $tryAgain): HowTheSignInWent {
+                $this->wait = new HowTheWaitReads()->of($tryAgain);
+
+                return HowTheSignInWent::met($why);
+            },
         );
     }
 
@@ -387,7 +399,11 @@ final class SignIntoAStack extends NativeComponent
         return $this->admitting->admitAs($this->stack(), $named, $said)->either(
             opened: fn(Session $session, Instant $until, Whose $whose): HowTheSignInWent
                 => $this->kept($session, $whose),
-            refused: static fn(Obstacle $why): HowTheSignInWent => HowTheSignInWent::metWithAName($why),
+            refused: function (Obstacle $why, WhenToTryAgain $tryAgain): HowTheSignInWent {
+                $this->wait = new HowTheWaitReads()->of($tryAgain);
+
+                return HowTheSignInWent::metWithAName($why);
+            },
         );
     }
 }

@@ -39,18 +39,24 @@ final readonly class Admitted
      * reads as caution and is a line no test can defend. A union says the same
      * thing and says it to the type system: this is one or the other.
      */
-    private function __construct(private Opening|Obstacle $outcome) {}
+    private function __construct(private Opening|Obstacle $outcome, private WhenToTryAgain $tryAgain) {}
 
     /** The credential was traded, and this is what came back. */
     public static function opening(Session $session, Instant $until, Whose $whose): self
     {
-        return new self(new Opening($session, $until, $whose));
+        return new self(new Opening($session, $until, $whose), WhenToTryAgain::unsaid());
     }
 
     /** It was not, and this is what the operator met instead. */
     public static function refused(Obstacle $why): self
     {
-        return new self($why);
+        return new self($why, WhenToTryAgain::unsaid());
+    }
+
+    /** It was not, the operator met this, and the stack said how long to wait before trying again. */
+    public static function refusedFor(Obstacle $why, WhenToTryAgain $tryAgain): self
+    {
+        return new self($why, $tryAgain);
     }
 
     /**
@@ -65,14 +71,14 @@ final readonly class Admitted
      * @template TRefused of object
      *
      * @param Closure(Session, Instant, Whose): TOpened $opened
-     * @param Closure(Obstacle): TRefused        $refused
+     * @param Closure(Obstacle, WhenToTryAgain): TRefused $refused
      *
      * @return TOpened|TRefused
      */
     public function either(Closure $opened, Closure $refused): object
     {
         return $this->outcome instanceof Obstacle
-            ? $refused($this->outcome)
+            ? $refused($this->outcome, $this->tryAgain)
             : $opened($this->outcome->session, $this->outcome->until, $this->outcome->whose);
     }
 }

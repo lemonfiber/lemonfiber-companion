@@ -8,6 +8,7 @@ use Modules\Connection\Api\Remembering;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AJoinLink;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowLong;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
@@ -16,6 +17,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatTheHouseholdWasTold;
+use Modules\Kernel\Api\WhenToTryAgain;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyAStackCannotBeRemembered;
 use Modules\Kernel\Api\WhyNothingWasScanned;
@@ -643,4 +645,30 @@ it('says a chosen password is too short in the house\'s own words, which name th
         ->and(WhatTheDeviceWouldDraw::by($silent)->said())->toContain(__('household.joining.too_short'), __('household.joining.too_short_action'))
         ->and($named->choosing)->toBeTrue()
         ->and($named->stoodInTheWay())->toBe(WhatStoodInTheWayOfJoining::TooShort);
+});
+
+it('says how long to wait before trying again, fixed when the refusal arrived', function (): void {
+    $screen = signingInAs(theWayIn(ACameraInMemory::reading(theCodeForANewPhone()), ADoorThatWasKnockedOn::refusingFor(Obstacle::of(KindOfObstacle::TooManyAttempts), WhenToTryAgain::after(HowLong::ofSeconds(45)))));
+
+    $screen->signIn();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.try_again_in.seconds', ['count' => 45]))
+        ->and($screen->stoodInTheWay())->toBe(WhatStoodInTheWayOfJoining::TooManyAttempts);
+});
+
+it('lets go of the wait once the next try is offered', function (): void {
+    $screen = signingInAs(theWayIn(ACameraInMemory::reading(theCodeForANewPhone()), ADoorThatWasKnockedOn::refusingOnceForThenOpening(
+        Obstacle::of(KindOfObstacle::TooManyAttempts),
+        WhenToTryAgain::after(HowLong::ofSeconds(45)),
+        Session::of('a-session-not-a-secret'),
+        Instant::atEpochSeconds(JOINED_AT * 2),
+        Whose::member('a-member'),
+    )));
+    $screen->signIn();
+    $screen->__syncProperty('typed', 'a-members-password');
+
+    $screen->signIn();
+
+    expect($screen->wait)->toBeNull()
+        ->and($screen->stoodInTheWay())->toBeNull();
 });

@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\WhenToTryAgain;
 use Modules\Kernel\Api\Whose;
 
 /**
@@ -92,6 +93,31 @@ final class ADoorThatWasKnockedOn implements Admitting
         $refuses = static fn(): Admitted => Admitted::refused($why);
 
         return new self($refuses, $refuses);
+    }
+
+    /** A door that does not open, for the reason given, and says how long to wait before trying again. */
+    public static function refusingFor(Obstacle $why, WhenToTryAgain $tryAgain): self
+    {
+        $refuses = static fn(): Admitted => Admitted::refusedFor($why, $tryAgain);
+
+        return new self($refuses, $refuses);
+    }
+
+    /** A door that refuses the first knock, saying how long to wait, and opens every later one for whoever is named. */
+    public static function refusingOnceForThenOpening(Obstacle $why, WhenToTryAgain $tryAgain, Session $session, Instant $until, Whose $whose): self
+    {
+        $refused = false;
+        $answers = static function () use (&$refused, $why, $tryAgain, $session, $until, $whose): Admitted {
+            if ($refused) {
+                return Admitted::opening($session, $until, $whose);
+            }
+
+            $refused = true;
+
+            return Admitted::refusedFor($why, $tryAgain);
+        };
+
+        return new self($answers, $answers);
     }
 
     /** The stack it was last knocked on for, or nothing where it never was. */

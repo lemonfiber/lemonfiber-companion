@@ -32,6 +32,7 @@ use Modules\Kernel\Api\Stacks;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheHouseholdWasTold;
+use Modules\Kernel\Api\WhenToTryAgain;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
@@ -39,6 +40,8 @@ use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\HowAnInvitedPhoneFindsTheHouse;
 use Modules\Operator\Internal\InTheWayInsWords;
 use Modules\Operator\Internal\OffersTheAppsSettings;
+use Modules\Operator\Internal\Presenters\HowTheWaitReads;
+use Modules\Operator\Internal\ViewModels\TheWaitAsShown;
 use Modules\Operator\Internal\WhatFindingTheHouseMet;
 use Modules\Operator\Internal\WhatStoodInTheWayOfJoining;
 use Modules\Operator\Internal\WhereTheWayInIs;
@@ -106,6 +109,9 @@ final class JoiningAHouse extends NativeComponent
 
     /** What the house said, in the household's words, where it refused and said something; this app's own lines stand in where it did not. */
     public ?WhatTheHouseholdWasTold $told = null;
+
+    /** How long the house said to wait before trying again, worked out when the refusal arrived. */
+    public ?TheWaitAsShown $wait = null;
 
     /** Where the house a join link would add is, as the link carries it, while the person is asked whether somebody in their house sent it. */
     public string $offeredAt = '';
@@ -205,6 +211,7 @@ final class JoiningAHouse extends NativeComponent
         $said = Credential::of($this->typed);
         $this->typed = '';
         $this->told = null;
+        $this->wait = null;
         $stack = $this->around->stack(StackId::rememberedAs($this->joined));
 
         $offered = $this->claim instanceof AClaim
@@ -213,8 +220,9 @@ final class JoiningAHouse extends NativeComponent
 
         $this->went = $offered->either(
             opened: fn(Session $session, Instant $until, Whose $whose): HowTheSignInWent => $this->sessionKept($stack->id(), $session, $whose),
-            refused: function (Obstacle $why): HowTheSignInWent {
+            refused: function (Obstacle $why, WhenToTryAgain $tryAgain): HowTheSignInWent {
                 $this->told = $why->whatTheHouseholdWasTold();
+                $this->wait = new HowTheWaitReads()->of($tryAgain);
 
                 return HowTheSignInWent::metWithAName($why);
             },

@@ -55,6 +55,8 @@
             </x-design::notice>
         @endif
 
+        <x-operator::the-wait :wait="$this->wait" />
+
         <x-design::card>
             <native:outlined-text-input
                 native:model="theirName"

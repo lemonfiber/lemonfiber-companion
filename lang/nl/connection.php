@@ -92,6 +92,10 @@ return [
     'scanned_code_is_unreadable_action' => 'Controleer of je op de code van het koppelingsscherm van je stack richt, en of die niet is verlopen.',
     'too_many_attempts' => 'Deze stack accepteert even geen wachtwoordpogingen meer, na te veel verkeerde.',
     'too_many_attempts_action' => 'Wacht even en probeer het daarna nog één keer. Nu opnieuw proberen maakt de wachttijd langer.',
+    'try_again_in' => [
+        'minutes' => 'Probeer het over :count min opnieuw',
+        'seconds' => 'Probeer het over :count sec opnieuw',
+    ],
     'signed_in' => 'Aangemeld bij :stack',
     'signed_in_action' => 'Deze stack staat voor je open.',
     'sign_in_to' => 'Aanmelden bij :stack',
