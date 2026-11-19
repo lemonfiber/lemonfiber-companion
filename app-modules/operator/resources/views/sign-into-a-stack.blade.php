@@ -6,6 +6,7 @@
         <x-design::body>{{ __($this->given->opened()) }}</x-design::body>
     @else
         <x-design::body>{{ __($this->explained()) }}</x-design::body>
+        <x-operator::the-wait :wait="$this->wait" />
     @endif
     @if ($this->went()->isPutRightInTheAppsSettings())
         <x-design::action :label="__('connection.open_settings')" tap="openTheAppsSettings()" />

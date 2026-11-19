@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowLong;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
@@ -15,6 +16,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsNotConfigured;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\WhenToTryAgain;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
@@ -707,4 +709,42 @@ it('draws the menu and the list of stacks, and hides the bar', function (): void
         ->and(WhatTheDeviceWouldDraw::inTheListOfStacks($screen)->offers())->toBe([aStackToSignInto()->name()->shown()])
         ->and($screen->itsTab())->toBeNull()
         ->and($screen->tabBarOptions()?->hidden)->toBeTrue();
+});
+
+it('says how long to wait, fixed when the refusal arrived, for the operator and for a member, and keeps the way back to asking', function (SignIntoAStack $screen): void {
+    $screen->offer();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->said())->toContain(__('connection.try_again_in.minutes', ['count' => 2]))
+        ->and($drawn->offers())->toContain(__('connection.start_over'))
+        ->and($drawn->offersThatWait())->toBe([]);
+
+    $screen->startOver();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('connection.try_again_in.minutes', ['count' => 2]));
+})->with([
+    'the operator' => fn(): SignIntoAStack => typedPassword(signInScreen(ADoorThatWasKnockedOn::refusingFor(Obstacle::of(KindOfObstacle::TooManyAttempts), WhenToTryAgain::after(HowLong::ofSeconds(90)))), 'the-operators-password'),
+    'a member' => fn(): SignIntoAStack => typedPassword(typedName(signInScreen(ADoorThatWasKnockedOn::refusingFor(Obstacle::of(KindOfObstacle::TooManyAttempts), WhenToTryAgain::after(HowLong::ofSeconds(90)))), 'Robin'), 'a-members-password'),
+]);
+
+it('says no wait where the stack named none', function (): void {
+    $screen = typedPassword(signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::of(KindOfObstacle::TooManyAttempts))), 'the-operators-password');
+    $screen->offer();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('connection.try_again_in.minutes', ['count' => 0]), __('connection.try_again_in.seconds', ['count' => 0]));
+});
+
+it('lets go of the wait once the next try is offered', function (): void {
+    $screen = typedPassword(signInScreen(ADoorThatWasKnockedOn::refusingOnceForThenOpening(
+        Obstacle::of(KindOfObstacle::TooManyAttempts),
+        WhenToTryAgain::after(HowLong::ofSeconds(90)),
+        Session::of('a-session-not-a-secret'),
+        Instant::atEpochSeconds(2_000_000_000),
+        Whose::theOperator(),
+    )), 'the-operators-password');
+    $screen->offer();
+    typedPassword($screen, 'the-operators-password')->offer();
+
+    expect($screen->wait)->toBeNull()
+        ->and($screen->went()->isSignedIn())->toBeTrue();
 });

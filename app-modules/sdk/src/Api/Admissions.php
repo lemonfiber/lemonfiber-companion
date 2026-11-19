@@ -16,11 +16,13 @@ use Modules\Kernel\Api\Admitted;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\AMembersName;
 use Modules\Kernel\Api\Credential;
+use Modules\Kernel\Api\HowLong;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\WhenToTryAgain;
 use Modules\Kernel\Api\Whose;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -97,6 +99,13 @@ final readonly class Admissions implements Admitting
                 $named instanceof AMembersName => $door->openAs($named->forTheExchange(), $said->forTheExchange()),
                 default => $door->open($said->forTheExchange()),
             };
+        } catch (TooManyAttempts $why) {
+            $seconds = $why->seconds();
+
+            return Admitted::refusedFor(
+                Obstacle::of(KindOfObstacle::TooManyAttempts),
+                $seconds === null || $seconds < 0 ? WhenToTryAgain::unsaid() : WhenToTryAgain::after(HowLong::ofSeconds($seconds)),
+            );
         } catch (CertificateWasRefused|PasswordWasRefused|RequestFailed|Unreachable|UnreadableResponse $why) {
             return Admitted::refused($this->met($stack, $why));
         }
@@ -129,7 +138,6 @@ final readonly class Admissions implements Admitting
     {
         return match (true) {
             $why instanceof PasswordWasRefused => Obstacle::of(KindOfObstacle::CredentialWasRefused),
-            $why instanceof TooManyAttempts => Obstacle::of(KindOfObstacle::TooManyAttempts),
             $why instanceof CertificateWasRefused => Obstacle::of(KindOfObstacle::StackIsNotTheOnePaired),
             $why instanceof RequestFailed && $why->code() instanceof RefusalCode => WhatARefusalMeant::obstacle($why),
             default => $this->clients->whatStoodInTheWay($stack, $why),

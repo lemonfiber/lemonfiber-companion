@@ -92,6 +92,10 @@ return [
     'scanned_code_is_unreadable_action' => 'Check that you are pointing at the code on your stack’s pairing screen, and that it has not expired.',
     'too_many_attempts' => 'This stack has stopped accepting password attempts for a moment, after too many wrong ones.',
     'too_many_attempts_action' => 'Wait, then try once more. Trying again now makes the wait longer.',
+    'try_again_in' => [
+        'minutes' => 'Try again in :count min',
+        'seconds' => 'Try again in :count sec',
+    ],
     'signed_in' => 'Signed in to :stack',
     'signed_in_action' => 'This stack is open to you.',
     'sign_in_to' => 'Sign in to :stack',
