@@ -92,6 +92,9 @@ const ELSEWHERE = [
     // outcome is `lifecycle`. The `pull` kind is something else: the lines the
     // command line prints while it fetches, which no endpoint serves.
     'Pull' => 'N2-R24 — fetching is offered through the `pull` action, which answers `lifecycle`; the `pull` kind is the command line\'s own output and is served by no endpoint',
+    'Certificate' => 'N1-R79 — replacing the certificate paired phones pin is done at the machine: the phone that asked would refuse the machine once it is replaced',
+    'MintedKey' => 'N29-R2 — the app mints a key only as a claim, whose answer is `key-claim`; `minted-key` carries the secret, which the app never receives',
+    'Play' => 'N3-R45 — a title plays through the grant the core gave this device, never on the pass in an address the `play` kind carries for a browser',
 ];
 
 /**
@@ -101,7 +104,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Certificate', 'InFlight', 'Logs', 'MintedKey', 'Password', 'Play', 'PluginClaims', 'PluginConformance', 'PluginProvenance', 'PluginRecording', 'Served', 'SignInCode', 'WalkthroughOffer',
+    'Caller', 'InFlight', 'Logs', 'Password', 'PluginClaims', 'PluginConformance', 'PluginProvenance', 'PluginRecording', 'Served', 'SignInCode', 'Standing', 'WalkthroughOffer',
 ];
 
 it('every kind the stack offers has been looked at', function (): void {

@@ -38,6 +38,7 @@ const SENT_THROUGH_THE_SDK = [
  */
 const NOT_SENT_BECAUSE = [
     'push-woken' => 'N4-R31 — confirming a wake means opening the push, and the app never opens one, so a push stays a wake',
+    'play' => 'N3-R45 — a title plays through the grant the core gave this device, and `play` answers a browser a pass in an address',
     'quality-reapply' => 'N24-R5 — its whole effect is overwriting a quality configuration the operator edited by hand, which the app does not offer (N19-R4)',
 ];
 
@@ -47,9 +48,7 @@ const NOT_SENT_BECAUSE = [
  * Moving one out is the work: building the screen that sends it, or writing the
  * requirement that says why the app does not.
  */
-const NOT_SENT_YET = [
-    'play',
-];
+const NOT_SENT_YET = [];
 
 /**
  * Every action the contract lists, by its name, with the request class that sends it.

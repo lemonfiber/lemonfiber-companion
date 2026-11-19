@@ -770,6 +770,18 @@ final readonly class UnreadOnEnvelopesAToL
                 . 'and reading it to decide would put a second answer beside the one the call site is holding.',
         ],
         [
+            'path' => 'ErrorEnvelope.retry_after',
+            'because' => 'No reader here opens it: the wait a refusal names reaches the app as sdk-php\'s '
+                . '`TooManyAttempts::seconds()`, and the core sends the same seconds in `Retry-After` (`ARCH-R138`). '
+                . 'A refused sign-in draws its wait from there.',
+        ],
+        [
+            'path' => 'DoctorEnvelope.findings[].verdict.retry_after',
+            'because' => 'How long a check that warned says to wait before asking again. A finding shows its '
+                . 'code, meaning and remedies (`N2-R3`), and Health is run when the operator asks for it; no '
+                . 'companion requirement asks a finding to time the next run — `N1-R17`.',
+        ],
+        [
             'path' => 'ErrorEnvelope.cause',
             'because' => 'What lay under a refusal, as whatever shape the check that raised it had. `N1-R10` '
                 . 'has the app tell a refused credential from a stack that is not answering, and it decides '
