@@ -11,7 +11,7 @@ final readonly class TheDataRoot
 {
     private function __construct(private string $path) {}
 
-    /** The library is kept here, a path on the machine or an NFS export. */
+    /** The library is kept here, a path on the machine or an NFS export; an empty path is no place chosen. */
     public static function at(string $path): self
     {
         return new self($path);

@@ -46,13 +46,12 @@ final readonly class TheSettledRead
             throw SettledIsUnreadable::missing(WireField::Data);
         }
 
-        $root = Optional::text($data, SettledField::DataRoot, SettledIsUnreadable::missing(SettledField::DataRoot));
         $protocols = self::table($data, SettledField::Protocols);
         $user = self::table($data, SettledField::ServiceUser);
 
         return WhatSetupSettled::said(
             self::setup($data),
-            $root === '' ? TheDataRoot::notChosen() : TheDataRoot::at($root),
+            TheDataRoot::at(Optional::text($data, SettledField::DataRoot, SettledIsUnreadable::missing(SettledField::DataRoot))),
             TheWaysOfDownloading::of(
                 Required::flag($protocols, SettledField::Usenet, SettledIsUnreadable::missing(SettledField::Usenet)),
                 Required::flag($protocols, SettledField::Torrent, SettledIsUnreadable::missing(SettledField::Torrent)),
