@@ -214,6 +214,7 @@ it('carries the wait a refusal for too many attempts named, in seconds it can co
     'none named' => ['', WhenToTryAgain::unsaid()],
     'a date' => ['Wed, 21 Oct 2026 07:28:00 GMT', WhenToTryAgain::unsaid()],
     'below nothing' => ['-5', WhenToTryAgain::unsaid()],
+    'one below nothing' => ['-1', WhenToTryAgain::unsaid()],
 ]);
 
 it('spends the credential it was given, so nothing can offer it twice', function (): void {
