@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatBecameOfTheRemoval;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
@@ -102,10 +103,10 @@ final readonly class Removers implements RemovingSomebody
                 stillRunning: static fn(): WhatBecameOfTheRemoval => WhatBecameOfTheRemoval::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheRemoval
                     => WhatBecameOfTheRemoval::answered(Removals::in($envelope)),
-                ended: static fn(): WhatBecameOfTheRemoval => WhatBecameOfTheRemoval::ended(),
+                ended: static fn(string $why): WhatBecameOfTheRemoval => WhatBecameOfTheRemoval::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return WhatBecameOfTheRemoval::ended();
+            return WhatBecameOfTheRemoval::noOutcome();
         }
     }
 

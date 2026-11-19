@@ -142,7 +142,7 @@ function whatAcceptingCameTo(WhatBecameOfTheWork $became): string
 }
 
 it('comes away from accepting with the job the stack named, and sends the check it was given', function (): void {
-    foreach (['the fake' => AStackThatAccepts::answering(WhatBecameOfTheWork::ended()), 'the adapter' => anAcceptorAnswered(anAcceptanceTakenOn(AStackThatAccepts::THE_ACCEPTANCE))] as $which => $accepting) {
+    foreach (['the fake' => AStackThatAccepts::answering(WhatBecameOfTheWork::noOutcome()), 'the adapter' => anAcceptorAnswered(anAcceptanceTakenOn(AStackThatAccepts::THE_ACCEPTANCE))] as $which => $accepting) {
         expect(whatAcceptingCameTo($accepting->accept(aStackWhoseWarningIsAccepted(), Session::of('a-session-not-a-secret'), Check::of('vpn.contained'))))
             ->toBe(sprintf('following %s', AStackThatAccepts::THE_ACCEPTANCE), $which);
     }
@@ -201,7 +201,7 @@ it('reads a handle it cannot follow as an answer it could not read', function ()
 });
 
 it('the fake remembers each check accepted and each handle followed', function (): void {
-    $accepting = AStackThatAccepts::answering(WhatBecameOfTheWork::ended());
+    $accepting = AStackThatAccepts::answering(WhatBecameOfTheWork::noOutcome());
     $accepting->accept(aStackWhoseWarningIsAccepted(), Session::of('a-session-not-a-secret'), Check::of('vpn.contained'));
     $accepting->whatBecameOf(aStackWhoseWarningIsAccepted(), Session::of('a-session-not-a-secret'), Job::named(AStackThatAccepts::THE_ACCEPTANCE));
 

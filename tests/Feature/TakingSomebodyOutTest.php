@@ -275,7 +275,7 @@ it('draws a refusal with the stack\'s reason and the name, and offers no way to 
 });
 
 it('tells work the stack has no outcome for apart before the yes and after it', function (): void {
-    $before = theRemovalScreen(AStackThatTakesThemOut::answering(WhatBecameOfTheRemoval::underway(Job::named('j-1')), WhatBecameOfTheRemoval::ended()));
+    $before = theRemovalScreen(AStackThatTakesThemOut::answering(WhatBecameOfTheRemoval::underway(Job::named('j-1')), WhatBecameOfTheRemoval::noOutcome()));
     $before->answer();
     $before->whileItRuns();
 
@@ -389,7 +389,7 @@ it('a credential the stack refused signs this device out and lets the session go
 it('holds each state and only its own', function (): void {
     $running = theRemovalScreen(AStackThatTakesThemOut::answering(WhatBecameOfTheRemoval::underway(Job::named('j-1'))));
     $refused = theRemovalScreen(AStackThatTakesThemOut::answering(WhatBecameOfTheRemoval::refused('Nobody is called anna here')));
-    $ended = theRemovalScreen(AStackThatTakesThemOut::answering(WhatBecameOfTheRemoval::ended()));
+    $ended = theRemovalScreen(AStackThatTakesThemOut::answering(WhatBecameOfTheRemoval::noOutcome()));
     $met = theRemovalScreen(AStackThatTakesThemOut::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
     $signedOut = theRemovalScreen(AStackThatTakesThemOut::answering(), signedIn: false);
     $nobody = theRemovalScreen(AStackThatTakesThemOut::answering(), member: ' ');

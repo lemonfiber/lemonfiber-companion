@@ -237,7 +237,7 @@ function aRunJustNow(?int $exit, string ...$lines): ItsLastRun
 }
 
 it('offers each service a run now, named for it, sending nothing before the yes', function (): void {
-    $asking = aStackThatRunsOneNow(WhatBecameOfTheWork::ended());
+    $asking = aStackThatRunsOneNow(WhatBecameOfTheWork::noOutcome());
     $screen = theScheduleScreen($asking);
     $offers = WhatTheDeviceWouldDraw::by($screen)->offers();
     $tree = (string) json_encode(WhatTheDeviceWouldDraw::tree($screen));
@@ -249,7 +249,7 @@ it('offers each service a run now, named for it, sending nothing before the yes'
 });
 
 it('asks one yes naming the service, and sends nothing until it is given', function (): void {
-    $asking = aStackThatRunsOneNow(WhatBecameOfTheWork::ended());
+    $asking = aStackThatRunsOneNow(WhatBecameOfTheWork::noOutcome());
     $screen = theScheduleScreen($asking);
     $screen->askToRun('unpackerr');
     $drawn = WhatTheDeviceWouldDraw::by($screen);
@@ -263,7 +263,7 @@ it('asks one yes naming the service, and sends nothing until it is given', funct
 });
 
 it('sends nothing where the yes is left, or was never asked for', function (): void {
-    $asking = aStackThatRunsOneNow(WhatBecameOfTheWork::ended());
+    $asking = aStackThatRunsOneNow(WhatBecameOfTheWork::noOutcome());
     $screen = theScheduleScreen($asking);
     $screen->runItNow();
     $screen->askToRun('unpackerr');
@@ -277,7 +277,7 @@ it('sends nothing where the yes is left, or was never asked for', function (): v
 });
 
 it('asks nothing about a service the reading does not list', function (): void {
-    $asking = aStackThatRunsOneNow(WhatBecameOfTheWork::ended());
+    $asking = aStackThatRunsOneNow(WhatBecameOfTheWork::noOutcome());
     $screen = theScheduleScreen($asking);
     $screen->askToRun('recyclarr');
     $screen->runItNow();
@@ -355,7 +355,7 @@ it('says where nothing ran, with the reason the stack gave', function (): void {
 
 it('says what the stack refused, where the run was no outcome, and lets the answer go', function (): void {
     $refused = unpackerrRunNow(aStackThatRunsOneNow(WhatBecameOfTheWork::refused(ARefusalInItsWords::said('unpackerr is no run-and-exit service', '', WhatTheRefusalNamed::nothing(), 'List what is installed'))));
-    $ended = unpackerrRunNow(aStackThatRunsOneNow(WhatBecameOfTheWork::ended()));
+    $ended = unpackerrRunNow(aStackThatRunsOneNow(WhatBecameOfTheWork::noOutcome()));
 
     expect(WhatTheDeviceWouldDraw::by($refused)->said())->toContain(aScheduleLine('scheduled.now.refused', ['service' => 'Unpackerr']))
         ->and(WhatTheDeviceWouldDraw::by($refused)->said())->toContain('unpackerr is no run-and-exit service')

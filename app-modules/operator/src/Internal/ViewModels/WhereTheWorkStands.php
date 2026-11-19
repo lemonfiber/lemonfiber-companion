@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\ViewModels;
 
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 
 /**
  * Where work put to a stack stands, as every screen that follows such work draws it.
@@ -15,7 +16,7 @@ use Modules\Kernel\Api\Obstacle;
  */
 final readonly class WhereTheWorkStands
 {
-    private function __construct(public HowTheReadingWent $went, private ?TheWorkIs $is) {}
+    private function __construct(public HowTheReadingWent $went, private ?TheWorkIs $is, private ?WhyTheWorkEnded $why = null) {}
 
     /** This phone holds no session for the stack. */
     public static function signedOut(): self
@@ -41,10 +42,10 @@ final readonly class WhereTheWorkStands
         return new self(HowTheReadingWent::itCameBack(), TheWorkIs::Running);
     }
 
-    /** The stack has no outcome for it any more. */
-    public static function ended(): self
+    /** The stack has no outcome for it any more, and why, where it said. */
+    public static function ended(?WhyTheWorkEnded $why): self
     {
-        return new self(HowTheReadingWent::itCameBack(), TheWorkIs::Ended);
+        return new self(HowTheReadingWent::itCameBack(), TheWorkIs::Ended, $why);
     }
 
     /** The stack answered. */
@@ -69,5 +70,11 @@ final readonly class WhereTheWorkStands
     public function hasEnded(): bool
     {
         return $this->is === TheWorkIs::Ended;
+    }
+
+    /** Why the work ended, where the stack said. */
+    public function whyItEnded(): ?WhyTheWorkEnded
+    {
+        return $this->why;
     }
 }

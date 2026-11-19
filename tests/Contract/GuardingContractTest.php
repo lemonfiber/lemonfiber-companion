@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatTheGuardSaw;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Api\Guards;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
@@ -71,10 +72,16 @@ function whatAStackReportsOfAGuard(array $changed = []): array
     ]];
 }
 
-/** What a stack answers a guard it took on, or one that ended, with. */
+/** What a stack answers a guard it took on with. */
 function aGuardNamed(int $status): MockResponse
 {
     return MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'watch', 'job' => AStackThatGuards::THE_JOB]]), $status);
+}
+
+/** What a stack answers a guard that ended before it saw anything with. */
+function aGuardThatEnded(string $why): MockResponse
+{
+    return MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['action' => 'watch', 'job' => AStackThatGuards::THE_JOB, 'ended' => $why]]));
 }
 
 /**
@@ -116,7 +123,7 @@ function whereTheGuardStands(HowTheGuardIsGoing $going): string
             $saw->reason(),
         )),
         refused: static fn(string $said): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused|%s', $said)),
-        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        ended: static fn(?WhyTheWorkEnded $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('ended:%s', $why->value ?? 'unsaid')),
         unknown: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unknown'),
         met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
     )->said;
@@ -207,8 +214,8 @@ it('a guard that never started carries the stack\'s own reason, from an error or
 ]);
 
 it('a guard ended without an outcome is ended, and one the stack no longer knows is unknown', function (): void {
-    foreach (everyWayOfGuarding(aGuardNamed(200), HowTheGuardIsGoing::ended()) as $which => $build) {
-        expect(whatBecameOfTheGuard($build()))->toBe('ended', $which);
+    foreach (everyWayOfGuarding(aGuardThatEnded('let-go'), HowTheGuardIsGoing::ended(WhyTheWorkEnded::LetGo)) as $which => $build) {
+        expect(whatBecameOfTheGuard($build()))->toBe('ended:let-go', $which);
     }
 
     foreach (everyWayOfGuarding(MockResponse::make('{"error":"No work in this run goes by that name."}', 404), HowTheGuardIsGoing::unknown()) as $which => $build) {
@@ -254,19 +261,19 @@ it('a payload with no data is an answer it could not read', function (): void {
 
 it('lets a guard go by its name, and answers where it then stands', function (): void {
     MockClient::destroyGlobal();
-    $mock = MockClient::global([aGuardNamed(200)]);
+    $mock = MockClient::global([aGuardThatEnded('released')]);
 
     $released = new Guards(new PinnedClients(), SequencedEntropy::counting())
         ->letGo(aStackThatGuardsItsData(), Session::of('a-session-not-a-secret'), Job::named(AStackThatGuards::THE_JOB));
     $sent = $mock->getLastPendingRequest();
 
-    expect(whereTheGuardStands($released))->toBe('ended')
+    expect(whereTheGuardStands($released))->toBe('ended:released')
         ->and($sent?->getMethod()->value)->toBe('DELETE')
         ->and($sent?->getUrl())->toEndWith(sprintf('/api/jobs/%s', AStackThatGuards::THE_JOB));
 
     $fake = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding());
 
-    expect(whereTheGuardStands($fake->letGo(aStackThatGuardsItsData(), Session::of('a-session-not-a-secret'), Job::named(AStackThatGuards::THE_JOB))))->toBe('ended')
+    expect(whereTheGuardStands($fake->letGo(aStackThatGuardsItsData(), Session::of('a-session-not-a-secret'), Job::named(AStackThatGuards::THE_JOB))))->toBe('ended:released')
         ->and($fake->letGoOf())->toHaveCount(1);
 });
 
@@ -285,11 +292,11 @@ it('letting go of a guard the stack no longer knows is unknown, and a refusal is
 });
 
 it('the fake answers each standing it was given in turn, then stays on the last, and remembers what it was asked', function (): void {
-    $guarding = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding(), HowTheGuardIsGoing::ended());
+    $guarding = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding(), HowTheGuardIsGoing::noOutcome());
 
     howTheGuardWasAskedFor($guarding);
 
-    expect([whatBecameOfTheGuard($guarding), whatBecameOfTheGuard($guarding), whatBecameOfTheGuard($guarding)])->toBe(['guarding', 'ended', 'ended'])
+    expect([whatBecameOfTheGuard($guarding), whatBecameOfTheGuard($guarding), whatBecameOfTheGuard($guarding)])->toBe(['guarding', 'ended:unsaid', 'ended:unsaid'])
         ->and($guarding->started())->toHaveCount(1)
         ->and($guarding->followed())->toHaveCount(3);
 });

@@ -38,7 +38,7 @@ it('takes the arm it was made on, and carries what it was made with', function (
 
     expect(theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval::underway(Job::named('j-1'))))->toBe('underway:j-1')
         ->and(theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval::answered($removal)))->toBe('answered:Anna')
-        ->and(theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval::ended()))->toBe('ended')
+        ->and(theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval::noOutcome()))->toBe('ended')
         ->and(theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval::refused('Nobody is called Anna here')))->toBe('refused:Nobody is called Anna here')
         ->and(theWordForWhichArmTheRemovalTook(WhatBecameOfTheRemoval::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

@@ -26,6 +26,7 @@
     @endforelse
     <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
 @elseif ($this->answer()->stands->hasEnded())
+    <x-operator::why-it-ended :stands="$this->answer()->stands" />
     {{-- Not a failure and not a refusal: the stack has no outcome for the
          work any more, which is not the same as it not having happened. --}}
     <x-operator::emphasis>{{ __('plugins.no_outcome') }}</x-operator::emphasis>

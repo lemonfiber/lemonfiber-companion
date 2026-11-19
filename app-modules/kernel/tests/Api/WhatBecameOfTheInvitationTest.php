@@ -47,7 +47,7 @@ it('takes the arm it was made on, and carries what it was made with', function (
 
     expect(whichArmItTook(WhatBecameOfTheInvitation::underway(Job::named('j-1'))))->toBe('underway:j-1')
         ->and(whichArmItTook(WhatBecameOfTheInvitation::answered($invitation)))->toBe('answered:anna')
-        ->and(whichArmItTook(WhatBecameOfTheInvitation::ended()))->toBe('ended')
+        ->and(whichArmItTook(WhatBecameOfTheInvitation::noOutcome()))->toBe('ended')
         ->and(whichArmItTook(WhatBecameOfTheInvitation::refused('There is no library called Cartoons')))->toBe('refused:There is no library called Cartoons')
         ->and(whichArmItTook(WhatBecameOfTheInvitation::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

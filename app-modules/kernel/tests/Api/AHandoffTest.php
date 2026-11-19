@@ -64,7 +64,7 @@ function whichArmTheHandoffTook(WhatBecameOfTheHandoff $became): string
 it('takes the arm it was made on, and no other', function (): void {
     expect(whichArmTheHandoffTook(WhatBecameOfTheHandoff::underway(Job::named('handoff-1'))))->toBe('underway handoff-1')
         ->and(whichArmTheHandoffTook(WhatBecameOfTheHandoff::answered(aHandoffSaying('It could not go ahead.'))))->toBe('answered failed')
-        ->and(whichArmTheHandoffTook(WhatBecameOfTheHandoff::ended()))->toBe('ended')
+        ->and(whichArmTheHandoffTook(WhatBecameOfTheHandoff::noOutcome()))->toBe('ended')
         ->and(whichArmTheHandoffTook(WhatBecameOfTheHandoff::refused('no such name')))->toBe('refused no such name')
         ->and(whichArmTheHandoffTook(WhatBecameOfTheHandoff::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('met StackDidNotAnswer');
 });

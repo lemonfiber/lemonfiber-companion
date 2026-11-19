@@ -41,6 +41,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\TheShapesTaken;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowExtendingItReads;
@@ -463,10 +464,10 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
 
                 return new HowExtendingItReads()->refused($why, $act, $agreed, $this->leftUnapproved ?? TheShapesTaken::these());
             },
-            ended: function (): WhatExtendsItTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why): WhatExtendsItTurnedOutToBe {
                 $this->following = null;
 
-                return new HowExtendingItReads()->ended();
+                return new HowExtendingItReads()->ended($why);
             },
             met: function (Obstacle $why) use ($stack): WhatExtendsItTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);

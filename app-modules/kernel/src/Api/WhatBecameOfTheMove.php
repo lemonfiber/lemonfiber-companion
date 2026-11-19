@@ -29,7 +29,7 @@ final readonly class WhatBecameOfTheMove
      * `because` is filled on the refused arm and on no other, which is what
      * tells a refusal from the stack having no outcome: both hold no answer.
      */
-    private function __construct(private Job|AMove|Obstacle|null $answer, private string $because = '') {}
+    private function __construct(private Job|AMove|Obstacle|WhyTheWorkEnded|null $answer, private string $because = '') {}
 
     /** The stack took it on, and this is what to ask after it by. */
     public static function underway(Job $job): self
@@ -43,8 +43,14 @@ final readonly class WhatBecameOfTheMove
         return new self($move);
     }
 
-    /** The stack has no outcome for it any more. */
-    public static function ended(): self
+    /** The stack has no outcome for it any more, and says why. */
+    public static function ended(WhyTheWorkEnded $why): self
+    {
+        return new self($why);
+    }
+
+    /** The stack has no outcome for it any more, and says nothing of why. */
+    public static function noOutcome(): self
     {
         return new self(null);
     }
@@ -74,11 +80,11 @@ final readonly class WhatBecameOfTheMove
      * @template TRefused of object
      * @template TMet of object
      *
-     * @param Closure(Job): TUnderway      $underway
-     * @param Closure(AMove): TAnswered    $answered
-     * @param Closure(): TEnded            $ended
-     * @param Closure(string): TRefused    $refused
-     * @param Closure(Obstacle): TMet      $met
+     * @param Closure(Job): TUnderway           $underway
+     * @param Closure(AMove): TAnswered         $answered
+     * @param Closure(?WhyTheWorkEnded): TEnded $ended
+     * @param Closure(string): TRefused         $refused
+     * @param Closure(Obstacle): TMet           $met
      *
      * @return TUnderway|TAnswered|TEnded|TRefused|TMet
      */
@@ -89,7 +95,7 @@ final readonly class WhatBecameOfTheMove
             $this->answer instanceof AMove => $answered($this->answer),
             $this->answer instanceof Obstacle => $met($this->answer),
             $this->because !== '' => $refused($this->because),
-            default => $ended(),
+            default => $ended($this->answer instanceof WhyTheWorkEnded ? $this->answer : null),
         };
     }
 }

@@ -142,7 +142,7 @@ function theLibraryAlone(): TheFormsToSwitchTo
 }
 
 it('comes away from rehearsing with the job the stack named', function (): void {
-    foreach (['the fake' => AStackThatSwitches::answering(WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended()), 'the adapter' => aSwitcherAnswered(aSwitchTakenOn(AStackThatSwitches::THE_REHEARSAL))] as $which => $switching) {
+    foreach (['the fake' => AStackThatSwitches::answering(WhatBecameOfTheWork::noOutcome(), WhatBecameOfTheWork::noOutcome()), 'the adapter' => aSwitcherAnswered(aSwitchTakenOn(AStackThatSwitches::THE_REHEARSAL))] as $which => $switching) {
         expect(whatTheSwitchCameTo($switching->rehearse(aStackWhoseFormsSwitch(), Session::of('a-session-not-a-secret'), theLibraryAlone())))
             ->toBe(sprintf('following %s', AStackThatSwitches::THE_REHEARSAL), $which);
     }
@@ -151,7 +151,7 @@ it('comes away from rehearsing with the job the stack named', function (): void 
 it('reads what it would stop, start and keep, the rehearsal labelled as one', function (): void {
     $finished = MockResponse::make((string) json_encode(whatAStackSaysOfASwitch()));
 
-    foreach (['the fake' => AStackThatSwitches::answering(WhatBecameOfTheWork::answered(theSameRehearsedSwitch()), WhatBecameOfTheWork::ended()), 'the adapter' => aSwitcherAnswered($finished)] as $which => $switching) {
+    foreach (['the fake' => AStackThatSwitches::answering(WhatBecameOfTheWork::answered(theSameRehearsedSwitch()), WhatBecameOfTheWork::noOutcome()), 'the adapter' => aSwitcherAnswered($finished)] as $which => $switching) {
         expect(whatTheSwitchCameTo($switching->whatBecameOf(aStackWhoseFormsSwitch(), Session::of('a-session-not-a-secret'), Job::named(AStackThatSwitches::THE_REHEARSAL))))
             ->toBe('rehearsed|stops qbittorrent|starts jellyseerr|keeps jellyfin|docker compose stop qbittorrent', $which);
     }
@@ -234,7 +234,7 @@ it('sends the forms chosen, the rehearsal as a dry run and the yes without one, 
 });
 
 it('the fake remembers each set rehearsed and carried out', function (): void {
-    $switching = AStackThatSwitches::answering(WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended());
+    $switching = AStackThatSwitches::answering(WhatBecameOfTheWork::noOutcome(), WhatBecameOfTheWork::noOutcome());
     $forms = theLibraryAlone();
     $switching->rehearse(aStackWhoseFormsSwitch(), Session::of('a-session-not-a-secret'), $forms);
     $switching->carryOut(aStackWhoseFormsSwitch(), Session::of('a-session-not-a-secret'), $forms);

@@ -37,6 +37,7 @@
         <x-design::body>{{ __('health.working_it_out_action') }}</x-design::body>
         <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
     @elseif ($this->offer()->stands->hasEnded())
+        <x-operator::why-it-ended :stands="$this->offer()->stands" />
         {{-- The stack has no outcome for that asking any more. Not a fault and
              not an answer: nothing was carried out, and the way forward is to
              ask again from the start. Saying so is what keeps it from reading
@@ -77,6 +78,7 @@
                 @endif
             @endif
         @elseif ($this->done()->stands->hasEnded())
+            <x-operator::why-it-ended :stands="$this->done()->stands" />
             {{-- The one state where *it failed* is certainly the wrong word.
                  The operator does not know what happened to their machine, and
                  it may well have worked — so they are sent to look at its

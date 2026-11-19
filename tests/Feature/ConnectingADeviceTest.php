@@ -283,7 +283,7 @@ it('says a refusal in the stack\'s own words, and offers to ask again', function
 });
 
 it('goes back to offering the code where the stack has no outcome for the one asked for', function (): void {
-    $screen = theConnectingScreen(AStackThatHandsDevicesOver::whichTookItOn(WhatBecameOfTheHandoff::ended()));
+    $screen = theConnectingScreen(AStackThatHandsDevicesOver::whichTookItOn(WhatBecameOfTheHandoff::noOutcome()));
     $screen->show();
     $screen->whileItRuns();
 
@@ -373,7 +373,7 @@ it('opens asking somebody in with the name it was sent with already typed', func
 });
 
 it('the way here is a route, with the name encoded', function (): void {
-    $screen = theConnectingScreen(AStackThatHandsDevicesOver::answering(WhatBecameOfTheHandoff::ended()));
+    $screen = theConnectingScreen(AStackThatHandsDevicesOver::answering(WhatBecameOfTheHandoff::noOutcome()));
     $stack = theStackADeviceConnectsTo()->id();
 
     expect(NativeRouter::resolve($screen->goes()->connecting('a/b')))->not->toBeNull()
@@ -382,5 +382,5 @@ it('the way here is a route, with the name encoded', function (): void {
 });
 
 it('renders its own view', function (): void {
-    expect(theConnectingScreen(AStackThatHandsDevicesOver::answering(WhatBecameOfTheHandoff::ended()))->render()->name())->toBe('operator::connecting-a-device');
+    expect(theConnectingScreen(AStackThatHandsDevicesOver::answering(WhatBecameOfTheHandoff::noOutcome()))->render()->name())->toBe('operator::connecting-a-device');
 });

@@ -21,6 +21,7 @@
     @elseif ($this->done()->stands->isWorking())
         <x-operator::emphasis>{{ __('stacks.let_go.letting_go', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
     @elseif ($this->done()->stands->hasEnded())
+        <x-operator::why-it-ended :stands="$this->done()->stands" />
         {{-- Not a failure: the client may well have let it go, and how full
              the machine is says whether it is still there. --}}
         <x-operator::emphasis>{{ __('stacks.let_go.no_outcome', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
@@ -47,6 +48,7 @@
     <x-operator::emphasis>{{ __('stacks.let_go.working_it_out', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @elseif ($this->answer()->stands->hasEnded())
+    <x-operator::why-it-ended :stands="$this->answer()->stands" />
     <x-operator::emphasis>{{ __('stacks.let_go.offer_ended', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @else

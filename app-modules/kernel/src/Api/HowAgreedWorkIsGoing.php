@@ -38,6 +38,7 @@ final readonly class HowAgreedWorkIsGoing
         private ?Obstacle $met = null,
         private bool $running = false,
         private ?ARefusalInItsWords $moved = null,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /**
@@ -65,11 +66,21 @@ final readonly class HowAgreedWorkIsGoing
     }
 
     /**
-     * The stack has no outcome for it any more.
+     * The stack has no outcome for it any more, and says why.
      *
      * @return self<never>
      */
-    public static function ended(): self
+    public static function ended(WhyTheWorkEnded $why): self
+    {
+        return new self(ending: $why);
+    }
+
+    /**
+     * The stack has no outcome for it any more, and says nothing of why.
+     *
+     * @return self<never>
+     */
+    public static function noOutcome(): self
     {
         return new self();
     }
@@ -109,7 +120,7 @@ final readonly class HowAgreedWorkIsGoing
      *
      * @param Closure(): TRunning                 $stillRunning
      * @param Closure(TDone): TFinished           $done
-     * @param Closure(): TEnded                   $ended
+     * @param Closure(?WhyTheWorkEnded): TEnded   $ended
      * @param Closure(Obstacle): TMet             $met
      * @param Closure(ARefusalInItsWords): TMoved $moved
      *
@@ -122,7 +133,7 @@ final readonly class HowAgreedWorkIsGoing
             $this->moved instanceof ARefusalInItsWords => $moved($this->moved),
             $this->running => $stillRunning(),
             $this->done !== null => $done($this->done),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

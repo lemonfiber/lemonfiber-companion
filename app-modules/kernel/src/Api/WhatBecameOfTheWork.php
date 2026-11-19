@@ -30,6 +30,7 @@ final readonly class WhatBecameOfTheWork
         private ?ARefusalInItsWords $refused = null,
         private ?Obstacle $met = null,
         private ?ARefusalInItsWords $moved = null,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /**
@@ -57,11 +58,21 @@ final readonly class WhatBecameOfTheWork
     }
 
     /**
-     * The stack has no outcome for it any more.
+     * The stack has no outcome for it any more, and says why.
      *
      * @return self<never>
      */
-    public static function ended(): self
+    public static function ended(WhyTheWorkEnded $why): self
+    {
+        return new self(ending: $why);
+    }
+
+    /**
+     * The stack has no outcome for it any more, and says nothing of why.
+     *
+     * @return self<never>
+     */
+    public static function noOutcome(): self
     {
         return new self();
     }
@@ -103,7 +114,7 @@ final readonly class WhatBecameOfTheWork
      *
      * @param Closure(Job): T                $underway
      * @param Closure(TAnswer): T            $answered
-     * @param Closure(): T                   $ended
+     * @param Closure(?WhyTheWorkEnded): T   $ended
      * @param Closure(ARefusalInItsWords): T $refused
      * @param Closure(Obstacle): T           $met
      *
@@ -121,7 +132,7 @@ final readonly class WhatBecameOfTheWork
      *
      * @param Closure(Job): T                $underway
      * @param Closure(TAnswer): T            $answered
-     * @param Closure(): T                   $ended
+     * @param Closure(?WhyTheWorkEnded): T   $ended
      * @param Closure(ARefusalInItsWords): T $refused
      * @param Closure(Obstacle): T           $met
      * @param Closure(ARefusalInItsWords): T $moved
@@ -136,7 +147,7 @@ final readonly class WhatBecameOfTheWork
             $this->refused instanceof ARefusalInItsWords => $refused($this->refused),
             $this->moved instanceof ARefusalInItsWords => $moved($this->moved),
             $this->met instanceof Obstacle => $met($this->met),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

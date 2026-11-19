@@ -27,6 +27,7 @@ use Modules\Kernel\Api\UninstallSaysNothing;
 use Modules\Kernel\Api\WhatBecameOfTheUninstall;
 use Modules\Kernel\Api\WhatWasFoundOfTheUninstall;
 use Modules\Kernel\Api\WhichRemoval;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Api\Fields\UninstallField;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
@@ -113,10 +114,10 @@ final readonly class Dismantlers implements TakingLemonfiberOff
                 stillRunning: static fn(): WhatBecameOfTheUninstall => WhatBecameOfTheUninstall::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheUninstall
                     => WhatBecameOfTheUninstall::answered(Uninstalls::in($envelope)),
-                ended: static fn(): WhatBecameOfTheUninstall => WhatBecameOfTheUninstall::ended(),
+                ended: static fn(string $why): WhatBecameOfTheUninstall => WhatBecameOfTheUninstall::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return WhatBecameOfTheUninstall::ended();
+            return WhatBecameOfTheUninstall::noOutcome();
         }
     }
 

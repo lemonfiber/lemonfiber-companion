@@ -21,6 +21,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\WhatTheGuardSaw;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Screens\GuardingWhileYouWatch;
 use Modules\Operator\Internal\ViewModels\HowTheGuardWent;
 use Modules\Stacks\Api\AStacksScreen;
@@ -288,16 +289,21 @@ it('a guard that never started says so with the stack\'s reason', function (): v
         ->and($said)->not->toContain(aLineOfTheGuard('stacks.guard.did_not_stop_them'));
 });
 
-it('a guard let go is told apart from one that saw the data location go and from one still guarding', function (): void {
-    $screen = aGuardAgreedTo(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::ended()));
+it('a guard that ended says why, told apart from one that saw the data location go and from one still guarding', function (?WhyTheWorkEnded $why, string $line): void {
+    $screen = aGuardAgreedTo(AStackThatGuards::whichGuarded($why instanceof WhyTheWorkEnded ? HowTheGuardIsGoing::ended($why) : HowTheGuardIsGoing::noOutcome()));
     $went = theGuardAskedAfter($screen);
     $said = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($went->stands->isWorking())->toBeFalse()
-        ->and($said)->toContain(aLineOfTheGuard('stacks.guard.let_go'))
+        ->and($said)->toContain(aLineOfTheGuard($line))
         ->and($said)->not->toContain(aLineOfTheGuard('stacks.guard.saw_it_go'))
         ->and($said)->not->toContain(aLineOfTheGuard('stacks.guard.guarding', ['forms' => 'library, full']));
-});
+})->with([
+    'released' => [WhyTheWorkEnded::Released, 'stacks.guard.released'],
+    'let go' => [WhyTheWorkEnded::LetGo, 'stacks.guard.let_go'],
+    'quiet' => [WhyTheWorkEnded::Quiet, 'stacks.guard.quiet'],
+    'not said' => [null, 'stacks.guard.ended'],
+]);
 
 it('a guard the stack no longer knows is told apart from one let go', function (): void {
     $screen = aGuardAgreedTo(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::unknown()));
@@ -309,7 +315,7 @@ it('a guard the stack no longer knows is told apart from one let go', function (
 });
 
 it('asks after a guard that has ended no more, however often the cadence comes round', function (): void {
-    $guarding = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::ended());
+    $guarding = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::noOutcome());
     $screen = aGuardAgreedTo($guarding);
 
     theGuardAskedAfter($screen);
@@ -333,7 +339,7 @@ it('lets nothing go when the screen is left before a guard started, or after it 
     $never = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding());
     theGuardScreen($never)->unmount();
 
-    $ended = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::ended());
+    $ended = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::noOutcome());
     $screen = aGuardAgreedTo($ended);
     theGuardAskedAfter($screen);
     $screen->unmount();
@@ -453,7 +459,7 @@ it('names forms for another guard once the last has ended, and not while one gua
 
     expect($guarding->took)->toBe(AStackThatGuards::THE_JOB);
 
-    $ended = aGuardAgreedTo(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::ended()));
+    $ended = aGuardAgreedTo(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::noOutcome()));
     theGuardAskedAfter($ended);
 
     expect(WhatTheDeviceWouldDraw::by($ended)->offers())->toContain(aLineOfTheGuard('stacks.guard.start_over'));

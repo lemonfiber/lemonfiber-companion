@@ -23,6 +23,7 @@ use Modules\Kernel\Api\PairingIsNotReadable;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatBecameOfThePairingCode;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
@@ -77,10 +78,10 @@ final readonly class Pairers implements MakingPairingCodes
                 stillRunning: static fn(): WhatBecameOfThePairingCode => WhatBecameOfThePairingCode::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfThePairingCode
                     => WhatBecameOfThePairingCode::made(PairingCodes::in($envelope)),
-                ended: static fn(): WhatBecameOfThePairingCode => WhatBecameOfThePairingCode::ended(),
+                ended: static fn(string $why): WhatBecameOfThePairingCode => WhatBecameOfThePairingCode::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return WhatBecameOfThePairingCode::ended();
+            return WhatBecameOfThePairingCode::noOutcome();
         }
     }
 

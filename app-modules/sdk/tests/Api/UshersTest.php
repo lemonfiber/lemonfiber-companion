@@ -300,7 +300,7 @@ it('follows the work by its name to the invitation, and says when it is still go
     $table = [
         [MockResponse::make((string) json_encode(thePasswordTakenOffAnna())), 'answered:anna:reset'],
         [aHandleNamedJ1(), 'underway:j-1'],
-        [MockResponse::make((string) json_encode(theHandleJ1())), 'ended'],
+        [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['job' => 'j-1', 'action' => 'invite', 'ended' => 'let-go']])), 'ended'],
         [MockResponse::make('{"error":"no such job"}', 404), 'ended'],
         [aRefusalAt(404, 'Nobody is called bob here'), 'refused:Nobody is called bob here'],
         [aRefusalAt(401, 'Who are you'), 'met:CredentialWasRefused'],

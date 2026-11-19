@@ -18,6 +18,7 @@
         @elseif ($this->howItIsGoing()->stands->isWorking())
             <x-design::standing :said="__('stacks.credentials.revoke.working')" tone="working" />
         @elseif ($this->howItIsGoing()->stands->hasEnded())
+            <x-operator::why-it-ended :stands="$this->howItIsGoing()->stands" />
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.credentials.revoke.no_outcome') }}</x-design::strong>
             </x-design::notice>
@@ -41,6 +42,7 @@
         @elseif ($this->howTheReplacementGoes()->stands->isWorking())
             <x-design::standing :said="__('stacks.credentials.replace.working')" tone="working" />
         @elseif ($this->howTheReplacementGoes()->stands->hasEnded())
+            <x-operator::why-it-ended :stands="$this->howTheReplacementGoes()->stands" />
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.credentials.replace.no_outcome') }}</x-design::strong>
             </x-design::notice>

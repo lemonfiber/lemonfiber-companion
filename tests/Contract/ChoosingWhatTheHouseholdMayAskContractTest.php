@@ -145,7 +145,7 @@ function everythingWaitsForEverybody(): AnAllowanceChange
 }
 
 it('comes away from rehearsing with the job the stack named', function (): void {
-    foreach (everyWayOfChoosingWhatIsAllowed(anAllowanceChangeTakenOn(AStackThatChoosesWhatIsAllowed::THE_REHEARSAL), WhatBecameOfTheWork::ended()) as $which => $build) {
+    foreach (everyWayOfChoosingWhatIsAllowed(anAllowanceChangeTakenOn(AStackThatChoosesWhatIsAllowed::THE_REHEARSAL), WhatBecameOfTheWork::noOutcome()) as $which => $build) {
         expect(whatTheAllowanceChangeCameTo($build()->rehearse(aStackWhoseHouseholdIsAllowed(), Session::of('a-session-not-a-secret'), everythingWaitsForEverybody())))
             ->toBe(sprintf('following %s', AStackThatChoosesWhatIsAllowed::THE_REHEARSAL), $which);
     }
@@ -248,7 +248,7 @@ it('sends only what was named, the rehearsal as a dry run and the yes without on
 });
 
 it('the fake remembers each change rehearsed and carried out, and each handle followed', function (): void {
-    $choosing = AStackThatChoosesWhatIsAllowed::answering(WhatBecameOfTheWork::answered(theSameRehearsalOfTheAllowance()), WhatBecameOfTheWork::ended());
+    $choosing = AStackThatChoosesWhatIsAllowed::answering(WhatBecameOfTheWork::answered(theSameRehearsalOfTheAllowance()), WhatBecameOfTheWork::noOutcome());
     $change = everythingWaitsForEverybody();
     $choosing->rehearse(aStackWhoseHouseholdIsAllowed(), Session::of('a-session-not-a-secret'), $change);
     $choosing->carryOut(aStackWhoseHouseholdIsAllowed(), Session::of('a-session-not-a-secret'), $change);

@@ -78,7 +78,7 @@ function whatSearchingCameTo(WhatBecameOfTheWork $became): string
 }
 
 it('comes away from a search with the job the stack named, sending the term and season the trace was read with, allowed to spend', function (WhatToFollow $following, array $body): void {
-    foreach (['the fake' => AStackThatSearches::answering(WhatBecameOfTheWork::ended()), 'the adapter' => aSearcherAnswered(aSearchTakenOn(AStackThatSearches::THE_SEARCH))] as $which => $searching) {
+    foreach (['the fake' => AStackThatSearches::answering(WhatBecameOfTheWork::noOutcome()), 'the adapter' => aSearcherAnswered(aSearchTakenOn(AStackThatSearches::THE_SEARCH))] as $which => $searching) {
         expect(whatSearchingCameTo($searching->search(aStackWhoseIndexersAreAsked(), Session::of('a-session-not-a-secret'), $following)))
             ->toBe(sprintf('following %s', AStackThatSearches::THE_SEARCH), $which);
     }
@@ -120,7 +120,7 @@ it('comes away with the obstacle where the stack could not be asked or read', fu
 ]);
 
 it('the fake remembers each item searched for, with its season, and each handle followed', function (): void {
-    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::ended());
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::noOutcome());
     $searching->search(aStackWhoseIndexersAreAsked(), Session::of('a-session-not-a-secret'), WhatToFollow::calledInSeason('Severance', 2));
     $searching->search(aStackWhoseIndexersAreAsked(), Session::of('a-session-not-a-secret'), WhatToFollow::called('Dune'));
     $searching->whatBecameOf(aStackWhoseIndexersAreAsked(), Session::of('a-session-not-a-secret'), Job::named(AStackThatSearches::THE_SEARCH));

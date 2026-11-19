@@ -49,7 +49,7 @@ it('takes the arm for each state, and carries what each holds', function (): voi
 
     expect(whichArmTheWorkTook(WhatBecameOfTheWork::underway(Job::named('a-job'))))->toBe('underway:a-job')
         ->and(whichArmTheWorkTook(WhatBecameOfTheWork::answered($line)))->toBe('answered:rehearsed')
-        ->and(whichArmTheWorkTook(WhatBecameOfTheWork::ended()))->toBe('ended')
+        ->and(whichArmTheWorkTook(WhatBecameOfTheWork::noOutcome()))->toBe('ended')
         ->and(whichArmTheWorkTook(WhatBecameOfTheWork::refused(ARefusalInItsWords::said('No download client to limit', '', WhatTheRefusalNamed::nothing()))))->toBe('refused:No download client to limit')
         ->and(whichArmTheWorkTook(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe(sprintf('met:%s', KindOfObstacle::CredentialWasRefused->value));
 });

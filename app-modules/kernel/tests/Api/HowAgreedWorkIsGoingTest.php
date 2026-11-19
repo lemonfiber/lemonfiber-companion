@@ -39,7 +39,7 @@ it('takes the arm for each state, and carries what each one has', function (): v
 
     expect(howAgreedWorkIsGoingReads(HowAgreedWorkIsGoing::stillRunning()))->toBe('running')
         ->and(howAgreedWorkIsGoingReads(HowAgreedWorkIsGoing::done(WhatWasMended::none())))->toBe('done:0')
-        ->and(howAgreedWorkIsGoingReads(HowAgreedWorkIsGoing::ended()))->toBe('ended')
+        ->and(howAgreedWorkIsGoingReads(HowAgreedWorkIsGoing::noOutcome()))->toBe('ended')
         ->and(howAgreedWorkIsGoingReads(HowAgreedWorkIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe(sprintf('met:%s', KindOfObstacle::CredentialWasRefused->value))
         ->and(howAgreedWorkIsGoingReads(HowAgreedWorkIsGoing::moved($moved)))->toBe('moved:What you agreed to is not what is offered now');
 });

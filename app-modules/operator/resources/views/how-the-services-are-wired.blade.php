@@ -128,6 +128,7 @@
                 tone="working"
             />
         @elseif ($this->howItIsGoing()->stands->hasEnded())
+            <x-operator::why-it-ended :stands="$this->howItIsGoing()->stands" />
             {{-- Not a failure and not a refusal: the stack has no outcome for it
                  any more. --}}
             <x-design::notice tone="unknown">

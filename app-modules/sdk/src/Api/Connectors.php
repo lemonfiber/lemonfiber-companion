@@ -25,6 +25,7 @@ use Modules\Kernel\Api\SomebodyInTheHousehold;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheDoorSaysNothing;
 use Modules\Kernel\Api\WhatBecameOfTheHandoff;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
@@ -79,10 +80,10 @@ final readonly class Connectors implements HandingOverADevice
                 stillRunning: static fn(): WhatBecameOfTheHandoff => WhatBecameOfTheHandoff::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheHandoff
                     => WhatBecameOfTheHandoff::answered(Handoffs::in($envelope)),
-                ended: static fn(): WhatBecameOfTheHandoff => WhatBecameOfTheHandoff::ended(),
+                ended: static fn(string $why): WhatBecameOfTheHandoff => WhatBecameOfTheHandoff::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return WhatBecameOfTheHandoff::ended();
+            return WhatBecameOfTheHandoff::noOutcome();
         }
     }
 

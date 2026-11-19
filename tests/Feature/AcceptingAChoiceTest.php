@@ -160,7 +160,7 @@ it('draws a refusal in the stack\'s own words, and an outcome the stack no longe
     $refused->accept();
     $refused->whileItRuns();
 
-    $ended = theAcceptingScreen(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), AStackThatAccepts::answering(WhatBecameOfTheWork::ended()));
+    $ended = theAcceptingScreen(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), AStackThatAccepts::answering(WhatBecameOfTheWork::noOutcome()));
     $ended->accept();
     $ended->whileItRuns();
 

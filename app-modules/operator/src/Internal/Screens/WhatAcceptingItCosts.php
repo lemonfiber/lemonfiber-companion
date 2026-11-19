@@ -23,6 +23,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAWarningReads;
@@ -162,10 +163,10 @@ final class WhatAcceptingItCosts extends NativeComponent implements AwaitsAnOutc
 
                 return new HowTheAcceptanceReads()->answered($report, $check);
             },
-            ended: function (): TheAcceptanceTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why): TheAcceptanceTurnedOutToBe {
                 $this->following = null;
 
-                return new HowTheAcceptanceReads()->ended();
+                return new HowTheAcceptanceReads()->ended($why);
             },
             refused: function (ARefusalInItsWords $why): TheAcceptanceTurnedOutToBe {
                 $this->following = null;

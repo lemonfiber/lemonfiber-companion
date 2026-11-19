@@ -75,6 +75,7 @@
         @if ($this->howItIsGoing()->stands->isWorking())
             <x-design::standing :said="__('stacks.line_change.working')" tone="working" />
         @elseif ($this->howItIsGoing()->stands->hasEnded())
+            <x-operator::why-it-ended :stands="$this->howItIsGoing()->stands" />
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.line_change.no_outcome') }}</x-design::strong>
             </x-design::notice>

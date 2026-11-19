@@ -38,6 +38,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\UndoSaysNothing;
 use Modules\Kernel\Api\WhatWasFoundOfThePlugins;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -220,10 +221,10 @@ final readonly class Extenders implements ExtendingTheStack
                 stillRunning: static fn(): HowExtendingItIsGoing => HowExtendingItIsGoing::underway($job),
                 finished: static fn(Envelope $envelope): HowExtendingItIsGoing
                     => HowExtendingItIsGoing::done(PluginInstalls::in($envelope)),
-                ended: static fn(): HowExtendingItIsGoing => HowExtendingItIsGoing::ended(),
+                ended: static fn(string $why): HowExtendingItIsGoing => HowExtendingItIsGoing::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return HowExtendingItIsGoing::ended();
+            return HowExtendingItIsGoing::noOutcome();
         }
     }
 }

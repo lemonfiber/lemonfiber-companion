@@ -28,6 +28,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatWasMended;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -152,7 +153,7 @@ final readonly class Menders implements Mending
         try {
             return $this->reading($stack, $session, $job);
         } catch (NoSuchJob) {
-            return HowTheOfferIsGoing::ended();
+            return HowTheOfferIsGoing::noOutcome();
         }
     }
 
@@ -172,10 +173,10 @@ final readonly class Menders implements Mending
                 stillRunning: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowAgreedWorkIsGoing
                     => HowAgreedWorkIsGoing::done(Offers::mendedIn($envelope)),
-                ended: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::ended(),
+                ended: static fn(string $why): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return HowAgreedWorkIsGoing::ended();
+            return HowAgreedWorkIsGoing::noOutcome();
         }
     }
 
@@ -191,7 +192,7 @@ final readonly class Menders implements Mending
             stillRunning: static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::stillRunning(),
             finished: static fn(Envelope $envelope): HowTheOfferIsGoing
                 => HowTheOfferIsGoing::offering(Offers::offerIn($envelope)),
-            ended: static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::ended(),
+            ended: static fn(string $why): HowTheOfferIsGoing => HowTheOfferIsGoing::ended(WhyTheWorkEnded::from($why)),
         );
     }
 }

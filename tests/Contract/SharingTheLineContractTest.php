@@ -166,7 +166,7 @@ function halfTheLine(): ALineChange
 }
 
 it('comes away from rehearsing with the job the stack named', function (): void {
-    foreach (everyWayOfChangingTheLine(aChangeToTheLineTakenOn(AStackThatSharesItsLine::THE_REHEARSAL), WhatBecameOfTheWork::ended()) as $which => $build) {
+    foreach (everyWayOfChangingTheLine(aChangeToTheLineTakenOn(AStackThatSharesItsLine::THE_REHEARSAL), WhatBecameOfTheWork::noOutcome()) as $which => $build) {
         expect(whatTheLineChangeCameTo($build()->rehearse(aStackWhoseLineChanges(), Session::of('a-session-not-a-secret'), halfTheLine())))
             ->toBe(sprintf('following %s', AStackThatSharesItsLine::THE_REHEARSAL), $which);
     }
@@ -255,7 +255,7 @@ it('sends every part as written, the rehearsal as a dry run and the yes without 
 });
 
 it('the fake remembers each change rehearsed and carried out, and each handle followed', function (): void {
-    $sharing = AStackThatSharesItsLine::answering(WhatBecameOfTheWork::answered(theSameRehearsalOfTheLine()), WhatBecameOfTheWork::ended());
+    $sharing = AStackThatSharesItsLine::answering(WhatBecameOfTheWork::answered(theSameRehearsalOfTheLine()), WhatBecameOfTheWork::noOutcome());
     $change = halfTheLine();
     $sharing->rehearse(aStackWhoseLineChanges(), Session::of('a-session-not-a-secret'), $change);
     $sharing->carryOut(aStackWhoseLineChanges(), Session::of('a-session-not-a-secret'), $change);

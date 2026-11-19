@@ -49,6 +49,7 @@
             @if ($this->howTheSearchIsGoing()->stands->isWorking())
                 <x-design::standing :said="__('health.trace.searching')" tone="working" />
             @elseif ($this->howTheSearchIsGoing()->stands->hasEnded())
+                <x-operator::why-it-ended :stands="$this->howTheSearchIsGoing()->stands" />
                 <x-design::notice tone="unknown">
                     <x-design::strong>{{ __('health.trace.search_no_outcome') }}</x-design::strong>
                 </x-design::notice>

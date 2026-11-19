@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Presenters;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\AWarningAsRaised;
 use Modules\Operator\Internal\ViewModels\TheAcceptanceTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
@@ -31,9 +32,9 @@ final readonly class HowTheAcceptanceReads
         return new TheAcceptanceTurnedOutToBe(WhereTheWorkStands::running());
     }
 
-    public function ended(): TheAcceptanceTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why): TheAcceptanceTurnedOutToBe
     {
-        return new TheAcceptanceTurnedOutToBe(WhereTheWorkStands::ended());
+        return new TheAcceptanceTurnedOutToBe(WhereTheWorkStands::ended($why));
     }
 
     public function refused(ARefusalInItsWords $why): TheAcceptanceTurnedOutToBe

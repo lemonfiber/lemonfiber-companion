@@ -36,7 +36,7 @@ it('takes each arm it was built on, and no other', function (): void {
 
     expect(theWordForWhereTheWiringGotTo(WhatBecameOfTheWiring::underway(Job::named('j-1'))))->toBe('underway j-1')
         ->and(theWordForWhereTheWiringGotTo(WhatBecameOfTheWiring::answered($wiring)))->toBe('answered assessed')
-        ->and(theWordForWhereTheWiringGotTo(WhatBecameOfTheWiring::ended()))->toBe('ended')
+        ->and(theWordForWhereTheWiringGotTo(WhatBecameOfTheWiring::noOutcome()))->toBe('ended')
         ->and(theWordForWhereTheWiringGotTo(WhatBecameOfTheWiring::refused('Nothing here to wire')))->toBe('refused Nothing here to wire')
         ->and(theWordForWhereTheWiringGotTo(WhatBecameOfTheWiring::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met %s', KindOfObstacle::StackDidNotAnswer->value));
 });

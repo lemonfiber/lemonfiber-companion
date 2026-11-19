@@ -652,7 +652,7 @@ it('an update the stack no longer has a job for is ended, not unreachable and no
     // machine that said clearly that it has no outcome to give.
     $forgotten = MockResponse::make('{"error":"no such job"}', 404);
 
-    foreach (everyWayOfFollowingAnUpdate($forgotten, HowAgreedWorkIsGoing::ended()) as $which => $build) {
+    foreach (everyWayOfFollowingAnUpdate($forgotten, HowAgreedWorkIsGoing::noOutcome()) as $which => $build) {
         expect(whatTheTakingSaid($build()))->toBe('ended', $which);
     }
 });

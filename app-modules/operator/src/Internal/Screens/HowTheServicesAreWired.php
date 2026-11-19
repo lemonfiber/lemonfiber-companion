@@ -34,6 +34,7 @@ use Modules\Kernel\Api\WhatBecameOfTheFill;
 use Modules\Kernel\Api\WhatBecameOfTheWiring;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyTheFillWasTurnedDown;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Kernel\Api\WiringTheServices;
 use Modules\Operator\Internal\AdoptsTheEdits;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
@@ -342,10 +343,10 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
 
                 return new HowTheWiringReads()->answered($wiring);
             },
-            ended: function (): TheWiringTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why): TheWiringTurnedOutToBe {
                 $this->following = null;
 
-                return new HowTheWiringReads()->ended();
+                return new HowTheWiringReads()->ended($why);
             },
             refused: function (string $because): TheWiringTurnedOutToBe {
                 $this->following = null;

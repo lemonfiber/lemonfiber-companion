@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Upkeep;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Presenters\HowARefusalReads;
 use Modules\Operator\Internal\Presenters\HowTheLastUpdateReads;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
@@ -137,7 +138,7 @@ trait FollowsTheUpdateItTook
             held: fn(Session $session): HowTheLastUpdateWent => $this->keeping->whatBecameOf($stack, $session, Job::named($took))->either(
                 stillRunning: static fn(): HowTheLastUpdateWent => new HowTheLastUpdateReads()->running(),
                 done: static fn(Upkeep $report): HowTheLastUpdateWent => new HowTheLastUpdateReads()->done($report),
-                ended: static fn(): HowTheLastUpdateWent => new HowTheLastUpdateReads()->ended(),
+                ended: static fn(?WhyTheWorkEnded $why): HowTheLastUpdateWent => new HowTheLastUpdateReads()->ended($why),
                 met: $this->lettingGoIfRefused($stack, new HowTheLastUpdateReads()->met(...)),
                 // Refused and offered again, as a repair is: nothing was
                 // applied, the yes was given for what has since moved, so what

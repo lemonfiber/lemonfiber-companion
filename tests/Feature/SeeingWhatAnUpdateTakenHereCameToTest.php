@@ -184,7 +184,7 @@ it('a finished update that touched no service says so', function (): void {
 });
 
 it('an update the stack has no outcome for is said to be that, not a failure', function (): void {
-    $keeping = AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), HowAgreedWorkIsGoing::ended());
+    $keeping = AStackThatKeepsCurrent::whichTook(TheUpkeepScreenOfTheLoft::anEveningWorthSpending(), HowAgreedWorkIsGoing::noOutcome());
     $screen = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping);
 
     expect($screen->lastUpdate()->stands->hasEnded())->toBeTrue()

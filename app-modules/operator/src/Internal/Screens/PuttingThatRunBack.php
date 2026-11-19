@@ -26,6 +26,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheRecord;
 use Modules\Kernel\Api\UndoSaysNothing;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowARunBackReads;
@@ -246,7 +247,7 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
         $held = $this->handle;
 
         if (! is_string($held)) {
-            return new HowARunBackReads()->ended();
+            return new HowARunBackReads()->ended(null);
         }
 
         $stack = $this->stack();
@@ -256,7 +257,7 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
                 stillRunning: static fn(): HowPuttingARunBackWent => new HowARunBackReads()->running(),
                 done: static fn(ARunPutBack $report): HowPuttingARunBackWent => new HowARunBackReads()->done($report),
                 refused: static fn(ARefusalInItsWords $why): HowPuttingARunBackWent => new HowARunBackReads()->refused($why),
-                ended: static fn(): HowPuttingARunBackWent => new HowARunBackReads()->ended(),
+                ended: static fn(?WhyTheWorkEnded $why): HowPuttingARunBackWent => new HowARunBackReads()->ended($why),
                 met: $this->lettingGoIfRefused($stack, new HowARunBackReads()->met(...)),
             ),
             notHeld: static fn(): HowPuttingARunBackWent => new HowARunBackReads()->signedOut(),

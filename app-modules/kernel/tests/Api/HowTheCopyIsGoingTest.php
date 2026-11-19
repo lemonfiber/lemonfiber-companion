@@ -43,6 +43,6 @@ it('takes the arm for each state, and carries the report and the obstacle', func
 
     expect(howTheCopyIsGoingReads(HowTheCopyIsGoing::stillRunning()))->toBe('running')
         ->and(howTheCopyIsGoingReads(HowTheCopyIsGoing::done($report)))->toBe('done:42')
-        ->and(howTheCopyIsGoingReads(HowTheCopyIsGoing::ended()))->toBe('ended')
+        ->and(howTheCopyIsGoingReads(HowTheCopyIsGoing::noOutcome()))->toBe('ended')
         ->and(howTheCopyIsGoingReads(HowTheCopyIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe(sprintf('met:%s', KindOfObstacle::StackDidNotAnswer->value));
 });

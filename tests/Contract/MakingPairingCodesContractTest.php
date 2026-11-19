@@ -151,7 +151,7 @@ function aCodeTakenOn(): MockResponse
 }
 
 it('comes away from asking for a code with the job the stack named', function (): void {
-    foreach (everyWayOfAskingForACode(aCodeTakenOn(), WhatBecameOfThePairingCode::ended()) as $which => $build) {
+    foreach (everyWayOfAskingForACode(aCodeTakenOn(), WhatBecameOfThePairingCode::noOutcome()) as $which => $build) {
         expect(howTheCodeWasAskedFor($build()))->toBe(sprintf('following %s', AStackThatMakesPairingCodes::THE_JOB), $which);
     }
 });
@@ -222,14 +222,14 @@ it('an asking answered with a handle it cannot follow is an answer it could not 
 });
 
 it('a code still being made is its own answer, and one the stack forgot is ended', function (MockResponse $answered, string $said): void {
-    $became = $said === 'ended' ? WhatBecameOfThePairingCode::ended() : WhatBecameOfThePairingCode::underway(Job::named(AStackThatMakesPairingCodes::THE_JOB));
+    $became = $said === 'ended' ? WhatBecameOfThePairingCode::noOutcome() : WhatBecameOfThePairingCode::underway(Job::named(AStackThatMakesPairingCodes::THE_JOB));
 
     foreach (everyWayOfAskingForACode($answered, $became) as $which => $build) {
         expect(whatBecameOfTheCode($build()))->toBe($said, $which);
     }
 })->with([
     'still running' => [aCodeTakenOn(), sprintf('following %s', AStackThatMakesPairingCodes::THE_JOB)],
-    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'companion-pair', 'job' => AStackThatMakesPairingCodes::THE_JOB]])), 'ended'],
+    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['action' => 'companion-pair', 'job' => AStackThatMakesPairingCodes::THE_JOB, 'ended' => 'let-go']])), 'ended'],
     'never known' => [MockResponse::make('{"error":"no such job"}', 404), 'ended'],
 ]);
 
@@ -260,7 +260,7 @@ it('a payload that is not a pairing at all is an answer it could not read', func
 });
 
 it('the fake counts each asking and names the handle each following asked by', function (): void {
-    $pairing = AStackThatMakesPairingCodes::whichTookItOn(WhatBecameOfThePairingCode::ended());
+    $pairing = AStackThatMakesPairingCodes::whichTookItOn(WhatBecameOfThePairingCode::noOutcome());
     howTheCodeWasAskedFor($pairing);
     howTheCodeWasAskedFor($pairing);
     whatBecameOfTheCode($pairing);

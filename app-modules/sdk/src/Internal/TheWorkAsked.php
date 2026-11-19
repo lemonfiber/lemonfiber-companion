@@ -24,6 +24,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Api\Clients;
 use Modules\Sdk\Api\HandleIsUnreadable;
 use Modules\Sdk\Api\Handles;
@@ -94,10 +95,10 @@ final readonly class TheWorkAsked
             return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
                 stillRunning: static fn(): WhatBecameOfTheWork => WhatBecameOfTheWork::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheWork => WhatBecameOfTheWork::answered($read($envelope)),
-                ended: static fn(): WhatBecameOfTheWork => WhatBecameOfTheWork::ended(),
+                ended: static fn(string $why): WhatBecameOfTheWork => WhatBecameOfTheWork::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return WhatBecameOfTheWork::ended();
+            return WhatBecameOfTheWork::noOutcome();
         }
     }
 

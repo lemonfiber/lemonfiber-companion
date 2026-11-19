@@ -55,6 +55,7 @@
         @elseif ($going->stands->isWorking())
             <x-design::standing :said="__('plugins.settings.working')" tone="working" />
         @elseif ($going->stands->hasEnded())
+            <x-operator::why-it-ended :stands="$going->stands" />
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('plugins.settings.no_outcome') }}</x-design::strong>
             </x-design::notice>

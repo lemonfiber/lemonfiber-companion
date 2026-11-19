@@ -25,6 +25,7 @@ use Modules\Kernel\Api\ResettingTheConfiguration;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -115,10 +116,10 @@ final readonly class Resetters implements ResettingTheConfiguration
                 stillRunning: static fn(): HowTheResetIsGoing => HowTheResetIsGoing::stillRunning(),
                 finished: static fn(Envelope $envelope): HowTheResetIsGoing
                     => HowTheResetIsGoing::done(WhatAResetReverts::in($envelope)),
-                ended: static fn(): HowTheResetIsGoing => HowTheResetIsGoing::ended(),
+                ended: static fn(string $why): HowTheResetIsGoing => HowTheResetIsGoing::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return HowTheResetIsGoing::ended();
+            return HowTheResetIsGoing::noOutcome();
         }
     }
 }

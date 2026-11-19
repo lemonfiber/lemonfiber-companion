@@ -49,6 +49,7 @@
             <x-design::body>{{ __('health.walkthrough.leaving_not_noted') }}</x-design::body>
         @endif
     @elseif ($this->answer()->stands->hasEnded())
+        <x-operator::why-it-ended :stands="$this->answer()->stands" />
         {{-- Not a failure: the stack has no outcome to give, and the walk
              may well have worked. --}}
         <x-design::notice tone="unknown">

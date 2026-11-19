@@ -403,7 +403,7 @@ function everySpoilingOf(string $which, Closure $ask): array
                 }
             }
 
-            return in_array($which, ['Guides::whatBecameOf', 'Resetters::whatBecameOf'], strict: true)
+            return in_array($which, ['Guides::whatBecameOf', 'Resetters::whatBecameOf', 'Ushers::whatBecameOf'], strict: true)
                 ? MockResponse::make($sent[0])
                 : theStandInsAnswerTo($endpoint, ...whatARequestAsked($asked));
         },

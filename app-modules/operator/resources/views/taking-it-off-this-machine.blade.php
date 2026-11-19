@@ -21,6 +21,7 @@
 @elseif ($this->answer()->stands->isWorking())
     <x-design::body>{{ __('uninstall.removing') }}</x-design::body>
 @elseif ($this->answer()->stands->hasEnded())
+    <x-operator::why-it-ended :stands="$this->answer()->stands" />
     {{-- Not a failure and not a refusal: the stack has no outcome for the
          yes any more, which is not the same as it not having happened. --}}
     <x-operator::emphasis>{{ __('uninstall.no_outcome') }}</x-operator::emphasis>

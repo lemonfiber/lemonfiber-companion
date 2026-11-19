@@ -13,6 +13,7 @@
         @if ($this->howItIsGoing()->stands->isWorking())
             <x-design::standing :said="__('health.run_every.working')" tone="working" />
         @elseif ($this->howItIsGoing()->stands->hasEnded())
+            <x-operator::why-it-ended :stands="$this->howItIsGoing()->stands" />
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('health.run_every.no_outcome') }}</x-design::strong>
             </x-design::notice>

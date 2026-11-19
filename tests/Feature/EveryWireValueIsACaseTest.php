@@ -95,6 +95,7 @@ use Modules\Kernel\Api\WhichWayItWent;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
 use Tests\Support\TheGeneratedEnvelopes;
@@ -308,6 +309,13 @@ it('every settler the contract describes has a case', function (): void {
 
     expect($settlers)->not->toBe([], 'no whose union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhoSettledIt::cases()))->toBe($settlers);
+});
+
+it('every reason work ends before it finished for has a case', function (): void {
+    $reasons = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('EndedEnvelope'), 'ended');
+
+    expect($reasons)->not->toBe([], 'no ended union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhyTheWorkEnded::cases()))->toBe($reasons);
 });
 
 it('every settlement the contract describes has a case', function (): void {

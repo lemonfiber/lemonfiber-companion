@@ -19,12 +19,15 @@ use Closure;
  */
 final readonly class HowPuttingItBackIsGoing
 {
+    use EndsBeforeItFinishes;
+
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?ACopyPutBack $done = null,
         private ?ARefusalInItsWords $refused = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still putting it back. */
@@ -45,12 +48,6 @@ final readonly class HowPuttingItBackIsGoing
         return new self(refused: $why);
     }
 
-    /** The stack has no outcome for it any more. */
-    public static function ended(): self
-    {
-        return new self();
-    }
-
     /** The stack could not be reached to ask, and this is what was met. */
     public static function met(Obstacle $why): self
     {
@@ -67,7 +64,7 @@ final readonly class HowPuttingItBackIsGoing
      * @param Closure(): T                   $stillRunning
      * @param Closure(ACopyPutBack): T       $done
      * @param Closure(ARefusalInItsWords): T $refused
-     * @param Closure(): T                   $ended
+     * @param Closure(?WhyTheWorkEnded): T   $ended
      * @param Closure(Obstacle): T           $met
      *
      * @return T
@@ -79,7 +76,7 @@ final readonly class HowPuttingItBackIsGoing
             $this->running => $stillRunning(),
             $this->done instanceof ACopyPutBack => $done($this->done),
             $this->refused instanceof ARefusalInItsWords => $refused($this->refused),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatAReplacementCameTo;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Presenters\HowARefusalReads;
 use Modules\Operator\Internal\Presenters\HowAReplacementReads;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
@@ -177,10 +178,10 @@ trait ReplacesTheInternalCertificate
 
                 return new HowAReplacementReads()->answered($came);
             },
-            ended: function (): TheReplacementTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why): TheReplacementTurnedOutToBe {
                 $this->followingTheReplacement = null;
 
-                return new HowAReplacementReads()->ended();
+                return new HowAReplacementReads()->ended($why);
             },
             refused: function (ARefusalInItsWords $why): TheReplacementTurnedOutToBe {
                 $this->followingTheReplacement = null;

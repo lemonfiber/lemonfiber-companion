@@ -19,11 +19,14 @@ use Closure;
  */
 final readonly class HowTheWalkthroughIsGoing
 {
+    use EndsBeforeItFinishes;
+
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?AWalkthrough $done = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still walking it. */
@@ -36,12 +39,6 @@ final readonly class HowTheWalkthroughIsGoing
     public static function done(AWalkthrough $report): self
     {
         return new self(done: $report);
-    }
-
-    /** The stack has no outcome for that walkthrough any more. */
-    public static function ended(): self
-    {
-        return new self();
     }
 
     /** The stack could not be reached to ask, and this is what was met. */
@@ -57,10 +54,10 @@ final readonly class HowTheWalkthroughIsGoing
      *
      * @template T of object
      *
-     * @param Closure(): T             $stillRunning
-     * @param Closure(AWalkthrough): T $done
-     * @param Closure(): T             $ended
-     * @param Closure(Obstacle): T     $met
+     * @param Closure(): T                 $stillRunning
+     * @param Closure(AWalkthrough): T     $done
+     * @param Closure(?WhyTheWorkEnded): T $ended
+     * @param Closure(Obstacle): T         $met
      *
      * @return T
      */
@@ -70,7 +67,7 @@ final readonly class HowTheWalkthroughIsGoing
             $this->met instanceof Obstacle => $met($this->met),
             $this->running => $stillRunning(),
             $this->done instanceof AWalkthrough => $done($this->done),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

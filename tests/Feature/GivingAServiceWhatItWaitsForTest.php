@@ -193,7 +193,7 @@ it('draws the settings moved alongside the one the service waits for', function 
 it('asks nothing of a phone holding no session, and draws what stood in the way of reading', function (): void {
     $tuning = aStackHoldingTheGuardBack();
     $signedOut = thePageAboutWhatItWaitsFor($tuning, signedIn: false);
-    $unreachable = AStackThatTunesItsSettings::sayingAtOnce(WhatWasFoundOfTheSettings::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), WhatBecameOfTheWork::ended());
+    $unreachable = AStackThatTunesItsSettings::sayingAtOnce(WhatWasFoundOfTheSettings::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), WhatBecameOfTheWork::noOutcome());
     $unreached = thePageAboutWhatItWaitsFor($unreachable);
     WhatTheDeviceWouldDraw::by($unreached);
 

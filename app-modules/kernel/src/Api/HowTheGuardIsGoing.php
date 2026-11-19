@@ -24,6 +24,8 @@ use Closure;
  */
 final readonly class HowTheGuardIsGoing
 {
+    use EndsBeforeItFinishes;
+
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?WhatTheGuardSaw $saw = null,
@@ -31,6 +33,7 @@ final readonly class HowTheGuardIsGoing
         private ?Obstacle $met = null,
         private bool $guarding = false,
         private bool $forgotten = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still guarding. */
@@ -49,12 +52,6 @@ final readonly class HowTheGuardIsGoing
     public static function refused(string $said): self
     {
         return new self(refused: $said);
-    }
-
-    /** It ended without seeing anything: released, or let go because nothing asked about it. */
-    public static function ended(): self
-    {
-        return new self();
     }
 
     /** The stack no longer knows it. */
@@ -76,12 +73,12 @@ final readonly class HowTheGuardIsGoing
      *
      * @template T of object
      *
-     * @param Closure(): T                $guarding
-     * @param Closure(WhatTheGuardSaw): T $sawItGo
-     * @param Closure(string): T          $refused
-     * @param Closure(): T                $ended
-     * @param Closure(): T                $unknown
-     * @param Closure(Obstacle): T        $met
+     * @param Closure(): T                 $guarding
+     * @param Closure(WhatTheGuardSaw): T  $sawItGo
+     * @param Closure(string): T           $refused
+     * @param Closure(?WhyTheWorkEnded): T $ended
+     * @param Closure(): T                 $unknown
+     * @param Closure(Obstacle): T         $met
      *
      * @return T
      */
@@ -93,7 +90,7 @@ final readonly class HowTheGuardIsGoing
             $this->saw instanceof WhatTheGuardSaw => $sawItGo($this->saw),
             $this->refused !== '' => $refused($this->refused),
             $this->forgotten => $unknown(),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

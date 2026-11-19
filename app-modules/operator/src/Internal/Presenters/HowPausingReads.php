@@ -10,6 +10,7 @@ use Modules\Kernel\Api\WhatADownloadClientSaid;
 use Modules\Kernel\Api\WhatPausingComesTo;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\ADownloadClientAsShown;
 use Modules\Operator\Internal\ViewModels\HowPausingWent;
 use Modules\Operator\Internal\ViewModels\WhatPausingSays;
@@ -82,9 +83,9 @@ final readonly class HowPausingReads
     }
 
     /** The stack has no outcome for the rehearsal any more. */
-    public function offerEnded(): WhatPausingWouldShow
+    public function offerEnded(?WhyTheWorkEnded $why): WhatPausingWouldShow
     {
-        return new WhatPausingWouldShow(WhereTheWorkStands::ended());
+        return new WhatPausingWouldShow(WhereTheWorkStands::ended($why));
     }
 
     /** The rehearsal met something on the way. */
@@ -112,9 +113,9 @@ final readonly class HowPausingReads
     }
 
     /** The stack has no outcome for the yes any more. */
-    public function ended(): HowPausingWent
+    public function ended(?WhyTheWorkEnded $why): HowPausingWent
     {
-        return new HowPausingWent(WhereTheWorkStands::ended());
+        return new HowPausingWent(WhereTheWorkStands::ended($why));
     }
 
     /** Asking after the yes met something on the way. */

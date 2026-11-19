@@ -111,6 +111,7 @@ use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyItIsWedged;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 
 use function preg_match_all;
 use function preg_quote;
@@ -139,6 +140,7 @@ final readonly class TheWireUnions
         HowDeliveryStands::class => 'state',
         KindOfAlertBackEnd::class => 'kind',
         WhoSettledIt::class => 'whose',
+        WhyTheWorkEnded::class => 'ended',
         HowItWasReached::class => 'how',
         HowAServiceRuns::class => 'state',
         KindOfMonitor::class => 'kind',

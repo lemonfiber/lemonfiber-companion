@@ -265,11 +265,11 @@ it('an offer still being worked out is its own answer', function (): void {
 });
 
 it('an offer the stack no longer has a job for is ended, not unreachable and not running', function (MockResponse $forgotten): void {
-    foreach (everyWayOfStoppingSeeding($forgotten, HowTheOfferToLetGoIsGoing::ended(), HowLettingItGoIsGoing::ended()) as $which => $build) {
+    foreach (everyWayOfStoppingSeeding($forgotten, HowTheOfferToLetGoIsGoing::noOutcome(), HowLettingItGoIsGoing::noOutcome()) as $which => $build) {
         expect(whatTheOfferToLetGoSaid($build()))->toBe('ended', $which);
     }
 })->with([
-    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'stop-seeding', 'job' => AStackThatStopsSeeding::THE_OFFER]]))],
+    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['action' => 'stop-seeding', 'job' => AStackThatStopsSeeding::THE_OFFER, 'ended' => 'let-go']]))],
     'never known' => [MockResponse::make('{"error":"no such job"}', 404)],
 ]);
 
@@ -337,11 +337,11 @@ it('stopping still running is its own answer', function (): void {
 });
 
 it('stopping the stack no longer has a job for is ended, not unreachable and not running', function (MockResponse $forgotten): void {
-    foreach (everyWayOfStoppingSeeding($forgotten, HowTheOfferToLetGoIsGoing::ended(), HowLettingItGoIsGoing::ended()) as $which => $build) {
+    foreach (everyWayOfStoppingSeeding($forgotten, HowTheOfferToLetGoIsGoing::noOutcome(), HowLettingItGoIsGoing::noOutcome()) as $which => $build) {
         expect(whatBecameOfLettingItGo($build()))->toBe('ended', $which);
     }
 })->with([
-    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'stop-seeding', 'job' => AStackThatStopsSeeding::THE_JOB]]))],
+    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['action' => 'stop-seeding', 'job' => AStackThatStopsSeeding::THE_JOB, 'ended' => 'let-go']]))],
     'never known' => [MockResponse::make('{"error":"no such job"}', 404)],
 ]);
 

@@ -9,6 +9,7 @@ use Modules\Kernel\Api\HowDriftWasJudged;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheWiring;
 use Modules\Kernel\Api\WhereAConnectionStands;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\AConnectionAsShown;
 use Modules\Operator\Internal\ViewModels\TheWiringAsShown;
 use Modules\Operator\Internal\ViewModels\TheWiringTurnedOutToBe;
@@ -47,9 +48,9 @@ final readonly class HowTheWiringReads
     }
 
     /** The stack has no outcome for it any more, which is not the same as refusing it. */
-    public function ended(): TheWiringTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why): TheWiringTurnedOutToBe
     {
-        return new TheWiringTurnedOutToBe(WhereTheWorkStands::ended());
+        return new TheWiringTurnedOutToBe(WhereTheWorkStands::ended($why));
     }
 
     /** The stack turned the request down, and this is its reason. */

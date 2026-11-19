@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheGuardSaw;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AsksWhatFormsItHas;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAGuardReads;
@@ -294,7 +295,7 @@ final class GuardingWhileYouWatch extends NativeComponent
             guarding: static fn(): HowTheGuardWent => new HowAGuardReads()->guarding($asked->forms()),
             sawItGo: static fn(WhatTheGuardSaw $saw): HowTheGuardWent => new HowAGuardReads()->sawItGo($saw),
             refused: static fn(string $said): HowTheGuardWent => new HowAGuardReads()->refused($said),
-            ended: static fn(): HowTheGuardWent => new HowAGuardReads()->ended(),
+            ended: static fn(?WhyTheWorkEnded $why): HowTheGuardWent => new HowAGuardReads()->ended($why),
             unknown: static fn(): HowTheGuardWent => new HowAGuardReads()->unknown(),
             met: $this->lettingGoIfRefused($stack, new HowAGuardReads()->met(...)),
         );
@@ -320,7 +321,7 @@ final class GuardingWhileYouWatch extends NativeComponent
 
         $this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowTheGuardIsGoing => $this->guards->letGo($stack, $session, Job::named($took)),
-            notHeld: static fn(): HowTheGuardIsGoing => HowTheGuardIsGoing::ended(),
+            notHeld: static fn(): HowTheGuardIsGoing => HowTheGuardIsGoing::noOutcome(),
         );
     }
 

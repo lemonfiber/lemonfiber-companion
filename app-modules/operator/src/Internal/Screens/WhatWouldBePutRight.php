@@ -26,6 +26,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatWasMended;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAMendingReads;
@@ -416,7 +417,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
         // one, and the template's own branch on {@see wasAgreedTo()} is what
         // keeps it off the glass.
         if (! is_string($held)) {
-            return new HowAMendingReads()->ended();
+            return new HowAMendingReads()->ended(null);
         }
 
         $stack = $this->stack();
@@ -428,7 +429,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
                         => new HowAMendingReads()->stillWorkingItOut(),
                     done: static fn(WhatWasMended $mended): WhatThisStackPutRight
                         => new HowAMendingReads()->these($mended),
-                    ended: static fn(): WhatThisStackPutRight => new HowAMendingReads()->ended(),
+                    ended: static fn(?WhyTheWorkEnded $why): WhatThisStackPutRight => new HowAMendingReads()->ended($why),
                     met: $this->lettingGoIfRefused($stack, new HowAMendingReads()->met(...)),
                     // Refused and re-offered: the yes was given for an offer
                     // that has moved, so everything held for it is let go and
@@ -437,10 +438,10 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
                         $this->lookAgain();
                         $this->movedOn = new HowARefusalReads()->inItsWords($why);
 
-                        return new HowAMendingReads()->ended();
+                        return new HowAMendingReads()->ended(null);
                     },
                 ),
-            notHeld: static fn(): WhatThisStackPutRight => new HowAMendingReads()->ended(),
+            notHeld: static fn(): WhatThisStackPutRight => new HowAMendingReads()->ended(null),
         );
     }
 
@@ -505,7 +506,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
 
                 return new HowAnOfferOfRepairsReads()->offering($offer);
             },
-            ended: static fn(): WhatTheStackWouldPutRight => new HowAnOfferOfRepairsReads()->ended(),
+            ended: static fn(?WhyTheWorkEnded $why): WhatTheStackWouldPutRight => new HowAnOfferOfRepairsReads()->ended($why),
             met: static fn(Obstacle $why): WhatTheStackWouldPutRight
                 => new HowAnOfferOfRepairsReads()->met($why),
         );

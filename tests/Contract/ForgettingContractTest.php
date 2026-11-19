@@ -136,7 +136,7 @@ function whatForgettingCameTo(WhatBecameOfTheWork $became): string
 }
 
 it('comes away from asking what would go with the job the stack named', function (): void {
-    foreach (['the fake' => AStackThatForgets::answering(WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended()), 'the adapter' => aForgetterAnswered(forgettingTakenOn(AStackThatForgets::THE_LISTING))] as $which => $forgetting) {
+    foreach (['the fake' => AStackThatForgets::answering(WhatBecameOfTheWork::noOutcome(), WhatBecameOfTheWork::noOutcome()), 'the adapter' => aForgetterAnswered(forgettingTakenOn(AStackThatForgets::THE_LISTING))] as $which => $forgetting) {
         expect(whatForgettingCameTo($forgetting->whatWouldGo(aStackThatForgetsWhatItKeeps(), Session::of('a-session-not-a-secret'))))
             ->toBe(sprintf('following %s', AStackThatForgets::THE_LISTING), $which);
     }
@@ -144,7 +144,7 @@ it('comes away from asking what would go with the job the stack named', function
 
 it('reads the listing of what would go, and what went once it was agreed to', function (array $removal, WhereForgettingGot $got, string $said): void {
     $finished = MockResponse::make((string) json_encode(whatAStackSaysOfForgetting($removal)));
-    $fake = AStackThatForgets::answering(WhatBecameOfTheWork::answered(TheForgetting::said(whatTheLoftListsToForget(), $got)), WhatBecameOfTheWork::ended());
+    $fake = AStackThatForgets::answering(WhatBecameOfTheWork::answered(TheForgetting::said(whatTheLoftListsToForget(), $got)), WhatBecameOfTheWork::noOutcome());
 
     foreach (['the fake' => $fake, 'the adapter' => aForgetterAnswered($finished)] as $which => $forgetting) {
         expect(whatForgettingCameTo($forgetting->whatBecameOf(aStackThatForgetsWhatItKeeps(), Session::of('a-session-not-a-secret'), Job::named(AStackThatForgets::THE_LISTING))))
@@ -234,7 +234,7 @@ it('asks without the yes first, and sends the yes only against the listing', fun
 });
 
 it('the fake remembers each asking and each yes', function (): void {
-    $forgetting = AStackThatForgets::answering(WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended());
+    $forgetting = AStackThatForgets::answering(WhatBecameOfTheWork::noOutcome(), WhatBecameOfTheWork::noOutcome());
     $agreed = ForgettingAgreed::after(theListingOfWhatWouldGo());
     $forgetting->whatWouldGo(aStackThatForgetsWhatItKeeps(), Session::of('a-session-not-a-secret'));
     $forgetting->forget(aStackThatForgetsWhatItKeeps(), Session::of('a-session-not-a-secret'), $agreed);

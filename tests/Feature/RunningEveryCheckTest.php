@@ -129,7 +129,7 @@ it('offers running every check on Health, and a family\'s checks while that fami
 });
 
 it('offers nothing to run on a route that names no run this app knows', function (): void {
-    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended());
+    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome());
     $asking = AStackThatWasAsked::saying(aReportBeforeTheRun());
     $screen = theScreenRunningChecks($asking, $running);
     $screen->setParams(['stack' => TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id()->stored(), 'about' => 'gluetun']);
@@ -143,7 +143,7 @@ it('offers nothing to run on a route that names no run this app knows', function
 });
 
 it('lists every check a run of all would run that disturbs something, with the stack\'s bound or that it gave none, before anything is sent', function (): void {
-    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended());
+    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome());
     $screen = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), $running);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
@@ -156,14 +156,14 @@ it('lists every check a run of all would run that disturbs something, with the s
 });
 
 it('lists only the family\'s checks that disturb something for a family\'s run, under the family', function (): void {
-    $screen = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()), Category::Vpn);
+    $screen = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome()), Category::Vpn);
 
     expect(whatTheRunWouldDisturb($screen))->toBe(['Traffic stops when the tunnel drops'])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(HowARunOfChecksReads::FAMILY, ['family' => theVpnFamilyAsSaid()]));
 });
 
 it('says a run that checks nothing that disturbs disturbs nothing, and still offers it', function (): void {
-    $screen = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()), Category::Storage);
+    $screen = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome()), Category::Storage);
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->said())->toContain(__('health.run_every.disturbs_nothing'))
@@ -172,7 +172,7 @@ it('says a run that checks nothing that disturbs disturbs nothing, and still off
 
 it('names each download the stack says is moving as one the run interrupts', function (): void {
     $summary = WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing())->moving(DownloadsMoving::these('Dune (2021)')));
-    $screen = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()), stream: AStackThatSpeaksUp::holdingOpen($summary));
+    $screen = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome()), stream: AStackThatSpeaksUp::holdingOpen($summary));
     $screen->listen();
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.disturbs.interrupts'), 'Dune (2021)');
@@ -209,7 +209,7 @@ it('says a run that came back with no findings found none', function (): void {
 });
 
 it('sends the yes once, however often it is tapped while the stack runs it', function (): void {
-    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended());
+    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome());
     $screen = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), $running);
     $screen->run();
     $screen->run();
@@ -221,7 +221,7 @@ it('says the stack did not run them, in its own words, and that it has no outcom
     $refusal = ARefusalInItsWords::said('The tunnel is already down', '', WhatTheRefusalNamed::nothing(), 'Bring the tunnel up first');
     $refused = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), AStackThatRunsChecks::sayingAtOnce(WhatBecameOfTheWork::refused($refusal)));
     $refused->run();
-    $ended = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()));
+    $ended = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome()));
     $ended->run();
     $ended->whileItRuns();
 
@@ -238,7 +238,7 @@ it('says what stood in the way of a run, and lets a refused session go', functio
 });
 
 it('runs nothing where the stack could not be read, or the session has ended', function (AStackThatWasAsked $asking, bool $signedIn): void {
-    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended());
+    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome());
     $screen = theScreenRunningChecks($asking, $running, signedIn: $signedIn);
     $screen->run();
 
@@ -252,7 +252,7 @@ it('runs nothing where the stack could not be read, or the session has ended', f
 
 it('asks the stack again only when told to', function (): void {
     $asking = AStackThatWasAsked::saying(aReportBeforeTheRun());
-    $screen = theScreenRunningChecks($asking, AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()));
+    $screen = theScreenRunningChecks($asking, AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome()));
     $screen->answer();
     $screen->answer();
 
@@ -265,7 +265,7 @@ it('asks the stack again only when told to', function (): void {
 });
 
 it('renders its own view', function (): void {
-    expect(theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()))->render()->name())
+    expect(theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome()))->render()->name())
         ->toBe(WhatRunningChecksDisturbs::TEMPLATE);
 });
 

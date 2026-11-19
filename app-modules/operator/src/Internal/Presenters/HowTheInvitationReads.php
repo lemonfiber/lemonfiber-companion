@@ -8,6 +8,7 @@ use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatWasGranted;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\TheCodesDrawn;
 use Modules\Operator\Internal\ViewModels\AnInvitationAsShown;
 use Modules\Operator\Internal\ViewModels\AnInvitationToHandAsShown;
@@ -50,9 +51,9 @@ final readonly class HowTheInvitationReads
     }
 
     /** The stack has no outcome for it any more, which is not the same as refusing it. */
-    public function ended(string $name): TheInvitationTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why, string $name): TheInvitationTurnedOutToBe
     {
-        return $this->without(WhereTheWorkStands::ended(), $name);
+        return $this->without(WhereTheWorkStands::ended($why), $name);
     }
 
     /** The stack refused, and this is its reason. */

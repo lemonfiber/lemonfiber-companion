@@ -244,17 +244,17 @@ it('a reset the stack refused is its refusal, in its words, with what it named',
 });
 
 it('a reset still running is its own answer', function (): void {
-    foreach (everyWayOfResetting(aResetTakenOn(AStackThatResets::THE_PREVIEW), HowTheResetIsGoing::stillRunning(), HowTheResetIsGoing::ended()) as $which => $build) {
+    foreach (everyWayOfResetting(aResetTakenOn(AStackThatResets::THE_PREVIEW), HowTheResetIsGoing::stillRunning(), HowTheResetIsGoing::noOutcome()) as $which => $build) {
         expect(whatBecameOfResetting($build()))->toBe('still running', $which);
     }
 });
 
 it('a reset the stack no longer has a job for is ended, not unreachable and not running', function (MockResponse $forgotten): void {
-    foreach (everyWayOfResetting($forgotten, HowTheResetIsGoing::ended(), HowTheResetIsGoing::stillRunning()) as $which => $build) {
+    foreach (everyWayOfResetting($forgotten, HowTheResetIsGoing::noOutcome(), HowTheResetIsGoing::stillRunning()) as $which => $build) {
         expect(whatBecameOfResetting($build()))->toBe('ended', $which);
     }
 })->with([
-    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'reset', 'job' => AStackThatResets::THE_PREVIEW]]))],
+    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['action' => 'reset', 'job' => AStackThatResets::THE_PREVIEW, 'ended' => 'let-go']]))],
     'never known' => [MockResponse::make('{"error":"no such job"}', 404)],
 ]);
 

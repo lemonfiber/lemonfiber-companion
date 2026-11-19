@@ -239,7 +239,7 @@ it('says so where the plugin is no longer installed, and offers the way back to 
 });
 
 it('says where a plugin\'s services read no settings and no secrets', function (): void {
-    $tuning = AStackThatTunesItsSettings::answering(TheServicesSettings::of(TheSettingsRead::these(), TheSecretsRead::these()), WhatBecameOfTheWork::ended(), WhatBecameOfTheWork::ended());
+    $tuning = AStackThatTunesItsSettings::answering(TheServicesSettings::of(TheSettingsRead::these(), TheSecretsRead::these()), WhatBecameOfTheWork::noOutcome(), WhatBecameOfTheWork::noOutcome());
     $drawn = WhatTheDeviceWouldDraw::by(theGuardsSettingsScreen($tuning));
 
     expect($drawn->said())->toContain(__('plugins.settings.none'), __('plugins.settings.no_secrets'));
@@ -401,7 +401,7 @@ it('draws a refusal in the stack\'s own words, reads the settings again, and off
 });
 
 it('says so where the stack has no outcome for the work any more', function (): void {
-    $drawn = WhatTheDeviceWouldDraw::by(aRehearsalOfGermany(aStackThatSetsTheGuard(rehearsal: WhatBecameOfTheWork::ended())));
+    $drawn = WhatTheDeviceWouldDraw::by(aRehearsalOfGermany(aStackThatSetsTheGuard(rehearsal: WhatBecameOfTheWork::noOutcome())));
 
     expect($drawn->said())->toContain(__('plugins.settings.no_outcome'))
         ->and($drawn->offers())->toContain(__('plugins.settings.start_again'));
@@ -434,7 +434,7 @@ it('reads the plugin and its settings again when asked', function (): void {
 
 it('draws what stood in the way of reading the plugins or the settings, and a session that ended', function (): void {
     $plugins = theGuardsSettingsScreen(aStackThatSetsTheGuard(), AStackThatExtendsItself::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
-    $settings = theGuardsSettingsScreen(AStackThatTunesItsSettings::sayingAtOnce(WhatWasFoundOfTheSettings::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), WhatBecameOfTheWork::ended()));
+    $settings = theGuardsSettingsScreen(AStackThatTunesItsSettings::sayingAtOnce(WhatWasFoundOfTheSettings::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), WhatBecameOfTheWork::noOutcome()));
     $signedOut = theGuardsSettingsScreen(aStackThatSetsTheGuard(), signedIn: false);
     $didNotAnswer = __(KindOfObstacle::StackDidNotAnswer->said());
 

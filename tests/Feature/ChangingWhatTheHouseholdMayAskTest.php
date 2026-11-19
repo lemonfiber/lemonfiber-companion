@@ -354,7 +354,7 @@ it('draws a refusal as the stack\'s own sentence and remedy, and offers starting
 });
 
 it('says so where the stack has no outcome for the work any more', function (): void {
-    $drawn = WhatTheDeviceWouldDraw::by(aRehearsedLimitForAlex(aStackThatChangesWhatIsAllowed(rehearsal: WhatBecameOfTheWork::ended())));
+    $drawn = WhatTheDeviceWouldDraw::by(aRehearsedLimitForAlex(aStackThatChangesWhatIsAllowed(rehearsal: WhatBecameOfTheWork::noOutcome())));
 
     expect($drawn->said())->toContain(__('stacks.allowance_change.no_outcome'));
 });

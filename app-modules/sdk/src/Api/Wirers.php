@@ -22,6 +22,7 @@ use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheWiringSaysNothing;
 use Modules\Kernel\Api\WhatBecameOfTheWiring;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Kernel\Api\WiringTheServices;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
@@ -91,10 +92,10 @@ final readonly class Wirers implements WiringTheServices
                 stillRunning: static fn(): WhatBecameOfTheWiring => WhatBecameOfTheWiring::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheWiring
                     => WhatBecameOfTheWiring::answered(WhatTheWiringCameTo::in($envelope)),
-                ended: static fn(): WhatBecameOfTheWiring => WhatBecameOfTheWiring::ended(),
+                ended: static fn(string $why): WhatBecameOfTheWiring => WhatBecameOfTheWiring::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return WhatBecameOfTheWiring::ended();
+            return WhatBecameOfTheWiring::noOutcome();
         }
     }
 

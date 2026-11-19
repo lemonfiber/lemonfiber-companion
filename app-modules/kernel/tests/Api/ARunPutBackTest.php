@@ -109,7 +109,7 @@ it('follows a run going back to each of its five arms', function (): void {
     expect(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::stillRunning()))->toBe('running')
         ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::done(aRunPutBackLeaving(ChangesAndWhy::these(), WhetherItWasRehearsed::Rehearsed))))->toBe('done, rehearsed')
         ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::refused($refused)))->toBe('refused, Nothing was changed at 1790150000')
-        ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::ended()))->toBe('ended')
+        ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::noOutcome()))->toBe('ended')
         ->and(whichArmPuttingTheRunBackTook(HowPuttingARunBackIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toEqual(KindOfObstacle::StackDidNotAnswer->name);
 });
 

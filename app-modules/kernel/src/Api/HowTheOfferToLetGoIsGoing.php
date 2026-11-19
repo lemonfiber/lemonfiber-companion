@@ -16,11 +16,14 @@ use Closure;
  */
 final readonly class HowTheOfferToLetGoIsGoing
 {
+    use EndsBeforeItFinishes;
+
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?WhatLettingItGoCosts $offered = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still working out what it would cost. */
@@ -33,12 +36,6 @@ final readonly class HowTheOfferToLetGoIsGoing
     public static function offering(WhatLettingItGoCosts $offer): self
     {
         return new self(offered: $offer);
-    }
-
-    /** The stack has no outcome for that job any more, and the remedy is to ask again. */
-    public static function ended(): self
-    {
-        return new self();
     }
 
     /** The stack could not be reached to ask, and this is what was met. */
@@ -56,7 +53,7 @@ final readonly class HowTheOfferToLetGoIsGoing
      *
      * @param Closure(): T                     $stillRunning
      * @param Closure(WhatLettingItGoCosts): T $offering
-     * @param Closure(): T                     $ended
+     * @param Closure(?WhyTheWorkEnded): T     $ended
      * @param Closure(Obstacle): T             $met
      *
      * @return T
@@ -67,7 +64,7 @@ final readonly class HowTheOfferToLetGoIsGoing
             $this->met instanceof Obstacle => $met($this->met),
             $this->running => $stillRunning(),
             $this->offered instanceof WhatLettingItGoCosts => $offering($this->offered),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

@@ -350,7 +350,7 @@ it('draws a refusal as the stack\'s own sentence and remedy, and offers starting
 });
 
 it('says so where the stack has no outcome for the work any more', function (): void {
-    $drawn = WhatTheDeviceWouldDraw::by(aRehearsedHalfOfTheLine(aStackThatChangesItsLine(rehearsal: WhatBecameOfTheWork::ended())));
+    $drawn = WhatTheDeviceWouldDraw::by(aRehearsedHalfOfTheLine(aStackThatChangesItsLine(rehearsal: WhatBecameOfTheWork::noOutcome())));
 
     expect($drawn->said())->toContain(__('stacks.line_change.no_outcome'));
 });
@@ -431,7 +431,7 @@ it('draws what stood in the way of reading the line as it stands', function (): 
 
 it('asking again reads the line again, and follows the work on its own cadence', function (): void {
     $rationing = AStackThatRationsItsLine::with(theLineBeforeTheChange());
-    $sharing = AStackThatSharesItsLine::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatSharesItsLine::THE_REHEARSAL)), WhatBecameOfTheWork::ended());
+    $sharing = AStackThatSharesItsLine::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatSharesItsLine::THE_REHEARSAL)), WhatBecameOfTheWork::noOutcome());
     $screen = theLineChangeScreen($sharing, $rationing);
     $screen->answer();
     $screen->down = '50%';

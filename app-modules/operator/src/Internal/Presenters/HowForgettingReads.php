@@ -12,6 +12,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheForgetting;
 use Modules\Kernel\Api\ThePlacesGone;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\APlaceLeftAsShown;
 use Modules\Operator\Internal\ViewModels\TheForgettingTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatForgettingRemoved;
@@ -37,9 +38,9 @@ final readonly class HowForgettingReads
         return new TheForgettingTurnedOutToBe(WhereTheWorkStands::running());
     }
 
-    public function ended(): TheForgettingTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why): TheForgettingTurnedOutToBe
     {
-        return new TheForgettingTurnedOutToBe(WhereTheWorkStands::ended());
+        return new TheForgettingTurnedOutToBe(WhereTheWorkStands::ended($why));
     }
 
     public function refused(ARefusalInItsWords $why): TheForgettingTurnedOutToBe

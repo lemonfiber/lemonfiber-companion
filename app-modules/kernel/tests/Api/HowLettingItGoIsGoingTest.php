@@ -33,6 +33,6 @@ it('takes the arm for each state, and carries the report and the obstacle', func
 
     expect(howLettingItGoIsGoingReads(HowLettingItGoIsGoing::stillRunning()))->toBe('running')
         ->and(howLettingItGoIsGoingReads(HowLettingItGoIsGoing::done($report)))->toBe('done:Show.Season1')
-        ->and(howLettingItGoIsGoingReads(HowLettingItGoIsGoing::ended()))->toBe('ended')
+        ->and(howLettingItGoIsGoingReads(HowLettingItGoIsGoing::noOutcome()))->toBe('ended')
         ->and(howLettingItGoIsGoingReads(HowLettingItGoIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe(sprintf('met:%s', KindOfObstacle::CredentialWasRefused->value));
 });

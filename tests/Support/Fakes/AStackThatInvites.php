@@ -143,6 +143,6 @@ final class AStackThatInvites implements Inviting
     /** The next answer in line, or the stack having no outcome once they have all been given. */
     private function next(): WhatBecameOfTheInvitation
     {
-        return array_shift($this->answers) ?? WhatBecameOfTheInvitation::ended();
+        return array_shift($this->answers) ?? WhatBecameOfTheInvitation::noOutcome();
     }
 }

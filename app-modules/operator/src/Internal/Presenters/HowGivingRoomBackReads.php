@@ -9,6 +9,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\HowBig;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheRoomGivenBack;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\ASizeAsShown;
 use Modules\Operator\Internal\ViewModels\HowGivingItBackWent;
 use Modules\Operator\Internal\ViewModels\WhatGivingItBackWouldShow;
@@ -64,9 +65,9 @@ final readonly class HowGivingRoomBackReads
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
-    public function ended(): HowGivingItBackWent
+    public function ended(?WhyTheWorkEnded $why): HowGivingItBackWent
     {
-        return $this->following(WhereTheWorkStands::ended());
+        return $this->following(WhereTheWorkStands::ended($why));
     }
 
     /** Giving it back, or asking after it, met this instead. */

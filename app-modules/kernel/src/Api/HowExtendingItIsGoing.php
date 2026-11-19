@@ -24,12 +24,15 @@ use Closure;
  */
 final readonly class HowExtendingItIsGoing
 {
+    use EndsBeforeItFinishes;
+
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?ThePlugins $done = null,
         private ?ARefusalInItsWords $refused = null,
         private ?Obstacle $met = null,
         private ?Job $running = null,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack took it on, or is still at it, and this is what to ask after it by. */
@@ -50,12 +53,6 @@ final readonly class HowExtendingItIsGoing
         return new self(refused: $why);
     }
 
-    /** The stack has no outcome for it any more. */
-    public static function ended(): self
-    {
-        return new self();
-    }
-
     /** The stack could not be reached to ask, or refused the session, and this is what was met. */
     public static function met(Obstacle $why): self
     {
@@ -74,7 +71,7 @@ final readonly class HowExtendingItIsGoing
      * @param Closure(Job): T                $underway
      * @param Closure(ThePlugins): T         $done
      * @param Closure(ARefusalInItsWords): T $refused
-     * @param Closure(): T                   $ended
+     * @param Closure(?WhyTheWorkEnded): T   $ended
      * @param Closure(Obstacle): T           $met
      *
      * @return T
@@ -86,7 +83,7 @@ final readonly class HowExtendingItIsGoing
             $this->running instanceof Job => $underway($this->running),
             $this->done instanceof ThePlugins => $done($this->done),
             $this->refused instanceof ARefusalInItsWords => $refused($this->refused),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

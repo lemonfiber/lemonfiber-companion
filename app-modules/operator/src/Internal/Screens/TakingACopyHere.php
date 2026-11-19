@@ -18,6 +18,7 @@ use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TakingCopies;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -229,7 +230,7 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
             held: fn(Session $session): HowTheCopyWent => $this->copying->whatBecameOf($stack, $session, Job::named($took))->either(
                 stillRunning: static fn(): HowTheCopyWent => new HowACopyReads()->running($asked->scope()),
                 done: static fn(ACopyTaken $report): HowTheCopyWent => new HowACopyReads()->done($report),
-                ended: static fn(): HowTheCopyWent => new HowACopyReads()->ended($asked->scope()),
+                ended: static fn(?WhyTheWorkEnded $why): HowTheCopyWent => new HowACopyReads()->ended($why, $asked->scope()),
                 met: $this->lettingGoIfRefused($stack, new HowACopyReads()->met(...)),
             ),
             notHeld: static fn(): HowTheCopyWent => new HowACopyReads()->signedOut(),

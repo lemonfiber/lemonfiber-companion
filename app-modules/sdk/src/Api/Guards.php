@@ -25,6 +25,7 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Underway;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -108,7 +109,7 @@ final readonly class Guards implements Guarding
         return $standing->answering(
             stillRunning: static fn(): HowTheGuardIsGoing => HowTheGuardIsGoing::stillGuarding(),
             finished: static fn(Envelope $envelope): HowTheGuardIsGoing => HowTheGuardIsGoing::sawItGo(Vigils::in($envelope)),
-            ended: static fn(): HowTheGuardIsGoing => HowTheGuardIsGoing::ended(),
+            ended: static fn(string $why): HowTheGuardIsGoing => HowTheGuardIsGoing::ended(WhyTheWorkEnded::from($why)),
         );
     }
 

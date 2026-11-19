@@ -11,6 +11,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ScopeOfACopy;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\APaceAsShown;
 use Modules\Operator\Internal\ViewModels\ASizeAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheCopyWent;
@@ -50,9 +51,9 @@ final readonly class HowACopyReads
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
-    public function ended(ScopeOfACopy $asked): HowTheCopyWent
+    public function ended(?WhyTheWorkEnded $why, ScopeOfACopy $asked): HowTheCopyWent
     {
-        return $this->following(WhereTheWorkStands::ended(), scope: $asked);
+        return $this->following(WhereTheWorkStands::ended($why), scope: $asked);
     }
 
     /** The stack's report of the copy, in the tense it allows. */

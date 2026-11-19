@@ -157,4 +157,9 @@ return [
         'nothing_kept' => 'Nothing is kept running',
         'stopped_with' => 'The command that stops what falls outside',
     ],
+    'why_it_ended' => [
+        'released' => 'Ended: released',
+        'let_go' => 'Let go, nobody was asking',
+        'quiet' => 'Ended quietly',
+    ],
 ];

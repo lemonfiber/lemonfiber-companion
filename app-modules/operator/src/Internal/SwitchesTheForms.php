@@ -22,6 +22,7 @@ use Modules\Kernel\Api\TheFormsToSwitchTo;
 use Modules\Kernel\Api\TheSwitch;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Presenters\HowTheSwitchReads;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\TheSwitchTurnedOutToBe;
@@ -150,10 +151,10 @@ trait SwitchesTheForms
 
                 return new HowTheSwitchReads()->answered($switch);
             },
-            ended: function (): TheSwitchTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why): TheSwitchTurnedOutToBe {
                 $this->switchFollowing = null;
 
-                return new HowTheSwitchReads()->ended();
+                return new HowTheSwitchReads()->ended($why);
             },
             refused: function (ARefusalInItsWords $why): TheSwitchTurnedOutToBe {
                 $this->switchFollowing = null;

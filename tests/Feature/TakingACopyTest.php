@@ -363,7 +363,7 @@ it('names an existing setup and the trees it read, where that is what was copied
 });
 
 it('says a copy the stack has no outcome for is not known, rather than failed', function (): void {
-    $screen = aCopyAgreedTo(AStackThatTakesCopies::whichTook(HowTheCopyIsGoing::ended()));
+    $screen = aCopyAgreedTo(AStackThatTakesCopies::whichTook(HowTheCopyIsGoing::noOutcome()));
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 

@@ -101,7 +101,7 @@ it('offers running a check that disturbs on Health, and leads to what it disturb
 });
 
 it('says what running it disturbs and the bound the stack gives before anything is sent, never as a rehearsal', function (): void {
-    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended());
+    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome());
     $drawn = WhatTheDeviceWouldDraw::by(theRunningScreen(AStackThatWasAsked::saying(aReportHolding(aKillswitchLeftUnverified(30))), $running));
 
     expect($drawn->said())->toContain('Traffic stops when the tunnel drops', __('health.disturbs.what'), WHAT_IT_DISTURBS, __('health.for_at_most', ['seconds' => 30]), __('health.disturbs.not_a_rehearsal'))
@@ -111,7 +111,7 @@ it('says what running it disturbs and the bound the stack gives before anything 
 });
 
 it('says the stack gives no bound where it gives none, and puts no figure of its own there', function (): void {
-    $drawn = WhatTheDeviceWouldDraw::by(theRunningScreen(AStackThatWasAsked::saying(aReportHolding(aKillswitchLeftUnverified(null))), AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended())));
+    $drawn = WhatTheDeviceWouldDraw::by(theRunningScreen(AStackThatWasAsked::saying(aReportHolding(aKillswitchLeftUnverified(null))), AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome())));
 
     expect($drawn->said())->toContain(__('health.disturbs.no_bound'))
         ->and($drawn->said())->not->toContain(__('health.for_at_most', ['seconds' => 0]));
@@ -120,7 +120,7 @@ it('says the stack gives no bound where it gives none, and puts no figure of its
 it('names each download the stack says is moving as one the run interrupts', function (): void {
     $screen = theRunningScreen(
         AStackThatWasAsked::saying(aReportHolding(aKillswitchLeftUnverified())),
-        AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()),
+        AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome()),
         AStackThatSpeaksUp::holdingOpen(aSummaryWithDownloadsMoving('Dune (2021)', 'Severance S02E03')),
     );
     $screen->listen();
@@ -150,7 +150,7 @@ it('runs the check the report offers, follows it to its end, and draws the findi
 });
 
 it('runs nothing where the report offers nothing to run, or holds no such check', function (Report $report, string $check): void {
-    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended());
+    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome());
     $screen = theRunningScreen(AStackThatWasAsked::saying($report), $running, check: $check);
     $screen->run();
 
@@ -165,7 +165,7 @@ it('says the stack did not run it, in its own words, and that it has no outcome 
     $refusal = ARefusalInItsWords::said('The tunnel is already down', '', WhatTheRefusalNamed::nothing(), 'Bring the tunnel up first');
     $refused = theRunningScreen(AStackThatWasAsked::saying(aReportHolding(aKillswitchLeftUnverified())), AStackThatRunsChecks::sayingAtOnce(WhatBecameOfTheWork::refused($refusal)));
     $refused->run();
-    $ended = theRunningScreen(AStackThatWasAsked::saying(aReportHolding(aKillswitchLeftUnverified())), AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()));
+    $ended = theRunningScreen(AStackThatWasAsked::saying(aReportHolding(aKillswitchLeftUnverified())), AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome()));
     $ended->run();
     $ended->whileItRuns();
 
@@ -174,19 +174,19 @@ it('says the stack did not run it, in its own words, and that it has no outcome 
 });
 
 it('says the stack is not reporting a check the route names', function (): void {
-    expect(WhatTheDeviceWouldDraw::by(theRunningScreen(AStackThatWasAsked::saying(aReportHolding(aKillswitchThatHeld())), AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended()), check: 'disk.space'))->said())
+    expect(WhatTheDeviceWouldDraw::by(theRunningScreen(AStackThatWasAsked::saying(aReportHolding(aKillswitchThatHeld())), AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome()), check: 'disk.space'))->said())
         ->toContain(__('health.disturbs.not_found'));
 });
 
 it('runs a check the stack gives no bound for as it was shown, with no bound', function (): void {
-    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended());
+    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome());
     theRunningScreen(AStackThatWasAsked::saying(aReportHolding(aKillswitchLeftUnverified(null))), $running)->run();
 
     expect($running->ran())->toBe(['vpn']);
 });
 
 it('sends the yes once, however often it is tapped while the stack runs it', function (): void {
-    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::ended());
+    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::noOutcome());
     $screen = theRunningScreen(AStackThatWasAsked::saying(aReportHolding(aKillswitchLeftUnverified())), $running);
     $screen->run();
     $screen->run();

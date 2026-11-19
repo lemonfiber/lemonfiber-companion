@@ -16,11 +16,14 @@ use Closure;
  */
 final readonly class HowPausingIsGoing
 {
+    use EndsBeforeItFinishes;
+
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?WhatPausingComesTo $answered = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still asking the clients. */
@@ -33,12 +36,6 @@ final readonly class HowPausingIsGoing
     public static function answered(WhatPausingComesTo $report): self
     {
         return new self(answered: $report);
-    }
-
-    /** The stack has no outcome for it any more. */
-    public static function ended(): self
-    {
-        return new self();
     }
 
     /** The stack could not be reached to ask, and this is what was met. */
@@ -56,7 +53,7 @@ final readonly class HowPausingIsGoing
      *
      * @param Closure(): T                   $stillRunning
      * @param Closure(WhatPausingComesTo): T $answered
-     * @param Closure(): T                   $ended
+     * @param Closure(?WhyTheWorkEnded): T   $ended
      * @param Closure(Obstacle): T           $met
      *
      * @return T
@@ -67,7 +64,7 @@ final readonly class HowPausingIsGoing
             $this->met instanceof Obstacle => $met($this->met),
             $this->running => $stillRunning(),
             $this->answered instanceof WhatPausingComesTo => $answered($this->answered),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

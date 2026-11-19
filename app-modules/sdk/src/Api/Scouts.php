@@ -29,6 +29,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheMoveSaysNothing;
 use Modules\Kernel\Api\WhatBecameOfTheMove;
 use Modules\Kernel\Api\WhatWasFoundAlreadyHere;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatTheReachMet;
@@ -131,10 +132,10 @@ final readonly class Scouts implements MovingIn
                 stillRunning: static fn(): WhatBecameOfTheMove => WhatBecameOfTheMove::underway($job),
                 finished: static fn(Envelope $envelope): WhatBecameOfTheMove
                     => WhatBecameOfTheMove::answered(WhatMovingInCameTo::in($envelope)),
-                ended: static fn(): WhatBecameOfTheMove => WhatBecameOfTheMove::ended(),
+                ended: static fn(string $why): WhatBecameOfTheMove => WhatBecameOfTheMove::ended(WhyTheWorkEnded::from($why)),
             );
         } catch (NoSuchJob) {
-            return WhatBecameOfTheMove::ended();
+            return WhatBecameOfTheMove::noOutcome();
         }
     }
 

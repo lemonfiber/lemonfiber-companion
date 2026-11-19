@@ -26,6 +26,7 @@ use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhereItGotTo;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\LooksAgainWhileItMoves;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -264,10 +265,10 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
 
                 return new HowTheRunReads()->answered();
             },
-            ended: function (): TheRunTurnedOutToBe {
+            ended: function (?WhyTheWorkEnded $why): TheRunTurnedOutToBe {
                 $this->searching = null;
 
-                return new HowTheRunReads()->ended();
+                return new HowTheRunReads()->ended($why);
             },
             refused: function (ARefusalInItsWords $why): TheRunTurnedOutToBe {
                 $this->searching = null;

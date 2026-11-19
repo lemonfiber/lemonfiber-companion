@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\WhatWasMended;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\WhatTheMendingCameTo;
 use Modules\Operator\Internal\ViewModels\WhatThisStackPutRight;
 use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
@@ -53,9 +54,9 @@ final readonly class HowAMendingReads
     }
 
     /** The stack has no outcome for that job any more. */
-    public function ended(): WhatThisStackPutRight
+    public function ended(?WhyTheWorkEnded $why): WhatThisStackPutRight
     {
-        return new WhatThisStackPutRight(stands: WhereTheWorkStands::ended());
+        return new WhatThisStackPutRight(stands: WhereTheWorkStands::ended($why));
     }
 
     /** The machine could not be reached, and this is what the operator met. */

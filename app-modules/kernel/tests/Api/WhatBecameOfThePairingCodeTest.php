@@ -39,7 +39,7 @@ it('takes the arm it was made on, and no other', function (): void {
 
     expect(whichArmThePairingCodeTook(WhatBecameOfThePairingCode::underway(Job::named('pair-1'))))->toBe('underway pair-1')
         ->and(whichArmThePairingCodeTook(WhatBecameOfThePairingCode::made($code)))->toBe('made ABCD')
-        ->and(whichArmThePairingCodeTook(WhatBecameOfThePairingCode::ended()))->toBe('ended')
+        ->and(whichArmThePairingCodeTook(WhatBecameOfThePairingCode::noOutcome()))->toBe('ended')
         ->and(whichArmThePairingCodeTook(WhatBecameOfThePairingCode::refused('not served')))->toBe('refused not served')
         ->and(whichArmThePairingCodeTook(WhatBecameOfThePairingCode::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('met StackDidNotAnswer');
 });

@@ -584,7 +584,7 @@ it('keeps a finished record for the next return', function (): void {
 });
 
 it('lets go of a walk the stack no longer knows, so the next opening offers a new one', function (): void {
-    $walking = AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::ended());
+    $walking = AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::noOutcome());
     $left = aPhoneThatLeftAWalkRunning();
     $screen = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen($walking, left: $left);
 
@@ -621,7 +621,7 @@ it('keeps the walk left running where the stack cannot be reached or the session
 });
 
 it('says a walk the stack no longer knows has no outcome, which is not a failure', function (): void {
-    $screen = aScreenThatWalked(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::ended()));
+    $screen = aScreenThatWalked(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::noOutcome()));
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect(everythingAStateSays($screen->answer()))->toBe([

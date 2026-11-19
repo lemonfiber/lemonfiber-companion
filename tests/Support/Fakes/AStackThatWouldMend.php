@@ -104,8 +104,8 @@ final class AStackThatWouldMend implements Mending
     {
         return new self(
             static fn(): Underway => Underway::as(Job::named(self::THE_JOB)),
-            static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::ended(),
-            static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::ended(),
+            static fn(): HowTheOfferIsGoing => HowTheOfferIsGoing::noOutcome(),
+            static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::noOutcome(),
         );
     }
 

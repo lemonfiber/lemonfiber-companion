@@ -161,6 +161,6 @@ final class AStackThatExtendsItself implements ExtendingTheStack
     /** The next answer in line, or the stack having no outcome once they have all been given. */
     private function next(): HowExtendingItIsGoing
     {
-        return array_shift($this->answers) ?? HowExtendingItIsGoing::ended();
+        return array_shift($this->answers) ?? HowExtendingItIsGoing::noOutcome();
     }
 }

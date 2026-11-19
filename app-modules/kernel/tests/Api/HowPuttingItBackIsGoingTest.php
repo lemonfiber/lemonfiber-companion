@@ -39,6 +39,6 @@ it('takes the arm for each state, and carries the report, the refusal and the ob
     expect(howPuttingItBackIsGoingReads(HowPuttingItBackIsGoing::stillRunning()))->toBe('running')
         ->and(howPuttingItBackIsGoingReads(HowPuttingItBackIsGoing::done($report)))->toBe('done:0.9.0')
         ->and(howPuttingItBackIsGoingReads(HowPuttingItBackIsGoing::refused($refused)))->toBe('refused:The backup could not be unpacked')
-        ->and(howPuttingItBackIsGoingReads(HowPuttingItBackIsGoing::ended()))->toBe('ended')
+        ->and(howPuttingItBackIsGoingReads(HowPuttingItBackIsGoing::noOutcome()))->toBe('ended')
         ->and(howPuttingItBackIsGoingReads(HowPuttingItBackIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe(sprintf('met:%s', KindOfObstacle::CredentialWasRefused->value));
 });

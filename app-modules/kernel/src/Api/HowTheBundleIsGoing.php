@@ -16,12 +16,15 @@ use Closure;
  */
 final readonly class HowTheBundleIsGoing
 {
+    use EndsBeforeItFinishes;
+
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?ABundle $done = null,
         private ?ARefusalInItsWords $refused = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still gathering it. */
@@ -42,12 +45,6 @@ final readonly class HowTheBundleIsGoing
         return new self(refused: $why);
     }
 
-    /** The stack has no outcome for it any more. */
-    public static function ended(): self
-    {
-        return new self();
-    }
-
     /** The stack could not be reached to ask, and this is what was met. */
     public static function met(Obstacle $why): self
     {
@@ -61,11 +58,11 @@ final readonly class HowTheBundleIsGoing
      *
      * @template T of object
      *
-     * @param Closure(): T         $stillRunning
-     * @param Closure(ABundle): T  $done
+     * @param Closure(): T                   $stillRunning
+     * @param Closure(ABundle): T            $done
      * @param Closure(ARefusalInItsWords): T $refused
-     * @param Closure(): T         $ended
-     * @param Closure(Obstacle): T $met
+     * @param Closure(?WhyTheWorkEnded): T   $ended
+     * @param Closure(Obstacle): T           $met
      *
      * @return T
      */
@@ -76,7 +73,7 @@ final readonly class HowTheBundleIsGoing
             $this->running => $stillRunning(),
             $this->done instanceof ABundle => $done($this->done),
             $this->refused instanceof ARefusalInItsWords => $refused($this->refused),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

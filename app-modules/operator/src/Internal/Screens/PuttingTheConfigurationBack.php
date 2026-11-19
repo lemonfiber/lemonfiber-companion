@@ -273,7 +273,7 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
         $held = $this->handle;
 
         if (! is_string($held)) {
-            return $reads->ended();
+            return $reads->ended(null);
         }
 
         $stack = $this->stack();

@@ -90,7 +90,7 @@ function theLineScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowTheLineIsSharedHere(AStackThatSharesItsLine::sayingAtOnce(WhatBecameOfTheWork::ended()), $rationing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), FrozenClock::at(Instant::atEpochSeconds(THE_LINE_IS_READ_AT)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new HowTheLineIsSharedHere(AStackThatSharesItsLine::sayingAtOnce(WhatBecameOfTheWork::noOutcome()), $rationing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), FrozenClock::at(Instant::atEpochSeconds(THE_LINE_IS_READ_AT)), new AppsSettingsThatOpen(), AroundThePhone::listening());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

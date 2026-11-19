@@ -16,6 +16,7 @@ use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -177,13 +178,25 @@ it('says the session ended where it went while the switch was rehearsed', functi
 it('draws a refusal in the stack\'s own words, an outcome the stack no longer has, and what stood in the way', function (): void {
     $why = ARefusalInItsWords::said('this stack declares no form called archive', '', WhatTheRefusalNamed::nothing(), 'Choose one of: library, full');
     $refused = aRehearsedSwitchToTheLibrary(aStackThatSwitchesItsForms(rehearsal: WhatBecameOfTheWork::refused($why)));
-    $ended = aRehearsedSwitchToTheLibrary(aStackThatSwitchesItsForms(rehearsal: WhatBecameOfTheWork::ended()));
+    $ended = aRehearsedSwitchToTheLibrary(aStackThatSwitchesItsForms(rehearsal: WhatBecameOfTheWork::noOutcome()));
     $met = aRehearsedSwitchToTheLibrary(AStackThatSwitches::sayingAtOnce(WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))));
 
     expect(WhatTheDeviceWouldDraw::by($refused)->said())->toContain(__('stacks.switch.refused'), 'this stack declares no form called archive')
         ->and(WhatTheDeviceWouldDraw::by($ended)->said())->toContain(__('stacks.switch.no_outcome'))
         ->and(WhatTheDeviceWouldDraw::by($met)->said())->toContain(__('stacks.switch.unread'), __(KindOfObstacle::StackDidNotAnswer->said()));
 });
+
+it('says why the work ended, where the stack said', function (WhyTheWorkEnded $why, string $said): void {
+    $ended = aRehearsedSwitchToTheLibrary(aStackThatSwitchesItsForms(rehearsal: WhatBecameOfTheWork::ended($why)));
+    $unsaid = aRehearsedSwitchToTheLibrary(aStackThatSwitchesItsForms(rehearsal: WhatBecameOfTheWork::noOutcome()));
+
+    expect(WhatTheDeviceWouldDraw::by($ended)->said())->toContain(__('stacks.switch.no_outcome'), __($said))
+        ->and(WhatTheDeviceWouldDraw::by($unsaid)->said())->not->toContain(__($said));
+})->with([
+    'released' => [WhyTheWorkEnded::Released, 'stacks.why_it_ended.released'],
+    'let go' => [WhyTheWorkEnded::LetGo, 'stacks.why_it_ended.let_go'],
+    'quiet' => [WhyTheWorkEnded::Quiet, 'stacks.why_it_ended.quiet'],
+]);
 
 it('reads what the stack runs again once a switch is made, and not after a rehearsal', function (): void {
     $supervising = AStackThatSupervises::with(WhatAMachineRuns::twoThings())->declaring(WhatAMachineRuns::libraryAndFull());

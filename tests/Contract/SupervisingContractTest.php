@@ -639,7 +639,7 @@ it('an acknowledgement with no name in it is an answer it could not read', funct
     $agreed = AgreedTo::theService(WhatToDoWithIt::Start, ServiceId::called('sonarr'));
 
     $answered = MockResponse::make(
-        (string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'up']]),
+        (string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['action' => 'up']]),
     );
 
     foreach (everyWayOfSupervising([$answered], Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)) as $which => $make) {
@@ -911,11 +911,11 @@ it('a verb still being carried out is its own answer', function (): void {
 });
 
 it('a verb the stack no longer has a job for is ended, not unreachable and not running', function (MockResponse $forgotten): void {
-    foreach (everyWayOfFollowingAVerb($forgotten, HowAgreedWorkIsGoing::ended()) as $which => $build) {
+    foreach (everyWayOfFollowingAVerb($forgotten, HowAgreedWorkIsGoing::noOutcome()) as $which => $build) {
         expect(whatBecameOfTheVerb($build()))->toBe('ended', $which);
     }
 })->with([
-    'let go of' => [MockResponse::make((string) json_encode(whatAStackTakingAVerbSends()))],
+    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['action' => 'restart', 'job' => 'a-verb-job', 'ended' => 'let-go']]))],
     'never known' => [MockResponse::make('{"error":"no such job"}', 404)],
 ]);
 

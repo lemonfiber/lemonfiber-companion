@@ -144,11 +144,11 @@ it('a bundle still being gathered is its own answer', function (): void {
 });
 
 it('a bundle the stack no longer has a job for is ended, not unreachable and not running', function (MockResponse $forgotten): void {
-    foreach (everyWayOfAskingForABundle($forgotten, HowTheBundleIsGoing::ended()) as $which => $build) {
+    foreach (everyWayOfAskingForABundle($forgotten, HowTheBundleIsGoing::noOutcome()) as $which => $build) {
         expect(whatBecameOfTheBundle($build()))->toBe('ended', $which);
     }
 })->with([
-    'let go of' => [MockResponse::make((string) json_encode(aBundleTakenOnSays()))],
+    'let go of' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['action' => 'support', 'job' => AStackThatBundles::THE_JOB, 'ended' => 'let-go']]))],
     'never known' => [MockResponse::make('{"error":"no such job"}', 404)],
 ]);
 
@@ -226,7 +226,7 @@ it('comes away from a bundle it could not fetch with the obstacle rather than a 
     MockClient::global([$answered]);
 
     expect(whatFetchingTheBundleCameTo(new Bundlers(new PinnedClients(), SequencedEntropy::counting())))->toBe($why->kind()->name)
-        ->and(whatFetchingTheBundleCameTo(AStackThatBundles::whichGatheredAndCouldNotServe(HowTheBundleIsGoing::ended(), $why)))->toBe($why->kind()->name);
+        ->and(whatFetchingTheBundleCameTo(AStackThatBundles::whichGatheredAndCouldNotServe(HowTheBundleIsGoing::noOutcome(), $why)))->toBe($why->kind()->name);
 })->with([
     'a refused session' => [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
     'an account that may not ask' => [MockResponse::make('{"error":"no"}', 403), Obstacle::of(KindOfObstacle::NotForThisAccount)],

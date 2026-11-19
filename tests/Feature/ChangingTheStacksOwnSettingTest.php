@@ -255,8 +255,8 @@ it('lists every setting and secret no installed plugin reads, grouped as the cor
 it('says where every setting and secret is read by an installed plugin', function (): void {
     $tuning = AStackThatTunesItsSettings::answering(
         TheServicesSettings::of(TheSettingsRead::these(ASetting::read('vpn.countries', WhoseASettingIs::theNamespaces('gluetun'), readBy('gluetun'), ASettingValue::nothing())), TheSecretsRead::these()),
-        WhatBecameOfTheWork::ended(),
-        WhatBecameOfTheWork::ended(),
+        WhatBecameOfTheWork::noOutcome(),
+        WhatBecameOfTheWork::noOutcome(),
     );
 
     expect(WhatTheDeviceWouldDraw::by(theStacksOwnSettingsRead($tuning))->said())->toContain(__('plugins.settings.own_none'));

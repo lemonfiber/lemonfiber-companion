@@ -284,7 +284,7 @@ it('says the stack has no outcome for work it no longer knows', function (): voi
 });
 
 it('says work that ended before it finished has no outcome, and work still going is still underway', function (): void {
-    $ended = MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['job' => 'j-1', 'action' => 'remove']]), 200);
+    $ended = MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'ended', 'data' => ['job' => 'j-1', 'action' => 'remove', 'ended' => 'let-go']]), 200);
     $going = MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['job' => 'j-1', 'action' => 'remove']]), 202);
     $removing = everyWayOfTakingSomebodyOut($ended, $going)['the adapter']();
 

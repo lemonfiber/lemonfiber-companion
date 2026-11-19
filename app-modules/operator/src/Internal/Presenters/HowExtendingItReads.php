@@ -14,6 +14,7 @@ use Modules\Kernel\Api\ExtendingIt;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\TheShapesTaken;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\AnActRefused;
 use Modules\Operator\Internal\ViewModels\APluginInstallAsShown;
@@ -63,9 +64,9 @@ final readonly class HowExtendingItReads
     }
 
     /** The stack has no outcome for the work any more, which is not the same as it not having happened. */
-    public function ended(): WhatExtendsItTurnedOutToBe
+    public function ended(?WhyTheWorkEnded $why): WhatExtendsItTurnedOutToBe
     {
-        return new WhatExtendsItTurnedOutToBe(WhereTheWorkStands::ended());
+        return new WhatExtendsItTurnedOutToBe(WhereTheWorkStands::ended($why));
     }
 
     /** The stack refused, and this is what it said and named, with each service the yes left unapproved to take its shape. */

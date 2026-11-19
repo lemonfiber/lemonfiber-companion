@@ -81,6 +81,6 @@ final class AStackThatWires implements WiringTheServices
     /** The next answer in line, or the stack having no outcome once they have all been given. */
     private function next(): WhatBecameOfTheWiring
     {
-        return array_shift($this->answers) ?? WhatBecameOfTheWiring::ended();
+        return array_shift($this->answers) ?? WhatBecameOfTheWiring::noOutcome();
     }
 }

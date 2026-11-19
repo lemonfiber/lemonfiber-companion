@@ -33,6 +33,6 @@ it('takes the arm for each state, and carries the offer and the obstacle', funct
 
     expect(howTheOfferToLetGoIsGoingReads(HowTheOfferToLetGoIsGoing::stillRunning()))->toBe('running')
         ->and(howTheOfferToLetGoIsGoingReads(HowTheOfferToLetGoIsGoing::offering($offer)))->toBe('offered:stop-seeding-show-season1')
-        ->and(howTheOfferToLetGoIsGoingReads(HowTheOfferToLetGoIsGoing::ended()))->toBe('ended')
+        ->and(howTheOfferToLetGoIsGoingReads(HowTheOfferToLetGoIsGoing::noOutcome()))->toBe('ended')
         ->and(howTheOfferToLetGoIsGoingReads(HowTheOfferToLetGoIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe(sprintf('met:%s', KindOfObstacle::CredentialWasRefused->value));
 });

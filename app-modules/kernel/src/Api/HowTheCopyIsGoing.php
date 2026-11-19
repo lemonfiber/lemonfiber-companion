@@ -16,11 +16,14 @@ use Closure;
  */
 final readonly class HowTheCopyIsGoing
 {
+    use EndsBeforeItFinishes;
+
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?ACopyTaken $done = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still taking it. */
@@ -33,12 +36,6 @@ final readonly class HowTheCopyIsGoing
     public static function done(ACopyTaken $report): self
     {
         return new self(done: $report);
-    }
-
-    /** The stack has no outcome for that copy any more. */
-    public static function ended(): self
-    {
-        return new self();
     }
 
     /** The stack could not be reached to ask, and this is what was met. */
@@ -54,10 +51,10 @@ final readonly class HowTheCopyIsGoing
      *
      * @template T of object
      *
-     * @param Closure(): T           $stillRunning
-     * @param Closure(ACopyTaken): T $done
-     * @param Closure(): T           $ended
-     * @param Closure(Obstacle): T   $met
+     * @param Closure(): T                 $stillRunning
+     * @param Closure(ACopyTaken): T       $done
+     * @param Closure(?WhyTheWorkEnded): T $ended
+     * @param Closure(Obstacle): T         $met
      *
      * @return T
      */
@@ -67,7 +64,7 @@ final readonly class HowTheCopyIsGoing
             $this->met instanceof Obstacle => $met($this->met),
             $this->running => $stillRunning(),
             $this->done instanceof ACopyTaken => $done($this->done),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }

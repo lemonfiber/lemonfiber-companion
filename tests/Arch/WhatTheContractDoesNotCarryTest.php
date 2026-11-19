@@ -119,22 +119,6 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'forms it would stop.',
     ],
     [
-        'requirement' => 'N23-R13',
-        'asks' => 'to tell a guard another client released from one the stack let go because nothing asked about it',
-        // Named, and watched as a whole payload, for the row above's reason:
-        // both answer this envelope at `200`, and the distinction would arrive
-        // as a word it does not carry now.
-        'envelope' => 'JobEnvelope',
-        'field' => null,
-        'shape' => 'array{action: string, job: string}',
-        'raised' => 'A guard released and a guard let go for want of asking both answer `job` at `200`, the '
-            . 'standing `JobStanding` reads as ended. This app releases a guard only as its screen is left, '
-            . 'so it never draws its own release; what it can draw is a guard that ended without seeing '
-            . 'anything, told apart from one that saw the data location go, one that never started and one '
-            . 'the stack no longer knows, and it says it was released or not asked about without saying '
-            . 'which.',
-    ],
-    [
         'requirement' => 'N15-R1',
         'asks' => 'to show what setup settled — where the library lives, which protocols are on, who the stack runs as — as setup\'s own decisions',
         // Named, and watched as a whole payload: `wizard` is what setup's own

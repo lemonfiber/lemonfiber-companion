@@ -157,4 +157,9 @@ return [
         'nothing_kept' => 'Er blijft niets draaien',
         'stopped_with' => 'De opdracht die stopt wat erbuiten valt',
     ],
+    'why_it_ended' => [
+        'released' => 'Beëindigd: vrijgegeven',
+        'let_go' => 'Losgelaten, niemand vroeg erom',
+        'quiet' => 'Stil beëindigd',
+    ],
 ];

@@ -7,6 +7,7 @@ namespace Modules\Operator\Internal\Presenters;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\TheReset;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
 use Modules\Operator\Internal\ViewModels\AResetAsWorded;
@@ -45,9 +46,9 @@ final readonly class HowAResetReads
     }
 
     /** The stack has no outcome for it any more, which is not the same as it failing. */
-    public function ended(): AResetAsShown
+    public function ended(?WhyTheWorkEnded $why): AResetAsShown
     {
-        return $this->following(WhereTheWorkStands::ended());
+        return $this->following(WhereTheWorkStands::ended($why));
     }
 
     /** Asking, or asking after it, met this instead. */

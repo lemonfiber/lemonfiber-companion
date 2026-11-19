@@ -34,6 +34,6 @@ it('takes the arm for each state, and carries the report and the obstacle', func
 
     expect(howPausingIsGoingReads(HowPausingIsGoing::stillRunning()))->toBe('running')
         ->and(howPausingIsGoingReads(HowPausingIsGoing::answered($report)))->toBe('answered:an-offer')
-        ->and(howPausingIsGoingReads(HowPausingIsGoing::ended()))->toBe('ended')
+        ->and(howPausingIsGoingReads(HowPausingIsGoing::noOutcome()))->toBe('ended')
         ->and(howPausingIsGoingReads(HowPausingIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))))->toBe(sprintf('met:%s', KindOfObstacle::CredentialWasRefused->value));
 });

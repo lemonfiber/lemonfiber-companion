@@ -46,6 +46,7 @@
         <x-design::body>{{ __('stacks.put_back.same_answer') }}</x-design::body>
         <x-design::action :label="__('stacks.put_back.look_again')" tap="lookAgain()" />
     @elseif ($this->done()->stands->hasEnded())
+        <x-operator::why-it-ended :stands="$this->done()->stands" />
         {{-- Not a failure: it may well have been put back, and the machine's
              health is where to look. --}}
         <x-design::notice tone="unknown">

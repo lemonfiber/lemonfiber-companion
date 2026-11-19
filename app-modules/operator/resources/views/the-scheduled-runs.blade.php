@@ -16,6 +16,7 @@
         @if ($this->howTheRunGoes()->stands->isWorking())
             <x-design::standing :said="__('scheduled.now.running', ['service' => $this->runNamed])" tone="working" />
         @elseif ($this->howTheRunGoes()->stands->hasEnded())
+            <x-operator::why-it-ended :stands="$this->howTheRunGoes()->stands" />
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('scheduled.now.no_outcome', ['service' => $this->runNamed]) }}</x-design::strong>
             </x-design::notice>

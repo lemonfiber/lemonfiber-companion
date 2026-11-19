@@ -15,11 +15,14 @@ use Closure;
  */
 final readonly class HowLettingItGoIsGoing
 {
+    use EndsBeforeItFinishes;
+
     /** Every field defaults, and each constructor says only its own state. */
     private function __construct(
         private ?ADownloadLetGo $done = null,
         private ?Obstacle $met = null,
         private bool $running = false,
+        private ?WhyTheWorkEnded $ending = null,
     ) {}
 
     /** The stack is still asking the client. */
@@ -32,12 +35,6 @@ final readonly class HowLettingItGoIsGoing
     public static function done(ADownloadLetGo $report): self
     {
         return new self(done: $report);
-    }
-
-    /** The stack has no outcome for it any more. */
-    public static function ended(): self
-    {
-        return new self();
     }
 
     /** The stack could not be reached to ask, and this is what was met. */
@@ -53,10 +50,10 @@ final readonly class HowLettingItGoIsGoing
      *
      * @template T of object
      *
-     * @param Closure(): T               $stillRunning
-     * @param Closure(ADownloadLetGo): T $done
-     * @param Closure(): T               $ended
-     * @param Closure(Obstacle): T       $met
+     * @param Closure(): T                 $stillRunning
+     * @param Closure(ADownloadLetGo): T   $done
+     * @param Closure(?WhyTheWorkEnded): T $ended
+     * @param Closure(Obstacle): T         $met
      *
      * @return T
      */
@@ -66,7 +63,7 @@ final readonly class HowLettingItGoIsGoing
             $this->met instanceof Obstacle => $met($this->met),
             $this->running => $stillRunning(),
             $this->done instanceof ADownloadLetGo => $done($this->done),
-            default => $ended(),
+            default => $ended($this->ending),
         };
     }
 }
