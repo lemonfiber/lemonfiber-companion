@@ -204,6 +204,9 @@ enum Call: string
     /** Open this app's own page in the phone's settings, and answer whether it opened. */
     case SettingsOpen = 'Lemonfiber.Settings.Open';
 
+    /** Open an https page in the phone's browser, and answer whether it opened. */
+    case PageOpen = 'Lemonfiber.Page.Open';
+
     case Zone = 'Lemonfiber.Clock.Zone';
 
     /**

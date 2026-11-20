@@ -30,6 +30,7 @@ use Modules\Operator\Internal\Screens\PausingTheDownloads;
 use Modules\Operator\Internal\Screens\PuttingACopyBack;
 use Modules\Operator\Internal\Screens\PuttingThatRunBack;
 use Modules\Operator\Internal\Screens\PuttingTheConfigurationBack;
+use Modules\Operator\Internal\Screens\SigningInByACode;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\TakingACopyHere;
 use Modules\Operator\Internal\Screens\TakingItOffThisMachine;
@@ -189,6 +190,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // of this screen returns to the list they picked from, and a second
             // stack signed into later is a second entry rather than the same
             // screen re-pointed.
+            Router::native(AStacksScreen::SignInByCode->value, SigningInByACode::class);
             Router::native(AStacksScreen::SignIn->value, SignIntoAStack::class);
 
             // What the house asked for, which is the part of a stack an

@@ -18,6 +18,8 @@ use function json_encode;
 use Lemonfiber\Native\Keeps;
 use LogicException;
 use Modules\Connection\Api\ChoosingWhatReachesThePhone;
+use Modules\Connection\Api\RememberingTheWayIn;
+use Modules\Connection\Api\TheWayIn;
 use Modules\Connection\Api\WakingThisPhone;
 use Modules\Device\Api\PlatformPhoneKeys;
 use Modules\Health\Api\KeepingTheLastReading;
@@ -228,6 +230,7 @@ final readonly class WhatEveryKeeperKeeps
             $keeper instanceof PlatformPhoneKeysNames, $keeper instanceof PhoneKeysNamesKeptInMemory => $keeper->keepTheName($kept, APhoneKeysName::of('Galaxy A51 · 7f3a')),
             $keeper instanceof PlatformPhoneKeys, $keeper instanceof APhoneKeyInMemory => $keeper->madeFor($kept),
             $keeper instanceof WakingThisPhone => $keeper->turnOn($stack, Session::of('a-session'), DistributorsOnAPhone::ntfy()),
+            $keeper instanceof RememberingTheWayIn => $keeper->letIn($kept, TheWayIn::Code),
             default => null,
         };
 

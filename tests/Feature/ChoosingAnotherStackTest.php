@@ -20,6 +20,7 @@ use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Modules\Wayfinding\Api\AStackToChooseAsShown;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\AWayInRemembered;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -230,6 +231,7 @@ it('gives signing in to a stack the list of stacks and the menu, and not the bar
     $screen = new SignIntoAStack(
         ADoorThatWasKnockedOn::opening(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(HEARD_AT)),
         AKeychainInMemory::working(),
+        AWayInRemembered::nowhere(),
         AroundThePhone::holding(StacksInMemory::holding($attic)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),

@@ -11,6 +11,8 @@ use function is_string;
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\Introducing;
 use Modules\Connection\Api\Remembering;
+use Modules\Connection\Api\RememberingTheWayIn;
+use Modules\Connection\Api\TheWayIn;
 use Modules\Kernel\Api\AClaim;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\AJoinLink;
@@ -41,6 +43,7 @@ use Modules\Operator\Internal\HowAnInvitedPhoneFindsTheHouse;
 use Modules\Operator\Internal\InTheWayInsWords;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheWaitReads;
+use Modules\Operator\Internal\ViewModels\TheCodeWay;
 use Modules\Operator\Internal\ViewModels\TheWaitAsShown;
 use Modules\Operator\Internal\WhatFindingTheHouseMet;
 use Modules\Operator\Internal\WhatStoodInTheWayOfJoining;
@@ -131,6 +134,9 @@ final class JoiningAHouse extends NativeComponent
     /** The claim the person chooses their password with, while they do; never kept past this screen. */
     private ?AClaim $claim = null;
 
+    /** The way that last let a member in on this house, read once. */
+    private ?TheWayIn $ledWith = null;
+
     public function __construct(
         private readonly Scanning $camera,
         private readonly Introducing $introducing,
@@ -139,6 +145,7 @@ final class JoiningAHouse extends NativeComponent
         private readonly Clock $clock,
         private readonly Admitting $admitting,
         private readonly SecureStorage $storage,
+        private readonly RememberingTheWayIn $waysIn,
         private readonly TheWayAround $around,
         private readonly Translator $catalogue,
         protected readonly TheAppsSettings $settings,
@@ -219,7 +226,11 @@ final class JoiningAHouse extends NativeComponent
             : $this->admitting->admitAs($stack, AMembersName::of($named), $said);
 
         $this->went = $offered->either(
-            opened: fn(Session $session, Instant $until, Whose $whose): HowTheSignInWent => $this->sessionKept($stack->id(), $session, $whose),
+            opened: function (Session $session, Instant $until, Whose $whose) use ($stack): HowTheSignInWent {
+                $this->waysIn->letIn($stack->id(), TheWayIn::Password);
+
+                return $this->sessionKept($stack->id(), $session, $whose);
+            },
             refused: function (Obstacle $why, WhenToTryAgain $tryAgain): HowTheSignInWent {
                 $this->told = $why->whatTheHouseholdWasTold();
                 $this->wait = new HowTheWaitReads()->of($tryAgain);
@@ -229,12 +240,26 @@ final class JoiningAHouse extends NativeComponent
         );
 
         if ($this->went === HowTheSignInWent::InvitationWasNotOpen) {
-            $this->signingInAs($named);
+            $this->goingOnAs($named, null);
         }
 
         if ($this->went->isSignedIn()) {
             $this->replaceTheWholeStack(AStacksScreen::Shelf->forTheStack($stack->id()));
         }
+    }
+
+    /** The way to sign in by a code, as this form offers it: never while a password is being chosen. */
+    public function theCodeWay(): TheCodeWay
+    {
+        $house = StackId::rememberedAs($this->joined);
+        $this->ledWith ??= $this->waysIn->ledWithOn($house);
+
+        return new TheCodeWay(
+            offered: ! $this->choosing && $this->at === WhereTheWayInIs::SigningIn,
+            leads: $this->ledWith === TheWayIn::Code && $this->went === HowTheSignInWent::NotYet,
+            besideARefusal: $this->went === HowTheSignInWent::ThePairWasRefused,
+            goes: AStacksScreen::SignInByCode->forTheStack($house),
+        );
     }
 
     /** What stood in the way of signing in, or null where nothing did. */
@@ -303,27 +328,17 @@ final class JoiningAHouse extends NativeComponent
         $named = $link->name()->forTheExchange();
 
         return $link->leadsTo(
-            claiming: fn(AClaim $claim): self => $this->choosingWith($named, $claim),
-            signingIn: fn(): self => $this->signingInAs($named),
+            claiming: fn(AClaim $claim): self => $this->goingOnAs($named, $claim),
+            signingIn: fn(): self => $this->goingOnAs($named, null),
         );
     }
 
-    /** The name in the field, with the person choosing their password with the claim. */
-    private function choosingWith(string $named, AClaim $claim): self
+    /** The name in the field, with the claim an invitation carried where the person chooses a password, and none where they sign in with one they have. */
+    private function goingOnAs(string $named, ?AClaim $claim): self
     {
         $this->theirName = $named;
         $this->claim = $claim;
-        $this->choosing = true;
-
-        return $this;
-    }
-
-    /** The name in the field, with the person signing in with the password they were given, and no claim held. */
-    private function signingInAs(string $named): self
-    {
-        $this->theirName = $named;
-        $this->claim = null;
-        $this->choosing = false;
+        $this->choosing = $claim instanceof AClaim;
 
         return $this;
     }
@@ -374,6 +389,7 @@ final class JoiningAHouse extends NativeComponent
     private function signingInTo(StackId $house): self
     {
         $this->joined = $house->stored();
+        $this->ledWith = null;
         $this->at = WhereTheWayInIs::SigningIn;
 
         return $this;

@@ -452,7 +452,7 @@ it('a machine that refuses the session draws the way back in', function (): void
     $wayBackIn = theScreenASignedOutOperatorIsSentTo(AStandInStack::RefusingTheSession->asAStack()->id()->stored());
 
     foreach (whatEachScreenDrewOf(AStandInStack::RefusingTheSession) as $name => $drawn) {
-        if ($name === $wayBackIn || in_array($name, ASKS_NOTHING_OF_THE_MACHINE, strict: true) || array_key_exists($name, ASKS_NOTHING_UNTIL_TAPPED)) {
+        if ($name === $wayBackIn || $name === AStacksScreen::SignInByCode->name || in_array($name, ASKS_NOTHING_OF_THE_MACHINE, strict: true) || array_key_exists($name, ASKS_NOTHING_UNTIL_TAPPED)) {
             continue;
         }
 

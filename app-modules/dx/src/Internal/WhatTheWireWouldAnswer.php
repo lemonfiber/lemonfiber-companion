@@ -37,6 +37,7 @@ use Lemonfiber\Sdk\Generated\RestoreAction;
 use Lemonfiber\Sdk\Generated\SettingsClearAction;
 use Lemonfiber\Sdk\Generated\SettingsEnvelope;
 use Lemonfiber\Sdk\Generated\SettingsSetAction;
+use Lemonfiber\Sdk\Generated\SignInCodeEnvelope;
 use Lemonfiber\Sdk\Generated\StoredEnvelope;
 use Lemonfiber\Sdk\Generated\SwitchAction;
 use Lemonfiber\Sdk\Generated\TunedEnvelope;
@@ -394,6 +395,7 @@ final readonly class WhatTheWireWouldAnswer
         return match (true) {
             $endpoint === Api::LOGS_ENDPOINT => self::aDocumentALine(),
             $endpoint === Admission::ENDPOINT => self::aDoorThatOpened(),
+            $endpoint === Admission::CODE_ENDPOINT => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(SignInCodeEnvelope::KIND->value)),
             $endpoint === Api::HISTORY_ENDPOINT => self::aRecordThatReads(),
             $endpoint === Api::NEWS_ENDPOINT => WhatIsNewAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind('news-items')), self::WHEN_A_CHANGE_WAS_MADE),
             $endpoint === Api::EVENTS_ENDPOINT => self::aStreamThatSaysWhatItCarries(),

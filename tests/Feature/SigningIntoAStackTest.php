@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Modules\Connection\Api\HowTheSignInWent;
+use Modules\Connection\Api\RememberingTheWayIn;
+use Modules\Connection\Api\TheWayIn;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowLong;
@@ -19,10 +21,12 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhenToTryAgain;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
+use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Edge\NativeRouter;
 use Native\Mobile\Edge\NavigationIntent;
 use Tests\Support\AroundThePhone;
+use Tests\Support\AWayInRemembered;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -71,6 +75,7 @@ function signInScreen(
     ?AKeychainInMemory $keychain = null,
     ?string $named = null,
     bool $runsTheHouse = true,
+    ?RememberingTheWayIn $remembered = null,
 ): SignIntoAStack {
     $stack = aStackToSignInto();
     $keychain ??= AKeychainInMemory::working();
@@ -78,6 +83,7 @@ function signInScreen(
     $screen = new SignIntoAStack(
         $door,
         $keychain,
+        $remembered ?? AWayInRemembered::nowhere(),
         AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
@@ -747,4 +753,46 @@ it('lets go of the wait once the next try is offered', function (): void {
 
     expect($screen->wait)->toBeNull()
         ->and($screen->went()->isSignedIn())->toBeTrue();
+});
+
+it('offers a member signing in a code after their password, and never the operator', function (): void {
+    $member = signInScreen(aDoorThatOpens(), runsTheHouse: false);
+    $drawn = WhatTheDeviceWouldDraw::by($member)->said();
+    $password = array_search(__('connection.password_label'), $drawn, strict: true);
+    $code = array_search(__('connection.code_way'), $drawn, strict: true);
+
+    expect(is_int($password) && is_int($code) && $password < $code)->toBeTrue()
+        ->and($member->theCodeWay()->offered)->toBeTrue()
+        ->and($member->theCodeWay()->leads)->toBeFalse()
+        ->and($member->theCodeWay()->goes)->toBe(AStacksScreen::SignInByCode->forTheStack(aStackToSignInto()->id()))
+        ->and(NativeRouter::resolve($member->theCodeWay()->goes))->not->toBeNull()
+        ->and(signInScreen(aDoorThatOpens())->theCodeWay()->offered)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by(signInScreen(aDoorThatOpens()))->said())->not->toContain(__('connection.code_way'));
+});
+
+it('leads with a code on a house a code last let a member in on', function (): void {
+    $member = signInScreen(aDoorThatOpens(), runsTheHouse: false, remembered: AWayInRemembered::on(aStackToSignInto()->id(), TheWayIn::Code));
+    $drawn = WhatTheDeviceWouldDraw::by($member)->said();
+    $password = array_search(__('connection.password_label'), $drawn, strict: true);
+    $code = array_search(__('connection.code_way'), $drawn, strict: true);
+
+    expect($member->theCodeWay()->leads)->toBeTrue()
+        ->and(is_int($password) && is_int($code) && $code < $password)->toBeTrue();
+});
+
+it('shows a refused password with the code way beside it, saying some houses sign in with a code', function (): void {
+    $screen = typedPassword(typedName(signInScreen(ADoorThatWasKnockedOn::refusing(Obstacle::of(KindOfObstacle::CredentialWasRefused))), 'ada'), 'a-members-password');
+    $screen->offer();
+
+    expect($screen->theCodeWay()->besideARefusal)->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.code_instead'), __('connection.code_way'));
+});
+
+it('remembers that a password let a member in on the house, and leads with it next time', function (): void {
+    $remembered = AWayInRemembered::on(aStackToSignInto()->id(), TheWayIn::Code);
+    $screen = typedPassword(typedName(signInScreen(aDoorThatOpensForAMember(), remembered: $remembered), 'ada'), 'a-members-password');
+    $screen->offer();
+
+    expect($screen->isSignedIn())->toBeTrue()
+        ->and($remembered->ledWithOn(aStackToSignInto()->id()))->toBe(TheWayIn::Password);
 });

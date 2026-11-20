@@ -14,6 +14,7 @@ Lemonfiber.Scanning.Read         Lemonfiber.Telling.CancelAll
 Lemonfiber.Link.Status           Lemonfiber.Telling.ClearBadge
 Lemonfiber.LocalNetwork.Probe    Lemonfiber.Telling.Standing
 Lemonfiber.Settings.Open
+Lemonfiber.Page.Open
 Lemonfiber.Handover.Offer        Lemonfiber.Telling.Ask
 Lemonfiber.Handover.OfferFile
 ```

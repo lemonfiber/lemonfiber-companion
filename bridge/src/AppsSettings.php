@@ -19,7 +19,7 @@ namespace Lemonfiber\Native;
 final readonly class AppsSettings
 {
     /** The one word that means the page was asked for. */
-    private const string OPENED = 'opened';
+    public const string OPENED = 'opened';
 
     /** Ask for this app's settings page, and answer whether it opened. */
     public function open(): bool

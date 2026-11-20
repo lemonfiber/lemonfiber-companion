@@ -128,6 +128,11 @@ let package = Package(
             path: "ios/Tests/ResolveRuleTests"
         ),
         .testTarget(
+            name: "PageRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/PageRuleTests"
+        ),
+        .testTarget(
             name: "SettingsRuleTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/SettingsRuleTests"
