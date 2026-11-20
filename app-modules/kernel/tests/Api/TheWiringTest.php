@@ -78,6 +78,7 @@ it('carries nothing beside a state that says nothing more', function (WhereAConn
 })->with([
     WhereAConnectionStands::Wired, WhereAConnectionStands::Restarted, WhereAConnectionStands::AlreadyWired, WhereAConnectionStands::Drifted, WhereAConnectionStands::Stale,
     WhereAConnectionStands::Adopted, WhereAConnectionStands::Unmanaged, WhereAConnectionStands::WouldAdopt, WhereAConnectionStands::Kept,
+    WhereAConnectionStands::TakenBack, WhereAConnectionStands::WouldTakeBack,
 ]);
 
 it('carries the reason for a connection observed, unmatched, skipped or refused, and refuses a blank one', function (WhereAConnectionStands $state): void {

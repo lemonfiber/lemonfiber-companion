@@ -360,6 +360,7 @@ final readonly class WhatARefusalMeant
         RefusalCode::WiringMoved,
         RefusalCode::Unreasonable,
         RefusalCode::AlreadyFills,
+        RefusalCode::VpnDeclined,
         RefusalCode::NothingToPlayFrom,
         RefusalCode::NotInTheHousehold,
         RefusalCode::SignsNoDeviceIn,

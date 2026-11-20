@@ -94,21 +94,29 @@ final readonly class WhatSettledIt
         return new self(arm: HowItSettled::Unfilled, services: Services::none(), whose: null, why: WhyItWasChosen::unstated());
     }
 
+    /** The operator chose that nothing fills it, over every service that claims it. */
+    public static function declined(Services $over): self
+    {
+        return new self(arm: HowItSettled::Declined, services: $over, whose: null, why: WhyItWasChosen::unstated());
+    }
+
     /**
-     * Say what happens in all five cases, and get back what you built.
+     * Say what happens in all six cases, and get back what you built.
      *
      * @template TOutright of object
      * @template TEach of object
      * @template TContested of object
      * @template TChosen of object
      * @template TUnfilled of object
+     * @template TDeclined of object
      *
      * @param  Closure(): TOutright  $outright
      * @param  Closure(): TEach  $each
      * @param  Closure(Services): TContested  $contested  given the claimants
      * @param  Closure(Services, WhoSettledIt, WhyItWasChosen): TChosen  $chosen  given what it was settled over, who settled it, and why — stated or not
      * @param  Closure(): TUnfilled  $unfilled
-     * @return TOutright|TEach|TContested|TChosen|TUnfilled
+     * @param  Closure(Services): TDeclined  $declined  given every claimant passed over
+     * @return TOutright|TEach|TContested|TChosen|TUnfilled|TDeclined
      */
     public function whichever(
         Closure $outright,
@@ -116,6 +124,7 @@ final readonly class WhatSettledIt
         Closure $contested,
         Closure $chosen,
         Closure $unfilled,
+        Closure $declined,
     ): object {
         $whose = $this->whose;
 
@@ -123,41 +132,42 @@ final readonly class WhatSettledIt
         // one arm that holds who is the one arm that can hand it out — nothing
         // here can pass a reader a `null` where a `WhoSettledIt` belongs, and
         // that is what keeps a stack's choice from being read as somebody's. Which
-        // of the other four it is turns on
+        // of the other five it is turns on
         // the word alone, which is a different question and so a second method.
         return $whose instanceof WhoSettledIt
             ? $chosen($this->services, $whose, $this->why)
-            : $this->nobodyChose($outright, $each, $contested, $unfilled);
+            : $this->nobodyChose($outright, $each, $contested, $unfilled, $declined);
     }
 
     /**
-     * The four arms where nobody settled anything, told apart by the word.
+     * The five arms where no choice for a service was made, told apart by the word.
      *
      * @template TOutright of object
      * @template TEach of object
      * @template TContested of object
      * @template TUnfilled of object
+     * @template TDeclined of object
      *
      * @param  Closure(): TOutright  $outright
      * @param  Closure(): TEach  $each
      * @param  Closure(Services): TContested  $contested
      * @param  Closure(): TUnfilled  $unfilled
-     * @return TOutright|TEach|TContested|TUnfilled
+     * @param  Closure(Services): TDeclined  $declined
+     * @return TOutright|TEach|TContested|TUnfilled|TDeclined
      */
     private function nobodyChose(
         Closure $outright,
         Closure $each,
         Closure $contested,
         Closure $unfilled,
+        Closure $declined,
     ): object {
-        if ($this->arm === HowItSettled::Contested) {
-            return $contested($this->services);
-        }
-
-        if ($this->arm === HowItSettled::Each) {
-            return $each();
-        }
-
-        return $this->arm === HowItSettled::Unfilled ? $unfilled() : $outright();
+        return match ($this->arm) {
+            HowItSettled::Contested => $contested($this->services),
+            HowItSettled::Declined => $declined($this->services),
+            HowItSettled::Each => $each(),
+            HowItSettled::Unfilled => $unfilled(),
+            HowItSettled::Outright, HowItSettled::Chosen => $outright(),
+        };
     }
 }

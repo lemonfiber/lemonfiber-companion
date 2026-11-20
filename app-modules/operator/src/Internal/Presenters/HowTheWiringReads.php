@@ -123,6 +123,8 @@ final readonly class HowTheWiringReads
             WhereAConnectionStands::Failed => 'stacks.wiring.state.failed',
             WhereAConnectionStands::Refused => 'stacks.wiring.state.refused',
             WhereAConnectionStands::Kept => 'stacks.wiring.state.kept',
+            WhereAConnectionStands::TakenBack => 'stacks.wiring.state.taken_back',
+            WhereAConnectionStands::WouldTakeBack => 'stacks.wiring.state.would_take_back',
         };
     }
 }

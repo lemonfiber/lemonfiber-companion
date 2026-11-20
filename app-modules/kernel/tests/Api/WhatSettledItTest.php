@@ -25,6 +25,7 @@ function handedOut(WhatSettledIt $settled): WhatTheSettlementSaid
         contested: static fn(Services $claimants): WhatTheSettlementSaid => new WhatTheSettlementSaid('contested', $claimants),
         chosen: static fn(Services $over, WhoSettledIt $whose, WhyItWasChosen $why): WhatTheSettlementSaid => new WhatTheSettlementSaid('chosen', $over, $whose, $why),
         unfilled: static fn(): WhatTheSettlementSaid => new WhatTheSettlementSaid('unfilled', Services::none()),
+        declined: static fn(Services $over): WhatTheSettlementSaid => new WhatTheSettlementSaid('declined', $over),
     );
 }
 
@@ -58,7 +59,8 @@ it('takes a reader to the arm the core sent', function (): void {
         ->and(handedOut(WhatSettledIt::each())->arm)->toBe('each')
         ->and(handedOut(WhatSettledIt::contested(Services::none()))->arm)->toBe('contested')
         ->and(handedOut(WhatSettledIt::chosen(Services::none(), WhoSettledIt::Stack, WhyItWasChosen::unstated()))->arm)->toBe('chosen')
-        ->and(handedOut(WhatSettledIt::unfilled())->arm)->toBe('unfilled');
+        ->and(handedOut(WhatSettledIt::unfilled())->arm)->toBe('unfilled')
+        ->and(handedOut(WhatSettledIt::declined(Services::none()))->arm)->toBe('declined');
 });
 
 it('hands a contest its claimants, in the order they arrived', function (): void {
@@ -96,6 +98,13 @@ it('carries what a choice was settled over', function (): void {
     ));
 
     expect(theClaimantsNamed($said->services))->toBe(['transmission']);
+});
+
+it('carries what a capability left unfilled by choice was passed over for', function (): void {
+    $said = handedOut(WhatSettledIt::declined(Services::these(ServiceId::called('gluetun'))));
+
+    expect(theClaimantsNamed($said->services))->toBe(['gluetun'])
+        ->and($said->whose)->toBeNull();
 });
 
 it('carries the reason where there is one', function (): void {

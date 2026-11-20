@@ -126,6 +126,7 @@ final readonly class HowTheLinksRead
                 why: $this->whyItWasChosen($why),
             ),
             unfilled: fn(): ALinkAsShown => $this->settled($asks, $services, 'stacks.wiring.fills.unfilled', [], $claimants),
+            declined: fn(Services $over): ALinkAsShown => $this->settled($asks, $services, 'stacks.wiring.fills.declined', ['over' => self::named($over)], $claimants),
         );
     }
 

@@ -29,6 +29,8 @@ final readonly class HowAConnectionEnded
         WhereAConnectionStands::Unmanaged,
         WhereAConnectionStands::WouldAdopt,
         WhereAConnectionStands::Kept,
+        WhereAConnectionStands::TakenBack,
+        WhereAConnectionStands::WouldTakeBack,
     ];
 
     /** The states that carry a reason. */
