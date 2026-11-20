@@ -28,6 +28,9 @@ enum AStacksScreen: string
     /** Where a password is offered, and a session that ended is renewed. */
     case SignIn = '/stacks/{stack}/sign-in';
 
+    /** Where a member signs in by a code a service outside the house approves. */
+    case SignInByCode = '/stacks/{stack}/sign-in/code';
+
     /** What the household has asked this machine for. */
     case Requests = '/stacks/{stack}/requests';
 

@@ -6,6 +6,7 @@ use Bootstrap\Composition\ArtworkGoesWithTheSession;
 use Bootstrap\Composition\EveryKeeperOfAStack;
 use Bootstrap\Composition\NothingToAsk;
 use Modules\Connection\Api\ChoosingWhatReachesThePhone;
+use Modules\Connection\Api\RememberingTheWayIn;
 use Modules\Connection\Api\WakingThisPhone;
 use Modules\Device\Api\PlatformPhoneKeys;
 use Modules\Health\Api\KeepingTheLastReading;
@@ -53,6 +54,7 @@ use Tests\Support\Fakes\PhoneKeysNamesKeptInMemory;
 use Tests\Support\Fakes\ReadingsInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
+use Tests\Support\Fakes\WaysInKeptInMemory;
 use Tests\Support\Fakes\WhereHearingLeftOffInMemory;
 use Tests\Support\Fakes\WhereTheOperatorWasInMemory;
 use Tests\Support\Fakes\WorkLeftRunningInMemory;
@@ -92,6 +94,7 @@ function everyKeeperHoldingTwoStacks(): array
         'what it runs' => WhatThePhoneKeeps::noListingYet(),
         'what the household asked for' => WhatThePhoneKeeps::noRequestsYet(),
         'the languages members chose' => WhatThePhoneKeeps::noLanguagesYet(),
+        'the way that last let a member in' => new RememberingTheWayIn(ASealInMemory::working(), WaysInKeptInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(1_790_000_060))),
         'what is new' => whatNoticesNewsOver(ASealInMemory::working()),
         'whether it wakes the phone' => wakingThePhoneForEveryKeptStack(),
         'what reaches the phone' => new ChoosingWhatReachesThePhone(ASealInMemory::working(), NotifyingKeptInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0))),

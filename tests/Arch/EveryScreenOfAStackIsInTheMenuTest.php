@@ -35,6 +35,7 @@ const REACHED_FROM_THEIR_SCREEN = [
     'Copy' => 'taking a copy is begun from Backups, and from Uninstall',
     'Reset' => 'putting the configuration back is begun from General',
     'SignIn' => 'signing in is offered by the screen that found the session ended',
+    'SignInByCode' => 'signing in by a code is offered by the sign-in screens, beside the password',
     'Versions' => 'Versions details what About says is running, and is reached from About',
 ];
 
@@ -122,5 +123,5 @@ it('names only screens a stack has as steps, and does not let the steps grow', f
     $names = array_map(static fn(AStacksScreen $screen): string => $screen->name, AStacksScreen::cases());
 
     expect(array_diff(array_keys(REACHED_FROM_THEIR_SCREEN), $names))->toBe([])
-        ->and(count(REACHED_FROM_THEIR_SCREEN))->toBeLessThanOrEqual(5);
+        ->and(count(REACHED_FROM_THEIR_SCREEN))->toBeLessThanOrEqual(6);
 });

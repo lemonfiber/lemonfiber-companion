@@ -22,5 +22,6 @@ it('declares each cadence once, in the milliseconds the platform counts and the 
         'after_a_break' => [10_000, 10],
         'while_it_moves' => [5_000, 5],
         'while_open' => [60_000, 60],
+        'while_a_code_waits' => [3_000, 3],
     ]);
 });

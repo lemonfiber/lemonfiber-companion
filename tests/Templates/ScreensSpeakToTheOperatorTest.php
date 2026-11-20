@@ -390,7 +390,7 @@ function whichTemplatesSitUnderAMachine(): array
             continue;
         }
 
-        if (str_contains($template->path, 'how-this-stack-is') || str_contains($template->path, 'sign-into-a-stack')) {
+        if (str_contains($template->path, 'how-this-stack-is') || str_contains($template->path, 'sign-into-a-stack') || str_contains($template->path, 'signing-in-by-a-code')) {
             continue;
         }
 

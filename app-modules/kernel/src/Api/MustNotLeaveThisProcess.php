@@ -145,4 +145,10 @@ final class MustNotLeaveThisProcess extends LogicException
     {
         return new self('A claim may not be serialised. It sets the password on the one account an invitation names, and it is held on the screen that opened the invitation and nowhere else.');
     }
+
+    /** The handle a sign-in code is finished by. */
+    public static function aWaitingCode(): self
+    {
+        return new self('A waiting code may not be serialised. It finishes a member\'s sign-in and opens their session, and it is held in memory by the screen showing the code and nowhere else.');
+    }
 }

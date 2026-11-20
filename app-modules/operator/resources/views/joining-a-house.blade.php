@@ -57,6 +57,10 @@
 
         <x-operator::the-wait :wait="$this->wait" />
 
+        @if ($this->theCodeWay()->offered && $this->theCodeWay()->leads)
+            <x-operator::action :label="__('connection.code_way')" :goes="$this->codeWayAt()" />
+        @endif
+
         <x-design::card>
             <native:outlined-text-input
                 native:model="theirName"
@@ -77,5 +81,12 @@
 
             <x-design::action :label="$this->choosing ? __('household.joining.choose') : __('household.joining.sign_in')" tap="signIn()" />
         </x-design::card>
+
+        @if ($this->theCodeWay()->offered && ! $this->theCodeWay()->leads)
+            @if ($this->theCodeWay()->besideARefusal)
+                <x-design::note>{{ __('connection.code_instead') }}</x-design::note>
+            @endif
+            <x-operator::quiet-action :label="__('connection.code_way')" :goes="$this->codeWayAt()" />
+        @endif
     @endif
 </x-operator::content>

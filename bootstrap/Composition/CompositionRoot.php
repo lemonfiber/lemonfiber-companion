@@ -36,6 +36,7 @@ use Lemonfiber\Native\Handover as TheSheet;
 use Lemonfiber\Native\Keeps;
 use Lemonfiber\Native\Link as TheLink;
 use Lemonfiber\Native\LocalNetwork as TheLocalNetworkProbe;
+use Lemonfiber\Native\Pages;
 use Lemonfiber\Native\Player\Player as ThePlayer;
 use Lemonfiber\Native\Scanning as TheCamera;
 use Lemonfiber\Native\Screen;
@@ -46,6 +47,7 @@ use Modules\Connection\Api\ChoosingWhatReachesThePhone;
 use Modules\Connection\Api\KeepingReadingsFor;
 use Modules\Connection\Api\NotifyingOnlyWhatEachStackLets;
 use Modules\Connection\Api\NotifyingOnlyWhenTurnedOn;
+use Modules\Connection\Api\RememberingTheWayIn;
 use Modules\Connection\Api\TheLock;
 use Modules\Connection\Api\ThisDeviceKept;
 use Modules\Connection\Api\TurningNotificationsOn;
@@ -55,7 +57,9 @@ use Modules\Connection\Internal\SettingsKept;
 use Modules\Connection\Internal\Store\NotifyingInTheDatabase;
 use Modules\Connection\Internal\Store\SettingsInTheDatabase;
 use Modules\Connection\Internal\Store\WakingInTheDatabase;
+use Modules\Connection\Internal\Store\WaysInInTheDatabase;
 use Modules\Connection\Internal\WakingKept;
+use Modules\Connection\Internal\WaysInKept;
 use Modules\Design\Api\WhichThemeIsOnTheGlass;
 use Modules\Design\Api\WhoseTheme;
 use Modules\Device\Api\NotifyingWithinACap;
@@ -66,6 +70,7 @@ use Modules\Device\Api\PlatformDistributors;
 use Modules\Device\Api\PlatformLocalNetwork;
 use Modules\Device\Api\PlatformNetwork;
 use Modules\Device\Api\PlatformNotifier;
+use Modules\Device\Api\PlatformPages;
 use Modules\Device\Api\PlatformPhoneKeys;
 use Modules\Device\Api\PlatformPlayer;
 use Modules\Device\Api\PlatformScanner;
@@ -100,6 +105,7 @@ use Modules\Kernel\Api\KnowingThisDevice;
 use Modules\Kernel\Api\LocalZone;
 use Modules\Kernel\Api\Networking;
 use Modules\Kernel\Api\Notifier;
+use Modules\Kernel\Api\OpeningAPage;
 use Modules\Kernel\Api\Playing;
 use Modules\Kernel\Api\ReachingADistributor;
 use Modules\Kernel\Api\RemovalsUnderWay;
@@ -351,6 +357,8 @@ final class CompositionRoot extends ServiceProvider
             static fn(): TheAppsSettings => new PlatformAppsSettings(new TheAppsSettingsPage()),
         );
 
+        $this->app->bind(OpeningAPage::class, static fn(): OpeningAPage => new PlatformPages(new Pages()));
+
         // Which zone the phone's clock is set to, asked each time rather than
         // held: a phone can cross a border between two screens.
         $this->app->bind(
@@ -551,6 +559,7 @@ final class CompositionRoot extends ServiceProvider
         // Whether each stack wakes the phone through a distributor, sealed by
         // `connection` before it reaches it.
         $this->app->bind(WakingKept::class, WakingInTheDatabase::class);
+        $this->app->bind(WaysInKept::class, WaysInInTheDatabase::class);
 
         // What `news` keeps of each stack: the kinds marked as new and the
         // newest of each seen, sealed by `news` before they reach it.
@@ -589,7 +598,7 @@ final class CompositionRoot extends ServiceProvider
         // store is added to what is cleared by adding it here, and nothing
         // that clears has to know how many there are.
         $this->app->tag(
-            [HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class, RequestsKept::class, LanguagesKept::class, SettingsKept::class, NotifyingKept::class, WakingKept::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, WhereHearingLeftOff::class],
+            [HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class, RequestsKept::class, LanguagesKept::class, SettingsKept::class, NotifyingKept::class, WakingKept::class, WaysInKept::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, WhereHearingLeftOff::class],
             self::WHAT_THE_PHONE_KEEPS,
         );
         $this->app->when(EveryStoreThePhoneKeeps::class)
@@ -603,7 +612,7 @@ final class CompositionRoot extends ServiceProvider
         // key for it, and whether it wakes the phone. What was begun is recorded in the same secure store as
         // the pairing it removes.
         $this->app->tag(
-            [Stacks::class, SecureStorage::class, KeepingTheGrant::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, KeepingTheirLanguages::class, Noticing::class, ChoosingWhatReachesThePhone::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, WhereHearingLeftOff::class, Assessors::class, HoldingAPhoneKey::class, KeepingThePhoneKeysName::class, WakingThisPhone::class],
+            [Stacks::class, SecureStorage::class, KeepingTheGrant::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, KeepingTheirLanguages::class, Noticing::class, ChoosingWhatReachesThePhone::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, WhereHearingLeftOff::class, Assessors::class, HoldingAPhoneKey::class, KeepingThePhoneKeysName::class, WakingThisPhone::class, RememberingTheWayIn::class],
             self::WHAT_IS_KEPT_OF_A_STACK,
         );
         $this->app->when(EveryKeeperOfAStack::class)

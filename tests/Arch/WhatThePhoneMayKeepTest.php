@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Connection\Internal\TheChoicesAsKept;
 use Modules\Connection\Internal\TheSettingsAsKept;
 use Modules\Connection\Internal\TheWakingAsKept;
+use Modules\Connection\Internal\TheWayInAsKept;
 use Modules\Health\Internal\TheSummaryAsKept;
 use Modules\Kernel\Api\ACertificateReplacementAgreed;
 use Modules\Kernel\Api\ACredentialRevokeAgreed;
@@ -82,6 +83,7 @@ const THE_WRITERS_OF_WHAT_IS_KEPT = [
     TheSettingsAsKept::class,
     TheChoicesAsKept::class,
     TheWakingAsKept::class,
+    TheWayInAsKept::class,
     TheSummaryAsKept::class,
     TheNewsAsKept::class,
     TheUpkeepAsKept::class,

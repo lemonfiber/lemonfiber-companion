@@ -37,6 +37,10 @@
     @endif
 
     @if ($this->mayTry())
+        @if ($this->theCodeWay()->offered && $this->theCodeWay()->leads)
+            <x-operator::action :label="__('connection.code_way')" :goes="$this->codeWayAt()" />
+        @endif
+
         <x-design::card>
             @if (! $this->runsTheHouse)
                 <native:outlined-text-input
@@ -59,6 +63,13 @@
 
             <x-design::action :label="__($this->offerLabel())" :disabled="! $this->mayOffer()" tap="offer()" />
         </x-design::card>
+
+        @if ($this->theCodeWay()->offered && ! $this->theCodeWay()->leads)
+            @if ($this->theCodeWay()->besideARefusal)
+                <x-design::note>{{ __('connection.code_instead') }}</x-design::note>
+            @endif
+            <x-operator::quiet-action :label="__('connection.code_way')" :goes="$this->codeWayAt()" />
+        @endif
 
         @if ($this->runsTheHouse)
             <x-design::link :label="__('household.joining.invited')" tap="iWasInvited()" />

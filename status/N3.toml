@@ -46,8 +46,8 @@ requirement = [
   { id = "N3-R39", state = "done", evidence = ["app-modules/household/src/Internal/Playing/PutsAChannelOnScreen.php", "app-modules/household/src/Internal/Playing/KeepsTheChannelOpen.php", "bridge/resources/android/WhatToPlay.kt", "bridge/resources/ios/WhatToPlay.swift", "bridge/android/src/test/kotlin/WhatToPlayTest.kt", "bridge/ios/Tests/WhatToPlayTests/WhatToPlayTests.swift", "tests/Arch/AChannelsPassGoesOnlyToItsDoorTest.php", "tests/Feature/WatchingLiveTvTest.php"] },
   { id = "N3-R40", state = "done", evidence = ["app-modules/household/src/Internal/Playing/KeepsTheChannelOpen.php", "app-modules/household/src/Internal/TheLiveTvShelf.php", "tests/Feature/WatchingLiveTvTest.php"] },
   { id = "N3-R41", state = "done", evidence = ["app-modules/sdk/src/Api/WhatTheTunerOpened.php", "tests/Contract/TuningContractTest.php", "tests/Feature/WatchingLiveTvTest.php"] },
-  { id = "N3-R42", state = "open" },
-  { id = "N3-R43", state = "open" },
-  { id = "N3-R44", state = "open" },
+  { id = "N3-R42", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/SignIntoAStack.php", "app-modules/operator/src/Internal/Screens/JoiningAHouse.php", "app-modules/connection/src/Api/RememberingTheWayIn.php", "tests/Feature/SigningInByACodeTest.php"] },
+  { id = "N3-R43", state = "done", evidence = ["app-modules/operator/resources/views/sign-into-a-stack.blade.php", "app-modules/operator/src/Internal/Screens/SigningInByACode.php", "tests/Feature/SigningInByACodeTest.php"] },
+  { id = "N3-R44", state = "done", evidence = ["app-modules/operator/src/Internal/Screens/SigningInByACode.php", "app-modules/sdk/src/Api/Admissions.php", "app-modules/kernel/src/Api/AWaitingCode.php", "tests/Feature/SigningInByACodeTest.php", "tests/Contract/AdmittingByACodeContractTest.php"] },
   { id = "N3-R45", state = "done", evidence = ["app-modules/household/src/Internal/Playing/PutsATitleOnScreen.php", "tests/Feature/PlayingATitleTest.php", "tests/Feature/EveryActionTheStackTakesTest.php"] },
 ]

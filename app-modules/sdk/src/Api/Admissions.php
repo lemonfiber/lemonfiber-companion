@@ -4,24 +4,35 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
+use Closure;
+use Lemonfiber\Sdk\Admitted as Opened;
+use Lemonfiber\Sdk\CodeIssued;
+use Lemonfiber\Sdk\Exception\AnswerUnusable;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\PasswordWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\TooManyAttempts;
 use Lemonfiber\Sdk\Exception\Unreachable;
-use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\RefusalCode;
+use Lemonfiber\Sdk\WaitingCode;
 use Modules\Kernel\Api\AClaim;
+use Modules\Kernel\Api\ACodeToApprove;
 use Modules\Kernel\Api\Admitted;
 use Modules\Kernel\Api\Admitting;
+use Modules\Kernel\Api\AdmittingByACode;
 use Modules\Kernel\Api\AMembersName;
+use Modules\Kernel\Api\AWaitingCode;
+use Modules\Kernel\Api\CodeAsked;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\HowLong;
+use Modules\Kernel\Api\HowTheCodeStands;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheDoorSaysNothing;
+use Modules\Kernel\Api\WhatTheHouseholdWasTold;
 use Modules\Kernel\Api\WhenToTryAgain;
 use Modules\Kernel\Api\Whose;
 use Modules\Sdk\Internal\WhatARefusalMeant;
@@ -53,7 +64,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * | {@see TooManyAttempts} | `TooManyAttempts` — wait, and do not attempt |
  * | {@see CertificateWasRefused} | `StackIsNotTheOnePaired` — this is not the machine paired with; nothing was sent, the password included |
  * | {@see RequestFailed} carrying a code | what {@see WhatARefusalMeant} reads that code as, with the house's own words: a claim no longer open, a choice too short, a media server that could not confirm it |
- * | {@see RequestFailed}, {@see Unreachable}, {@see UnreadableResponse} | what {@see Clients::whatStoodInTheWay()} says stood in the way |
+ * | {@see RequestFailed}, {@see Unreachable}, {@see AnswerUnusable} | what {@see Clients::whatStoodInTheWay()} says stood in the way |
  *
  * **Nothing here reads a timestamp.** The SDK hands over the ending as a count
  * of seconds, which is what lets this file convert with a named constructor and
@@ -69,7 +80,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * retained state into an ordinary screen about an unreachable machine, which is
  * the one reading that stops anybody fixing it.
  */
-final readonly class Admissions implements Admitting
+final readonly class Admissions implements Admitting, AdmittingByACode
 {
     public function __construct(private Doors $doors, private Clients $clients) {}
 
@@ -88,6 +99,38 @@ final readonly class Admissions implements Admitting
         return $this->exchanged($stack, $named, $chosen, $claim);
     }
 
+    public function askForACode(Stack $stack): CodeAsked
+    {
+        try {
+            $issued = $this->doors->door($stack)->askForACode();
+        } catch (TooManyAttempts $why) {
+            return CodeAsked::refused(Obstacle::of(KindOfObstacle::TooManyAttempts), $this->waitOf($why));
+        } catch (CertificateWasRefused|RequestFailed|Unreachable|AnswerUnusable $why) {
+            $told = $this->saidOf($why, RefusalCode::SignsInByPassword);
+
+            return $told instanceof WhatTheHouseholdWasTold ? CodeAsked::byPassword($told) : CodeAsked::refused($this->met($stack, $why), WhenToTryAgain::unsaid());
+        }
+
+        return $this->issued($issued);
+    }
+
+    public function finishByCode(Stack $stack, AWaitingCode $waiting): HowTheCodeStands
+    {
+        try {
+            $finished = $this->doors->door($stack)->finishByCode(WaitingCode::of($waiting->forTheExchange()));
+        } catch (TooManyAttempts $why) {
+            return HowTheCodeStands::refused(Obstacle::of(KindOfObstacle::TooManyAttempts), $this->waitOf($why));
+        } catch (CertificateWasRefused|RequestFailed|Unreachable|AnswerUnusable $why) {
+            $told = $this->saidOf($why, RefusalCode::CodeNotWaiting);
+
+            return $told instanceof WhatTheHouseholdWasTold ? HowTheCodeStands::lapsed($told) : HowTheCodeStands::refused($this->met($stack, $why), WhenToTryAgain::unsaid());
+        }
+
+        return $finished instanceof Opened
+            ? $this->opened($finished, HowTheCodeStands::opened(...))
+            : HowTheCodeStands::waiting(Instant::atEpochSeconds($finished->lapsesAtEpochSeconds));
+    }
+
     /** What came of offering at this stack's door: the credential alone, with a member's name, or chosen with the claim an invitation carried. */
     private function exchanged(Stack $stack, ?AMembersName $named, Credential $said, ?AClaim $claim): Admitted
     {
@@ -100,24 +143,59 @@ final readonly class Admissions implements Admitting
                 default => $door->open($said->forTheExchange()),
             };
         } catch (TooManyAttempts $why) {
-            $seconds = $why->seconds();
-
-            return Admitted::refusedFor(
-                Obstacle::of(KindOfObstacle::TooManyAttempts),
-                $seconds === null || $seconds < 0 ? WhenToTryAgain::unsaid() : WhenToTryAgain::after(HowLong::ofSeconds($seconds)),
-            );
-        } catch (CertificateWasRefused|PasswordWasRefused|RequestFailed|Unreachable|UnreadableResponse $why) {
+            return Admitted::refusedFor(Obstacle::of(KindOfObstacle::TooManyAttempts), $this->waitOf($why));
+        } catch (CertificateWasRefused|PasswordWasRefused|RequestFailed|Unreachable|AnswerUnusable $why) {
             return Admitted::refused($this->met($stack, $why));
         }
 
-        return Admitted::opening(
+        return $this->opened($opened, Admitted::opening(...));
+    }
+
+    /**
+     * The session the door opened, as the outcome the caller reads.
+     *
+     * @template T of object
+     *
+     * @param Closure(Session, Instant, Whose): T $as
+     *
+     * @return T
+     */
+    private function opened(Opened $opened, Closure $as): object
+    {
+        return $as(
             Session::of($opened->token),
             Instant::atEpochSeconds($opened->untilEpochSeconds),
-            // Absent is the operator, which is the stack's own shape rather than a
-            // reading of it: an admission with no member on it is one the stack
-            // minted against its own password.
             $opened->member === null ? Whose::theOperator() : Whose::member($opened->member),
         );
+    }
+
+    /** The code the door issued, or what stood in the way where it answered one this app cannot show. */
+    private function issued(CodeIssued $issued): CodeAsked
+    {
+        try {
+            return CodeAsked::issued(ACodeToApprove::issued(
+                $issued->code,
+                $issued->approveAt,
+                Instant::atEpochSeconds($issued->lapsesAtEpochSeconds),
+                AWaitingCode::answered($issued->waiting->reveal()),
+            ));
+        } catch (TheDoorSaysNothing) {
+            return CodeAsked::refused(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead), WhenToTryAgain::unsaid());
+        }
+    }
+
+    /** How long the door said to wait before asking again, where it said. */
+    private function waitOf(TooManyAttempts $why): WhenToTryAgain
+    {
+        $seconds = $why->seconds();
+
+        return $seconds === null || $seconds < 0 ? WhenToTryAgain::unsaid() : WhenToTryAgain::after(HowLong::ofSeconds($seconds));
+    }
+
+    /** What the house said, where it refused under this code, whether or not it said anything. */
+    private function saidOf(CertificateWasRefused|RequestFailed|Unreachable|AnswerUnusable $why, RefusalCode $code): ?WhatTheHouseholdWasTold
+    {
+        return $why instanceof RequestFailed && $why->code() === $code ? WhatARefusalMeant::obstacle($why)->whatTheHouseholdWasTold() : null;
     }
 
     /**
@@ -128,13 +206,13 @@ final readonly class Admissions implements Admitting
      * they left one method with four ways out.
      *
      * A `match` rather than six `catch` blocks, so the mapping reads as one
-     * table. `RequestFailed`, `Unreachable` and `UnreadableResponse` go to
+     * table. `RequestFailed`, `Unreachable` and `AnswerUnusable` go to
      * one place: each means the operator did not get in and nothing about
      * their password is known, so none of them is *the credential was
      * refused*. {@see Clients::whatStoodInTheWay()} decides which obstacle it
      * is, the same way every other reach of a stack does.
      */
-    private function met(Stack $stack, CertificateWasRefused|PasswordWasRefused|RequestFailed|Unreachable|UnreadableResponse $why): Obstacle
+    private function met(Stack $stack, CertificateWasRefused|PasswordWasRefused|RequestFailed|Unreachable|AnswerUnusable $why): Obstacle
     {
         return match (true) {
             $why instanceof PasswordWasRefused => Obstacle::of(KindOfObstacle::CredentialWasRefused),

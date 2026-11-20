@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\Introducing;
 use Modules\Connection\Api\Remembering;
+use Modules\Connection\Api\RememberingTheWayIn;
+use Modules\Connection\Api\TheWayIn;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AJoinLink;
 use Modules\Kernel\Api\Fingerprint;
@@ -30,6 +32,7 @@ use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Edge\NativeRouter;
 use Native\Mobile\Edge\NavigationIntent;
 use Tests\Support\AroundThePhone;
+use Tests\Support\AWayInRemembered;
 use Tests\Support\Fakes\ACameraInMemory;
 use Tests\Support\Fakes\ADoorThatWasKnockedOn;
 use Tests\Support\Fakes\AKeychainInMemory;
@@ -62,6 +65,7 @@ function theWayIn(
     ?ADoorThatWasKnockedOn $door = null,
     ?StacksInMemory $stacks = null,
     ?AKeychainInMemory $keychain = null,
+    ?RememberingTheWayIn $remembered = null,
 ): JoiningAHouse {
     $stacks ??= StacksInMemory::working();
     $keychain ??= AKeychainInMemory::working();
@@ -75,6 +79,7 @@ function theWayIn(
         $clock,
         $door ?? ADoorThatWasKnockedOn::openingFor(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(JOINED_AT * 2), Whose::member('a-member')),
         $keychain,
+        $remembered ?? AWayInRemembered::nowhere(),
         AroundThePhone::holding($stacks, storage: $keychain, clock: $clock),
         app('translator'),
         new AppsSettingsThatOpen(),
@@ -671,4 +676,35 @@ it('lets go of the wait once the next try is offered', function (): void {
 
     expect($screen->wait)->toBeNull()
         ->and($screen->stoodInTheWay())->toBeNull();
+});
+
+it('offers the code way beside a refused password when joining, and leads with it on a house a code last let somebody in on', function (): void {
+    $refused = signingInAs(theWayIn(ACameraInMemory::reading(theCodeForANewPhone()), ADoorThatWasKnockedOn::refusing(Obstacle::of(KindOfObstacle::CredentialWasRefused))));
+    $refused->signIn();
+    $leading = theWayIn(ACameraInMemory::reading(theCodeForANewPhone()), remembered: AWayInRemembered::on(StackId::rememberedAs(THE_HOUSE), TheWayIn::Code));
+    $leading->findTheHouse();
+
+    expect($refused->theCodeWay()->offered)->toBeTrue()
+        ->and($refused->theCodeWay()->besideARefusal)->toBeTrue()
+        ->and($refused->codeWayAt())->toBe(AStacksScreen::SignInByCode->forTheStack(StackId::rememberedAs(THE_HOUSE)))
+        ->and(WhatTheDeviceWouldDraw::by($refused)->said())->toContain(__('connection.code_instead'), __('connection.code_way'))
+        ->and($leading->theCodeWay()->leads)->toBeTrue();
+});
+
+it('never offers a code while a password is being chosen for an invitation', function (): void {
+    [$screen] = aClaimOpenedAt(ADoorThatWasKnockedOn::openingFor(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(JOINED_AT * 2), Whose::member('a-member')));
+
+    expect($screen->theCodeWay()->offered)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('connection.code_way'));
+});
+
+it('remembers that a password let a member in on the house they joined', function (): void {
+    $remembered = AWayInRemembered::nowhere();
+    $screen = signingInAs(theWayIn(ACameraInMemory::reading(theCodeForANewPhone()), remembered: $remembered));
+
+    $screen->signIn();
+
+    expect($screen->went)->toBe(HowTheSignInWent::SignedIn)
+        ->and($remembered->keepsAnythingOf(StackId::rememberedAs(THE_HOUSE)))->toBeTrue()
+        ->and($remembered->ledWithOn(StackId::rememberedAs(THE_HOUSE)))->toBe(TheWayIn::Password);
 });

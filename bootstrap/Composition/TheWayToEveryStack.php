@@ -14,6 +14,7 @@ use Modules\Codes\Api\QrCodes;
 use Modules\Kernel\Api\Accepting;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Admitting;
+use Modules\Kernel\Api\AdmittingByACode;
 use Modules\Kernel\Api\Advising;
 use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\Asking;
@@ -266,6 +267,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // whatever it grows into.
         $this->app->bind(Doors::class, PinnedDoors::class);
         $this->app->bind(Admitting::class, Admissions::class);
+        $this->app->bind(AdmittingByACode::class, Admissions::class);
 
         // Asking a stack how it is, which is what a session is opened for.
         //

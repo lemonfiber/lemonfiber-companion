@@ -6,6 +6,8 @@ namespace Modules\Operator\Internal\Screens;
 
 use Modules\Connection\Api\HowTheSignInWent;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Connection\Api\RememberingTheWayIn;
+use Modules\Connection\Api\TheWayIn;
 use Modules\Kernel\Api\Admitted;
 use Modules\Kernel\Api\Admitting;
 use Modules\Kernel\Api\AMembersName;
@@ -16,12 +18,14 @@ use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhenToTryAgain;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 use Modules\Operator\Internal\OffersTheAppsSettings;
+use Modules\Operator\Internal\OffersTheCodeWay;
 use Modules\Operator\Internal\Presenters\HowTheWaitReads;
 use Modules\Operator\Internal\ViewModels\TheWaitAsShown;
 use Modules\Operator\Internal\WhereAStackIs;
@@ -79,6 +83,7 @@ use function trim;
 final class SignIntoAStack extends NativeComponent
 {
     use OffersTheAppsSettings;
+    use OffersTheCodeWay;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
@@ -141,6 +146,7 @@ final class SignIntoAStack extends NativeComponent
     public function __construct(
         private readonly Admitting $admitting,
         private readonly SecureStorage $storage,
+        private readonly RememberingTheWayIn $waysIn,
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
@@ -327,6 +333,11 @@ final class SignIntoAStack extends NativeComponent
         };
     }
 
+    protected function houseTheCodeWayIsFor(): ?StackId
+    {
+        return ! $this->runsTheHouse && $this->went->mayTry() ? $this->stack()->id() : null;
+    }
+
     /**
      * Write the session down, saying whether that happened.
      *
@@ -397,8 +408,11 @@ final class SignIntoAStack extends NativeComponent
         $this->typed = '';
 
         return $this->admitting->admitAs($this->stack(), $named, $said)->either(
-            opened: fn(Session $session, Instant $until, Whose $whose): HowTheSignInWent
-                => $this->kept($session, $whose),
+            opened: function (Session $session, Instant $until, Whose $whose): HowTheSignInWent {
+                $this->waysIn->letIn($this->stack()->id(), TheWayIn::Password);
+
+                return $this->kept($session, $whose);
+            },
             refused: function (Obstacle $why, WhenToTryAgain $tryAgain): HowTheSignInWent {
                 $this->wait = new HowTheWaitReads()->of($tryAgain);
 

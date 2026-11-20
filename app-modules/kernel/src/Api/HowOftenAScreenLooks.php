@@ -77,6 +77,13 @@ enum HowOftenAScreenLooks: string
      */
     case WhileOpen = 'while_open';
 
+    /**
+     * While a member is shown a sign-in code to approve.
+     *
+     * Three seconds, so the screen moves on soon after they approve it elsewhere.
+     */
+    case WhileACodeWaits = 'while_a_code_waits';
+
     /** The interval, in the milliseconds `#[Poll]` counts. */
     public const int WHILE_WORK_RUNS_MS = 5_000;
 
@@ -92,6 +99,9 @@ enum HowOftenAScreenLooks: string
     /** The interval a screen showing what changes slowly looks again, in milliseconds. */
     public const int WHILE_OPEN_MS = 60_000;
 
+    /** The interval a screen showing a sign-in code asks whether it was approved, in milliseconds. */
+    public const int WHILE_A_CODE_WAITS_MS = 3_000;
+
     /** How long this cadence is, in the milliseconds the platform counts. */
     public function milliseconds(): int
     {
@@ -101,6 +111,7 @@ enum HowOftenAScreenLooks: string
             self::AfterABreak => self::AFTER_A_BREAK_MS,
             self::WhileItMoves => self::WHILE_IT_MOVES_MS,
             self::WhileOpen => self::WHILE_OPEN_MS,
+            self::WhileACodeWaits => self::WHILE_A_CODE_WAITS_MS,
         };
     }
 

@@ -194,6 +194,12 @@
             "description": "Look a machine's name up the way the phone itself does, and answer the addresses the app may send to; nothing resolved is kept or logged"
         },
         {
+            "name": "Lemonfiber.Page.Open",
+            "android": "app.lemonfiber.native.PageFunctions.Open",
+            "ios": "PageFunctions.Open",
+            "description": "Open an https page in the phone's browser, and say whether it opened; any other address is refused"
+        },
+        {
             "name": "Lemonfiber.Settings.Open",
             "android": "app.lemonfiber.native.SettingsFunctions.Open",
             "ios": "SettingsFunctions.Open",

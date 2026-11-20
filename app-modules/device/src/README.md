@@ -10,6 +10,7 @@ implements one kernel port over the platform:
 | `PlatformNetwork` | `Networking` |
 | `PlatformLocalNetwork` | `TheLocalNetwork` |
 | `PlatformAppsSettings` | `TheAppsSettings` |
+| `PlatformPages` | `OpeningAPage` |
 | `PlatformNotifier` | `Notifier` |
 | `PlatformScanner` | `Scanning` |
 | `PlatformScreen` | `Capture` |

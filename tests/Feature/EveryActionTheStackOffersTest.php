@@ -7,6 +7,7 @@ use Lemonfiber\Sdk\Contract\HouseholdReads;
 use Lemonfiber\Sdk\Contract\MachineReads;
 use Lemonfiber\Sdk\Generated\Kind;
 use Lemonfiber\Sdk\Http\AdmissionRequest;
+use Lemonfiber\Sdk\Http\CodeAskRequest;
 use Lemonfiber\Sdk\JobStanding;
 use Modules\Dx\Internal\WhatTheContractDeclares;
 use Tests\Support\Tree;
@@ -64,6 +65,7 @@ const OFFERED = [
 const THROUGH_THE_SDK = [
     'Admission' => [Admission::class, AdmissionRequest::class],
     'Ended' => [JobStanding::class, JobStanding::class],
+    'SignInCode' => [Admission::class, CodeAskRequest::class],
 ];
 
 /**
@@ -104,7 +106,7 @@ const ELSEWHERE = [
  * moving one to `ELSEWHERE` needs a requirement written first.
  */
 const NOT_YET = [
-    'Caller', 'InFlight', 'Logs', 'Password', 'PluginClaims', 'PluginConformance', 'PluginProvenance', 'PluginRecording', 'Served', 'SignInCode', 'Standing', 'WalkthroughOffer',
+    'Caller', 'InFlight', 'Logs', 'Password', 'PluginClaims', 'PluginConformance', 'PluginProvenance', 'PluginRecording', 'Served', 'Standing', 'WalkthroughOffer',
 ];
 
 it('every kind the stack offers has been looked at', function (): void {

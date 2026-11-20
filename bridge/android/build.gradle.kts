@@ -90,6 +90,7 @@ sourceSets {
             "LocalNetworkFunctions.kt",
             "ResolveFunctions.kt",
             "SettingsFunctions.kt",
+            "PageFunctions.kt",
             "LemonfiberInit.kt",
             "HandoverFunctions.kt",
             "ClockFunctions.kt",

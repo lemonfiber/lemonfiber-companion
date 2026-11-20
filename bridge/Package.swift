@@ -34,6 +34,7 @@ let package = Package(
                 "LocalNetworkFunctions.swift",
                 "ResolveFunctions.swift",
                 "SettingsFunctions.swift",
+                "PageFunctions.swift",
                 "HandoverFunctions.swift",
                 "ClockFunctions.swift",
                 "ReorderableRenderer.swift",
@@ -126,6 +127,11 @@ let package = Package(
             name: "ResolveRuleTests",
             dependencies: ["LemonfiberNative"],
             path: "ios/Tests/ResolveRuleTests"
+        ),
+        .testTarget(
+            name: "PageRuleTests",
+            dependencies: ["LemonfiberNative"],
+            path: "ios/Tests/PageRuleTests"
         ),
         .testTarget(
             name: "SettingsRuleTests",
