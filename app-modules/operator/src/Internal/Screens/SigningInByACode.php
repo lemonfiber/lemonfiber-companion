@@ -152,7 +152,7 @@ final class SigningInByACode extends NativeComponent
         }
 
         $this->admitting->finishByCode($this->stack(), $asked->waiting)->either(
-            opened: $this->in(...),
+            opened: fn(Session $session, Instant $until, Whose $whose): self => $this->in($session, $whose),
             waiting: function (): self {
                 $this->went = HowTheSignInWent::NotYet;
                 $this->wait = null;
@@ -224,7 +224,7 @@ final class SigningInByACode extends NativeComponent
     /**
      * Keep the session the house opened, note that a code let a member in on it, and go on to what they came for.
      */
-    private function in(Session $session, Instant $until, Whose $whose): self
+    private function in(Session $session, Whose $whose): self
     {
         $stack = $this->stack()->id();
         $this->went = $this->storage->keep($stack, $session, $whose)->either(
