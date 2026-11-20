@@ -48,6 +48,7 @@ use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
+use Tests\Support\Fakes\AStackThatSaysWhatIsComingDown;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\FrozenClock;
@@ -115,7 +116,7 @@ function aBarnScreenHearing(string $which, AStackThatSpeaksUp $stream, FrozenClo
     $offline = Obstacle::of(KindOfObstacle::DeviceHasNoNetwork);
 
     $screen = $which === 'updates'
-        ? new HowCurrentThisStackIs(AStackThatKeepsCurrent::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, WhatThePhoneKeeps::noUpkeepYet())
+        ? new HowCurrentThisStackIs(AStackThatKeepsCurrent::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, WhatThePhoneKeeps::noUpkeepYet(), AStackThatSaysWhatIsComingDown::nothing())
         : new WhatTheWordsMean(AStackThatExplainsItsWords::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening);
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

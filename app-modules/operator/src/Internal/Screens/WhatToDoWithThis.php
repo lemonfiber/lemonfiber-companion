@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\AnOffer;
+use Modules\Kernel\Api\AskingWhatAStopWouldInterrupt;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Disturbances;
 use Modules\Kernel\Api\Form;
@@ -23,6 +24,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatStartingItWouldComeTo;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhetherToWait;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsWhatTheVerbCameTo;
 use Modules\Operator\Internal\HearsWhatAStartWaitsOn;
@@ -30,6 +32,7 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowARehearsalReads;
 use Modules\Operator\Internal\Presenters\HowAVerbReads;
 use Modules\Operator\Internal\Presenters\HowOneThingReads;
+use Modules\Operator\Internal\SaysWhatAStopWouldInterrupt;
 use Modules\Operator\Internal\ShowsWhatTheYesWillRun;
 use Modules\Operator\Internal\TakesItsFormsAFrameLater;
 use Modules\Operator\Internal\ViewModels\WhatAVerbTakesAwaySays;
@@ -115,6 +118,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         HearsWhatAStartWaitsOn::letGoOfWhatElseItHears insteadof FindsItsWayAround;
     }
     use FindsItsWayAround;
+    use SaysWhatAStopWouldInterrupt;
 
     /** What the operator has been asked about, where a verb is waiting on a yes. */
     public ?AgreedTo $asking = null;
@@ -138,6 +142,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         protected readonly HearingTheStart $hearingTheStart,
         protected readonly WhatItListensWith $listening,
         private readonly KeepingWhatItRuns $kept,
+        private readonly AskingWhatAStopWouldInterrupt $interrupting,
     ) {}
 
     /**
@@ -217,6 +222,10 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
             $this->asking = $agreed;
             $this->rehearseTheQuestion($agreed);
 
+            if ($agreed->doing() === WhatToDoWithIt::Stop) {
+                $this->askWhatComesDownInside($agreed->reach(), $this->storage, $this->interrupting);
+            }
+
             return;
         }
 
@@ -228,9 +237,11 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      *
      * It sends what was held and nothing a template passed in, so the thing
      * that was confirmed and the thing that happens are the same value.
-     * Refused while the listing drawn is one the phone kept.
+     * Refused while the listing drawn is one the phone kept. A stop with
+     * downloads still coming down is agreed to as letting them finish, or as
+     * going ahead now; any other word goes ahead now.
      */
-    public function agree(): void
+    public function agree(string $letting = WhetherToWait::GoAheadNow->value): void
     {
         $agreed = $this->asking;
 
@@ -241,9 +252,11 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         $offered = $this->offered;
         $this->asking = null;
         $this->movedOn = null;
+        $this->comingDown = null;
         $this->forgetTheRehearsal();
+        $waiting = WhetherToWait::tryFrom($letting) ?? WhetherToWait::GoAheadNow;
 
-        $this->send($offered instanceof AnOffer ? $agreed->quoting($offered) : $agreed);
+        $this->send(($offered instanceof AnOffer ? $agreed->quoting($offered) : $agreed)->letting($waiting));
     }
 
     /**
@@ -290,6 +303,7 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
     {
         $this->asking = null;
         $this->movedOn = null;
+        $this->comingDown = null;
         $this->forgetTheRehearsal();
     }
 
@@ -417,6 +431,10 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         $this->sent = null;
         $this->asking = $sent->quoting(AnOffer::none());
         $this->rehearseTheQuestion($this->asking);
+
+        if ($sent->doing() === WhatToDoWithIt::Stop) {
+            $this->askWhatComesDownInside($sent->reach(), $this->storage, $this->interrupting);
+        }
     }
 
     /**

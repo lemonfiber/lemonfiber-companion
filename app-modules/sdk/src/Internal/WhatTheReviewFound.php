@@ -139,7 +139,7 @@ final readonly class WhatTheReviewFound
 
             $comesTo = $comesTo->interrupting(ADownloadItWouldInterrupt::of(
                 Required::text($row, WireField::Name, $refused),
-                HowADownloadComes::named(Required::text($row, ConfigField::Protocol, $refused)),
+                HowADownloadComes::named(Required::text($row, WireField::Protocol, $refused)),
                 HowFarADownloadIs::at(Required::number($row, WireField::Progress, $refused), $refused)->share,
             ));
         }

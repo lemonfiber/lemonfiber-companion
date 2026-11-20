@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\AskingHowItIsServed;
+use Modules\Kernel\Api\AskingWhatAStopWouldInterrupt;
 use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Credential;
 use Modules\Kernel\Api\Daemon;
@@ -10,6 +12,7 @@ use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\HowAServiceRuns;
+use Modules\Kernel\Api\HowItIsServed;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowTheStackIsRunning;
 use Modules\Kernel\Api\LookingFor;
@@ -22,6 +25,8 @@ use Modules\Kernel\Api\Scrollback;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stream;
 use Modules\Kernel\Api\Supervising;
+use Modules\Kernel\Api\TheCertificateItPresents;
+use Modules\Kernel\Api\TheDownloadsComingDown;
 use Modules\Kernel\Api\WentWrong;
 use Modules\Kernel\Api\WhatIsRunning;
 use Modules\Kernel\Api\WhatToDoWithIt;
@@ -110,6 +115,11 @@ const NEVER_SHOWN_TO_A_MEMBER = [
     Stream::class => 'logs',
     LookingFor::class => 'logs',
     HowManyLines::class => 'logs',
+    AskingWhatAStopWouldInterrupt::class => 'lifecycle controls',
+    TheDownloadsComingDown::class => 'lifecycle controls',
+    AskingHowItIsServed::class => 'how the stack is served',
+    HowItIsServed::class => 'how the stack is served',
+    TheCertificateItPresents::class => 'how the stack is served',
 ];
 
 it('every type this refuses is one this application has', function (): void {

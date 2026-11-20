@@ -41,4 +41,19 @@ interface Adjusting
      * it is.
      */
     public function agreedTo(Stack $stack, Session $session, WhatToSet $asked): WhatTheStackMadeOfIt;
+
+    /**
+     * Set it once every download still coming down inside what it stops has landed.
+     *
+     * The stack does the waiting, so it answers with a name for the work
+     * rather than with the review, and {@see whatBecameOf()} follows it.
+     */
+    public function agreedToOnceLanded(Stack $stack, Session $session, WhatToSet $asked): Underway;
+
+    /**
+     * Where a change agreed to once the downloads land got to.
+     *
+     * @return HowAgreedWorkIsGoing<WhereTheChangeStands>
+     */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing;
 }

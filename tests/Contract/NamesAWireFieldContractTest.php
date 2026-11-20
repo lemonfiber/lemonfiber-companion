@@ -29,6 +29,7 @@ use Modules\Sdk\Api\Fields\HistoryField;
 use Modules\Sdk\Api\Fields\HostingField;
 use Modules\Sdk\Api\Fields\HouseholdField;
 use Modules\Sdk\Api\Fields\ImportField;
+use Modules\Sdk\Api\Fields\InFlightField;
 use Modules\Sdk\Api\Fields\InvitationField;
 use Modules\Sdk\Api\Fields\KeysField;
 use Modules\Sdk\Api\Fields\LifecycleField;
@@ -56,6 +57,7 @@ use Modules\Sdk\Api\Fields\ResetField;
 use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Api\Fields\SeedField;
 use Modules\Sdk\Api\Fields\SelfUpdateField;
+use Modules\Sdk\Api\Fields\ServedField;
 use Modules\Sdk\Api\Fields\SettingsField;
 use Modules\Sdk\Api\Fields\SettledField;
 use Modules\Sdk\Api\Fields\SpaceField;
@@ -123,6 +125,7 @@ function everyFieldNamedOnTheWire(): array
         ...HostingField::cases(),
         ...HouseholdField::cases(),
         ...ImportField::cases(),
+        ...InFlightField::cases(),
         ...LifecycleField::cases(),
         ...LogField::cases(),
         ...MigrationField::cases(),
@@ -142,6 +145,7 @@ function everyFieldNamedOnTheWire(): array
         ...SeedField::cases(),
         ...SettingsField::cases(),
         ...SelfUpdateField::cases(),
+        ...ServedField::cases(),
         ...SettledField::cases(),
         ...SpaceField::cases(),
         ...StackField::cases(),

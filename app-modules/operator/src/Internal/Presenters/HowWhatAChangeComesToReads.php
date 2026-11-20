@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use function array_push;
 
+use ArrayObject;
 use Modules\Kernel\Api\AnEditFoundInTheFile;
 use Modules\Kernel\Api\WhatAChangeAsksFor;
 use Modules\Kernel\Api\WhatAChangeComesTo;
@@ -46,20 +47,20 @@ final readonly class HowWhatAChangeComesToReads
         }
 
         $edited = $comesTo->theEdit(
-            found: fn(AnEditFoundInTheFile $edit): WhatAChangeComesToAsShown => new WhatAChangeComesToAsShown([
+            found: fn(AnEditFoundInTheFile $edit): ArrayObject => new ArrayObject([
                 $this->line('config.findings.edited', [], aside: false),
                 $this->side($edit->wrote, 'config.findings.wrote', 'config.findings.wrote_empty', 'config.findings.wrote_withheld'),
                 $this->side($edit->found, 'config.findings.found', 'config.findings.found_empty', 'config.findings.found_withheld'),
             ]),
-            none: static fn(): WhatAChangeComesToAsShown => new WhatAChangeComesToAsShown([]),
+            none: static fn(): ArrayObject => new ArrayObject(),
         );
-        array_push($lines, ...$edited->lines);
+        array_push($lines, ...$edited->getArrayCopy());
 
         foreach ($comesTo->keeps as $left) {
             $lines[] = $this->line('config.findings.keeps', ['what' => $left->shown()], aside: true);
         }
 
-        return new WhatAChangeComesToAsShown($lines);
+        return new WhatAChangeComesToAsShown($lines, interrupts: $comesTo->interrupts !== []);
     }
 
     /** @return list<ALineOfWhatAChangeComesTo> */

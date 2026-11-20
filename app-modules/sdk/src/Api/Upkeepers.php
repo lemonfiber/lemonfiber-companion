@@ -86,7 +86,7 @@ final readonly class Upkeepers implements KeepingCurrent
             // to one `service` and takes no list, so none is named: one would
             // narrow the run.
             $envelope = $client->act(
-                new UpdateAction(offer: Quoted::offer($agreed->offer()), confirm: true),
+                new UpdateAction(wait: $agreed->waiting()->waits(), offer: Quoted::offer($agreed->offer()), confirm: true),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),
             );
 

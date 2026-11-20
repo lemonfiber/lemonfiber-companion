@@ -502,4 +502,17 @@ return [
         'refused' => 'De stack heeft dit niet geaccepteerd',
         'not_taken' => 'De stack heeft geantwoord, en het rapport toont dit niet als geaccepteerd.',
     ],
+    'coming' => [
+        'heading' => 'Nog aan het binnenkomen',
+        'line' => ':name, :progress% binnen, in de :by',
+        'by' => [
+            'usenet' => 'Usenet-client',
+            'torrent' => 'torrentclient',
+            'another-way' => 'downloadclient',
+        ],
+        'interrupts' => 'Nu doorgaan onderbreekt elke download hierboven, en wat elk tot nu toe binnenhaalde kan verloren gaan.',
+        'unknown' => 'Of er nog iets binnenkomt, kon niet worden nagegaan.',
+        'let_them_finish' => 'Eerst laten afmaken',
+        'go_ahead_now' => 'Nu doorgaan',
+    ],
 ];

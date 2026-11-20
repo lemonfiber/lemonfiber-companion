@@ -46,6 +46,7 @@ final readonly class AgreedTo
         private WhatToDoWithIt $doing,
         private ServiceId|Form $about,
         private AnOffer $offer,
+        private WhetherToWait $waiting = WhetherToWait::GoAheadNow,
     ) {}
 
     /**
@@ -78,7 +79,25 @@ final readonly class AgreedTo
      */
     public function quoting(AnOffer $offer): self
     {
-        return new self($this->doing, $this->about, $offer);
+        return new self($this->doing, $this->about, $offer, $this->waiting);
+    }
+
+    /** The same agreement, letting what is still coming down land first or not. */
+    public function letting(WhetherToWait $waiting): self
+    {
+        return new self($this->doing, $this->about, $this->offer, $waiting);
+    }
+
+    /** Whether what is still coming down lands first. */
+    public function waiting(): WhetherToWait
+    {
+        return $this->waiting;
+    }
+
+    /** What the stack is asked is still coming down inside it. */
+    public function reach(): WhatAStopReaches
+    {
+        return $this->about instanceof Form ? WhatAStopReaches::theForm($this->about) : WhatAStopReaches::theServices($this->about);
     }
 
     /** The name of what was agreed to, as the stack offered it, or none. */

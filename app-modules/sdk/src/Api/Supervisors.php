@@ -211,7 +211,7 @@ final readonly class Supervisors implements Supervising
 
         return match ($agreed->doing()) {
             WhatToDoWithIt::Start => new UpAction(forms: $forms, services: $services, offer: $agreed->isAboutAForm() ? Quoted::offer($agreed->offer()) : null),
-            WhatToDoWithIt::Stop => new DownAction(forms: $forms, services: $services),
+            WhatToDoWithIt::Stop => new DownAction(forms: $forms, services: $services, wait: $agreed->waiting()->waits()),
             WhatToDoWithIt::Restart => new RestartAction(forms: $forms, services: $services, offer: Quoted::offer($agreed->offer())),
             WhatToDoWithIt::Pull => new PullAction(forms: $forms),
         };

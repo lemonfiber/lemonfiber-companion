@@ -21,10 +21,12 @@ use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\AskingForHelp;
 use Modules\Kernel\Api\AskingForTitles;
 use Modules\Kernel\Api\AskingHowItCameBack;
+use Modules\Kernel\Api\AskingHowItIsServed;
 use Modules\Kernel\Api\AskingHowItRunsWithoutLemonfiber;
 use Modules\Kernel\Api\AskingTheIndexers;
 use Modules\Kernel\Api\AskingTheQueue;
 use Modules\Kernel\Api\AskingTheWatcher;
+use Modules\Kernel\Api\AskingWhatAStopWouldInterrupt;
 use Modules\Kernel\Api\AskingWhatSetupSettled;
 use Modules\Kernel\Api\Cataloguing;
 use Modules\Kernel\Api\ChoosingAFiller;
@@ -131,6 +133,7 @@ use Modules\Sdk\Api\Extenders;
 use Modules\Sdk\Api\Fillers;
 use Modules\Sdk\Api\Finders;
 use Modules\Sdk\Api\Followers;
+use Modules\Sdk\Api\Forewarners;
 use Modules\Sdk\Api\Forgetters;
 use Modules\Sdk\Api\Foundations;
 use Modules\Sdk\Api\Graders;
@@ -176,6 +179,7 @@ use Modules\Sdk\Api\Schedulers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Searchers;
+use Modules\Sdk\Api\Servings;
 use Modules\Sdk\Api\Setups;
 use Modules\Sdk\Api\Shelves;
 use Modules\Sdk\Api\Stalls;
@@ -396,6 +400,8 @@ final class TheWayToEveryStack extends ServiceProvider
         $this->app->bind(AskingTheQueue::class, Healers::class);
         $this->app->bind(RunningOnASchedule::class, Schedulers::class);
         $this->app->bind(AskingWhatSetupSettled::class, Setups::class);
+        $this->app->bind(AskingHowItIsServed::class, Servings::class);
+        $this->app->bind(AskingWhatAStopWouldInterrupt::class, Forewarners::class);
         $this->app->bind(AskingHowItRunsWithoutLemonfiber::class, Foundations::class);
 
         // How the line is shared, read beside the rest and bound for the same

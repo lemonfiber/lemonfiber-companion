@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Tests\Support\Fakes;
 
 use Modules\Kernel\Api\Adjusting;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatTheStackMadeOfIt;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhereTheChangeStands;
@@ -31,6 +34,8 @@ final class AStackToldToChangeSomething implements Adjusting
         private ?WhatToSet $askedFor = null,
         private int $rehearsals = 0,
         private int $writes = 0,
+        private int $landings = 0,
+        private ?HowAgreedWorkIsGoing $becomes = null,
     ) {}
 
     public static function saying(WhereTheChangeStands $stands): self
@@ -74,6 +79,40 @@ final class AStackToldToChangeSomething implements Adjusting
         $this->writes++;
 
         return $this->answered();
+    }
+
+    /**
+     * The same stack, whose change agreed to once the downloads land comes to this when it is asked after.
+     *
+     * @param HowAgreedWorkIsGoing<WhereTheChangeStands> $becomes
+     */
+    public function thenBecomes(HowAgreedWorkIsGoing $becomes): self
+    {
+        $this->becomes = $becomes;
+
+        return $this;
+    }
+
+    /** How many changes were agreed to once the downloads land. */
+    public function landings(): int
+    {
+        return $this->landings;
+    }
+
+    #[Override]
+    public function agreedToOnceLanded(Stack $stack, Session $session, WhatToSet $asked): Underway
+    {
+        $this->askedFor = $asked;
+        $this->landings++;
+
+        return $this->answer instanceof Obstacle ? Underway::met($this->answer) : Underway::as(Job::named('landing-1'));
+    }
+
+    /** @return HowAgreedWorkIsGoing<WhereTheChangeStands> */
+    #[Override]
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing
+    {
+        return $this->becomes ?? HowAgreedWorkIsGoing::stillRunning();
     }
 
     private function answered(): WhatTheStackMadeOfIt

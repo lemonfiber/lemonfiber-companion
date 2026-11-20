@@ -35,6 +35,7 @@ use function str_repeat;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatRehearses;
+use Tests\Support\Fakes\AStackThatSaysWhatIsComingDown;
 use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
@@ -59,6 +60,7 @@ final readonly class TheThingScreenOfTheShed
         string $named = 'sonarr',
         ?AKeychainInMemory $keychain = null,
         ?AStackThatSaysWhatItWaitsOn $hearing = null,
+        ?AStackThatSaysWhatIsComingDown $comingDown = null,
     ): WhatToDoWithThis {
         $stack = self::theMachine();
         $keychain ??= AKeychainInMemory::working();
@@ -73,6 +75,7 @@ final readonly class TheThingScreenOfTheShed
             $hearing ?? AStackThatSaysWhatItWaitsOn::saying(),
             AroundThePhone::listening(),
             WhatThePhoneKeeps::noListingYet(),
+            $comingDown ?? AStackThatSaysWhatIsComingDown::nothing(),
         );
         $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $named]);
 

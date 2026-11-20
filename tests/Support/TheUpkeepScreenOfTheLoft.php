@@ -33,6 +33,7 @@ use function str_repeat;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
+use Tests\Support\Fakes\AStackThatSaysWhatIsComingDown;
 use Tests\Support\Fakes\StacksInMemory;
 
 /**
@@ -97,6 +98,7 @@ final readonly class TheUpkeepScreenOfTheLoft
         AStackThatKeepsCurrent $keeping,
         ?AKeychainInMemory $keychain = null,
         bool $signedIn = true,
+        ?AStackThatSaysWhatIsComingDown $comingDown = null,
     ): HowCurrentThisStackIs {
         $stack = self::theStackWhoseUpkeepIsRead();
         $keychain ??= AKeychainInMemory::working();
@@ -105,7 +107,7 @@ final readonly class TheUpkeepScreenOfTheLoft
             $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
         }
 
-        $screen = new HowCurrentThisStackIs($keeping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noUpkeepYet());
+        $screen = new HowCurrentThisStackIs($keeping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noUpkeepYet(), $comingDown ?? AStackThatSaysWhatIsComingDown::nothing());
         $screen->setParams(['stack' => $stack->id()->stored()]);
 
         return $screen;

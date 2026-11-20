@@ -44,6 +44,11 @@ return [
     'holds_now' => 'Er staat nu :value in',
     'holds_nothing_yet' => 'Er staat nog niets in',
     'what_would_happen' => 'Bekijk wat er gebeurt',
+    'landing' => [
+        'waiting' => 'Wachten tot de downloads klaar zijn. Daarna wordt de wijziging doorgevoerd.',
+        'ended' => 'De wijziging is niet doorgevoerd: de stack stopte met wachten voordat de downloads klaar waren.',
+        'moved' => 'De wijziging is niet doorgevoerd: waar hij tegen was afgesproken is veranderd. Vraag wat hij nu zou doen.',
+    ],
     'agree' => 'Deze wijziging doorvoeren',
     'never_mind' => 'Laat het',
     'change_this' => 'Dit wijzigen',

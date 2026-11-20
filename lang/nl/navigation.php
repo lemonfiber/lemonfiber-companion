@@ -46,6 +46,7 @@ return [
         'passwords' => 'Wachtwoorden',
         'app_keys' => 'App-sleutels',
         'pair_a_phone' => 'Telefoon koppelen',
+        'serving' => 'Bereikbaarheid en certificaat',
         'storage' => 'Opslag',
         'backups' => 'Back-ups',
         'after_a_restart' => 'Na een herstart',

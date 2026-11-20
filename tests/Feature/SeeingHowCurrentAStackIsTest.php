@@ -32,6 +32,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
+use Tests\Support\Fakes\AStackThatSaysWhatIsComingDown;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TheUpkeepScreenOfTheLoft;
 use Tests\Support\WhatTheContractAccepts;
@@ -340,7 +341,7 @@ it('a yes on a phone whose session ended sends nothing', function (): void {
     $stack = TheUpkeepScreenOfTheLoft::theStackWhoseUpkeepIsRead();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
-    $screen = new HowCurrentThisStackIs($keeping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noUpkeepYet());
+    $screen = new HowCurrentThisStackIs($keeping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noUpkeepYet(), AStackThatSaysWhatIsComingDown::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     $screen->wouldYouLike();

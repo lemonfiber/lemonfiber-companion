@@ -152,6 +152,7 @@ use Modules\Kernel\Api\WhatAKeyAdmits;
 use Modules\Kernel\Api\WhatAKeyIsFor;
 use Modules\Kernel\Api\WhatALineIsAbout;
 use Modules\Kernel\Api\WhatARunCovers;
+use Modules\Kernel\Api\WhatAStopReaches;
 use Modules\Kernel\Api\WhatBecameOfTheChoice;
 use Modules\Kernel\Api\WhatFilenamesShow;
 use Modules\Kernel\Api\WhatGoesAndWhatStays;
@@ -224,6 +225,7 @@ use Modules\Sdk\Api\Extenders;
 use Modules\Sdk\Api\Fillers;
 use Modules\Sdk\Api\Finders;
 use Modules\Sdk\Api\Followers;
+use Modules\Sdk\Api\Forewarners;
 use Modules\Sdk\Api\Forgetters;
 use Modules\Sdk\Api\Foundations;
 use Modules\Sdk\Api\Graders;
@@ -269,6 +271,7 @@ use Modules\Sdk\Api\Schedulers;
 use Modules\Sdk\Api\Scouts;
 use Modules\Sdk\Api\Scrollbacks;
 use Modules\Sdk\Api\Searchers;
+use Modules\Sdk\Api\Servings;
 use Modules\Sdk\Api\Setups;
 use Modules\Sdk\Api\Shelves;
 use Modules\Sdk\Api\Stalls;
@@ -318,6 +321,9 @@ final readonly class EveryAdapterCallThatReads
                 => new Adjustments($clients, $entropy)->wouldBe($stack, $session, WhatToSet::to('LIBRARY_PATH', '/data/films')),
             'Adjustments::agreedTo' => static fn(): object
                 => new Adjustments($clients, $entropy)->agreedTo($stack, $session, WhatToSet::to('LIBRARY_PATH', '/data/films')),
+            'Adjustments::agreedToOnceLanded' => static fn(): object
+                => new Adjustments($clients, $entropy)->agreedToOnceLanded($stack, $session, WhatToSet::to('LIBRARY_PATH', '/data/films')),
+            'Adjustments::whatBecameOf' => static fn(): object => new Adjustments($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Advisers::advisedBy' => static fn(): object => new Advisers($clients)->advisedBy($stack, $session),
             'Archivists::declaredOn' => static fn(): object => new Archivists($clients)->declaredOn($stack, $session),
             'Arrangements::asItStands' => static fn(): object => new Arrangements($clients)->asItStands($stack, $session),
@@ -421,6 +427,8 @@ final readonly class EveryAdapterCallThatReads
             'Schedulers::whatBecameOf' => static fn(): object => new Schedulers($clients, $entropy)->whatBecameOf($stack, $session, Job::named('a-job')),
             'Foundations::withoutLemonfiber' => static fn(): object => new Foundations($clients)->withoutLemonfiber($stack, $session),
             'Setups::settled' => static fn(): object => new Setups($clients)->settled($stack, $session),
+            'Servings::served' => static fn(): object => new Servings($clients)->served($stack, $session),
+            'Forewarners::inside' => static fn(): object => new Forewarners($clients)->inside($stack, $session, WhatAStopReaches::theServices(ServiceId::called('sabnzbd'))),
             'Inspectors::checkedOn' => static fn(): object => new Inspectors($clients)->checkedOn($stack, $session),
             'Chroniclers::versionsOn' => static fn(): object => new Chroniclers($clients)->versionsOn($stack, $session),
             'Keepers::keptRunningOn' => static fn(): object => new Keepers($clients, $entropy)->keptRunningOn($stack, $session),

@@ -57,6 +57,11 @@ return [
     'holds_now' => 'It holds :value now',
     'holds_nothing_yet' => 'Nothing is in it yet',
     'what_would_happen' => 'See what happens',
+    'landing' => [
+        'waiting' => 'Waiting for the downloads to finish. The change is made once they have.',
+        'ended' => 'The change was not made: the stack stopped waiting before the downloads finished.',
+        'moved' => 'The change was not made: what it was agreed against has moved. Ask what it would do now.',
+    ],
     'agree' => 'Make this change',
     'never_mind' => 'Leave it',
     'change_this' => 'Change this',

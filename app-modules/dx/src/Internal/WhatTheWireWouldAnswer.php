@@ -34,6 +34,7 @@ use Lemonfiber\Sdk\Generated\NotifyMineEnvelope;
 use Lemonfiber\Sdk\Generated\PartWayEnvelope;
 use Lemonfiber\Sdk\Generated\RefusalCode;
 use Lemonfiber\Sdk\Generated\RestoreAction;
+use Lemonfiber\Sdk\Generated\ServedEnvelope;
 use Lemonfiber\Sdk\Generated\SettingsClearAction;
 use Lemonfiber\Sdk\Generated\SettingsEnvelope;
 use Lemonfiber\Sdk\Generated\SettingsSetAction;
@@ -413,6 +414,7 @@ final readonly class WhatTheWireWouldAnswer
             $endpoint === Api::job(WhatToChange::BackToItsOwn->asked()) => self::aResetThatReads(),
             $endpoint === Api::action(WhatThePlayerAsks::Grant->value) => AGrantAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(GrantEnvelope::KIND->value))),
             $endpoint === Api::KEYS_ENDPOINT, str_starts_with($endpoint, sprintf('%s/', Api::KEYS_ENDPOINT)) => KeysAsTheyRead::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(KeysEnvelope::KIND->value))),
+            $endpoint === Api::SERVED_ENDPOINT => AServingAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(ServedEnvelope::KIND->value))),
             $endpoint === Api::WATCHING_ENDPOINT => WhereTheyLeftOffAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(PartWayEnvelope::KIND->value))),
             $endpoint === Api::action(WhatThePlayerAsks::Watched->value) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(WatchedEnvelope::KIND->value)),
             $endpoint === Api::action(WhatThePlayerAsks::Tune->value) => self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(TunedEnvelope::KIND->value)),
