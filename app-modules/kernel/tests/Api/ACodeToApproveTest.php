@@ -15,8 +15,8 @@ use Modules\Kernel\Api\TheDoorSaysNothing;
 it('holds the code, the page to approve it at, when it lapses and its handle', function (): void {
     $code = ACodeToApprove::issued('ABCD', 'https://approve.example/link', Instant::atEpochSeconds(90), AWaitingCode::answered('a-handle'));
 
-    expect([$code->code, $code->approveAt->url(), $code->lapses->epochSeconds(), $code->waiting->forTheExchange()])
-        ->toBe(['ABCD', 'https://approve.example/link', 90, 'a-handle']);
+    expect([$code->code, $code->approveAt->url(), $code->approveAt->caution(), $code->lapses->epochSeconds(), $code->waiting->forTheExchange()])
+        ->toBe(['ABCD', 'https://approve.example/link', '', 90, 'a-handle']);
 });
 
 it('refuses a code that says nothing, or nowhere to approve it', function (string $code, string $at): void {

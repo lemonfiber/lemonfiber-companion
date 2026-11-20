@@ -261,7 +261,7 @@ final class JoiningAHouse extends NativeComponent
 
     protected function houseTheCodeWayIsFor(): ?StackId
     {
-        return ! $this->choosing && $this->at === WhereTheWayInIs::SigningIn && $this->joined !== '' ? StackId::rememberedAs($this->joined) : null;
+        return ! $this->choosing && $this->at === WhereTheWayInIs::SigningIn ? StackId::rememberedAs($this->joined) : null;
     }
 
     /** Read what the phone was handed, and join the house it names. */

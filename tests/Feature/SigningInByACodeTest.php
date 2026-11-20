@@ -96,6 +96,8 @@ function theCodeScreen(
         AroundThePhone::listening(),
     );
     $screen->setParams(['stack' => $house->id()->stored()]);
+    $opensWith = [$screen->byPassword, $screen->pageWouldNotOpen, $screen->told, $screen->copied];
+    expect($opensWith)->toBe([false, false, null, null]);
     $screen->theCode();
 
     return [$screen, $keychain];
@@ -239,10 +241,15 @@ it('opens the page the code is approved at, and says so where the phone would no
     [$refused] = theCodeScreen(ADoorThatGivesCodes::issuing(aCodeToApprove()), pages: PagesThatOpen::wouldNot());
     $refused->openThePage();
 
+    $drawn = WhatTheDeviceWouldDraw::by($refused)->said();
+    $wouldNotOpen = $refused->pageWouldNotOpen;
+    $refused->askForACode();
+
     expect($pages->pagesOpened())->toBe([THE_PAGE_TO_APPROVE_AT])
         ->and($opened->pageWouldNotOpen)->toBeFalse()
-        ->and($refused->pageWouldNotOpen)->toBeTrue()
-        ->and(WhatTheDeviceWouldDraw::by($refused)->said())->toContain(__('connection.code_page_would_not_open'));
+        ->and($wouldNotOpen)->toBeTrue()
+        ->and($drawn)->toContain(__('connection.code_page_would_not_open'))
+        ->and($refused->pageWouldNotOpen)->toBeFalse();
 });
 
 it('offers the code to copy through the phone\'s own sharing', function (): void {

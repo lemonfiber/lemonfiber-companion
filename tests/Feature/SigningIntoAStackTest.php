@@ -21,6 +21,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhenToTryAgain;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
+use Modules\Operator\Internal\ViewModels\TheCodeWay;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\AScreenWithoutAStack;
 use Native\Mobile\Edge\NativeRouter;
@@ -766,7 +767,9 @@ it('offers a member signing in a code after their password, and never the operat
         ->and($member->theCodeWay()->leads)->toBeFalse()
         ->and($member->codeWayAt())->toBe(AStacksScreen::SignInByCode->forTheStack(aStackToSignInto()->id()))
         ->and(NativeRouter::resolve($member->codeWayAt()))->not->toBeNull()
-        ->and(signInScreen(aDoorThatOpens())->theCodeWay()->offered)->toBeFalse()
+        ->and(signInScreen(aDoorThatOpens())->theCodeWay())->toEqual(TheCodeWay::notOffered())
+        ->and([signInScreen(aDoorThatOpens())->theCodeWay()->offered, signInScreen(aDoorThatOpens())->theCodeWay()->leads, signInScreen(aDoorThatOpens())->theCodeWay()->besideARefusal])->toBe([false, false, false])
+        ->and(signInScreen(aDoorThatOpens())->codeWayAt())->toBe('')
         ->and(WhatTheDeviceWouldDraw::by(signInScreen(aDoorThatOpens()))->said())->not->toContain(__('connection.code_way'));
 });
 
@@ -795,4 +798,13 @@ it('remembers that a password let a member in on the house, and leads with it ne
 
     expect($screen->isSignedIn())->toBeTrue()
         ->and($remembered->ledWithOn(aStackToSignInto()->id()))->toBe(TheWayIn::Password);
+});
+
+it('reads the way that last let a member in on the house once for the screen', function (): void {
+    $remembered = AWayInRemembered::on(aStackToSignInto()->id(), TheWayIn::Code);
+    $member = signInScreen(aDoorThatOpens(), runsTheHouse: false, remembered: $remembered);
+    $first = $member->theCodeWay()->leads;
+    $remembered->letIn(aStackToSignInto()->id(), TheWayIn::Password);
+
+    expect([$first, $member->theCodeWay()->leads])->toBe([true, true]);
 });
