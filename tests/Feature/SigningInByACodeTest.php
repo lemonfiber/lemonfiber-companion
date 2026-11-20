@@ -78,9 +78,10 @@ function theCodeScreen(
     ?PagesThatOpen $pages = null,
     ?AShareSheetThatWasOffered $sheet = null,
     ?RememberingTheWayIn $remembered = null,
+    ?AKeychainInMemory $keychain = null,
 ): array {
     $house = aHouseThatSignsInByACode();
-    $keychain = AKeychainInMemory::working();
+    $keychain ??= AKeychainInMemory::working();
     $screen = new SigningInByACode(
         $door,
         $keychain,
@@ -147,6 +148,18 @@ it('lands on Home once the code was approved, keeping the session and rememberin
         ->and($screen->getNavigationIntent()?->uri)->toBe(AStacksScreen::Shelf->forTheStack($house))
         ->and(NativeRouter::resolve(AStacksScreen::Shelf->forTheStack($house)))->not->toBeNull()
         ->and($remembered->ledWithOn($house))->toBe(TheWayIn::Code);
+});
+
+it('says a session this phone could not keep is not a sign-in, and remembers no way in', function (): void {
+    $remembered = AWayInRemembered::nowhere();
+    $door = ADoorThatGivesCodes::issuing(aCodeToApprove(), HowTheCodeStands::opened(Session::of('a-session-not-a-secret'), Instant::atEpochSeconds(WHEN_THE_CODE_LAPSES * 2), Whose::member('robin')));
+    [$screen] = theCodeScreen($door, remembered: $remembered, keychain: AKeychainInMemory::withNowhereSafe());
+
+    $screen->whileTheCodeWaits();
+
+    expect($screen->went)->toBe(HowTheSignInWent::NoStoreOnThisDevice)
+        ->and($screen->getNavigationIntent())->toBeNull()
+        ->and($remembered->keepsAnythingOf(aHouseThatSignsInByACode()->id()))->toBeFalse();
 });
 
 it('shows a code the house no longer waits on in the house\'s words, with a way to ask for a new one', function (): void {
