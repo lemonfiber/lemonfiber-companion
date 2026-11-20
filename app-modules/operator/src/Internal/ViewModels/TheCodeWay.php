@@ -10,15 +10,25 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class TheCodeWay
 {
     /**
-     * @param bool   $offered        whether this sign-in offers it at all: a member signing in to an account, never the operator or a member choosing a password
-     * @param bool   $leads          whether it leads, because a code last let a member in on this house
-     * @param bool   $besideARefusal whether a password was just refused, so the screen says some houses sign in with a code instead
-     * @param string $goes           where it goes
+     * @param bool $offered        whether this sign-in offers it at all: a member signing in to an account, never the operator or a member choosing a password
+     * @param bool $leads          whether it leads, because a code last let a member in on this house
+     * @param bool $besideARefusal whether a password was just refused, so the screen says some houses sign in with a code instead
      */
-    public function __construct(
+    private function __construct(
         public bool $offered,
         public bool $leads,
         public bool $besideARefusal,
-        public string $goes,
     ) {}
+
+    /** Offered, leading or not, and beside a refused password or not. */
+    public static function offered(bool $leads, bool $besideARefusal): self
+    {
+        return new self(offered: true, leads: $leads, besideARefusal: $besideARefusal);
+    }
+
+    /** Not offered on this form. */
+    public static function notOffered(): self
+    {
+        return new self(offered: false, leads: false, besideARefusal: false);
+    }
 }

@@ -686,7 +686,7 @@ it('offers the code way beside a refused password when joining, and leads with i
 
     expect($refused->theCodeWay()->offered)->toBeTrue()
         ->and($refused->theCodeWay()->besideARefusal)->toBeTrue()
-        ->and($refused->theCodeWay()->goes)->toBe(AStacksScreen::SignInByCode->forTheStack(StackId::rememberedAs(THE_HOUSE)))
+        ->and($refused->codeWayAt())->toBe(AStacksScreen::SignInByCode->forTheStack(StackId::rememberedAs(THE_HOUSE)))
         ->and(WhatTheDeviceWouldDraw::by($refused)->said())->toContain(__('connection.code_instead'), __('connection.code_way'))
         ->and($leading->theCodeWay()->leads)->toBeTrue();
 });

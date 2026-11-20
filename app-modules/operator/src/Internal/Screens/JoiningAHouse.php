@@ -42,8 +42,8 @@ use Modules\Operator\Internal\HasAWayBack;
 use Modules\Operator\Internal\HowAnInvitedPhoneFindsTheHouse;
 use Modules\Operator\Internal\InTheWayInsWords;
 use Modules\Operator\Internal\OffersTheAppsSettings;
+use Modules\Operator\Internal\OffersTheCodeWay;
 use Modules\Operator\Internal\Presenters\HowTheWaitReads;
-use Modules\Operator\Internal\ViewModels\TheCodeWay;
 use Modules\Operator\Internal\ViewModels\TheWaitAsShown;
 use Modules\Operator\Internal\WhatFindingTheHouseMet;
 use Modules\Operator\Internal\WhatStoodInTheWayOfJoining;
@@ -81,6 +81,7 @@ final class JoiningAHouse extends NativeComponent
     use ReadsACode;
     use HasAWayBack;
     use OffersTheAppsSettings;
+    use OffersTheCodeWay;
     use DrawsItsTemplate;
     use WaitsAFrameForWhatTheStackServes;
 
@@ -134,8 +135,6 @@ final class JoiningAHouse extends NativeComponent
     /** The claim the person chooses their password with, while they do; never kept past this screen. */
     private ?AClaim $claim = null;
 
-    /** The way that last let a member in on this house, read once. */
-    private ?TheWayIn $ledWith = null;
 
     public function __construct(
         private readonly Scanning $camera,
@@ -248,20 +247,6 @@ final class JoiningAHouse extends NativeComponent
         }
     }
 
-    /** The way to sign in by a code, as this form offers it: never while a password is being chosen. */
-    public function theCodeWay(): TheCodeWay
-    {
-        $house = StackId::rememberedAs($this->joined);
-        $this->ledWith ??= $this->waysIn->ledWithOn($house);
-
-        return new TheCodeWay(
-            offered: ! $this->choosing && $this->at === WhereTheWayInIs::SigningIn,
-            leads: $this->ledWith === TheWayIn::Code && $this->went === HowTheSignInWent::NotYet,
-            besideARefusal: $this->went === HowTheSignInWent::ThePairWasRefused,
-            goes: AStacksScreen::SignInByCode->forTheStack($house),
-        );
-    }
-
     /** What stood in the way of signing in, or null where nothing did. */
     public function stoodInTheWay(): ?WhatStoodInTheWayOfJoining
     {
@@ -272,6 +257,11 @@ final class JoiningAHouse extends NativeComponent
     public function whatToDoAboutTheCamera(): string
     {
         return $this->nothingCameBack instanceof WhyNothingWasScanned ? InTheWayInsWords::remedy($this->nothingCameBack->value) : '';
+    }
+
+    protected function houseTheCodeWayIsFor(): ?StackId
+    {
+        return ! $this->choosing && $this->at === WhereTheWayInIs::SigningIn && $this->joined !== '' ? StackId::rememberedAs($this->joined) : null;
     }
 
     /** Read what the phone was handed, and join the house it names. */

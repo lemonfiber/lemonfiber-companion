@@ -34,6 +34,7 @@ let package = Package(
                 "LocalNetworkFunctions.swift",
                 "ResolveFunctions.swift",
                 "SettingsFunctions.swift",
+                "PageFunctions.swift",
                 "HandoverFunctions.swift",
                 "ClockFunctions.swift",
                 "ReorderableRenderer.swift",

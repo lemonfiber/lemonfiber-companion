@@ -18,14 +18,15 @@ use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhenToTryAgain;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhySessionCannotBeKept;
 use Modules\Operator\Internal\OffersTheAppsSettings;
+use Modules\Operator\Internal\OffersTheCodeWay;
 use Modules\Operator\Internal\Presenters\HowTheWaitReads;
-use Modules\Operator\Internal\ViewModels\TheCodeWay;
 use Modules\Operator\Internal\ViewModels\TheWaitAsShown;
 use Modules\Operator\Internal\WhereAStackIs;
 use Modules\Operator\Internal\WhichSurfaceTheyAreGiven;
@@ -82,6 +83,7 @@ use function trim;
 final class SignIntoAStack extends NativeComponent
 {
     use OffersTheAppsSettings;
+    use OffersTheCodeWay;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
@@ -141,9 +143,6 @@ final class SignIntoAStack extends NativeComponent
      */
     public WhichSurfaceTheyAreGiven $given = WhichSurfaceTheyAreGiven::TheReport;
 
-    /** The way that last let a member in on this house, read once. */
-    private ?TheWayIn $ledWith = null;
-
     public function __construct(
         private readonly Admitting $admitting,
         private readonly SecureStorage $storage,
@@ -152,20 +151,6 @@ final class SignIntoAStack extends NativeComponent
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
     ) {}
-
-    /** The way to sign in by a code, as this form offers it. */
-    public function theCodeWay(): TheCodeWay
-    {
-        $stack = $this->stack()->id();
-        $this->ledWith ??= $this->waysIn->ledWithOn($stack);
-
-        return new TheCodeWay(
-            offered: ! $this->runsTheHouse && $this->went->mayTry(),
-            leads: $this->ledWith === TheWayIn::Code && $this->went === HowTheSignInWent::NotYet,
-            besideARefusal: $this->went === HowTheSignInWent::ThePairWasRefused,
-            goes: AStacksScreen::SignInByCode->forTheStack($stack),
-        );
-    }
 
     /** What the operator has typed into the password field. */
     public function typed(): string
@@ -346,6 +331,11 @@ final class SignIntoAStack extends NativeComponent
             WhichSurfaceTheyAreGiven::TheReport => $where->to(AStacksScreen::Health),
             WhichSurfaceTheyAreGiven::TheirHome => AStacksScreen::Shelf->forTheStack($this->stack()->id()),
         };
+    }
+
+    protected function houseTheCodeWayIsFor(): ?StackId
+    {
+        return ! $this->runsTheHouse && $this->went->mayTry() ? $this->stack()->id() : null;
     }
 
     /**

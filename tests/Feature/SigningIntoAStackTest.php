@@ -764,8 +764,8 @@ it('offers a member signing in a code after their password, and never the operat
     expect(is_int($password) && is_int($code) && $password < $code)->toBeTrue()
         ->and($member->theCodeWay()->offered)->toBeTrue()
         ->and($member->theCodeWay()->leads)->toBeFalse()
-        ->and($member->theCodeWay()->goes)->toBe(AStacksScreen::SignInByCode->forTheStack(aStackToSignInto()->id()))
-        ->and(NativeRouter::resolve($member->theCodeWay()->goes))->not->toBeNull()
+        ->and($member->codeWayAt())->toBe(AStacksScreen::SignInByCode->forTheStack(aStackToSignInto()->id()))
+        ->and(NativeRouter::resolve($member->codeWayAt()))->not->toBeNull()
         ->and(signInScreen(aDoorThatOpens())->theCodeWay()->offered)->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by(signInScreen(aDoorThatOpens()))->said())->not->toContain(__('connection.code_way'));
 });

@@ -58,7 +58,7 @@
         <x-operator::the-wait :wait="$this->wait" />
 
         @if ($this->theCodeWay()->offered && $this->theCodeWay()->leads)
-            <x-operator::action :label="__('connection.code_way')" :goes="$this->theCodeWay()->goes" />
+            <x-operator::action :label="__('connection.code_way')" :goes="$this->codeWayAt()" />
         @endif
 
         <x-design::card>
@@ -86,7 +86,7 @@
             @if ($this->theCodeWay()->besideARefusal)
                 <x-design::note>{{ __('connection.code_instead') }}</x-design::note>
             @endif
-            <x-operator::quiet-action :label="__('connection.code_way')" :goes="$this->theCodeWay()->goes" />
+            <x-operator::quiet-action :label="__('connection.code_way')" :goes="$this->codeWayAt()" />
         @endif
     @endif
 </x-operator::content>
