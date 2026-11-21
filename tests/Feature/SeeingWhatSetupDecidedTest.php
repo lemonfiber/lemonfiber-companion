@@ -152,8 +152,8 @@ function whatTheStoreWasAsked(AStackThatTunesItsSettings $tuning): array
     ];
 }
 
-/** The loft's credentials: the indexer key refused, the provider password absent, and one the decisions do not name. */
-function theLoftsCredentials(WhereACredentialStands $password = WhereACredentialStands::Absent): AStackThatHoldsCredentials
+/** The loft's credentials: the indexer key refused, the provider password absent, one the decisions do not name, and any more given. */
+function theLoftsCredentials(WhereACredentialStands $password = WhereACredentialStands::Absent, ACredentialHeld ...$also): AStackThatHoldsCredentials
 {
     return AStackThatHoldsCredentials::holding(TheCredentialsHeld::of(
         WhatTheStoreProtects::said('Plain files readable only by you', Remarks::of(), Remarks::of()),
@@ -161,10 +161,11 @@ function theLoftsCredentials(WhereACredentialStands $password = WhereACredential
         ACredentialHeld::described('Indexer API key', 'INDEXER_APIKEY', WhereACredentialStands::Invalid, WhoMadeACredential::Operator, WhatUsesIt::of('the indexer aggregator'), ''),
         ACredentialHeld::described('Usenet password', 'USENET_PASS', $password, WhoMadeACredential::Operator, WhatUsesIt::of('the download client'), ''),
         ACredentialHeld::described('Media server decline key', 'decline/jellyfin.key', WhereACredentialStands::Active, WhoMadeACredential::Lemonfiber, WhatUsesIt::of('the decline service'), ''),
+        ...$also,
     ));
 }
 
-/** Turning Usenet on, which opens an account to obtain and then two settings. */
+/** Turning Usenet on, which opens an account to obtain and then three settings, one of them no decision names. */
 function turningUsenetOn(): WhereTheChangeStands
 {
     return WhereTheChangeStands::at(
@@ -173,7 +174,8 @@ function turningUsenetOn(): WhereTheChangeStands
         WhatAChangeComesTo::nothing()
             ->asking(WhatAChangeAsksFor::toObtain('A Usenet provider account', 'articles are fetched from it'))
             ->asking(WhatAChangeAsksFor::keptIn('USENET_HOST', 'Usenet is asked for once this is on', 'USENET_HOST'))
-            ->asking(WhatAChangeAsksFor::keptIn('USENET_PASS', 'Usenet is asked for once this is on', 'USENET_PASS')),
+            ->asking(WhatAChangeAsksFor::keptIn('USENET_PASS', 'Usenet is asked for once this is on', 'USENET_PASS'))
+            ->asking(WhatAChangeAsksFor::keptIn('USENET_CONNECTIONS', 'Usenet is asked for once this is on', 'USENET_CONNECTIONS')),
     );
 }
 
@@ -222,6 +224,8 @@ function theDecisionOn(WhatSetupDecided $screen, string $key): ADecisionAsShown
 
 it('lists every decision the stack lists, held or not, with what it holds or that it is not set, its cost and what changing it affects', function (): void {
     $screen = theDecidedScreen();
+
+    expect([$screen->answer()->waits, $screen->answer()->waits])->toBe([false, false]);
     $said = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
 
     expect(array_map(static fn(ADecisionAsShown $row): string => $row->key, $screen->answer()->decisions))
@@ -319,12 +323,12 @@ it('links a decision the settings store keeps to the screen that keeps it as wel
     $screen = theDecidedScreen();
     $stack = TheHealthScreenOfTheLoft::theStackBeingLookedAt();
 
-    expect(array_map(static fn(string $key): array => [theDecisionOn($screen, $key)->how, theDecisionOn($screen, $key)->setting, theDecisionOn($screen, $key)->goes, theDecisionOn($screen, $key)->holds, theDecisionOn($screen, $key)->isSet], ['VPN_PROVIDER', 'LEMONFIBER_LOCALE', 'TZ', 'DATA_ROOT']))->toBe([
-        [HowADecisionIsChanged::Here, 'gluetun:provider', AStacksScreen::PluginSettings->forTheStacks($stack->id(), APluginId::called('gluetun')), 'mullvad', true],
-        [HowADecisionIsChanged::Here, 'LEMONFIBER_LOCALE', AStacksScreen::OwnSettings->forTheStack($stack->id()), '', false],
-        [HowADecisionIsChanged::Here, 'house:zone', '', '', false],
-        [HowADecisionIsChanged::Here, null, '', '/srv/media', true],
-    ]);
+    expect(array_map(static fn(string $key): ADecisionAsShown => theDecisionOn($screen, $key), ['VPN_PROVIDER', 'LEMONFIBER_LOCALE', 'TZ']))->toEqual([
+        new ADecisionAsShown('VPN_PROVIDER', 'which provider carries the torrents', 'mullvad', isSet: true, costSaid: 'decided.cost.consequential', how: HowADecisionIsChanged::Here, goes: AStacksScreen::PluginSettings->forTheStacks($stack->id(), APluginId::called('gluetun')), command: '', standsSaid: '', setting: 'gluetun:provider'),
+        new ADecisionAsShown('LEMONFIBER_LOCALE', 'the language the house says it has', '', isSet: false, costSaid: 'decided.cost.cheap', how: HowADecisionIsChanged::Here, goes: AStacksScreen::OwnSettings->forTheStack($stack->id()), command: '', standsSaid: '', setting: 'LEMONFIBER_LOCALE'),
+        new ADecisionAsShown('TZ', 'the zone every clock keeps', '', isSet: false, costSaid: 'decided.cost.cheap', how: HowADecisionIsChanged::Here, goes: '', command: '', standsSaid: '', setting: 'house:zone'),
+    ])
+        ->and(theDecisionOn($screen, 'DATA_ROOT')->setting)->toBeNull();
 });
 
 it('says a decision the settings store keeps and does not list is set where the stack holds it, without its value', function (): void {
@@ -397,6 +401,22 @@ it('puts no settings store change under a name the stack lists as a credential, 
     expect(whatTheStoreWasAsked($tuning))->toBe([['settings-set LEMONFIBER_LOCALE=nl'], ['settings-set LEMONFIBER_LOCALE=nl']]);
 });
 
+it('opens nothing while a reading waits for a frame of its own, as the stack has not yet said what is a credential', function (): void {
+    $screen = theDecidedScreen();
+    $screen->again();
+    $screen->change('DATA_ROOT');
+    $screen->named = 'DATA_ROOT';
+    $screen->another();
+
+    expect($screen->answer()->waits)->toBeTrue()
+        ->and($screen->changing())->toBe('');
+
+    WhatTheDeviceWouldDraw::onTheFourthFrame($screen);
+    $screen->change('DATA_ROOT');
+
+    expect($screen->changing())->toBe('DATA_ROOT');
+});
+
 it('names a setting the configuration withholds as changed at the machine, though its decision does not say credential', function (): void {
     $screen = theDecidedScreen(decided: AStackThatSaysWhatSetupDecided::with(TheDecisions::beside(
         Settings::of(Setting::called('BIND_TOKEN', WhatASettingHolds::withheld('set, and not shown'), WhoPutItThere::bundled())),
@@ -443,6 +463,15 @@ it('shows each credential as set, not set or refused with the command at the mac
     expect($screen->changing())->toBe('')
         ->and($adjusting->rehearsals())->toBe(0)
         ->and($adjusting->writes())->toBe(0);
+
+    WhatTheDeviceWouldDraw::onTheFourthFrame($screen);
+    $screen->changing = ' indexer_apikey ';
+    $screen->typed = 'a-key';
+    $screen->wouldBe(' indexer_apikey ');
+
+    expect($adjusting->rehearsals())->toBe(0);
+
+    expect($screen->answer()->waits)->toBeFalse();
 
     $screen->changing = 'INDEXER_APIKEY';
     $screen->typed = 'a-key';
@@ -501,6 +530,11 @@ it('follows turning a way of downloading on through what the review opens, in it
             ['A Usenet provider account', 'articles are fetched from it', HowADecisionIsChanged::ToObtain],
             ['USENET_HOST', 'Usenet is asked for once this is on', HowADecisionIsChanged::Here],
             ['USENET_PASS', 'Usenet is asked for once this is on', HowADecisionIsChanged::AtTheMachine],
+            ['USENET_CONNECTIONS', 'Usenet is asked for once this is on', HowADecisionIsChanged::Here],
+        ])
+        ->and([$opened->steps[0] ?? null, $opened->steps[3] ?? null])->toEqual([
+            new ADecisionAsShown('A Usenet provider account', 'articles are fetched from it', '', isSet: false, costSaid: '', how: HowADecisionIsChanged::ToObtain, goes: '', command: '', standsSaid: '', setting: null),
+            new ADecisionAsShown('USENET_CONNECTIONS', 'Usenet is asked for once this is on', '', isSet: false, costSaid: '', how: HowADecisionIsChanged::Here, goes: '', command: '', standsSaid: '', setting: null),
         ])
         ->and($drawn->said())->toContain(__('decided.opened.section', ['key' => 'LEMONFIBER_USENET']), __('decided.opened.unproven'), 'A Usenet provider account', __('decided.to_obtain'), 'lemonfiber config set USENET_PASS <value>');
 
@@ -538,13 +572,18 @@ it('opens nothing to follow where a change only rehearsed or opened nothing', fu
 
 it('refuses a name the stack lists as a credential in the field for any other setting, and opens any other name through the same review', function (string $named): void {
     $adjusting = AStackToldToChangeSomething::saying(WhereTheChangeStands::at(ProposedChange::of('LEMONFIBER_EXPLANATIONS', 'off', WhatItHoldsNow::nothingYet(), Cost::Cheap), Stance::Pending, WhatAChangeComesTo::nothing()));
-    $screen = theDecidedScreen(adjusting: $adjusting);
+    $screen = theDecidedScreen(adjusting: $adjusting, credentials: theLoftsCredentials(WhereACredentialStands::Absent, ACredentialHeld::described('A spaced token', ' A_SPACED_TOKEN ', WhereACredentialStands::Active, WhoMadeACredential::Operator, WhatUsesIt::of('the door'), '')));
     $screen->turnTheFold();
+    $screen->change('DATA_ROOT');
+
+    expect([$screen->changing(), $screen->opensFromTheField()])->toBe(['DATA_ROOT', false]);
+
     $screen->named = $named;
     $screen->another();
 
     expect($screen->refusedName)->toBe(trim($named))
         ->and($screen->changing())->toBe('')
+        ->and($screen->typed())->toBeNull()
         ->and(WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said())->toContain(__('decided.another.refused', ['key' => trim($named)]));
 
     $screen->named = ' LEMONFIBER_EXPLANATIONS ';
@@ -554,6 +593,7 @@ it('refuses a name the stack lists as a credential in the field for any other se
 
     expect($screen->refusedName)->toBeNull()
         ->and($screen->changing())->toBe('LEMONFIBER_EXPLANATIONS')
+        ->and($screen->opensFromTheField())->toBeTrue()
         ->and($adjusting->askedFor()?->key)->toBe('LEMONFIBER_EXPLANATIONS')
         ->and(WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->offers())->toContain(__('config.agree'));
 })->with([
@@ -562,7 +602,17 @@ it('refuses a name the stack lists as a credential in the field for any other se
     'a setting the stack withholds' => ['BIND_TOKEN'],
     'a secret of the settings store' => ['vpn.key'],
     'a credential the credentials read names' => ['decline/jellyfin.key'],
+    'a credential the credentials read names with spaces around it' => ['a_spaced_token'],
 ]);
+
+it('opens the field with nothing typed yet', function (): void {
+    $screen = theDecidedScreen();
+    $screen->named = 'LEMONFIBER_EXPLANATIONS';
+    $screen->typed = 'left over';
+    $screen->another();
+
+    expect([$screen->changing(), $screen->typed()])->toBe(['LEMONFIBER_EXPLANATIONS', '']);
+});
 
 it('refuses a credential the stack adds later from what it lists, with nothing kept in the app', function (): void {
     $screen = theDecidedScreen(decided: AStackThatSaysWhatSetupDecided::with(TheDecisions::beside(Settings::none(), ADecision::inTheConfiguration('A_NEW_TOKEN', Cost::Cheap, 'a token the stack added', held: false, credential: true))));
@@ -576,12 +626,20 @@ it('refuses a credential the stack adds later from what it lists, with nothing k
 it('opens nothing for an empty name, and hands on no words the screen does not name', function (): void {
     $sheet = AShareSheetThatWasOffered::working();
     $screen = theDecidedScreen(sheet: $sheet);
+
+    expect($screen->opensFromTheField())->toBeFalse();
+
+    $screen->another();
+
+    expect([$screen->refusedName, $screen->changing(), $screen->typed()])->toBe([null, '', null]);
+
     $screen->named = '  ';
     $screen->another();
     $screen->copy('rm -rf /');
 
     expect($screen->refusedName)->toBeNull()
         ->and($screen->changing())->toBe('')
+        ->and($screen->typed())->toBeNull()
         ->and($sheet->copied())->toBeNull()
         ->and($screen->copied)->toBeNull();
 });

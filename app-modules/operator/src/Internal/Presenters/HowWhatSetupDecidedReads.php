@@ -221,7 +221,7 @@ final readonly class HowWhatSetupDecidedReads
 
     private function refuses(string $key): bool
     {
-        return in_array(mb_strtoupper(trim($key)), $this->refused, strict: true);
+        return in_array(mb_strtoupper($key), $this->refused, strict: true);
     }
 
     private function cost(?Cost $cost): string

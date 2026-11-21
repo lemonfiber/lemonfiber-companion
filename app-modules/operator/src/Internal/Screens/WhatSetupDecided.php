@@ -79,9 +79,6 @@ final class WhatSetupDecided extends NativeComponent implements AwaitsAnOutcome
     /** What the credentials read found, once read, on a frame after the settings. */
     public ?WhatWasFoundOfTheCredentials $safeguarded = null;
 
-    /** What the hosting read found, once read, on a frame after the credentials. */
-    public ?WhatKeepsRunning $hosted = null;
-
     /** The name typed into the field for any other setting. */
     public ?string $named = null;
 
@@ -213,7 +210,6 @@ final class WhatSetupDecided extends NativeComponent implements AwaitsAnOutcome
         $this->decided = null;
         $this->stored = null;
         $this->safeguarded = null;
-        $this->hosted = null;
     }
 
     private function ask(): WhatSetupDecidedAsShown
@@ -250,18 +246,23 @@ final class WhatSetupDecided extends NativeComponent implements AwaitsAnOutcome
         );
     }
 
-    /** The decisions beside the settings, the credentials and the hosting, each read on a frame of its own. */
+    /** The decisions beside the settings, the credentials and the hosting, each read on a frame of its own; the hosting is read last, so the answer it completes is the one kept. */
     private function beside(TheDecisions $decided, Stack $stack, Session $session): WhatSetupDecidedAsShown
     {
         $this->stored ??= $this->onAFrameOfItsOwn(fn(): WhatWasFoundOfTheSettings => $this->tuning->readOn($stack, $session));
         $this->safeguarded ??= $this->onAFrameOfItsOwn(fn(): WhatWasFoundOfTheCredentials => $this->safekeeping->heldOn($stack, $session));
-        $this->hosted ??= $this->onAFrameOfItsOwn(fn(): WhatKeepsRunning => $this->hosting->keptRunningOn($stack, $session));
 
-        if (! $this->stored instanceof WhatWasFoundOfTheSettings || ! $this->safeguarded instanceof WhatWasFoundOfTheCredentials || ! $this->hosted instanceof WhatKeepsRunning) {
+        if (! $this->stored instanceof WhatWasFoundOfTheSettings || ! $this->safeguarded instanceof WhatWasFoundOfTheCredentials) {
             return HowWhatSetupDecidedReads::waits();
         }
 
-        return HowWhatSetupDecidedReads::of($decided, $this->stored, $this->safeguarded, $this->goes())->shown($this->hosted, $this->opened);
+        $hosted = $this->onAFrameOfItsOwn(fn(): WhatKeepsRunning => $this->hosting->keptRunningOn($stack, $session));
+
+        if (! $hosted instanceof WhatKeepsRunning) {
+            return HowWhatSetupDecidedReads::waits();
+        }
+
+        return HowWhatSetupDecidedReads::of($decided, $this->stored, $this->safeguarded, $this->goes())->shown($hosted, $this->opened);
     }
 
     /**
