@@ -109,11 +109,11 @@ final class ARowBeingCut
 
     private function takingFromTheEmptyAfter(int $width): int
     {
-        if ($width >= TheSmallestTarget::POINTS || $this->next >= count($this->pieces) || ! $this->pieces[$this->next]->isEmpty()) {
+        if ($this->next >= count($this->pieces) || ! $this->pieces[$this->next]->isEmpty()) {
             return $width;
         }
 
-        $taken = min(TheSmallestTarget::POINTS - $width, $this->widths[$this->next]);
+        $taken = min(max(TheSmallestTarget::POINTS - $width, 0), $this->widths[$this->next]);
         $this->widths[$this->next] -= $taken;
 
         if ($this->widths[$this->next] === 0) {
@@ -127,12 +127,12 @@ final class ARowBeingCut
     {
         $last = array_key_last($this->cells);
 
-        if ($width >= TheSmallestTarget::POINTS || $last === null || ! $this->cells[$last]->isAGap()) {
+        if ($last === null || ! $this->cells[$last]->isAGap()) {
             return $width;
         }
 
         $empty = $this->cells[$last]->width;
-        $taken = min(TheSmallestTarget::POINTS - $width, $empty);
+        $taken = min(max(TheSmallestTarget::POINTS - $width, 0), $empty);
         array_pop($this->cells);
 
         if ($taken < $empty) {

@@ -9,6 +9,7 @@ use function expect;
 use function implode;
 use function it;
 
+use Modules\Household\Internal\Presenters\APieceOfARow;
 use Modules\Household\Internal\Presenters\HowTheGuideReads;
 use Modules\Household\Internal\ViewModels\WhatACellSays;
 use Modules\Household\Internal\ViewModels\WhatAGuideRowSays;
@@ -151,7 +152,7 @@ it('draws whole programmes too short to press, one after another, as one cell ac
         ['A + B + C', 60, 'listTheProgrammes(0, 1)'],
         ['Later', 180, 'aboutTheProgramme(0, 4)'],
     ])
-        ->and([$together->times, $together->isOnNow, $together->at, $together->isAGap()])->toBe(['20:30–20:45', false, -1, false])
+        ->and([$together->title, $together->certificate, $together->times, $together->isOnNow, $together->at, $together->isAGap()])->toBe(['', '', '20:30–20:45', false, -1, false])
         ->and(array_map(static fn(WhatACellSays $one): array => [$one->times, $one->tap], $together->together))->toBe([
             ['20:30–20:35', 'aboutTheProgramme(0, 1)'],
             ['20:35–20:40', 'aboutTheProgramme(0, 2)'],
@@ -280,4 +281,62 @@ it('takes the empty time after an edge it took in, where a short programme and t
         ['Later', 60, 'aboutTheProgramme(0, 3)'],
     ])
         ->and($read->rows[0]->cells[1]->times)->toBe('20:30–20:37');
+});
+
+it('draws empty time of a single point, and none for time too short to reach one', function (int $after, array $cut): void {
+    $read = new HowTheGuideReads(Zone::utc(), Instant::atEpochSeconds(EIGHT))->these(TheGuide::of(AChannelsGuide::of(
+        ChannelId::called('c1'),
+        'NPO 1',
+        '1',
+        WhenItSays::unsaid(),
+        AnAiring::of('A', Instant::atEpochSeconds(EIGHT), Instant::atEpochSeconds(EIGHT + 1800), ''),
+        AnAiring::of('B', Instant::atEpochSeconds(EIGHT + 1800 + $after), Instant::atEpochSeconds(EIGHT + 3600), ''),
+    )));
+
+    expect(cutOf($read->rows[0]))->toBe($cut);
+})->with([
+    'a point' => [15, [['A', 120, 'tuneTo(\'c1\')'], ['', 1, ''], ['B', 119, 'aboutTheProgramme(0, 1)']]],
+    'less than a point' => [7, [['A', 120, 'tuneTo(\'c1\')'], ['B', 120, 'aboutTheProgramme(0, 1)']]],
+]);
+
+it('goes on to the programme after empty time it took whole, where that was still not enough', function (): void {
+    $read = readAtTenPast(WhenItSays::unsaid(), from('Now', 0, 30), from('Short', 30, 35), from('Over', 33, 37), from('Later', 39, 60));
+
+    expect(cutOf($read->rows[0]))->toBe([
+        ['Now', 120, 'tuneTo(\'c1\')'],
+        ['Short + Over + Later', 120, 'listTheProgrammes(0, 1)'],
+    ]);
+});
+
+it('takes nothing from the empty time beside short programmes that already fill a finger', function (): void {
+    $exactly = readAtTenPast(WhenItSays::unsaid(), from('Now', 0, 20), from('A', 25, 31), from('B', 31, 37), from('Later', 40, 60));
+    $past = readAtTenPast(WhenItSays::unsaid(), from('Now', 0, 20), from('A', 25, 31), from('B', 31, 38), from('Later', 40, 60));
+
+    expect(cutOf($exactly->rows[0]))->toBe([
+        ['Now', 80, 'tuneTo(\'c1\')'],
+        ['', 20, ''],
+        ['A + B', 48, 'listTheProgrammes(0, 2)'],
+        ['', 12, ''],
+        ['Later', 80, 'aboutTheProgramme(0, 3)'],
+    ])
+        ->and(cutOf($past->rows[0]))->toBe([
+            ['Now', 80, 'tuneTo(\'c1\')'],
+            ['', 20, ''],
+            ['A + B', 52, 'listTheProgrammes(0, 2)'],
+            ['', 8, ''],
+            ['Later', 80, 'aboutTheProgramme(0, 3)'],
+        ]);
+});
+
+it('draws a programme the grid\'s start cut to exactly a finger\'s width as its own cell, to press', function (): void {
+    $read = readAtTenPast(WhenItSays::unsaid(), from('Began', -5, 12), from('Later', 12, 60));
+
+    expect(cutOf($read->rows[0]))->toBe([['Began', 48, 'tuneTo(\'c1\')'], ['Later', 192, 'aboutTheProgramme(0, 1)']])
+        ->and($read->rows[0]->cells[0]->isAnEdge)->toBeFalse();
+});
+
+it('keeps empty time as empty, with nothing cut and no clock', function (): void {
+    $empty = APieceOfARow::empty(12);
+
+    expect([$empty->isCut, $empty->starts, $empty->ends, $empty->isEmpty(), $empty->isShortAndWhole(), $empty->isAnEdge()])->toBe([false, '', '', true, false, false]);
 });
