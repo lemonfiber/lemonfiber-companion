@@ -269,3 +269,15 @@ it('draws no empty space for time between two programmes too short to reach a po
 
     expect(cutOf($read->rows[0]))->toBe([['A', 120, 'tuneTo(\'c1\')'], ['B', 120, 'aboutTheProgramme(0, 1)']]);
 });
+
+it('takes the empty time after an edge it took in, where a short programme and the edge are still too narrow together', function (): void {
+    $read = readAtTenPast(WhenItSays::unsaid(), from('Now', 0, 30), from('Short', 30, 35), from('Over', 33, 37), from('Later', 45, 60));
+
+    expect(cutOf($read->rows[0]))->toBe([
+        ['Now', 120, 'tuneTo(\'c1\')'],
+        ['Short + Over', 48, 'listTheProgrammes(0, 1)'],
+        ['', 12, ''],
+        ['Later', 60, 'aboutTheProgramme(0, 3)'],
+    ])
+        ->and($read->rows[0]->cells[1]->times)->toBe('20:30–20:37');
+});
