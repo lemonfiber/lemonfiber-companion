@@ -40,6 +40,7 @@ enum TheMenu: string
     case Queue = 'queue';
     case Scheduled = 'scheduled';
     case SetUpWith = 'set_up_with';
+    case Decided = 'decided';
     case AlreadyInstalled = 'already_installed';
     case OtherPrograms = 'other_programs';
     case About = 'about';
@@ -71,7 +72,7 @@ enum TheMenu: string
         return match ($this) {
             self::Requests, self::Allowance, self::ViewAsMember, self::PlayingNow, self::StuckDownloads, self::FollowADownload => WhereInTheMenu::Household,
             self::InviteSomeone, self::FrontDoor, self::WatchApps, self::Passwords, self::AppKeys, self::PairAPhone, self::Serving => WhereInTheMenu::Access,
-            self::Storage, self::Backups, self::AfterARestart, self::WhileNobodyWasLooking, self::Watcher, self::Queue, self::Scheduled, self::SetUpWith, self::AlreadyInstalled, self::OtherPrograms, self::About, self::Uninstall => WhereInTheMenu::Machine,
+            self::Storage, self::Backups, self::AfterARestart, self::WhileNobodyWasLooking, self::Watcher, self::Queue, self::Scheduled, self::SetUpWith, self::Decided, self::AlreadyInstalled, self::OtherPrograms, self::About, self::Uninstall => WhereInTheMenu::Machine,
             self::General, self::OwnSettings, self::Quality, self::Connections, self::Plugins, self::Bandwidth, self::OutgoingTraffic, self::Alerts, self::WhereAlertsGo, self::History, self::Sources => WhereInTheMenu::Settings,
             self::GetHelp, self::Glossary, self::ServicesExplained => WhereInTheMenu::Help,
         };
@@ -102,6 +103,7 @@ enum TheMenu: string
             self::Queue => AStacksScreen::Queue,
             self::Scheduled => AStacksScreen::Scheduled,
             self::SetUpWith => AStacksScreen::Settled,
+            self::Decided => AStacksScreen::Decided,
             self::AlreadyInstalled => AStacksScreen::AlreadyHere,
             self::OtherPrograms => AStacksScreen::Elsewhere,
             self::About => AStacksScreen::Itself,
@@ -164,6 +166,7 @@ enum TheMenu: string
             self::Queue => ['healing', 'bandage'],
             self::Scheduled => ['schedule', 'calendar.badge.clock'],
             self::SetUpWith => ['fact_check', 'checklist'],
+            self::Decided => ['edit_note', 'square.and.pencil'],
             self::AlreadyInstalled => ['inventory_2', 'shippingbox'],
             self::OtherPrograms => ['apps', 'square.stack.3d.up'],
             self::About => ['info', 'info.circle'],

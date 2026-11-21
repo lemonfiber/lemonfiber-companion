@@ -34,4 +34,10 @@ enum ConfigField: string implements NamesAWireField
 
     /** What lemonfiber last wrote where a hand-edit was found. */
     case Wrote = 'wrote';
+
+    /** Every decision setup makes, held or not. */
+    case Decisions = 'decisions';
+
+    /** What changing a decision affects, in the stack's words. */
+    case Affects = 'affects';
 }

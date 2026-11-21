@@ -218,6 +218,7 @@ it('reads a body the contract would accept', function (): void {
         'data' => [
             'changed' => true,
             'rehearsed' => false,
+            'decisions' => [],
             'settings' => [],
             'consequence' => 'Every service restarts on the new location.',
             'review' => [

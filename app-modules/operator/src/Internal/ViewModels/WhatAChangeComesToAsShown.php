@@ -12,6 +12,7 @@ final readonly class WhatAChangeComesToAsShown
     /**
      * @param list<ALineOfWhatAChangeComesTo> $lines      every line, in the order drawn
      * @param bool                            $interrupts whether it would interrupt a download still coming down
+     * @param list<AnOpeningAsShown>          $opens      what it opens, in the stack's order
      */
-    public function __construct(public array $lines, public bool $interrupts) {}
+    public function __construct(public array $lines, public bool $interrupts, public array $opens = []) {}
 }

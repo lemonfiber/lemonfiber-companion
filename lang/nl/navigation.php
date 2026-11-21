@@ -54,6 +54,7 @@ return [
         'queue' => 'Wachtrijherstel',
         'scheduled' => 'Geplande taken',
         'set_up_with' => 'Ingesteld met',
+        'decided' => 'Wat setup besliste',
         'while_nobody_was_looking' => 'Onbewaakte uren',
         'already_installed' => 'Al geïnstalleerd',
         'other_programs' => 'Andere programma\'s',

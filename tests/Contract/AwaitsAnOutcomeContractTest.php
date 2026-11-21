@@ -30,6 +30,7 @@ use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
 use Modules\Operator\Internal\Screens\WhatItHoldsToLetThemIn;
 use Modules\Operator\Internal\Screens\WhatRunningACheckDisturbs;
 use Modules\Operator\Internal\Screens\WhatRunningChecksDisturbs;
+use Modules\Operator\Internal\Screens\WhatSetupDecided;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
 use Modules\Operator\Internal\Screens\WhatTheStackItselfReads;
 use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
@@ -85,6 +86,7 @@ const EVERY_SCREEN_FOLLOWING_WORK = [
     WhatTheStackItselfReads::class,
     WhatThisServiceWaitsFor::class,
     WhatThisStackIsSetTo::class,
+    WhatSetupDecided::class,
     WhatWouldBePutRight::class,
 ];
 
