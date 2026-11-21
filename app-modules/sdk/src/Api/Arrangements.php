@@ -11,11 +11,14 @@ use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
+use Modules\Kernel\Api\ADecisionSaysNothing;
 use Modules\Kernel\Api\Arranging;
+use Modules\Kernel\Api\AskingWhatSetupDecided;
 use Modules\Kernel\Api\HowItIsSet;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SettingIsUnnamed;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\WhatWasFoundOfTheDecisions;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -27,7 +30,7 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * requirement forbids: it would be right until the stack gained a setting and
  * then be quietly short, with nothing on the screen saying when it was taken.
  */
-final readonly class Arrangements implements Arranging
+final readonly class Arrangements implements Arranging, AskingWhatSetupDecided
 {
     public function __construct(private Clients $clients) {}
 
@@ -53,6 +56,19 @@ final readonly class Arrangements implements Arranging
             // and an incomplete listing is the one thing this screen must
             // never present as a whole one.
             return HowItIsSet::refused($this->clients->whatStoodInTheWay($stack, $why));
+        }
+    }
+
+    public function decidedOn(Stack $stack, Session $session): WhatWasFoundOfTheDecisions
+    {
+        $client = GatedClient::of($this->clients, $stack, $session);
+
+        try {
+            return WhatWasFoundOfTheDecisions::found(Decisions::in($client->read(Api::CONFIG_ENDPOINT)));
+        } catch (CertificateWasRefused|RequestFailed $why) {
+            return WhatWasFoundOfTheDecisions::met(WhatARefusalMeant::obstacle($why));
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed|ADecisionSaysNothing $why) {
+            return WhatWasFoundOfTheDecisions::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 }

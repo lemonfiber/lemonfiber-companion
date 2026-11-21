@@ -141,6 +141,14 @@ final readonly class WhatTheDeviceWouldDraw
         return self::onTheSecondFrame($screen);
     }
 
+    /** The frame after this screen's third, for a screen that reads four things in turn. */
+    public static function onTheFourthFrame(NativeComponent $screen): self
+    {
+        self::by($screen);
+
+        return self::onTheThirdFrame($screen);
+    }
+
     /**
      * The tree this screen hands the device, whole: types, layouts and props,
      * for what the words on it leave out.

@@ -38,7 +38,7 @@ use function trim;
 final readonly class WhatTheCoreDecided
 {
     /** The core's own form of a code: lower-case words, hyphenated where they are several, joined by dots. */
-    private const string A_CODE = '/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?:\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*)*\z/';
+    private const string A_CODE = '/\A[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?:\.[a-z][a-z0-9]*(?:-[a-z0-9]+)*)*\z/';
 
     private function __construct(private string $code) {}
 

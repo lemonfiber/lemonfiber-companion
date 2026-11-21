@@ -56,6 +56,7 @@ use Modules\Operator\Internal\Screens\WhatKeepsRunningHere;
 use Modules\Operator\Internal\Screens\WhatLeavesHere;
 use Modules\Operator\Internal\Screens\WhatRunningACheckDisturbs;
 use Modules\Operator\Internal\Screens\WhatRunningChecksDisturbs;
+use Modules\Operator\Internal\Screens\WhatSetupDecided;
 use Modules\Operator\Internal\Screens\WhatStoppedComingIn;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdAsked;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
@@ -237,6 +238,7 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Queue->value, TheQueueHealingItself::class);
             Router::native(AStacksScreen::Scheduled->value, TheScheduledRuns::class);
             Router::native(AStacksScreen::Settled->value, WhatThisStackWasSetUpWith::class);
+            Router::native(AStacksScreen::Decided->value, WhatSetupDecided::class);
             Router::native(AStacksScreen::Served->value, HowThisStackIsServed::class);
 
             // A guard on the data location, held while its screen asks. A
