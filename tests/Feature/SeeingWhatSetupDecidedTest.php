@@ -7,10 +7,14 @@ use Illuminate\Contracts\Translation\Translator;
 use Modules\Household\Internal\Screens\WhatYouCanWatch;
 use Modules\Kernel\Api\ACredentialHeld;
 use Modules\Kernel\Api\ADecision;
+use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\APluginId;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ASecret;
 use Modules\Kernel\Api\AServiceReadingIt;
 use Modules\Kernel\Api\ASetting;
+use Modules\Kernel\Api\ASettingChange;
+use Modules\Kernel\Api\ASettingChangeAgreed;
 use Modules\Kernel\Api\ASettingValue;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\HowItIsHosted;
@@ -19,6 +23,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ProposedChange;
 use Modules\Kernel\Api\Remarks;
 use Modules\Kernel\Api\ServiceId;
+use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Setting;
 use Modules\Kernel\Api\Settings;
@@ -28,6 +33,8 @@ use Modules\Kernel\Api\TheCredentialsHeld;
 use Modules\Kernel\Api\TheSecretsRead;
 use Modules\Kernel\Api\TheServicesReadingIt;
 use Modules\Kernel\Api\TheServicesSettings;
+use Modules\Kernel\Api\TheServicesWaiting;
+use Modules\Kernel\Api\TheSettingAsChanged;
 use Modules\Kernel\Api\TheSettingsRead;
 use Modules\Kernel\Api\Unattended;
 use Modules\Kernel\Api\WhatAChangeAsksFor;
@@ -38,6 +45,9 @@ use Modules\Kernel\Api\WhatItHoldsNow;
 use Modules\Kernel\Api\WhatKeepsItRunning;
 use Modules\Kernel\Api\WhatRunsUnattended;
 use Modules\Kernel\Api\WhatSetupDecided as TheDecisions;
+use Modules\Kernel\Api\WhatTheChangeReaches;
+use Modules\Kernel\Api\WhatTheRefusalNamed;
+use Modules\Kernel\Api\WhatTheSettingRunDid;
 use Modules\Kernel\Api\WhatTheStoreProtects;
 use Modules\Kernel\Api\WhatUsesIt;
 use Modules\Kernel\Api\WhatWasFoundOfTheSettings;
@@ -54,6 +64,7 @@ use Modules\Operator\Internal\ViewModels\ADecisionAsShown;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\ASettingChangeAsReported;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -89,13 +100,56 @@ function whatTheLoftDecided(): TheDecisions
 /** The loft's settings store, holding the provider for the tunnel and one secret. */
 function theLoftsStore(): WhatWasFoundOfTheSettings
 {
-    return WhatWasFoundOfTheSettings::found(TheServicesSettings::of(
+    return WhatWasFoundOfTheSettings::found(theLoftsSettings());
+}
+
+/** Every setting and secret of the loft's settings store. */
+function theLoftsSettings(): TheServicesSettings
+{
+    return TheServicesSettings::of(
         TheSettingsRead::these(
             ASetting::read('gluetun:provider', WhoseASettingIs::theNamespaces('gluetun'), TheServicesReadingIt::these(AServiceReadingIt::of(ServiceId::called('gluetun'), 'VPN_SERVICE_PROVIDER', ASettingValue::nothing())), ASettingValue::value('mullvad')),
             ASetting::read('LEMONFIBER_LOCALE', WhoseASettingIs::theCores(), TheServicesReadingIt::these(), ASettingValue::nothing()),
         ),
         TheSecretsRead::these(ASecret::read('vpn.key', WhoseASettingIs::theNamespaces('gluetun'), TheServicesReadingIt::these(), held: true, from: WhereASecretCameFrom::Operator)),
-    ));
+    );
+}
+
+/** What giving the settings store's `$named` this value came to, as the stack reported it. */
+function aChangeKeptAs(ASettingChange $change, WhatTheSettingRunDid $did): TheSettingAsChanged
+{
+    return TheSettingAsChanged::said(
+        ASettingChangeAsReported::moves($change, ASettingValue::nothing()),
+        WhatTheChangeReaches::said(Services::these(ServiceId::called('gluetun')), Services::these(ServiceId::called('gluetun')), Services::none(), TheServicesWaiting::none(), ''),
+        $did,
+        AnOffer::named('settings-set:3'),
+        theLoftsSettings(),
+    );
+}
+
+/** The loft's settings store, rehearsing giving `$named` this value and, on a yes, writing it. */
+function aStoreThatKeeps(string $named, string $value): AStackThatTunesItsSettings
+{
+    $change = ASettingChange::toHold($named, $value);
+
+    return AStackThatTunesItsSettings::answering(
+        theLoftsSettings(),
+        WhatBecameOfTheWork::answered(aChangeKeptAs($change, WhatTheSettingRunDid::Rehearsed)),
+        WhatBecameOfTheWork::answered(aChangeKeptAs($change, WhatTheSettingRunDid::Applied)),
+    );
+}
+
+/**
+ * Each change the settings store was asked to rehearse, then each it was asked to carry out, as words.
+ *
+ * @return array{list<string>, list<string>}
+ */
+function whatTheStoreWasAsked(AStackThatTunesItsSettings $tuning): array
+{
+    return [
+        array_map(ASettingChangeAsReported::said(...), $tuning->rehearsed()),
+        array_map(static fn(ASettingChangeAgreed $agreed): string => ASettingChangeAsReported::said($agreed->change()), $tuning->carriedOut()),
+    ];
 }
 
 /** The loft's credentials: the indexer key refused, the provider password absent, and one the decisions do not name. */
@@ -129,6 +183,7 @@ function theDecidedScreen(
     ?AStackThatHoldsCredentials $credentials = null,
     ?AShareSheetThatWasOffered $sheet = null,
     ?AStackThatHosts $hosting = null,
+    ?AStackThatTunesItsSettings $tuning = null,
 ): WhatSetupDecided {
     $stack = TheHealthScreenOfTheLoft::theStackBeingLookedAt();
     $keychain = AKeychainInMemory::working();
@@ -137,7 +192,7 @@ function theDecidedScreen(
     $screen = new WhatSetupDecided(
         $decided ?? AStackThatSaysWhatSetupDecided::with(whatTheLoftDecided()),
         $adjusting ?? AStackToldToChangeSomething::saying(WhereTheChangeStands::at(ProposedChange::of('DATA_ROOT', '/srv/elsewhere', WhatItHoldsNow::shown('/srv/media'), Cost::Consequential), Stance::Pending, WhatAChangeComesTo::nothing())),
-        AStackThatTunesItsSettings::sayingAtOnce(theLoftsStore(), WhatBecameOfTheWork::noOutcome()),
+        $tuning ?? AStackThatTunesItsSettings::sayingAtOnce(theLoftsStore(), WhatBecameOfTheWork::noOutcome()),
         $credentials ?? theLoftsCredentials(),
         $hosting ?? AStackThatHosts::with(WhatRunsUnattended::keptBy(WhatKeepsItRunning::Launchd, Unattended::called('boot', 'lemonfiber up --at-boot', 'brings the stack back', HowItIsHosted::Stopped))),
         $keychain,
@@ -148,6 +203,7 @@ function theDecidedScreen(
         app(Translator::class),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
+    WhatTheDeviceWouldDraw::onTheFourthFrame($screen);
 
     return $screen;
 }
@@ -184,8 +240,8 @@ it('lists every decision the stack lists, held or not, with what it holds or tha
             'VPN_PROVIDER',
             'mullvad',
         )
-        ->and(theDecisionOn($screen, 'DATA_ROOT'))->toEqual(new ADecisionAsShown('DATA_ROOT', 'where every download lives', '/srv/media', isSet: true, costSaid: 'decided.cost.consequential', how: HowADecisionIsChanged::Here, goes: '', command: '', standsSaid: ''))
-        ->and(theDecisionOn($screen, 'USENET_HOST'))->toEqual(new ADecisionAsShown('USENET_HOST', 'which provider articles come from', '', isSet: false, costSaid: 'decided.cost.cheap', how: HowADecisionIsChanged::Here, goes: '', command: '', standsSaid: ''));
+        ->and(theDecisionOn($screen, 'DATA_ROOT'))->toEqual(new ADecisionAsShown('DATA_ROOT', 'where every download lives', '/srv/media', isSet: true, costSaid: 'decided.cost.consequential', how: HowADecisionIsChanged::Here, goes: '', command: '', standsSaid: '', setting: null))
+        ->and(theDecisionOn($screen, 'USENET_HOST'))->toEqual(new ADecisionAsShown('USENET_HOST', 'which provider articles come from', '', isSet: false, costSaid: 'decided.cost.cheap', how: HowADecisionIsChanged::Here, goes: '', command: '', standsSaid: '', setting: null));
 });
 
 it('changes a decision the configuration keeps through the stack review, by config-set, held or not', function (string $key, string $seeded): void {
@@ -214,22 +270,145 @@ it('changes a decision the configuration keeps through the stack review, by conf
     'never written' => ['USENET_HOST', ''],
 ]);
 
-it('sends a decision the settings store keeps to the screen that changes it by settings-set, and opens nothing here', function (): void {
+it('changes a decision the settings store keeps here through the stack review, by settings-set under the name the stack gives, held or not', function (string $key, string $named, string $seeded): void {
+    $decided = AStackThatSaysWhatSetupDecided::with(whatTheLoftDecided());
+    $adjusting = AStackToldToChangeSomething::saying(turningUsenetOn());
+    $tuning = aStoreThatKeeps($named, 'nl');
+    $screen = theDecidedScreen(decided: $decided, adjusting: $adjusting, tuning: $tuning);
+
+    $screen->change($key);
+
+    expect($screen->changing())->toBe($key)
+        ->and($screen->typed())->toBe($seeded)
+        ->and(WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->offers())->toContain(__('config.what_would_happen'));
+
+    $askings = $decided->askings();
+    $screen->typed = 'nl';
+    $screen->wouldBe($key);
+
+    expect($screen->awaitsAnOutcome())->toBeTrue();
+
+    $screen->whileTheyLand();
+    $screen->whileTheyLand();
+    $screen->whileTheyLand();
+    $screen->answer();
+
+    expect(whatTheStoreWasAsked($tuning))->toBe([[sprintf('settings-set %s=nl', $named)], []])
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($screen->howItIsGoing()->change?->mayBeAgreed)->toBeTrue()
+        ->and($decided->askings())->toBe($askings)
+        ->and(WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->offers())->toContain(__('config.agree'));
+
+    $askings = $decided->askings();
+    $screen->agree($key);
+    $screen->whileTheyLand();
+    $screen->howItIsGoing();
+    $screen->answer();
+
+    expect(whatTheStoreWasAsked($tuning))->toBe([[sprintf('settings-set %s=nl', $named)], [sprintf('settings-set %s=nl', $named)]])
+        ->and($decided->askings())->toBe($askings + 1)
+        ->and($adjusting->rehearsals())->toBe(0)
+        ->and($adjusting->writes())->toBe(0);
+})->with([
+    'held, by a plugin' => ['VPN_PROVIDER', 'gluetun:provider', 'mullvad'],
+    'never written, by the core' => ['LEMONFIBER_LOCALE', 'LEMONFIBER_LOCALE', ''],
+    'not listed by the settings read' => ['TZ', 'house:zone', ''],
+]);
+
+it('links a decision the settings store keeps to the screen that keeps it as well, and nowhere where that screen does not list it', function (): void {
     $screen = theDecidedScreen();
     $stack = TheHealthScreenOfTheLoft::theStackBeingLookedAt();
 
-    expect(theDecisionOn($screen, 'VPN_PROVIDER')->how)->toBe(HowADecisionIsChanged::WhereItIsKept)
-        ->and(theDecisionOn($screen, 'VPN_PROVIDER')->goes)->toBe(AStacksScreen::PluginSettings->forTheStacks($stack->id(), APluginId::called('gluetun')))
-        ->and(theDecisionOn($screen, 'VPN_PROVIDER')->holds)->toBe('mullvad')
-        ->and(theDecisionOn($screen, 'LEMONFIBER_LOCALE')->how)->toBe(HowADecisionIsChanged::WhereItIsKept)
-        ->and(theDecisionOn($screen, 'LEMONFIBER_LOCALE')->goes)->toBe(AStacksScreen::OwnSettings->forTheStack($stack->id()))
-        ->and(theDecisionOn($screen, 'LEMONFIBER_LOCALE')->isSet)->toBeFalse()
-        ->and(theDecisionOn($screen, 'TZ')->how)->toBe(HowADecisionIsChanged::NotListedWhereItIsKept);
+    expect(array_map(static fn(string $key): array => [theDecisionOn($screen, $key)->how, theDecisionOn($screen, $key)->setting, theDecisionOn($screen, $key)->goes, theDecisionOn($screen, $key)->holds, theDecisionOn($screen, $key)->isSet], ['VPN_PROVIDER', 'LEMONFIBER_LOCALE', 'TZ', 'DATA_ROOT']))->toBe([
+        [HowADecisionIsChanged::Here, 'gluetun:provider', AStacksScreen::PluginSettings->forTheStacks($stack->id(), APluginId::called('gluetun')), 'mullvad', true],
+        [HowADecisionIsChanged::Here, 'LEMONFIBER_LOCALE', AStacksScreen::OwnSettings->forTheStack($stack->id()), '', false],
+        [HowADecisionIsChanged::Here, 'house:zone', '', '', false],
+        [HowADecisionIsChanged::Here, null, '', '/srv/media', true],
+    ]);
+});
 
+it('says a decision the settings store keeps and does not list is set where the stack holds it, without its value', function (): void {
+    $screen = theDecidedScreen(decided: AStackThatSaysWhatSetupDecided::with(TheDecisions::beside(Settings::none(), ADecision::inTheSettings('TZ', Cost::Cheap, 'the zone every clock keeps', held: true, credential: false, setting: 'house:zone'))));
+
+    $said = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
+
+    expect([theDecisionOn($screen, 'TZ')->isSet, theDecisionOn($screen, 'TZ')->holds])->toBe([true, ''])
+        ->and($said)->toContain(__('decided.not_listed_where_kept'));
+    expect($said)->not->toContain(__('decided.not_set'));
+});
+
+it('leaves what a settings store change came to once the decision is left or another opened', function (string $then): void {
+    $tuning = aStoreThatKeeps('LEMONFIBER_LOCALE', 'nl');
+    $screen = theDecidedScreen(tuning: $tuning);
+    $screen->change('LEMONFIBER_LOCALE');
+    $screen->typed = 'nl';
+    $screen->wouldBe('LEMONFIBER_LOCALE');
+    $screen->whileTheyLand();
+    $screen->howItIsGoing();
+
+    $then === 'never' ? $screen->never() : $screen->change('VPN_PROVIDER');
+
+    expect($screen->howItIsGoing()->stands->wasAsked())->toBeFalse()
+        ->and([$screen->asked, $screen->report, $screen->following])->toBe([null, null, null]);
+})->with(['never', 'another']);
+
+it('puts no settings store change under a name the stack lists as a credential, for another key than the open one, or a yes to a rehearsal of anything else', function (): void {
+    $tuning = aStoreThatKeeps('LEMONFIBER_LOCALE', 'nl');
+    $decided = AStackThatSaysWhatSetupDecided::with(TheDecisions::beside(
+        Settings::none(),
+        ADecision::inTheSettings('VPN_PROVIDER', Cost::Cheap, 'which provider carries the torrents', held: true, credential: false, setting: 'vpn.key'),
+        ADecision::inTheSettings('USENET_PASS', Cost::Cheap, 'the password the account is reached with', held: false, credential: false, setting: 'usenet:password'),
+        ADecision::inTheSettings('LEMONFIBER_LOCALE', Cost::Cheap, 'the language the house says it has', held: false, credential: false, setting: 'LEMONFIBER_LOCALE'),
+        ADecision::inTheSettings('TZ', Cost::Cheap, 'the zone every clock keeps', held: false, credential: false, setting: 'house:zone'),
+    ));
+    $screen = theDecidedScreen(decided: $decided, credentials: theLoftsCredentials(), tuning: $tuning);
+
+    foreach (['VPN_PROVIDER', 'USENET_PASS'] as $credential) {
+        $screen->change($credential);
+
+        expect($screen->changing())->toBe('');
+
+        $screen->changing = $credential;
+        $screen->typed = 'x';
+        $screen->wouldBe($credential);
+    }
+
+    $screen->change('LEMONFIBER_LOCALE');
+    $screen->typed = null;
+    $screen->wouldBe('LEMONFIBER_LOCALE');
+    $screen->typed = 'nl';
+    $screen->wouldBe('LEMONFIBER_LOCALE');
+    $screen->whileTheyLand();
+    $screen->howItIsGoing();
+    $screen->wouldBe('TZ');
+    $screen->agree('TZ');
+    $forged = ASettingChange::toHold('vpn.key', 'x');
+    $screen->asked = $forged;
+    $screen->report = aChangeKeptAs($forged, WhatTheSettingRunDid::Rehearsed);
+    $screen->agree('LEMONFIBER_LOCALE');
+
+    expect(whatTheStoreWasAsked($tuning))->toBe([['settings-set LEMONFIBER_LOCALE=nl'], []]);
+
+    $screen->asked = ASettingChange::toHold('LEMONFIBER_LOCALE', 'nl');
+    $screen->report = aChangeKeptAs(ASettingChange::toHold('LEMONFIBER_LOCALE', 'nl'), WhatTheSettingRunDid::Rehearsed);
+    $screen->agree('LEMONFIBER_LOCALE');
+
+    expect(whatTheStoreWasAsked($tuning))->toBe([['settings-set LEMONFIBER_LOCALE=nl'], ['settings-set LEMONFIBER_LOCALE=nl']]);
+});
+
+it('reads the decisions again when the settings store refuses a change, and not after a rehearsal', function (): void {
+    $decided = AStackThatSaysWhatSetupDecided::with(whatTheLoftDecided());
+    $tuning = AStackThatTunesItsSettings::sayingAtOnce(theLoftsStore(), WhatBecameOfTheWork::refused(ARefusalInItsWords::said('Not a provider gluetun knows.', 'Nothing has been written.', WhatTheRefusalNamed::nothing())));
+    $screen = theDecidedScreen(decided: $decided, tuning: $tuning);
+    $screen->answer();
     $screen->change('VPN_PROVIDER');
-    $screen->change('TZ');
+    $screen->typed = 'nobody';
+    $screen->wouldBe('VPN_PROVIDER');
+    $screen->answer();
 
-    expect($screen->changing())->toBe('');
+    expect($decided->askings())->toBe(2)
+        ->and($screen->howItIsGoing()->refused)->not->toBeNull()
+        ->and(WhatTheDeviceWouldDraw::onTheFourthFrame($screen)->said())->toContain(__('plugins.settings.refused'));
 });
 
 it('shows each credential as set, not set or refused with the command at the machine, and never opens one', function (): void {
@@ -238,7 +417,7 @@ it('shows each credential as set, not set or refused with the command at the mac
     $screen = theDecidedScreen(adjusting: $adjusting, sheet: $sheet);
     $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
 
-    expect(theDecisionOn($screen, 'INDEXER_APIKEY'))->toEqual(new ADecisionAsShown('INDEXER_APIKEY', 'the key searches are sent with', '', isSet: true, costSaid: 'decided.cost.cheap', how: HowADecisionIsChanged::AtTheMachine, goes: '', command: 'lemonfiber config set INDEXER_APIKEY <value>', standsSaid: 'decided.credential.refused'))
+    expect(theDecisionOn($screen, 'INDEXER_APIKEY'))->toEqual(new ADecisionAsShown('INDEXER_APIKEY', 'the key searches are sent with', '', isSet: true, costSaid: 'decided.cost.cheap', how: HowADecisionIsChanged::AtTheMachine, goes: '', command: 'lemonfiber config set INDEXER_APIKEY <value>', standsSaid: 'decided.credential.refused', setting: null))
         ->and(theDecisionOn($screen, 'USENET_PASS')->standsSaid)->toBe('decided.credential.not_set')
         ->and($drawn->said())->toContain(__('decided.credential.refused'), __('decided.credential.not_set'), 'lemonfiber config set USENET_PASS <value>')
         ->and($drawn->offers())->not->toContain(__('config.change_key', ['key' => 'INDEXER_APIKEY']), __('config.change_key', ['key' => 'USENET_PASS']))
@@ -263,6 +442,7 @@ it('shows each credential as set, not set or refused with the command at the mac
         ->and($adjusting->writes())->toBe(0)
         ->and($adjusting->landings())->toBe(0);
 
+    WhatTheDeviceWouldDraw::onTheFourthFrame($screen);
     $screen->copy('lemonfiber config set INDEXER_APIKEY <value>');
 
     expect($sheet->copied()?->text())->toBe('lemonfiber config set INDEXER_APIKEY <value>')
@@ -300,7 +480,7 @@ it('follows turning a way of downloading on through what the review opens, in it
     $screen->change('LEMONFIBER_USENET');
     $screen->typed = 'on';
     $screen->agree('LEMONFIBER_USENET');
-    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $drawn = WhatTheDeviceWouldDraw::onTheFourthFrame($screen);
     $opened = $screen->answer()->opened;
 
     expect($opened?->key)->toBe('LEMONFIBER_USENET')
@@ -324,9 +504,10 @@ it('follows turning a way of downloading on through what the review opens, in it
     $proven->change('LEMONFIBER_USENET');
     $proven->typed = 'on';
     $proven->agree('LEMONFIBER_USENET');
+    $drawnProven = WhatTheDeviceWouldDraw::onTheFourthFrame($proven);
 
     expect($proven->answer()->opened?->proven)->toBeTrue()
-        ->and(WhatTheDeviceWouldDraw::onTheSecondFrame($proven)->said())->not->toContain(__('decided.opened.unproven'));
+        ->and($drawnProven->said())->not->toContain(__('decided.opened.unproven'));
 });
 
 it('opens nothing to follow where a change only rehearsed or opened nothing', function (): void {

@@ -9,11 +9,7 @@ enum HowADecisionIsChanged
 {
     case Here;
 
-    case WhereItIsKept;
-
     case AtTheMachine;
-
-    case NotListedWhereItIsKept;
 
     case ToObtain;
 }

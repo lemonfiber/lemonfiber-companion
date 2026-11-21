@@ -12,6 +12,7 @@ final readonly class WhatSetupDecidedAsShown
     /**
      * @param list<ADecisionAsShown> $decisions every decision, in the stack's order
      * @param list<string>           $refused   every name the stack lists as a credential, in capitals
+     * @param bool                   $waits     whether a reading waits for a frame of its own, so nothing is offered yet
      */
     public function __construct(
         public HowTheReadingWent $went,
@@ -19,6 +20,7 @@ final readonly class WhatSetupDecidedAsShown
         public ?AutostartAsShown $autostart = null,
         public ?WhatAProtocolOpenedAsShown $opened = null,
         public array $refused = [],
+        public bool $waits = false,
     ) {}
 
     /** The row a change of this key is drawn under, where the screen offers it there. */

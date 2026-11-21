@@ -97,6 +97,11 @@ final readonly class HowWhatSetupDecidedReads
         return new WhatSetupDecidedAsShown(HowTheReadingWent::theSessionEnded());
     }
 
+    public static function waits(): WhatSetupDecidedAsShown
+    {
+        return new WhatSetupDecidedAsShown(HowTheReadingWent::itCameBack(), waits: true);
+    }
+
     public static function met(Obstacle $why): WhatSetupDecidedAsShown
     {
         return new WhatSetupDecidedAsShown(HowTheReadingWent::somethingStopped($why));
@@ -131,7 +136,7 @@ final readonly class HowWhatSetupDecidedReads
         foreach ($opened->comesTo->opens as $opening) {
             $step = $this->opening($opening);
             $steps[] = $step;
-            $proven = $proven && ($step->how !== HowADecisionIsChanged::AtTheMachine || ($this->standing($step->key)) === WhereACredentialStands::Active);
+            $proven = $proven && ($step->how !== HowADecisionIsChanged::AtTheMachine || $this->among($this->stands, $step->key) === WhereACredentialStands::Active);
         }
 
         return new WhatAProtocolOpenedAsShown($opened->key, $steps, $proven);
@@ -140,7 +145,7 @@ final readonly class HowWhatSetupDecidedReads
     private function opening(AnOpeningAsShown $opening): ADecisionAsShown
     {
         return match (true) {
-            $opening->setting === '' => new ADecisionAsShown($opening->what, $opening->because, '', isSet: false, costSaid: '', how: HowADecisionIsChanged::ToObtain, goes: '', command: '', standsSaid: ''),
+            $opening->setting === '' => new ADecisionAsShown($opening->what, $opening->because, '', isSet: false, costSaid: '', how: HowADecisionIsChanged::ToObtain, goes: '', command: '', standsSaid: '', setting: null),
             array_key_exists($opening->setting, $this->decisions) => $this->decision($this->decisions[$opening->setting], $opening->because),
             default => $this->configured($opening->setting, $opening->because, null),
         };
@@ -157,7 +162,7 @@ final readonly class HowWhatSetupDecidedReads
 
     private function configured(string $key, string $affects, ?Cost $cost): ADecisionAsShown
     {
-        $setting = $this->configuredAs($key);
+        $setting = $this->among($this->configured, $key);
 
         if ($this->refuses($key) || ($setting instanceof Setting && $setting->holds->either(shown: static fn(): AsText => AsText::nothing(), withheld: static fn(): AsText => AsText::of($key))->said !== '')) {
             return $this->credential($key, $affects, $cost, $setting instanceof Setting);
@@ -165,15 +170,15 @@ final readonly class HowWhatSetupDecidedReads
 
         $holds = $setting instanceof Setting ? $setting->holds->either(shown: AsText::of(...), withheld: AsText::nothing(...))->said : '';
 
-        return new ADecisionAsShown($key, $affects, $holds, isSet: $setting instanceof Setting, costSaid: $this->cost($cost), how: HowADecisionIsChanged::Here, goes: '', command: '', standsSaid: '');
+        return new ADecisionAsShown($key, $affects, $holds, isSet: $setting instanceof Setting, costSaid: $this->cost($cost), how: HowADecisionIsChanged::Here, goes: '', command: '', standsSaid: '', setting: null);
     }
 
     private function kept(ADecision $decision, string $named, string $affects): ADecisionAsShown
     {
-        $setting = $this->storedAs($named);
+        $setting = $this->among($this->stored, $named);
 
         if (! $setting instanceof ASetting) {
-            return new ADecisionAsShown($decision->key, $affects, '', isSet: $decision->held, costSaid: $this->cost($decision->cost), how: HowADecisionIsChanged::NotListedWhereItIsKept, goes: '', command: '', standsSaid: '');
+            return new ADecisionAsShown($decision->key, $affects, '', isSet: $decision->held, costSaid: $this->cost($decision->cost), how: HowADecisionIsChanged::Here, goes: '', command: '', standsSaid: '', setting: $named);
         }
 
         $goes = $setting->whose()->either(
@@ -181,12 +186,12 @@ final readonly class HowWhatSetupDecidedReads
             namespace: fn(string $plugin): AsText => AsText::of($this->goes->aPluginsSettings($plugin)),
         )->said;
 
-        return new ADecisionAsShown($decision->key, $affects, $setting->value()->said(), isSet: $setting->value()->isHeld(), costSaid: $this->cost($decision->cost), how: HowADecisionIsChanged::WhereItIsKept, goes: $goes, command: '', standsSaid: '');
+        return new ADecisionAsShown($decision->key, $affects, $setting->value()->said(), isSet: $setting->value()->isHeld(), costSaid: $this->cost($decision->cost), how: HowADecisionIsChanged::Here, goes: $goes, command: '', standsSaid: '', setting: $named);
     }
 
     private function credential(string $key, string $affects, ?Cost $cost, bool $held): ADecisionAsShown
     {
-        $stands = match ($this->standing($key)) {
+        $stands = match ($this->among($this->stands, $key)) {
             null => $held ? 'decided.credential.set' : 'decided.credential.not_set',
             WhereACredentialStands::Absent => 'decided.credential.not_set',
             WhereACredentialStands::Invalid => 'decided.credential.refused',
@@ -194,31 +199,21 @@ final readonly class HowWhatSetupDecidedReads
             default => 'decided.credential.set',
         };
 
-        return new ADecisionAsShown($key, $affects, '', isSet: $held, costSaid: $this->cost($cost), how: HowADecisionIsChanged::AtTheMachine, goes: '', command: TheCommandsAtTheMachine::settingACredential($key), standsSaid: $stands);
+        return new ADecisionAsShown($key, $affects, '', isSet: $held, costSaid: $this->cost($cost), how: HowADecisionIsChanged::AtTheMachine, goes: '', command: TheCommandsAtTheMachine::settingACredential($key), standsSaid: $stands, setting: null);
     }
 
-    private function standing(string $key): ?WhereACredentialStands
+    /**
+     * What is held under this name, or nothing where nothing is.
+     *
+     * @template T
+     *
+     * @param  array<string, T>  $held
+     * @return T|null
+     */
+    private function among(array $held, string $name): mixed
     {
-        if (array_key_exists($key, $this->stands)) {
-            return $this->stands[$key];
-        }
-
-        return null;
-    }
-
-    private function configuredAs(string $key): ?Setting
-    {
-        if (array_key_exists($key, $this->configured)) {
-            return $this->configured[$key];
-        }
-
-        return null;
-    }
-
-    private function storedAs(string $name): ?ASetting
-    {
-        if (array_key_exists($name, $this->stored)) {
-            return $this->stored[$name];
+        if (array_key_exists($name, $held)) {
+            return $held[$name];
         }
 
         return null;

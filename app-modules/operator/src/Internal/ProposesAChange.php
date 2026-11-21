@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal;
 
+use function array_keys;
+
 use Closure;
 use Modules\Kernel\Api\Adjusting;
+use Modules\Kernel\Api\ASettingChange;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheSettingAsChanged;
+use Modules\Kernel\Api\WhatTheSettingRunDid;
 use Modules\Kernel\Api\WhatTheStackMadeOfIt;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhereTheChangeStands;
@@ -19,9 +24,17 @@ use Modules\Operator\Internal\Presenters\HowAChangeReads;
 use Modules\Operator\Internal\ViewModels\WhatAChangeTurnedOutToBe;
 use Native\Mobile\Attributes\Poll;
 
-/** Changing one setting through the stack's review: asked, agreed to, and followed while the downloads land. */
+/**
+ * Changing one setting through the stack's review: asked, agreed to, and followed while the downloads land.
+ *
+ * The write is the one the stack names for the key: `settings-set` under the
+ * name the screen's `keptAs()` reads off the stack's entry, `config-set` where
+ * it names none.
+ */
 trait ProposesAChange
 {
+    use PutsASettingChange;
+
     /**
      * What the operator has typed into the setting open for changing, while one is.
      *
@@ -77,6 +90,7 @@ trait ProposesAChange
             return;
         }
 
+        $this->startAgain();
         $this->changing = $key;
         $this->typed = $seed;
         $this->proposed = null;
@@ -85,6 +99,7 @@ trait ProposesAChange
     /** Close the open setting without asking the stack anything. */
     public function never(): void
     {
+        $this->startAgain();
         $this->changing = null;
         $this->typed = null;
         $this->proposed = null;
@@ -100,6 +115,18 @@ trait ProposesAChange
      */
     public function wouldBe(string $key): void
     {
+        $named = $this->keptAs($key);
+
+        if ($named !== null) {
+            $typed = $this->typed;
+
+            if ($typed !== null && $this->mayBePut($key, $named)) {
+                $this->rehearseInTheStore(ASettingChange::toHold($named, $typed));
+            }
+
+            return;
+        }
+
         $this->proposed = $this->put($key, static fn(
             Adjusting $adjusting,
             Stack $stack,
@@ -118,6 +145,16 @@ trait ProposesAChange
      */
     public function agree(string $key, string $letting = WhetherToWait::GoAheadNow->value): void
     {
+        $named = $this->keptAs($key);
+
+        if ($named !== null) {
+            if ($this->mayBePut($key, $named) && $this->rehearsedOnly($named)) {
+                $this->carryOutWhatWasRehearsed();
+            }
+
+            return;
+        }
+
         if (WhetherToWait::tryFrom($letting) === WhetherToWait::ForTheDownloads) {
             $this->letThemLand($key);
 
@@ -136,7 +173,7 @@ trait ProposesAChange
     /** Whether a change agreed to once the downloads land is still waiting on them. */
     public function awaitsAnOutcome(): bool
     {
-        return $this->landing !== null;
+        return $this->landing !== null || $this->howItIsGoing()->stands->isWorking();
     }
 
     /**
@@ -147,6 +184,7 @@ trait ProposesAChange
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileTheyLand(): void
     {
+        $this->going = $this->howItIsGoing()->stands->isWorking() ? null : $this->going;
         $landing = $this->landing;
 
         if ($landing === null) {
@@ -225,6 +263,16 @@ trait ProposesAChange
     /** Whether this screen may put a change of this key to the stack, asked again at the moment it is put. */
     abstract protected function mayBeChanged(string $key): bool;
 
+    /** The name `settings-set` takes for this key, as the stack's entry for it says, or nothing where `config-set` takes it. */
+    abstract protected function keptAs(string $key): ?string;
+
+    protected function theStoreAnswered(?TheSettingAsChanged $report): void
+    {
+        if (! $report instanceof TheSettingAsChanged || $report->did() !== WhatTheSettingRunDid::Rehearsed) {
+            $this->readAgainAfterAChange();
+        }
+    }
+
     /**
      * Set it once the downloads land: the stack waits, and the screen follows the name it answers with.
      */
@@ -258,6 +306,30 @@ trait ProposesAChange
             ),
             notHeld: static fn(): WhatAChangeTurnedOutToBe => new HowAChangeReads()->signedOut(),
         );
+    }
+
+    /** Whether this key is the one open, and both it and the name it is kept under may be changed, asked at the moment it is put. */
+    private function mayBePut(string $key, string $named): bool
+    {
+        return $this->changing === $key && $this->mayBeChanged($key) && $this->mayBeChanged($named);
+    }
+
+    /** Whether the rehearsal a yes would carry out moves this setting and nothing else. */
+    private function rehearsedOnly(string $named): bool
+    {
+        $asked = $this->asked;
+
+        if (! $asked instanceof ASettingChange) {
+            return false;
+        }
+
+        $moved = [];
+
+        foreach ($asked as $setting => $value) {
+            $moved[$setting] = $value;
+        }
+
+        return array_keys($moved) === [$named];
     }
 
     /** The waiting is over: what the screen read is read again. */

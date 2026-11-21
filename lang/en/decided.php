@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'intro' => 'Every answer setup gives, including the ones a setup that skipped a step never wrote. Each says what changing it affects, in the stack\'s own words.',
     'none' => 'The stack lists no decision setup makes.',
+    'reading' => 'Reading what the stack keeps beside its decisions…',
     'not_set' => 'Not set',
     'to_obtain' => 'An account to get first',
     'cost' => [
@@ -17,9 +18,10 @@ return [
         'refused' => 'Set, and refused when the stack last tried it',
         'proven' => 'Set, and proven by the stack',
     ],
-    'kept_in_the_settings' => 'Kept with the stack\'s other settings, and changed there.',
-    'change_where_kept' => 'Change it there',
-    'not_listed_where_kept' => 'The stack does not list where this is kept yet, so it cannot be changed from here.',
+    'kept_in_the_settings' => 'Kept with the stack\'s other settings as :setting, and changed there too.',
+    'change_where_kept' => 'Open its screen',
+    'change_where_kept_of' => 'Open the screen that keeps :key',
+    'not_listed_where_kept' => 'The stack\'s settings do not list this here yet, so what it holds is not shown. It can still be changed.',
     'at_the_machine' => 'A credential is typed at the machine and never into this app. Run this there:',
     'copy' => 'Copy',
     'copy_it' => 'Copy the command for :key',

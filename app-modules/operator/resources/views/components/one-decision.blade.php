@@ -5,6 +5,8 @@
         <x-design::note>{{ __('decided.to_obtain') }}</x-design::note>
     @elseif ($decision->how === HowADecisionIsChanged::AtTheMachine)
         <x-design::body>{{ __($decision->standsSaid) }}</x-design::body>
+    @elseif ($decision->isSet && $decision->setting !== null && $decision->goes === '')
+        <x-design::note>{{ __('decided.not_listed_where_kept') }}</x-design::note>
     @elseif ($decision->isSet)
         <x-design::verbatim>{{ $decision->holds }}</x-design::verbatim>
     @else
@@ -22,7 +24,11 @@
                 label="{{ $decision->key }}"
                 supporting="{{ __('config.what_it_would_hold') }}"
             />
-            <x-operator::the-review :key="$decision->key" :proposal="$proposal" :waiting="$waiting" :landing-said="$landingSaid" />
+            @if ($decision->setting === null)
+                <x-operator::the-review :key="$decision->key" :proposal="$proposal" :waiting="$waiting" :landing-said="$landingSaid" />
+            @else
+                <x-operator::the-review-where-kept :key="$decision->key" :going="$going" :settings-would-not-open="$settingsWouldNotOpen" :goes="$goes" />
+            @endif
         @else
             <x-operator::offered-action
                 :label="__('config.change_this')"
@@ -32,11 +38,10 @@
                 drawn="link"
             />
         @endif
-    @elseif ($decision->how === HowADecisionIsChanged::WhereItIsKept)
-        <x-design::note>{{ __('decided.kept_in_the_settings') }}</x-design::note>
-        <x-design::action :label="__('decided.change_where_kept')" :goes="$decision->goes" tone="tonal" />
-    @elseif ($decision->how === HowADecisionIsChanged::NotListedWhereItIsKept)
-        <x-design::note>{{ __('decided.not_listed_where_kept') }}</x-design::note>
+        @if ($decision->goes !== '')
+            <x-design::note>{{ __('decided.kept_in_the_settings', ['setting' => $decision->setting]) }}</x-design::note>
+            <x-design::action :label="__('decided.change_where_kept')" :answers-to="__('decided.change_where_kept_of', ['key' => $decision->key])" :goes="$decision->goes" tone="tonal" />
+        @endif
     @elseif ($decision->how === HowADecisionIsChanged::AtTheMachine)
         <x-design::note>{{ __('decided.at_the_machine') }}</x-design::note>
         <x-design::verbatim>{{ $decision->command }}</x-design::verbatim>

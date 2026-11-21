@@ -1,3 +1,4 @@
+@use('Modules\Kernel\Api\ChangingASetting')
 @use('Modules\Kernel\Api\WhatToChange')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -5,6 +6,9 @@
 <x-operator::content>
     <x-operator::heading>{{ __('navigation.menu.decided') }}</x-operator::heading>
     <x-design::body>{{ __('decided.intro') }}</x-design::body>
+@if ($this->answer()->waits)
+    <x-design::standing :said="__('decided.reading')" tone="working" />
+@else
 
     @if ($this->answer()->opened !== null)
         <x-design::section :label="__('decided.opened.section', ['key' => $this->answer()->opened->key])">
@@ -19,7 +23,10 @@
                     :proposal="$this->proposalFor($step->key)"
                     :waiting="$this->landing !== null"
                     :landing-said="$this->landingSaid"
-                    :offer="$this->offered(WhatToChange::Setting)"
+                    :offer="$this->offered($step->setting === null ? WhatToChange::Setting : ChangingASetting::Set)"
+                    :going="$this->howItIsGoing()"
+                    :settings-would-not-open="$this->theSettingsWouldNotOpen"
+                    :goes="$this->goes()"
                 />
             @empty
                 <x-design::note>{{ __('decided.opened.nothing') }}</x-design::note>
@@ -34,7 +41,10 @@
             :proposal="$this->proposalFor($decision->key)"
             :waiting="$this->landing !== null"
             :landing-said="$this->landingSaid"
-            :offer="$this->offered(WhatToChange::Setting)"
+            :offer="$this->offered($decision->setting === null ? WhatToChange::Setting : ChangingASetting::Set)"
+            :going="$this->howItIsGoing()"
+            :settings-would-not-open="$this->theSettingsWouldNotOpen"
+            :goes="$this->goes()"
         />
     @empty
         <x-design::note>{{ __('decided.none') }}</x-design::note>
@@ -71,6 +81,7 @@
     @endif
 
     <x-operator::quiet-action :label="__('config.ask_again')" tap="askAgain()" />
+@endif
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading
@@ -78,6 +89,10 @@
         :went="$this->answer()->went"
         :goes="$this->goes()"
     />
+@endif
+
+@if ($this->waitsForTheNextFrame())
+    <x-design::the-next-frame />
 @endif
 
 <x-operator::screen-closes :goes="$this->goes()" :here="$this->itsTab()" :marks="$this->marks()" />

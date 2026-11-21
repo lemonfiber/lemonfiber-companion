@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
+use Closure;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\View\View;
 
@@ -29,7 +30,10 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Kernel\Api\WhatKeepsRunning;
 use Modules\Kernel\Api\WhatSetupDecided as TheDecisions;
+use Modules\Kernel\Api\WhatWasFoundOfTheCredentials;
+use Modules\Kernel\Api\WhatWasFoundOfTheSettings;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowWhatSetupDecidedReads;
@@ -66,6 +70,18 @@ final class WhatSetupDecided extends NativeComponent implements AwaitsAnOutcome
 
     public ?WhatSetupDecidedAsShown $answered = null;
 
+    /** Every decision the stack lists, once read. */
+    public ?TheDecisions $decided = null;
+
+    /** What the settings read found, once read, on a frame after the decisions. */
+    public ?WhatWasFoundOfTheSettings $stored = null;
+
+    /** What the credentials read found, once read, on a frame after the settings. */
+    public ?WhatWasFoundOfTheCredentials $safeguarded = null;
+
+    /** What the hosting read found, once read, on a frame after the credentials. */
+    public ?WhatKeepsRunning $hosted = null;
+
     /** The name typed into the field for any other setting. */
     public ?string $named = null;
 
@@ -97,7 +113,7 @@ final class WhatSetupDecided extends NativeComponent implements AwaitsAnOutcome
 
     public function again(): void
     {
-        $this->answered = null;
+        $this->forgetTheReadings();
         $this->proposed = null;
         $this->copied = null;
     }
@@ -154,16 +170,20 @@ final class WhatSetupDecided extends NativeComponent implements AwaitsAnOutcome
         return view('operator::what-setup-decided');
     }
 
+    /** Every decision as shown, read a reading a frame, and saying it is reading until all four are in. */
     public function answer(): WhatSetupDecidedAsShown
     {
-        return $this->answered ??= $this->ask();
+        $answer = $this->answered ?? $this->ask();
+        $this->answered = $answer->waits ? null : $answer;
+
+        return $answer;
     }
 
     protected function seedFor(string $key): ?string
     {
         $row = $this->answer()->offered($key);
 
-        if (! $row instanceof ADecisionAsShown || ! $this->mayBeChanged($key)) {
+        if (! $row instanceof ADecisionAsShown || ! $this->mayBeChanged($key) || ! $this->mayBeChanged($row->setting ?? $key)) {
             return null;
         }
 
@@ -172,19 +192,32 @@ final class WhatSetupDecided extends NativeComponent implements AwaitsAnOutcome
 
     protected function mayBeChanged(string $key): bool
     {
-        return ! in_array(mb_strtoupper(trim($key)), $this->answer()->refused, strict: true);
+        return ! $this->answer()->waits && ! in_array(mb_strtoupper(trim($key)), $this->answer()->refused, strict: true);
+    }
+
+    protected function keptAs(string $key): ?string
+    {
+        return $this->answer()->offered($key)?->setting;
     }
 
     protected function readAgainAfterAChange(): void
     {
         $proposed = $this->proposed;
         $this->opened = $proposed instanceof WhatAChangeTurnedOutToBe && $proposed->wroteSomething && $proposed->comesTo->opens !== [] ? $proposed : $this->opened;
+        $this->forgetTheReadings();
+    }
+
+    private function forgetTheReadings(): void
+    {
         $this->answered = null;
+        $this->decided = null;
+        $this->stored = null;
+        $this->safeguarded = null;
+        $this->hosted = null;
     }
 
     private function ask(): WhatSetupDecidedAsShown
     {
-        $this->readsItsStack();
         $stack = $this->stack();
 
         return $this->storage->resume($stack->id())->either(
@@ -195,18 +228,53 @@ final class WhatSetupDecided extends NativeComponent implements AwaitsAnOutcome
 
     private function asked(Stack $stack, Session $session): WhatSetupDecidedAsShown
     {
+        $decided = $this->decided;
+
+        if ($decided instanceof TheDecisions) {
+            return $this->beside($decided, $stack, $session);
+        }
+
+        $this->readsItsStack();
+
         return $this->deciding->decidedOn($stack, $session)->either(
-            found: fn(TheDecisions $decided): WhatSetupDecidedAsShown => HowWhatSetupDecidedReads::of(
-                $decided,
-                $this->tuning->readOn($stack, $session),
-                $this->safekeeping->heldOn($stack, $session),
-                $this->goes(),
-            )->shown($this->hosting->keptRunningOn($stack, $session), $this->opened),
+            found: function (TheDecisions $found) use ($stack, $session): WhatSetupDecidedAsShown {
+                $this->decided = $found;
+
+                return $this->beside($found, $stack, $session);
+            },
             met: function (Obstacle $why) use ($stack): WhatSetupDecidedAsShown {
                 $this->letGoOfTheSession($why, $stack);
 
                 return HowWhatSetupDecidedReads::met($why);
             },
         );
+    }
+
+    /** The decisions beside the settings, the credentials and the hosting, each read on a frame of its own. */
+    private function beside(TheDecisions $decided, Stack $stack, Session $session): WhatSetupDecidedAsShown
+    {
+        $this->stored ??= $this->onAFrameOfItsOwn(fn(): WhatWasFoundOfTheSettings => $this->tuning->readOn($stack, $session));
+        $this->safeguarded ??= $this->onAFrameOfItsOwn(fn(): WhatWasFoundOfTheCredentials => $this->safekeeping->heldOn($stack, $session));
+        $this->hosted ??= $this->onAFrameOfItsOwn(fn(): WhatKeepsRunning => $this->hosting->keptRunningOn($stack, $session));
+
+        if (! $this->stored instanceof WhatWasFoundOfTheSettings || ! $this->safeguarded instanceof WhatWasFoundOfTheCredentials || ! $this->hosted instanceof WhatKeepsRunning) {
+            return HowWhatSetupDecidedReads::waits();
+        }
+
+        return HowWhatSetupDecidedReads::of($decided, $this->stored, $this->safeguarded, $this->goes())->shown($this->hosted, $this->opened);
+    }
+
+    /**
+     * What a reading came to, where this frame has not read the stack yet, or nothing until a frame that has not.
+     *
+     * @template T of object
+     *
+     * @param Closure(): T $reading
+     *
+     * @return T|null
+     */
+    private function onAFrameOfItsOwn(Closure $reading): ?object
+    {
+        return $this->mayReadItsStack() ? $reading() : null;
     }
 }

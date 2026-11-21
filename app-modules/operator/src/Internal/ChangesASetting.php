@@ -5,29 +5,16 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use function array_keys;
-
-use Closure;
-
 use function in_array;
 use function is_string;
 
-use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ASetting;
 use Modules\Kernel\Api\ASettingChange;
-use Modules\Kernel\Api\ASettingChangeAgreed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
-use Modules\Kernel\Api\Job;
-use Modules\Kernel\Api\Obstacle;
-use Modules\Kernel\Api\Session;
-use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheServicesSettings;
 use Modules\Kernel\Api\TheSettingAsChanged;
-use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
-use Modules\Kernel\Api\WhyTheWorkEnded;
-use Modules\Operator\Internal\Presenters\HowASettingChangeReads;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
-use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
 use Native\Mobile\Attributes\Poll;
 
 /**
@@ -48,23 +35,13 @@ use Native\Mobile\Attributes\Poll;
  */
 trait ChangesASetting
 {
+    use PutsASettingChange;
+
     /** What is typed into the open setting's field. */
     public string $typed = '';
 
     /** The setting open for changing, or null where none is. */
     public ?ASettingBeingChanged $changing = null;
-
-    /** What the last rehearsal was asked with, which is what a yes agrees to. */
-    public ?ASettingChange $asked = null;
-
-    /** What the stack last reported, rehearsed or written. */
-    public ?TheSettingAsChanged $report = null;
-
-    /** The handle of the work being followed, while there is one. */
-    public ?string $following = null;
-
-    /** Where changing a setting has got to, once this frame has asked. Public for {@see Screens\WhatIsRunningHere::$answered}'s reason. */
-    public ?TheSettingChangeTurnedOutToBe $going = null;
 
     /** Open one of the screen's settings for changing, seeded with its value; any other name, a secret's among them, opens nothing. */
     public function change(string $setting): void
@@ -170,15 +147,6 @@ trait ChangesASetting
         $this->typed = '';
     }
 
-    /** Leave what the change came to, keeping the setting open. */
-    public function startAgain(): void
-    {
-        $this->asked = null;
-        $this->report = null;
-        $this->following = null;
-        $this->going = null;
-    }
-
     /** Ask what the change would do, writing nothing: the open setting given what is typed or chosen, or put back, with each setting moved alongside. */
     public function rehearse(): void
     {
@@ -190,7 +158,7 @@ trait ChangesASetting
             return;
         }
 
-        $this->ask($change);
+        $this->rehearseInTheStore($change);
     }
 
     /** Ask what putting one of the screen's settings back to its default would do, writing nothing. */
@@ -201,22 +169,13 @@ trait ChangesASetting
         }
 
         $this->changing = new ASettingBeingChanged($setting, toDefault: true);
-        $this->ask(ASettingChange::backToDefault($setting));
+        $this->rehearseInTheStore(ASettingChange::backToDefault($setting));
     }
 
     /** Make the change the rehearsal on the screen described; anywhere else, nothing is sent. */
     public function agree(): void
     {
-        $asked = $this->asked;
-        $report = $this->report;
-
-        if (! $asked instanceof ASettingChange || ! $report instanceof TheSettingAsChanged || ! $report->rehearses($asked)) {
-            return;
-        }
-
-        $agreed = ASettingChangeAgreed::after($report, $asked);
-        $this->report = null;
-        $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->tuning->carryOut($stack, $session, $agreed));
+        $this->carryOutWhatWasRehearsed();
     }
 
     /** Ask after the work again while the stack is at it, at {@see HowOftenAScreenLooks}'s interval. */
@@ -234,18 +193,14 @@ trait ChangesASetting
         return $this->howItIsGoing()->stands->isWorking();
     }
 
-    /** Where changing a setting has got to, asked once per frame. */
-    public function howItIsGoing(): TheSettingChangeTurnedOutToBe
-    {
-        $following = $this->following;
-
-        return $this->going ??= $following === null
-            ? new HowASettingChangeReads()->notAsked()
-            : $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->tuning->whatBecameOf($stack, $session, Job::named($following)));
-    }
-
     /** The setting of that name the screen lists, as last read, or none; a secret is never one. */
     abstract protected function itsSetting(string $setting): ?ASetting;
+
+    protected function theStoreAnswered(?TheSettingAsChanged $report): void
+    {
+        $this->read = $report instanceof TheSettingAsChanged && $report->did() === WhatTheSettingRunDid::Rehearsed ? $this->read : $report?->settings();
+        $this->answered = null;
+    }
 
     /** Whether the open change is one to rehearse now: a value among the setting's choices where it lists any, or settings put back alongside the one already rehearsed. */
     private function rehearsable(ASettingBeingChanged $open, ASetting $held): bool
@@ -265,72 +220,5 @@ trait ChangesASetting
             $this->read = $heard;
             $this->answered = null;
         }
-    }
-
-    private function ask(ASettingChange $change): void
-    {
-        $this->startAgain();
-        $this->asked = $change;
-        $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->tuning->rehearse($stack, $session, $change));
-    }
-
-    /**
-     * One act put to the stack, with the session this device holds for it.
-     *
-     * @param Closure(Stack, Session): WhatBecameOfTheWork<TheSettingAsChanged> $asking
-     */
-    private function put(Closure $asking): TheSettingChangeTurnedOutToBe
-    {
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): TheSettingChangeTurnedOutToBe => $this->shown($asking($stack, $session), $stack),
-            notHeld: static fn(): TheSettingChangeTurnedOutToBe => new HowASettingChangeReads()->signedOut(),
-        );
-    }
-
-    /**
-     * What the stack said, as the screen draws it, holding what to follow or to agree to.
-     *
-     * A written change carries every setting after it, which replaces what was
-     * read. A refusal reads the settings again, so a change agreed against a
-     * value that moved is drawn against the one that stands.
-     *
-     * @param WhatBecameOfTheWork<TheSettingAsChanged> $became
-     */
-    private function shown(WhatBecameOfTheWork $became, Stack $stack): TheSettingChangeTurnedOutToBe
-    {
-        return $became->either(
-            underway: function (Job $job): TheSettingChangeTurnedOutToBe {
-                $this->following = $job->shown();
-
-                return new HowASettingChangeReads()->running();
-            },
-            answered: function (TheSettingAsChanged $report): TheSettingChangeTurnedOutToBe {
-                $this->following = null;
-                $this->report = $report;
-                $this->read = $report->did() === WhatTheSettingRunDid::Rehearsed ? $this->read : $report->settings();
-                $this->answered = null;
-
-                return new HowASettingChangeReads()->answered($report);
-            },
-            ended: function (?WhyTheWorkEnded $why): TheSettingChangeTurnedOutToBe {
-                $this->following = null;
-
-                return new HowASettingChangeReads()->ended($why);
-            },
-            refused: function (ARefusalInItsWords $why): TheSettingChangeTurnedOutToBe {
-                $this->following = null;
-                $this->read = null;
-                $this->answered = null;
-
-                return new HowASettingChangeReads()->refused($why);
-            },
-            met: function (Obstacle $why) use ($stack): TheSettingChangeTurnedOutToBe {
-                $this->letGoOfTheSession($why, $stack);
-
-                return new HowASettingChangeReads()->met($why);
-            },
-        );
     }
 }

@@ -31,6 +31,7 @@ use Modules\Operator\Internal\HowADecisionIsChanged;
 use Modules\Operator\Internal\Screens\WhatSetupDecided;
 use Modules\Operator\Internal\ViewModels\ADecisionAsShown;
 use Tests\Support\AroundThePhone;
+use Tests\Support\ASettingChangeAsReported;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -41,6 +42,7 @@ use Tests\Support\Fakes\AStackThatTunesItsSettings;
 use Tests\Support\Fakes\AStackToldToChangeSomething;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\TheHealthScreenOfTheLoft;
+use Tests\Support\WhatTheDeviceWouldDraw;
 
 /** Decisions the app offers to change through the stack's review. */
 const DECISIONS_OFFERED = [
@@ -69,7 +71,7 @@ function everyDecisionTheContractDeclares(): array
 }
 
 /** The decided screen over these decisions, with the settings store listing each decision under its own name. */
-function theDecidedScreenOver(TheDecisions $decided): WhatSetupDecided
+function theDecidedScreenOver(TheDecisions $decided, ?AStackThatTunesItsSettings $tuning = null, ?AStackToldToChangeSomething $adjusting = null): WhatSetupDecided
 {
     $stack = TheHealthScreenOfTheLoft::theStackBeingLookedAt();
     $keychain = AKeychainInMemory::working();
@@ -82,8 +84,8 @@ function theDecidedScreenOver(TheDecisions $decided): WhatSetupDecided
 
     $screen = new WhatSetupDecided(
         AStackThatSaysWhatSetupDecided::with($decided),
-        AStackToldToChangeSomething::saying(WhereTheChangeStands::at(ProposedChange::of('DATA_ROOT', '/srv', WhatItHoldsNow::nothingYet(), Cost::Cheap), Stance::Pending, WhatAChangeComesTo::nothing())),
-        AStackThatTunesItsSettings::sayingAtOnce(WhatWasFoundOfTheSettings::found(TheServicesSettings::of(TheSettingsRead::these(...$stored), TheSecretsRead::these())), WhatBecameOfTheWork::noOutcome()),
+        $adjusting ?? AStackToldToChangeSomething::saying(WhereTheChangeStands::at(ProposedChange::of('DATA_ROOT', '/srv', WhatItHoldsNow::nothingYet(), Cost::Cheap), Stance::Pending, WhatAChangeComesTo::nothing())),
+        $tuning ?? AStackThatTunesItsSettings::sayingAtOnce(WhatWasFoundOfTheSettings::found(TheServicesSettings::of(TheSettingsRead::these(...$stored), TheSecretsRead::these())), WhatBecameOfTheWork::noOutcome()),
         AStackThatHoldsCredentials::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
         AStackThatHosts::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)),
         $keychain,
@@ -94,6 +96,7 @@ function theDecidedScreenOver(TheDecisions $decided): WhatSetupDecided
         app(Translator::class),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
+    WhatTheDeviceWouldDraw::onTheFourthFrame($screen);
 
     return $screen;
 }
@@ -136,8 +139,29 @@ it('offers every decision it says it offers, kept in the configuration or in the
 
     expect(array_unique(howEachDecisionIsOffered($inTheConfiguration), SORT_REGULAR))->toBe([DECISIONS_OFFERED[0] => HowADecisionIsChanged::Here])
         ->and(array_keys(howEachDecisionIsOffered($inTheConfiguration)))->toBe(DECISIONS_OFFERED)
-        ->and(array_unique(howEachDecisionIsOffered($inTheSettings), SORT_REGULAR))->toBe([DECISIONS_OFFERED[0] => HowADecisionIsChanged::WhereItIsKept]);
+        ->and(array_unique(howEachDecisionIsOffered($inTheSettings), SORT_REGULAR))->toBe([DECISIONS_OFFERED[0] => HowADecisionIsChanged::Here]);
 });
+
+it('offers the decisions the stack keeps in the settings store here, by settings-set under the name it gives, held or not', function (bool $held): void {
+    $kept = ['VPN_PROVIDER' => 'gluetun:provider', 'LEMONFIBER_LOCALE' => 'LEMONFIBER_LOCALE'];
+    $tuning = AStackThatTunesItsSettings::sayingAtOnce(WhatWasFoundOfTheSettings::found(TheServicesSettings::of(TheSettingsRead::these(), TheSecretsRead::these())), WhatBecameOfTheWork::noOutcome());
+    $adjusting = AStackToldToChangeSomething::saying(WhereTheChangeStands::at(ProposedChange::of('DATA_ROOT', '/srv', WhatItHoldsNow::nothingYet(), Cost::Cheap), Stance::Pending, WhatAChangeComesTo::nothing()));
+    $screen = theDecidedScreenOver(TheDecisions::beside(Settings::none(), ...array_map(static fn(string $key): ADecision => ADecision::inTheSettings($key, Cost::Cheap, 'what it affects', held: $held, credential: false, setting: $kept[$key]), array_keys($kept))), $tuning, $adjusting);
+
+    foreach (array_keys($kept) as $key) {
+        $screen->change($key);
+        $screen->typed = 'chosen';
+        $screen->wouldBe($key);
+    }
+
+    expect(array_values(array_intersect(DECISIONS_OFFERED, array_keys($kept))))->toBe(array_keys($kept))
+        ->and(array_map(static fn(ADecisionAsShown $row): array => [$row->key, $row->how, $row->setting], $screen->answer()->decisions))->toBe([
+            ['VPN_PROVIDER', HowADecisionIsChanged::Here, 'gluetun:provider'],
+            ['LEMONFIBER_LOCALE', HowADecisionIsChanged::Here, 'LEMONFIBER_LOCALE'],
+        ])
+        ->and(array_map(ASettingChangeAsReported::said(...), $tuning->rehearsed()))->toBe(['settings-set gluetun:provider=chosen', 'settings-set LEMONFIBER_LOCALE=chosen'])
+        ->and($adjusting->rehearsals())->toBe(0);
+})->with(['held' => [true], 'not held' => [false]]);
 
 it('names every decision it excuses as changed at the machine, with the command, and never offers it', function (): void {
     $screen = theDecidedScreenOver(TheDecisions::beside(Settings::none(), ...array_map(static fn(string $key): ADecision => ADecision::inTheConfiguration($key, Cost::Cheap, 'what it affects', held: false, credential: true), array_keys(DECISIONS_EXCUSED))));

@@ -20,7 +20,7 @@ final readonly class TheCommandsAtTheMachine
 
     private const string SET = 'lemonfiber config set %s <value>';
 
-    private const string A_PLAIN_NAME = '/^[A-Za-z_][A-Za-z0-9_]*\z/';
+    private const string A_PLAIN_NAME = '/\A[A-Za-z_][A-Za-z0-9_]*\z/';
 
     public static function installingAutostart(): string
     {

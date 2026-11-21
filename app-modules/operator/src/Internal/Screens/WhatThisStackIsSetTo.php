@@ -23,6 +23,7 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Settings;
+use Modules\Kernel\Api\SettingWhatServicesRead;
 use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
@@ -92,6 +93,7 @@ final class WhatThisStackIsSetTo extends NativeComponent implements AwaitsAnOutc
     public function __construct(
         private readonly Arranging $arranging,
         protected readonly Adjusting $adjusting,
+        protected readonly SettingWhatServicesRead $tuning,
         private readonly SecureStorage $storage,
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
@@ -176,6 +178,12 @@ final class WhatThisStackIsSetTo extends NativeComponent implements AwaitsAnOutc
     protected function mayBeChanged(string $key): bool
     {
         return $this->seedFor($key) !== null;
+    }
+
+    /** Nothing: every row here is a setting the configuration holds, and `config-set` takes each. */
+    protected function keptAs(string $key): null
+    {
+        return null;
     }
 
     protected function readAgainAfterAChange(): void
