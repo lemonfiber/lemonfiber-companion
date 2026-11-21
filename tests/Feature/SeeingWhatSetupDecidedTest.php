@@ -374,6 +374,7 @@ it('puts no settings store change under a name the stack lists as a credential, 
     }
 
     $screen->change('LEMONFIBER_LOCALE');
+    $screen->agree('LEMONFIBER_LOCALE');
     $screen->typed = null;
     $screen->wouldBe('LEMONFIBER_LOCALE');
     $screen->typed = 'nl';
@@ -394,6 +395,17 @@ it('puts no settings store change under a name the stack lists as a credential, 
     $screen->agree('LEMONFIBER_LOCALE');
 
     expect(whatTheStoreWasAsked($tuning))->toBe([['settings-set LEMONFIBER_LOCALE=nl'], ['settings-set LEMONFIBER_LOCALE=nl']]);
+});
+
+it('names a setting the configuration withholds as changed at the machine, though its decision does not say credential', function (): void {
+    $screen = theDecidedScreen(decided: AStackThatSaysWhatSetupDecided::with(TheDecisions::beside(
+        Settings::of(Setting::called('BIND_TOKEN', WhatASettingHolds::withheld('set, and not shown'), WhoPutItThere::bundled())),
+        ADecision::inTheConfiguration('BIND_TOKEN', Cost::Cheap, 'the token the door is bound with', held: true, credential: false),
+    )));
+    $screen->change('BIND_TOKEN');
+
+    expect([theDecisionOn($screen, 'BIND_TOKEN')->how, theDecisionOn($screen, 'BIND_TOKEN')->command])->toBe([HowADecisionIsChanged::AtTheMachine, 'lemonfiber config set BIND_TOKEN <value>'])
+        ->and($screen->changing())->toBe('');
 });
 
 it('reads the decisions again when the settings store refuses a change, and not after a rehearsal', function (): void {

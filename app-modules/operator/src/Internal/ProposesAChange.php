@@ -317,15 +317,9 @@ trait ProposesAChange
     /** Whether the rehearsal a yes would carry out moves this setting and nothing else. */
     private function rehearsedOnly(string $named): bool
     {
-        $asked = $this->asked;
-
-        if (! $asked instanceof ASettingChange) {
-            return false;
-        }
-
         $moved = [];
 
-        foreach ($asked as $setting => $value) {
+        foreach ($this->asked ?? [] as $setting => $value) {
             $moved[$setting] = $value;
         }
 
