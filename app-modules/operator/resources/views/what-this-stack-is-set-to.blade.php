@@ -17,6 +17,7 @@
          operator to read silence, and this list is one they will compare
          against what they see in the stack's own interfaces. --}}
     <x-design::note>{{ __('config.listing_is_the_stacks') }}</x-design::note>
+    <x-design::action :label="__('navigation.menu.decided')" :goes="$this->goes()->to(AStacksScreen::Decided)" tone="tonal" />
 
     @forelse ($this->answer()->set as $setting)
         <x-design::card>
@@ -33,117 +34,7 @@
                     supporting="{{ __('config.what_it_would_hold') }}"
                 />
 
-                @if ($this->proposalFor($setting->key) !== null)
-                    {{-- What the stack said this would come to, before
-                         anything is agreed to. The difference and not just
-                         the new value: somebody deciding is deciding between
-                         two things, and a screen showing one is asking them
-                         to remember the other correctly. --}}
-                    <x-design::note>
-                        @if ($this->proposalFor($setting->key)->holdsNothingYet)
-                            {{ __('config.holds_nothing_yet') }}
-                        @else
-                            {{ __('config.holds_now', ['value' => $this->proposalFor($setting->key)->fromSaid]) }}
-                        @endif
-                    </x-design::note>
-                    {{-- Both sides of the difference, and this is the half
-                         the input does not already show: what the stack
-                         understood it to be. An operator agreeing is agreeing
-                         to this, not to what is in the field. --}}
-                    <x-design::body>{{ __('config.would_hold', ['value' => $this->proposalFor($setting->key)->toSaid]) }}</x-design::body>
-
-                    <x-design::note>{{ __($this->proposalFor($setting->key)->costSaid) }}</x-design::note>
-                    <x-design::strong>{{ __($this->proposalFor($setting->key)->stanceSaid) }}</x-design::strong>
-
-                    <x-design::heading>{{ __('config.findings.heading') }}</x-design::heading>
-                    @forelse ($this->proposalFor($setting->key)->comesTo->lines as $line)
-                        @if ($line->aside)
-                            <x-design::note>{{ __($line->said, $line->with) }}</x-design::note>
-                        @else
-                            <x-design::body>{{ __($line->said, $line->with) }}</x-design::body>
-                        @endif
-                    @empty
-                        <x-design::note>{{ __('config.findings.nothing') }}</x-design::note>
-                    @endforelse
-
-                    @if ($this->proposalFor($setting->key)->wroteSomething)
-                        {{-- Said only where something was written. A setting
-                             that already held the value reaches the stance
-                             above saying so and needs no line about a
-                             restart that is not going to happen. --}}
-                        <x-design::note>{{ __('config.services_will_restart') }}</x-design::note>
-                    @endif
-
-                    @if ($this->proposalFor($setting->key)->refusalSaid !== '')
-                        {{-- The stack's own words for why nothing was
-                             written. Shown as they stand: a reason this app
-                             reworded would be a second account of something
-                             it does not understand. --}}
-                        <x-design::note>{{ $this->proposalFor($setting->key)->refusalSaid }}</x-design::note>
-                    @endif
-
-                    {{-- Only a staged change waits on a yes. A blocked one is
-                         refused again when confirmed, an area the operator
-                         declared unmanaged among the reasons, so its yes
-                         would be a control that cannot write. --}}
-                    @if ($this->proposalFor($setting->key)->canBeAgreedTo)
-                        @if ($this->proposalFor($setting->key)->mustBeAgreedFirst)
-                            {{-- Before the control rather than after it. The
-                                 core decides which changes cost something,
-                                 and an operator reading downward should meet
-                                 the warning before the button rather than
-                                 underneath it. --}}
-                            <x-design::notice>
-                                <x-design::strong>{{ __('config.worth_reading_twice') }}</x-design::strong>
-                            </x-design::notice>
-                        @endif
-
-                        {{-- The spoken name carries the setting; the drawn
-                             one stays short. Four cards each offering "Make
-                             this change" is four controls with one name
-                             between them, and which card a control is on is
-                             the one thing somebody being read to cannot
-                             check. --}}
-                        @if ($this->landing !== null)
-                            <x-design::note>{{ __('config.landing.waiting') }}</x-design::note>
-                        @elseif ($this->proposalFor($setting->key)->comesTo->interrupts)
-                            <x-operator::note>{{ __('health.coming.interrupts') }}</x-operator::note>
-                            <x-design::action
-                                :label="__('health.coming.let_them_finish')"
-                                :answers-to="__('config.agree_to', ['key' => $setting->key])"
-                                :tap="$this->tapping('agree', $setting->key, 'for_the_downloads')"
-                            />
-                            <x-design::action
-                                :label="__('health.coming.go_ahead_now')"
-                                :answers-to="__('config.agree_to', ['key' => $setting->key])"
-                                :tap="$this->tapping('agree', $setting->key, 'go_ahead_now')"
-                                tone="tonal"
-                            />
-                        @else
-                            <x-design::action
-                                :label="__('config.agree')"
-                                :answers-to="__('config.agree_to', ['key' => $setting->key])"
-                                :tap="$this->tapping('agree', $setting->key)"
-                            />
-                        @endif
-                    @endif
-                    @if ($this->landingSaid !== null)
-                        <x-design::note>{{ __($this->landingSaid) }}</x-design::note>
-                    @endif
-                @else
-                    <x-design::action
-                        :label="__('config.what_would_happen')"
-                        :answers-to="__('config.what_would_happen_to', ['key' => $setting->key])"
-                        :tap="$this->tapping('wouldBe', $setting->key)"
-                    />
-                @endif
-
-                <x-design::action
-                    :label="__('config.never_mind')"
-                    :answers-to="__('config.never_mind_about', ['key' => $setting->key])"
-                    tap="never()"
-                    tone="tonal"
-                />
+                <x-operator::the-review :key="$setting->key" :proposal="$this->proposalFor($setting->key)" :waiting="$this->landing !== null" :landing-said="$this->landingSaid" />
             @elseif ($setting->withheld)
                 {{-- The stack's own note that the value is set and withheld,
                      shown as it stands. Not dots and not the word hidden: the

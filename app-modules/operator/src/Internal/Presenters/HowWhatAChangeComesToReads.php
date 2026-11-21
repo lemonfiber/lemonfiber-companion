@@ -13,6 +13,7 @@ use Modules\Kernel\Api\WhatAChangeComesTo;
 use Modules\Kernel\Api\WhatASettingHolds;
 use Modules\Operator\Internal\AsText;
 use Modules\Operator\Internal\ViewModels\ALineOfWhatAChangeComesTo;
+use Modules\Operator\Internal\ViewModels\AnOpeningAsShown;
 use Modules\Operator\Internal\ViewModels\WhatAChangeComesToAsShown;
 
 /**
@@ -60,8 +61,29 @@ final readonly class HowWhatAChangeComesToReads
             $lines[] = $this->line('config.findings.keeps', ['what' => $left->shown()], aside: true);
         }
 
-        return new WhatAChangeComesToAsShown($lines, interrupts: $comesTo->interrupts !== []);
+        return new WhatAChangeComesToAsShown($lines, interrupts: $comesTo->interrupts !== [], opens: $this->opens($comesTo));
     }
+
+    /**
+     * What the change opens, in the order the stack named it.
+     *
+     * @return list<AnOpeningAsShown>
+     */
+    private function opens(WhatAChangeComesTo $comesTo): array
+    {
+        $opens = [];
+
+        foreach ($comesTo->asks as $ask) {
+            $opens[] = new AnOpeningAsShown(
+                what: $ask->what,
+                because: $ask->because,
+                setting: $ask->where(kept: AsText::of(...), obtained: AsText::nothing(...))->said,
+            );
+        }
+
+        return $opens;
+    }
+
 
     /** @return list<ALineOfWhatAChangeComesTo> */
     private function asked(WhatAChangeAsksFor $ask): array

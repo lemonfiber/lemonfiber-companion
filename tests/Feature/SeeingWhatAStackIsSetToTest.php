@@ -290,7 +290,7 @@ it('offers a change on a shown setting and on no withheld one', function (): voi
 it('draws a way to change each shown setting, named for it, and none beside a withheld one', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo())));
 
-    expect($drawn->offers())->toBe([__('config.change_key', ['key' => 'LIBRARY_PATH']), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('config.ask_again')])
+    expect($drawn->offers())->toBe([__('navigation.menu.decided'), __('config.change_key', ['key' => 'LIBRARY_PATH']), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('config.ask_again')])
         ->and($drawn->said())->toContain('/data/media')
         ->and($drawn->said())->toContain('set, not shown');
 });
@@ -368,7 +368,7 @@ it('draws both sides of a staged change, and offers to make it or to leave it', 
         ->and($drawn->said())->toContain(__($cost->saidOnTheScreen()))
         ->and($drawn->said())->toContain(__(Stance::Pending->saidOnTheScreen()))
         ->and(in_array(__('config.worth_reading_twice'), $drawn->said(), strict: true))->toBe($warned)
-        ->and($drawn->offers())->toBe([__('config.agree'), __('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('without.copy'), __('config.ask_again')]);
+        ->and($drawn->offers())->toBe([__('navigation.menu.decided'), __('config.agree'), __('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('without.copy'), __('config.ask_again')]);
 })->with([
     'cheap' => [Cost::Cheap, false],
     'consequential' => [Cost::Consequential, true],
@@ -741,5 +741,5 @@ it('draws a change refused because the operator declared the area unmanaged in t
 
     expect($drawn->said())->toContain(__(Stance::Blocked->saidOnTheScreen()), $refusal)
         ->and($screen->proposal()?->canBeAgreedTo)->toBeFalse()
-        ->and($drawn->offers())->toBe([__('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('without.copy'), __('config.ask_again')]);
+        ->and($drawn->offers())->toBe([__('navigation.menu.decided'), __('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('without.copy'), __('config.ask_again')]);
 });

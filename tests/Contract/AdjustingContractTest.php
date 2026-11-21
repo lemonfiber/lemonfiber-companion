@@ -78,6 +78,7 @@ function whatAStackSendsAboutAChange(
         'data' => [
             'changed' => in_array($stance, ['pending', 'applied'], strict: true),
             'rehearsed' => true,
+            'decisions' => [],
             'settings' => [],
             'review' => [
                 'change' => ['key' => $key, 'from' => $from, 'to' => $to, 'cost' => $cost],

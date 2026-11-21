@@ -8,11 +8,15 @@ use function app;
 
 use Illuminate\Contracts\Translation\Translator;
 use Modules\Kernel\Api\Cost;
+use Modules\Kernel\Api\KindOfObstacle;
+use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ProposedChange;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stance;
 use Modules\Kernel\Api\WhatAChangeComesTo;
+use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItHoldsNow;
+use Modules\Kernel\Api\WhatWasFoundOfTheSettings;
 use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisStackIsSetTo;
@@ -22,6 +26,7 @@ use Tests\Support\Fakes\AShareSheetThatWasOffered;
 use Tests\Support\Fakes\AStackThatIsSet;
 use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
 use Tests\Support\Fakes\AStackThatSaysWhatSetupSettled;
+use Tests\Support\Fakes\AStackThatTunesItsSettings;
 use Tests\Support\Fakes\AStackToldToChangeSomething;
 use Tests\Support\Fakes\StacksInMemory;
 
@@ -52,6 +57,7 @@ final readonly class TheSettingsOfTheLoft
         $screen = new WhatThisStackIsSetTo(
             $arranging,
             $adjusting ?? AStackToldToChangeSomething::saying(WhereTheChangeStands::at(ProposedChange::of('BIND', 'any', WhatItHoldsNow::shown('lan'), Cost::Cheap), Stance::Pending, WhatAChangeComesTo::nothing())),
+            AStackThatTunesItsSettings::sayingAtOnce(WhatWasFoundOfTheSettings::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), WhatBecameOfTheWork::noOutcome()),
             $keychain,
             AroundThePhone::holding(StacksInMemory::holding($stack)),
             new AppsSettingsThatOpen(),

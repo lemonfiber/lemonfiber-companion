@@ -105,6 +105,7 @@ function whatAStackSendsAboutItsSettings(): array
         'data' => [
             'changed' => false,
             'rehearsed' => false,
+            'decisions' => [],
             'settings' => [
                 // `origin` is required and is a union of four arms. Two
                 // different ones here rather than the same twice: a stand-in
