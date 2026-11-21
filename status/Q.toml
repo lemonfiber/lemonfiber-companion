@@ -6,7 +6,7 @@
 # request that changes whether a requirement is met changes its row.
 
 requirement = [
-  { id = "Q-R64", state = "partial", evidence = ["tests/Arch/ModuleApiTest.php"] },
+  { id = "Q-R64", state = "partial", evidence = [".github/workflows/ci.yml", "sonar-project.properties", "tests/Arch/EveryGateReadsEveryTreeTest.php::every tree the scanner is pointed at is on disk"] },
   { id = "Q-R66", state = "partial", evidence = [".docs/architecture/tests.md", "tests/Arch/EveryRuleHasSubjectsFindsThemTest.php", "tests/Guards/TheReadingRefusesWhatItCannotFollowTest.php"] },
   { id = "Q-R72", state = "partial", evidence = ["app-modules/dx/src/Api/AStandInStack.php", "tests/Arch/EveryStandInReplacesItsOwnPortTest.php", "tests/Arch/NoStandInCanReachAReleaseTest.php"] },
 ]

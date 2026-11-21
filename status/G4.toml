@@ -11,6 +11,6 @@ requirement = [
   { id = "G4-R3", state = "partial", evidence = ["app-modules/health/tests/Api/Queries/TheCauseBeforeItsSymptomsTest.php"] },
   { id = "G4-R4", state = "partial", evidence = ["app-modules/kernel/src/Api/WentWrong.php", "app-modules/sdk/src/Api/Reports.php", "app-modules/kernel/tests/Api/FindingTest.php", "app-modules/sdk/tests/Api/ReportsTest.php"] },
   { id = "G4-R6", state = "partial", evidence = ["app-modules/kernel/tests/Api/ObstacleTest.php"] },
-  { id = "G4-R7", state = "partial", evidence = ["app-modules/operator/src/View/Components/SomebodyToAsk.php"] },
+  { id = "G4-R7", state = "partial", evidence = ["app-modules/operator/src/View/Components/SomebodyToAsk.php", "tests/Feature/SeeingHowAStackIsTest.php::offers somebody to ask once, at the foot of the findings, where any said nothing to try", "tests/Feature/HearingHowAStackIsTest.php::offers somebody to ask under what it counts, where an item said nothing to try"] },
   { id = "G4-R8", state = "partial", evidence = ["tests/Templates/NothingSecretReachesAScreenTest.php"] },
 ]
