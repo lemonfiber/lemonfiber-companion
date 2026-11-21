@@ -2,8 +2,19 @@
 
 declare(strict_types=1);
 
+use Modules\Design\Api\TheSmallestTarget;
+use Modules\Household\Internal\Presenters\HowTheGuideReads;
+use Modules\Household\Internal\ViewModels\WhatACellSays;
+use Modules\Kernel\Api\AChannelsGuide;
+use Modules\Kernel\Api\AnAiring;
+use Modules\Kernel\Api\ChannelId;
+use Modules\Kernel\Api\Instant;
+use Modules\Kernel\Api\TheGuide;
+use Modules\Kernel\Api\WhenItSays;
+use Modules\Kernel\Api\Zone;
 use Native\Mobile\Edge\TailwindParser;
 use Tests\Support\Template;
+use Tests\Support\WhatMarkupDraws;
 
 // A target is bigger than the words on it.
 //
@@ -20,9 +31,17 @@ use Tests\Support\Template;
 // **It asks for a minimum rather than a height.** A row holding two lines is
 // already past 48 and setting a fixed height would shrink it; `min-h-` says
 // *at least this*, which is what a target is.
+//
+// **A width bound to a value is measured as drawn.** The guide draws each
+// programme as wide as it runs, so its template cannot say how wide a cell
+// is: a binding this rule knows is drawn below from every cell a crowded
+// guide gives, and any other binding is refused.
 
 /** The larger of the two platforms' minimum targets, in points: Android's 48 over iOS's 44. */
-const A_FINGER_NEEDS = 48;
+const A_FINGER_NEEDS = TheSmallestTarget::POINTS;
+
+/** Each width a template binds to a value, which the test that draws the guide measures as drawn. */
+const MEASURED_AS_DRAWN = ['$cell->width'];
 
 /** Every element a finger operates, which is the one this repository draws. */
 const OPERATED_BY_A_FINGER = 'pressable';
@@ -70,6 +89,10 @@ function inPoints(mixed $measure): float
 /** Whether a finger can hit a target the edge draws so. */
 function aFingerCanHit(string $tag): bool
 {
+    if (preg_match('/\s:width="([^"]*)"/', $tag, $bound) === 1 && ! in_array($bound[1], MEASURED_AS_DRAWN, strict: true)) {
+        return false;
+    }
+
     $drawn = whatTheEdgeDraws($tag);
 
     return inPoints($drawn['minHeight'] ?? null) >= A_FINGER_NEEDS
@@ -108,6 +131,7 @@ it('reads a target too short, too narrow or declaring no floor as one a finger c
     'a floor too low' => ['<native:pressable class="w-full min-h-10">'],
     'too narrow' => ['<native:pressable class="w-10 min-h-12">'],
     'no class at all' => ['<native:pressable a11y-label="Open">'],
+    'a width bound to a value nothing measures' => ['<native:pressable class="min-h-12" :width="$row->width">'],
 ]);
 
 it('reads a target at a finger\'s size or past it as one a finger can hit', function (string $tag): void {
@@ -116,4 +140,119 @@ it('reads a target at a finger\'s size or past it as one a finger can hit', func
     'a full-width row' => ['<native:pressable class="w-full min-h-12 py-2">'],
     'a fixed width past it' => ['<native:pressable class="w-12 min-h-12">'],
     'a taller floor' => ['<native:pressable class="w-28 h-16 min-h-16">'],
+]);
+
+/** Ten past eight in the evening, UTC: the grid starts at eight. */
+const A_CROWDED_EVENING = 1_893_442_200;
+
+/** A programme from so many minutes after eight to so many. */
+function onAt(string $title, int $starts, int $ends): AnAiring
+{
+    return AnAiring::of($title, Instant::atEpochSeconds(A_CROWDED_EVENING + (($starts - 10) * 60)), Instant::atEpochSeconds(A_CROWDED_EVENING + (($ends - 10) * 60)), '');
+}
+
+/** One channel of a crowded guide: an edge at the grid's start, then programmes of every length from a minute up with gaps between, its guide ending mid-programme. */
+function aCrowdedChannel(int $shortest): AChannelsGuide
+{
+    $airings = [onAt('began before', -30, $shortest % 5)];
+    $at = $shortest % 5;
+
+    foreach (range(0, 15) as $one) {
+        $length = (($one * $shortest) % 13) + 1;
+        $gap = ($one + $shortest) % 4 === 0 ? ($one % 3) + 1 : 0;
+        $airings[] = onAt(sprintf('%d-%d', $shortest, $one), $at + $gap, $at + $gap + $length);
+        $at += $gap + $length;
+    }
+
+    return AChannelsGuide::of(ChannelId::called(sprintf('c%d', $shortest)), sprintf('Channel %d', $shortest), '', WhenItSays::at(Instant::atEpochSeconds(A_CROWDED_EVENING + (($at - 10 - ($shortest % 3)) * 60))), ...$airings);
+}
+
+/**
+ * Every cell of a guide as crowded as one gets.
+ *
+ * @return list<WhatACellSays>
+ */
+function everyCellOfACrowdedGuide(): array
+{
+    $cells = [];
+    $guide = TheGuide::of(...array_map(aCrowdedChannel(...), range(1, 12)));
+
+    foreach (new HowTheGuideReads(Zone::utc(), Instant::atEpochSeconds(A_CROWDED_EVENING))->these($guide)->rows as $row) {
+        $cells = [...$cells, ...$row->cells];
+    }
+
+    return $cells;
+}
+
+/**
+ * Every pressable in a drawn tree, as its layout.
+ *
+ * @param array<array-key, mixed> $node
+ *
+ * @return list<array<array-key, mixed>>
+ */
+function everyPressableDrawnIn(array $node): array
+{
+    $found = ($node['type'] ?? null) === OPERATED_BY_A_FINGER && is_array($node['layout'] ?? null) ? [$node['layout']] : [];
+
+    foreach (is_array($node['children'] ?? null) ? $node['children'] : [] as $child) {
+        if (is_array($child)) {
+            $found = [...$found, ...everyPressableDrawnIn($child)];
+        }
+    }
+
+    return $found;
+}
+
+/** @param array<array-key, mixed> $layout */
+function drawnBigEnough(array $layout): bool
+{
+    $width = $layout['width'] ?? 'fill';
+
+    return inPoints($layout['min_height'] ?? null) >= A_FINGER_NEEDS
+        && ($width === 'fill' || inPoints($width) >= A_FINGER_NEEDS);
+}
+
+it('draws every cell of the guide a finger presses at least as wide and as tall as a finger needs, however crowded the guide', function (): void {
+    $small = [];
+    $pressed = 0;
+    $edges = 0;
+    $together = 0;
+
+    foreach (everyCellOfACrowdedGuide() as $cell) {
+        if ($cell->isAGap()) {
+            continue;
+        }
+
+        $drawn = everyPressableDrawnIn(WhatMarkupDraws::drawn('<x-household::guide-cell :cell="$cell" channel="NPO 1" />', ['cell' => $cell]));
+        $edges += $cell->isAnEdge && $drawn === [] ? 1 : 0;
+        $together += $cell->isSeveral() ? 1 : 0;
+
+        foreach ($cell->together as $programme) {
+            $drawn = [...$drawn, ...everyPressableDrawnIn(WhatMarkupDraws::drawn('<x-household::listed-programme :programme="$programme" channel="NPO 1" />', ['programme' => $programme]))];
+        }
+
+        foreach ($drawn as $layout) {
+            $pressed++;
+
+            if (! drawnBigEnough($layout)) {
+                $small[] = sprintf('%s (%s) drawn %s', $cell->title === '' ? $cell->times : $cell->title, $cell->times, json_encode($layout));
+            }
+        }
+    }
+
+    expect($pressed)->toBeGreaterThan(100, 'the crowded guide drew too few targets to measure')
+        ->and($edges)->toBeGreaterThan(2, 'the crowded guide drew no edge to leave unpressed')
+        ->and($together)->toBeGreaterThan(5, 'the crowded guide drew no programmes together')
+        ->and($small)->toBe([], sprintf("These guide targets are drawn smaller than a finger needs:\n  %s\n", implode("\n  ", $small)));
+});
+
+it('reads a drawn target too narrow or too short as one a finger cannot hit, and one past both as one it can', function (array $layout, bool $hit): void {
+    expect(drawnBigEnough($layout))->toBe($hit);
+})->with([
+    'too narrow' => [['width' => 40, 'min_height' => 48], false],
+    'too short' => [['width' => 120, 'min_height' => 40], false],
+    'no floor' => [['width' => 120], false],
+    'across its parent' => [['width' => 'fill', 'min_height' => 64], true],
+    'a finger exactly' => [['width' => 48, 'min_height' => 48], true],
 ]);

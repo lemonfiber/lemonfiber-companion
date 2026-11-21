@@ -74,6 +74,25 @@
 @endif
 </x-operator::content>
 
+{{-- Programmes too short to press one by one: their channel and the time
+     they run across, then each of them across the sheet, pressed as its own
+     cell would be. --}}
+<native:bottom-sheet :visible="$this->guide()->listing !== null" detents="medium" @dismiss="closeTheProgramme()">
+    <native:scroll-view class="w-full">
+    <native:column class="w-full gap-2 p-4">
+        @if ($this->guide()->listing !== null)
+            <x-design::title>{{ $this->guide()->listing->channel }}</x-design::title>
+            <x-design::note>{{ $this->guide()->listing->times }}</x-design::note>
+            @forelse ($this->guide()->listing->programmes as $programme)
+                <x-household::listed-programme :programme="$programme" :channel="$this->guide()->listing->channel" />
+            @empty
+                {{-- Not reached: a list is only opened for a cell holding several. --}}
+            @endforelse
+        @endif
+    </native:column>
+    </native:scroll-view>
+</native:bottom-sheet>
+
 {{-- A later programme's title, times and certificate, with nothing to press:
      the guide neither tunes ahead nor reminds. --}}
 <native:bottom-sheet :visible="$this->guide()->about !== null" detents="medium" @dismiss="closeTheProgramme()">

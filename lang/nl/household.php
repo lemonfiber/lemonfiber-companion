@@ -392,6 +392,8 @@ return [
         'channel_named' => ':channel kijken',
         'reads_on_now' => ':channel, :programme, :times, nu',
         'reads_later' => ':programme, :times',
+        'reads_together' => '{2} Twee programma\'s, :times|[3,*] :count programma\'s, :times',
+        'together' => '{2} Twee programma\'s|[3,*] :count programma\'s',
     ],
 
     'month' => [

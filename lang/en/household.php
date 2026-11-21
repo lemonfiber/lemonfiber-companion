@@ -412,6 +412,8 @@ return [
         'channel_named' => 'Watch :channel',
         'reads_on_now' => ':channel, :programme, :times, on now',
         'reads_later' => ':programme, :times',
+        'reads_together' => '{2} Two programmes, :times|[3,*] :count programmes, :times',
+        'together' => '{2} Two programmes|[3,*] :count programmes',
     ],
 
     // The months, by number, for when a title came out.

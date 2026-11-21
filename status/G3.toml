@@ -12,5 +12,5 @@ requirement = [
   { id = "G3-R10", state = "partial", evidence = ["tests/Contract/SayingContractTest.php"] },
   { id = "G3-R14", state = "partial", evidence = ["tests/Arch/NoClassDecidedAtRuntimeTest.php"] },
   { id = "G3-R15", state = "partial", evidence = ["tests/Templates/NothingAStackSaidCanRedrawAScreenTest.php"] },
-  { id = "G3-R16", state = "partial", evidence = ["tests/Templates/EveryTargetIsBigEnoughToHitTest.php"] },
+  { id = "G3-R16", state = "partial", evidence = ["tests/Templates/EveryTargetIsBigEnoughToHitTest.php", "app-modules/household/tests/Internal/Presenters/HowTheGuideReadsTest.php", "tests/Feature/ReadingTheLiveTvGuideTest.php"] },
 ]
