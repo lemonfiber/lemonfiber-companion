@@ -6,8 +6,8 @@
 # request that changes whether a requirement is met changes its row.
 
 requirement = [
-  { id = "DES-R15", state = "partial", evidence = ["tests/Templates/ThemeColourIsNotSetAsTextTest.php"] },
-  { id = "DES-R18", state = "partial", evidence = ["app-modules/design/src/Api/ThemeToken.php", "tests/Feature/TheAccentIsTheBrandsTest.php"] },
+  { id = "DES-R15", state = "partial", evidence = ["tests/Templates/ThemeColourIsNotSetAsTextTest.php", "app-modules/design/src/Api/ThemeToken.php", "app-modules/design/tests/Api/ThemeTokenTest.php::sets every text pairing at AA or better, in both themes"] },
+  { id = "DES-R18", state = "partial", evidence = ["app-modules/design/src/Api/ThemeToken.php", "tests/Feature/TheAccentIsTheBrandsTest.php", "app-modules/design/tests/Api/ThemeTokenTest.php::sets as text only the roles that are foregrounds", "tests/Templates/ThemeColourIsNotSetAsTextTest.php"] },
   { id = "DES-R28", state = "done", evidence = ["tests/Arch/NoSettingChoosesTheThemeTest.php", "tests/Contract/TakesTheThemeItOpensOverContractTest.php"] },
   { id = "DES-R29", state = "done", evidence = ["app-modules/design/src/Api/ThemeToken.php", "app-modules/design/tests/Api/ThemeTokenTest.php", "tests/Arch/BrandPaletteParityTest.php"] },
   { id = "DES-R30", state = "done", evidence = ["app-modules/design/resources/views/components/marked-line.blade.php", "app-modules/design/resources/views/components/notice.blade.php", "app-modules/design/tests/Api/ThemeTokenTest.php", "app-modules/design/tests/View/Components/MarkedLineTest.php"] },
