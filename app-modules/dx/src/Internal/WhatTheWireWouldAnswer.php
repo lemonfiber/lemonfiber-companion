@@ -391,8 +391,7 @@ final readonly class WhatTheWireWouldAnswer
         // The paths whose body is not one envelope built from the
         // contract's declaration, the two answers work redeems into, what a
         // member was part-way through, the player's three actions, which answer
-        // at once, and then everything else. `match` rather than early returns, because what this is doing
-        // is naming a path rather than deciding anything.
+        // at once, and then everything else.
         return match (true) {
             $endpoint === Api::LOGS_ENDPOINT => self::aDocumentALine(),
             $endpoint === Admission::ENDPOINT => self::aDoorThatOpened(),
@@ -517,11 +516,6 @@ final readonly class WhatTheWireWouldAnswer
         $envelope = self::oneEnvelope(self::WHAT_A_DOOR_ANSWERS);
         $data = $envelope['data'];
 
-        // The narrowing is on one line on purpose. An envelope's `data` is
-        // always an array — every `Data` the contract declares is an
-        // `array{...}` or a `list<...>` — so the other arm is a shape no
-        // envelope has, and written across three lines it is a line no run
-        // reaches and the coverage gate is right to say so.
         $envelope['data'] = [...(is_array($data) ? $data : []), 'until' => self::WHEN_A_SESSION_ENDS];
 
         return $envelope;
@@ -543,11 +537,7 @@ final readonly class WhatTheWireWouldAnswer
     {
         $envelope = self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind('history'));
         $data = $envelope['data'];
-        // One line for the same reason as the door's: `data` is always an
-        // array, and a second arm spread over lines is one no run reaches.
         $record = is_array($data) ? $data : [];
-        // `changes` is required by the declaration, so the key is always
-        // there; what is not known to the analyser is that it holds a list.
         $changes = $record['changes'];
         $corrected = [];
 
@@ -594,10 +584,7 @@ final readonly class WhatTheWireWouldAnswer
     {
         $envelope = self::oneEnvelope(self::WHAT_A_RESET_BECOMES);
         $data = $envelope['data'];
-        // One line for the door's reason: `data` is always an array.
         $report = is_array($data) ? $data : [];
-        // `reverted` is required by the declaration, so the key is always
-        // there; what is not known to the analyser is that it holds a list.
         $reverted = $report['reverted'];
         $corrected = [];
 
@@ -621,8 +608,6 @@ final readonly class WhatTheWireWouldAnswer
     {
         // An edit's fields are named, so only its named keys are carried.
         $named = array_filter(is_array($edit) ? $edit : [], is_string(...), ARRAY_FILTER_USE_KEY);
-        // `diff` is required by the declaration and typed as text, and one
-        // line for the door's reason.
         $diff = is_string($named['diff']) ? $named['diff'] : '';
 
         return [...$named, 'diff' => sprintf("- %s\n+ %s\n", $diff, $diff)];

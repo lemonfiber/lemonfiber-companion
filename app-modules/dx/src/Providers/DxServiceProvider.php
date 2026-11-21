@@ -55,11 +55,6 @@ final class DxServiceProvider extends ServiceProvider
                 // anything of, and the only safe reading of *nobody said* is
                 // *nobody asked*: this module takes over the ports the rest of
                 // the app runs on.
-                //
-                // Caught here rather than in a method of its own, because the
-                // analyser refuses a checked exception escaping a closure and
-                // refuses a method taking a container — so the one place the
-                // catch can sit is inside the closure that holds both.
                 return;
             }
 
