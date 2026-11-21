@@ -25,6 +25,9 @@ interface ExtendingTheStack
     /** Which plugins the stack has installed, or what stood in the way. */
     public function installedOn(Stack $stack, Session $session): WhatWasFoundOfThePlugins;
 
+    /** What the stack's verified catalogue offers, whether reaching it is off, or why it could not be read; asks nothing where reaching it is off. */
+    public function catalogueOf(Stack $stack, Session $session): WhatWasFoundOfThePluginCatalogue;
+
     /** Ask what installing from this source would do, writing nothing. */
     public function rehearseInstalling(Stack $stack, Session $session, APluginSource $source): HowExtendingItIsGoing;
 
