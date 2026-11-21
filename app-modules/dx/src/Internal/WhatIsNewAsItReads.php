@@ -39,11 +39,7 @@ final readonly class WhatIsNewAsItReads
     public static function from(array $envelope, int $onset): array
     {
         $data = $envelope['data'];
-        // One line: `data` is always an array.
         $news = is_array($data) ? $data : [];
-        // `problems` and `requests` are required by the declaration, so the
-        // keys are always there; what is not known to the analyser is that
-        // each holds a list.
         $problems = $news[WireField::Problems->value];
         $requests = $news[WireField::Requests->value];
         $dated = [];

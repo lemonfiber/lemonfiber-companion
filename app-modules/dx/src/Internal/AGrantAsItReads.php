@@ -32,7 +32,6 @@ final readonly class AGrantAsItReads
     public static function from(array $envelope): array
     {
         $data = $envelope['data'];
-        // One line: `data` is always an array.
         $grant = is_array($data) ? $data : [];
         $envelope['data'] = [
             ...$grant,

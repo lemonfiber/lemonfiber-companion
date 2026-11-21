@@ -29,7 +29,6 @@ final readonly class WhereTheyLeftOffAsItReads
     public static function from(array $envelope): array
     {
         $data = $envelope['data'];
-        // One line: `data` is always an array.
         $report = is_array($data) ? $data : [];
         $under = PartWayField::PartWay->value;
         $unlocated = [];
