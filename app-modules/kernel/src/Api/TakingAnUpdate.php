@@ -28,6 +28,7 @@ final readonly class TakingAnUpdate implements AnAction
         private AnOffer $offer,
         private TheMovesInPlace $moves,
         private WhatBecameOfTheMovesInPlace $guards,
+        private WhetherToWait $waiting = WhetherToWait::GoAheadNow,
     ) {}
 
     /**
@@ -104,6 +105,24 @@ final readonly class TakingAnUpdate implements AnAction
     public function cannotBePutBack(): Services
     {
         return $this->cannotBePutBack;
+    }
+
+    /** The same update, letting what is still coming down land first or not. */
+    public function letting(WhetherToWait $waiting): self
+    {
+        return new self($this->changing, $this->cannotBePutBack, $this->offer, $this->moves, $this->guards, $waiting);
+    }
+
+    /** Whether what is still coming down lands first. */
+    public function waiting(): WhetherToWait
+    {
+        return $this->waiting;
+    }
+
+    /** What the stack is asked is still coming down inside the services it would change. */
+    public function reach(): WhatAStopReaches
+    {
+        return WhatAStopReaches::theServices(...$this->changing);
     }
 
     /** Each of lemonfiber's own guards it would move, carried for the reason {@see changing()} is. */

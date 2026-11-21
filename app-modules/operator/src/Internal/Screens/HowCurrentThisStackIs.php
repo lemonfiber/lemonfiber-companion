@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Screens;
 
 use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
+use Modules\Kernel\Api\AskingWhatAStopWouldInterrupt;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Instant;
@@ -19,12 +20,14 @@ use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\Upkeep;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Kernel\Api\WhetherToWait;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsTheUpdateItTook;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\AgoAsShown;
 use Modules\Operator\Internal\Presenters\HowAMoveInPlaceReads;
 use Modules\Operator\Internal\Presenters\HowUpkeepReads;
+use Modules\Operator\Internal\SaysWhatAStopWouldInterrupt;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatTheUpdateWouldMove;
 use Modules\Operator\Internal\ViewModels\WhatTheUpkeepTurnedOutToBe;
@@ -80,6 +83,7 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
     use DrawsItsTemplate;
+    use SaysWhatAStopWouldInterrupt;
 
     public const string TEMPLATE = 'operator::how-current-this-stack-is';
 
@@ -111,6 +115,7 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
         private readonly KeepingTheLastUpkeep $kept,
+        private readonly AskingWhatAStopWouldInterrupt $interrupting,
     ) {}
 
     /**
@@ -176,6 +181,10 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
         }
 
         $this->asking = $answer->offer;
+
+        if (! $answer->offer->changing()->isEmpty()) {
+            $this->askWhatComesDownInside($answer->offer->reach(), $this->storage, $this->interrupting);
+        }
     }
 
     /**
@@ -188,7 +197,7 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
      * Refused while the reading drawn is one the phone kept: an update is
      * agreed to only against a fresh one.
      */
-    public function agree(): void
+    public function agree(string $letting = WhetherToWait::GoAheadNow->value): void
     {
         $taking = $this->asking;
 
@@ -197,9 +206,10 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
         }
 
         $this->asking = null;
+        $this->comingDown = null;
 
         $this->answered = null;
-        $this->takeIt($taking);
+        $this->takeIt($taking->letting(WhetherToWait::tryFrom($letting) ?? WhetherToWait::GoAheadNow));
     }
 
     /** Leave it, and what the stack said of an update it refused with it. */
@@ -207,6 +217,7 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     {
         $this->asking = null;
         $this->movedOn = null;
+        $this->comingDown = null;
     }
 
     /**

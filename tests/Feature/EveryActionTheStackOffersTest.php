@@ -43,8 +43,8 @@ use Tests\Support\WhatTheReadersRead;
 const OFFERED = [
     'Adoption', 'Alert', 'Alerts', 'Archives', 'Askable', 'AskableKinds', 'Asked', 'Backup', 'Boot', 'Bandwidth', 'Beside', 'Bundle', 'Capabilities', 'Catalogue', 'Channels', 'Clients', 'Config',
     'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Grant', 'Guide', 'Held', 'History', 'Hosting',
-    'Handoff', 'Household', 'Import', 'Invitation', 'Job', 'Keys', 'DeviceKeys', 'DeviceKey', 'DeviceChallenge', 'KeyClaim', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Notify', 'NotifyMine', 'Outbound', 'Pairing', 'PartWay', 'Pausing', 'Playing', 'Plugins', 'Preview',
-    'Provenance', 'PushEndpoint', 'PushEndpoints', 'Quality', 'Queue', 'Ran', 'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Settings', 'Settled', 'Space', 'Stack',
+    'Handoff', 'Household', 'Import', 'InFlight', 'Invitation', 'Job', 'Keys', 'DeviceKeys', 'DeviceKey', 'DeviceChallenge', 'KeyClaim', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Notify', 'NotifyMine', 'Outbound', 'Pairing', 'PartWay', 'Pausing', 'Playing', 'Plugins', 'Preview',
+    'Provenance', 'PushEndpoint', 'PushEndpoints', 'Quality', 'Queue', 'Ran', 'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Served', 'Settings', 'Settled', 'Space', 'Stack',
     'Start', 'Status', 'Step', 'StopSeeding', 'Stored', 'Stuck', 'Substitution', 'Title', 'Trace', 'Tuned', 'Undo', 'Uninstall', 'Update', 'Upgrade',
     'Version', 'Walkthrough', 'Watch', 'Watched', 'Watcher', 'Wiring', 'Word',
 ];
@@ -97,17 +97,27 @@ const ELSEWHERE = [
     'Certificate' => 'N1-R79 — replacing the certificate paired phones pin is done at the machine: the phone that asked would refuse the machine once it is replaced',
     'MintedKey' => 'N29-R2 — the app mints a key only as a claim, whose answer is `key-claim`; `minted-key` carries the secret, which the app never receives',
     'Play' => 'N3-R45 — a title plays through the grant the core gave this device, never on the pass in an address the `play` kind carries for a browser',
+    'Caller' => 'N1-R80 — who a request proves to be is read by the surface itself to admit it',
+    'Standing' => 'N1-R80 — what the surface composes its routes from is read by the surface itself',
+    'Password' => 'N1-R80 — the surface\'s password is typed at the machine',
+    'WalkthroughOffer' => 'N1-R80 — the walkthrough is offered by setup at the machine',
+    'Logs' => 'N1-R80 — the command line\'s account of a read, whose lines the app takes from `GET /api/logs`',
+    'PluginClaims' => 'N1-R80 — a plugin author\'s check at their own checkout',
+    'PluginConformance' => 'N1-R80 — a plugin author\'s check at their own checkout',
+    'PluginProvenance' => 'N1-R80 — a plugin author\'s check at their own checkout',
+    'PluginRecording' => 'N1-R80 — a plugin author\'s check at their own checkout',
 ];
 
 /**
  * Kinds nobody has offered yet.
  *
- * Early, and these have been seen. Moving one up to `OFFERED` is the work;
- * moving one to `ELSEWHERE` needs a requirement written first.
+ * None. A kind the stack grows lands here only after somebody has looked:
+ * moving one up to `OFFERED` is the work, and moving one to `ELSEWHERE` needs
+ * a requirement written first.
+ *
+ * @var list<string>
  */
-const NOT_YET = [
-    'Caller', 'InFlight', 'Logs', 'Password', 'PluginClaims', 'PluginConformance', 'PluginProvenance', 'PluginRecording', 'Served', 'Standing', 'WalkthroughOffer',
-];
+const NOT_YET = [];
 
 it('every kind the stack offers has been looked at', function (): void {
     // A set difference rather than a membership test in a loop, and the
@@ -286,17 +296,41 @@ function everyKindAServedReadAnswers(): array
     return $kinds;
 }
 
+/**
+ * The kinds excused because the core gives them only to its command line or to the surface itself.
+ *
+ * @return list<string>
+ */
+function everyKindNoRemoteCallerIsServed(): array
+{
+    $kinds = [];
+
+    foreach (ELSEWHERE as $kind => $because) {
+        if (str_starts_with($because, 'N1-R80 — ')) {
+            $kinds[] = $kind;
+        }
+    }
+
+    return $kinds;
+}
+
 it('no kind a served read answers waits unread', function (): void {
-    $unread = array_values(array_intersect(NOT_YET, everyKindAServedReadAnswers()));
+    $unread = array_values(array_intersect([...NOT_YET, ...everyKindNoRemoteCallerIsServed()], everyKindAServedReadAnswers()));
 
     expect(everyKindAServedReadAnswers())->not->toBeEmpty()
         ->and($unread)->toBe([], sprintf(
             "The stack serves a read answering with these, and nothing here reads them:\n  %s\n\n"
             . 'A served read is an answer the app can ask for today, so `NOT_YET` is not '
-            . 'where it waits. Read it, or put it in `ELSEWHERE` with the requirement that '
-            . 'excuses it (N1-R2).',
+            . 'where it waits, and N1-R80 no longer excuses it. Read it, or put it in '
+            . '`ELSEWHERE` with the requirement that excuses it (N1-R2, N1-R80).',
             implode("\n  ", $unread),
         ));
+});
+
+it('excuses exactly the nine kinds the core serves no remote caller', function (): void {
+    expect(everyKindNoRemoteCallerIsServed())->toBe([
+        'Caller', 'Standing', 'Password', 'WalkthroughOffer', 'Logs', 'PluginClaims', 'PluginConformance', 'PluginProvenance', 'PluginRecording',
+    ]);
 });
 
 it('every excuse names a requirement', function (): void {

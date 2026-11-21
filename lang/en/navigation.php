@@ -46,6 +46,7 @@ return [
         'passwords' => 'Passwords',
         'app_keys' => 'App keys',
         'pair_a_phone' => 'Pair a phone',
+        'serving' => 'Serving and certificate',
         'storage' => 'Storage',
         'backups' => 'Backups',
         'after_a_restart' => 'After a restart',

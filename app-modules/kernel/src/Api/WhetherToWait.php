@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 /**
- * Whether taking lemonfiber off lets what is still coming down land first.
+ * Whether an action that stops services lets what is still coming down land first.
  *
  * Two answers, and neither is chosen for the operator: stopping interrupts
  * whatever is still arriving, and waiting lets it finish before anything
@@ -13,7 +13,7 @@ namespace Modules\Kernel\Api;
  */
 enum WhetherToWait: string
 {
-    /** Let what is still coming down land, then remove. */
+    /** Let what is still coming down land, then go ahead. */
     case ForTheDownloads = 'for_the_downloads';
 
     /** Go ahead now, interrupting what is still coming down. */

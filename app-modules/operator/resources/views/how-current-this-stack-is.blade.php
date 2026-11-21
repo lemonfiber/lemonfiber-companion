@@ -62,7 +62,15 @@
 
     {{-- Drawn and not usable while the reading drawn is one the phone kept:
          an update is agreed to only against a fresh one. --}}
-    <x-design::action :label="__('health.go_ahead')" tap="agree()" :disabled="$this->answer()->keptAgo !== null" />
+    @if ($this->comingDown !== null)
+        <x-operator::what-a-stop-interrupts :coming-down="$this->comingDown" />
+    @endif
+    @if ($this->comingDown?->offersWaiting())
+        <x-design::action :label="__('health.coming.let_them_finish')" tap="agree('for_the_downloads')" :disabled="$this->answer()->keptAgo !== null" />
+        <x-design::action :label="__('health.coming.go_ahead_now')" tap="agree('go_ahead_now')" tone="tonal" :disabled="$this->answer()->keptAgo !== null" />
+    @else
+        <x-design::action :label="__('health.go_ahead')" tap="agree()" :disabled="$this->answer()->keptAgo !== null" />
+    @endif
     @if ($this->answer()->keptAgo !== null)
         <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->keptAgo->said, $this->answer()->keptAgo->count)]) }}</x-design::note>
     @endif

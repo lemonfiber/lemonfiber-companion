@@ -32,6 +32,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatRehearses;
+use Tests\Support\Fakes\AStackThatSaysWhatIsComingDown;
 use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\AStackThatSwitches;
@@ -128,6 +129,7 @@ function oneThingInTheAttic(AStackThatSupervises $stack, KeepingWhatItRuns $kept
         AStackThatSaysWhatItWaitsOn::saying(),
         AroundThePhone::listening(),
         $kept,
+        AStackThatSaysWhatIsComingDown::nothing(),
     );
     $screen->setParams(['stack' => $attic->id()->stored(), 'about' => $named]);
 

@@ -31,6 +31,7 @@ enum TheMenu: string
     case Passwords = 'passwords';
     case AppKeys = 'app_keys';
     case PairAPhone = 'pair_a_phone';
+    case Serving = 'serving';
     case Storage = 'storage';
     case Backups = 'backups';
     case AfterARestart = 'after_a_restart';
@@ -69,7 +70,7 @@ enum TheMenu: string
     {
         return match ($this) {
             self::Requests, self::Allowance, self::ViewAsMember, self::PlayingNow, self::StuckDownloads, self::FollowADownload => WhereInTheMenu::Household,
-            self::InviteSomeone, self::FrontDoor, self::WatchApps, self::Passwords, self::AppKeys, self::PairAPhone => WhereInTheMenu::Access,
+            self::InviteSomeone, self::FrontDoor, self::WatchApps, self::Passwords, self::AppKeys, self::PairAPhone, self::Serving => WhereInTheMenu::Access,
             self::Storage, self::Backups, self::AfterARestart, self::WhileNobodyWasLooking, self::Watcher, self::Queue, self::Scheduled, self::SetUpWith, self::AlreadyInstalled, self::OtherPrograms, self::About, self::Uninstall => WhereInTheMenu::Machine,
             self::General, self::OwnSettings, self::Quality, self::Connections, self::Plugins, self::Bandwidth, self::OutgoingTraffic, self::Alerts, self::WhereAlertsGo, self::History, self::Sources => WhereInTheMenu::Settings,
             self::GetHelp, self::Glossary, self::ServicesExplained => WhereInTheMenu::Help,
@@ -92,6 +93,7 @@ enum TheMenu: string
             self::Passwords => AStacksScreen::Credentials,
             self::AppKeys => AStacksScreen::Keys,
             self::PairAPhone => AStacksScreen::Pair,
+            self::Serving => AStacksScreen::Served,
             self::Storage => AStacksScreen::Room,
             self::Backups => AStacksScreen::Keeps,
             self::AfterARestart => AStacksScreen::Hosting,
@@ -153,6 +155,7 @@ enum TheMenu: string
             self::Passwords => ['key', 'key'],
             self::AppKeys => ['vpn_key', 'key.horizontal'],
             self::PairAPhone => ['qr_code', 'qrcode'],
+            self::Serving => ['verified_user', 'lock.shield'],
             self::Storage => ['storage', 'internaldrive'],
             self::Backups => ['backup', 'externaldrive'],
             self::AfterARestart => ['restart_alt', 'arrow.clockwise'],

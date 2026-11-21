@@ -1,3 +1,4 @@
+@use('Modules\Stacks\Api\AStacksScreen')
 @use('Modules\Operator\Internal\WhereRemovingTheStackStands')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -54,6 +55,10 @@
             </x-design::notice>
         @endif
     @endif
+
+    <x-design::section>
+        <x-design::row :headline="__('served.title')" :goes="$this->goes()->to(AStacksScreen::Served)" />
+    </x-design::section>
 
     <x-design::section>
         <x-design::row :headline="__('settings.remove_from_phone')" tap="askToRemove()" />

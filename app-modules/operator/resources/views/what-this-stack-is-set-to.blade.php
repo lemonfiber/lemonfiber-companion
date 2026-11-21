@@ -104,11 +104,31 @@
                              between them, and which card a control is on is
                              the one thing somebody being read to cannot
                              check. --}}
-                        <x-design::action
-                            :label="__('config.agree')"
-                            :answers-to="__('config.agree_to', ['key' => $setting->key])"
-                            :tap="$this->tapping('agree', $setting->key)"
-                        />
+                        @if ($this->landing !== null)
+                            <x-design::note>{{ __('config.landing.waiting') }}</x-design::note>
+                        @elseif ($this->proposalFor($setting->key)->comesTo->interrupts)
+                            <x-operator::note>{{ __('health.coming.interrupts') }}</x-operator::note>
+                            <x-design::action
+                                :label="__('health.coming.let_them_finish')"
+                                :answers-to="__('config.agree_to', ['key' => $setting->key])"
+                                :tap="$this->tapping('agree', $setting->key, 'for_the_downloads')"
+                            />
+                            <x-design::action
+                                :label="__('health.coming.go_ahead_now')"
+                                :answers-to="__('config.agree_to', ['key' => $setting->key])"
+                                :tap="$this->tapping('agree', $setting->key, 'go_ahead_now')"
+                                tone="tonal"
+                            />
+                        @else
+                            <x-design::action
+                                :label="__('config.agree')"
+                                :answers-to="__('config.agree_to', ['key' => $setting->key])"
+                                :tap="$this->tapping('agree', $setting->key)"
+                            />
+                        @endif
+                    @endif
+                    @if ($this->landingSaid !== null)
+                        <x-design::note>{{ __($this->landingSaid) }}</x-design::note>
                     @endif
                 @else
                     <x-design::action

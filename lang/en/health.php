@@ -506,4 +506,17 @@ return [
         'refused' => 'The stack did not accept this',
         'not_taken' => 'The stack answered, and its report does not show this as accepted.',
     ],
+    'coming' => [
+        'heading' => 'Still coming down',
+        'line' => ':name, :progress% of the way, in the :by',
+        'by' => [
+            'usenet' => 'Usenet client',
+            'torrent' => 'torrent client',
+            'another-way' => 'download client',
+        ],
+        'interrupts' => 'Going ahead now interrupts every download above, and what each had fetched so far may be lost.',
+        'unknown' => 'Whether anything is still coming down could not be found out.',
+        'let_them_finish' => 'Let them finish',
+        'go_ahead_now' => 'Go ahead now',
+    ],
 ];

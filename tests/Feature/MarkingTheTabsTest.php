@@ -46,6 +46,7 @@ use Tests\Support\Fakes\AStackThatKeepsCurrent;
 use Tests\Support\Fakes\AStackThatNarrates;
 use Tests\Support\Fakes\AStackThatRehearses;
 use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
+use Tests\Support\Fakes\AStackThatSaysWhatIsComingDown;
 use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatSupervises;
@@ -137,7 +138,7 @@ function theShedsTabHearing(TheTabs $tab, AStackThatSpeaksUp $stream, FrozenCloc
     $screen = match ($tab) {
         TheTabs::Health => new HowThisStackIs(AStackThatWasAsked::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, AStackThatSaysHowItRunsWithout::bundled()),
         TheTabs::Services => new WhatThisStackRuns(AStackThatSupervises::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, WhatThePhoneKeeps::noListingYet(), AStackThatSwitches::sayingAtOnce(WhatBecameOfTheWork::noOutcome())),
-        TheTabs::Updates => new HowCurrentThisStackIs(AStackThatKeepsCurrent::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, WhatThePhoneKeeps::noUpkeepYet()),
+        TheTabs::Updates => new HowCurrentThisStackIs(AStackThatKeepsCurrent::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening, WhatThePhoneKeeps::noUpkeepYet(), AStackThatSaysWhatIsComingDown::nothing()),
         TheTabs::Repairs => new WhatWouldBePutRight(AStackThatWouldMend::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
     };
     $screen->setParams(['stack' => $stack->id()->stored()]);
@@ -164,7 +165,7 @@ function theShedsOtherScreenHearing(
     $offline = Obstacle::of(KindOfObstacle::DeviceHasNoNetwork);
 
     $screen = match ($which) {
-        'what to do with a service' => new WhatToDoWithThis(AStackThatSupervises::met($offline), AStackThatRehearses::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $start ?? AStackThatSaysWhatItWaitsOn::saying(), $listening, WhatThePhoneKeeps::noListingYet()),
+        'what to do with a service' => new WhatToDoWithThis(AStackThatSupervises::met($offline), AStackThatRehearses::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $start ?? AStackThatSaysWhatItWaitsOn::saying(), $listening, WhatThePhoneKeeps::noListingYet(), AStackThatSaysWhatIsComingDown::nothing()),
         'what a service said' => new WhatThisServiceSaid(AServiceThatSpoke::met($offline), $keychain, $around, AZoneThatIsSet::to('Europe/Amsterdam'), new AppsSettingsThatOpen(), $listening),
         'the words the menu opens' => new WhatTheWordsMean(AStackThatExplainsItsWords::met($offline), $keychain, $around, new AppsSettingsThatOpen(), $listening),
         default => new WatchingOneArrive(

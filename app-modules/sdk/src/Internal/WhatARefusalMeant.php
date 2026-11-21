@@ -309,6 +309,7 @@ final readonly class WhatARefusalMeant
         RefusalCode::StackNeedsNewer,
         RefusalCode::StackUnassembled,
         RefusalCode::Unrecorded,
+        RefusalCode::NotServing,
         RefusalCode::Unreadable,
         RefusalCode::Refused,
         RefusalCode::Already,

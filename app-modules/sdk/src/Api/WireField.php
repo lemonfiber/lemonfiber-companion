@@ -953,6 +953,9 @@ enum WireField: string implements NamesAWireField
     /** How far along one download is, from none to a hundred. */
     case Progress = 'progress';
 
+    /** Which way one download is coming down. */
+    case Protocol = 'protocol';
+
     /** Whether this machine was found to have something lemonfiber cannot remove; and what a hand-edited file holds now. */
     case Found = 'found';
 

@@ -220,7 +220,9 @@ jobs:
           # fails means a push, as does a clean build whose pull request has no
           # auto-merge armed, or a pull request titled for another revision:
           # that is what a run cancelled between moving the branch and the step
-          # after it leaves, and the push is what puts it right.
+          # after it leaves, and the push is what puts it right. A pull request
+          # that conflicts with main is not carried either, whatever its bytes:
+          # it cannot merge, and the push rebuilds it on main.
           if FILES="$files" python3 - >"${RUNNER_TEMP}/carried" <<'PY'
           import hashlib
           import json
@@ -268,6 +270,8 @@ jobs:
               sys.exit(f"pushing: #{pull['number']} has no auto-merge armed, which a clean run leaves")
           if pull["title"] != os.environ["TITLE"]:
               sys.exit(f"pushing: #{pull['number']} is titled {pull['title']!r}, not {os.environ['TITLE']!r}")
+          if api(f"repos/{repo}/pulls/{pull['number']}").get("mergeable_state") == "dirty":
+              sys.exit(f"pushing: #{pull['number']} conflicts with main")
 
           base = api(f"repos/{repo}/compare/main...{head}")["merge_base_commit"]["sha"]
           after = blobs(base)

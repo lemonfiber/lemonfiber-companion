@@ -19,6 +19,7 @@ use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
 use Modules\Operator\Internal\Screens\HowThisPhoneIsSet;
 use Modules\Operator\Internal\Screens\HowThisPluginIsSet;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
+use Modules\Operator\Internal\Screens\HowThisStackIsServed;
 use Modules\Operator\Internal\Screens\JoiningAHouse;
 use Modules\Operator\Internal\Screens\LettingADownloadGo;
 use Modules\Operator\Internal\Screens\Locked;
@@ -236,6 +237,7 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Queue->value, TheQueueHealingItself::class);
             Router::native(AStacksScreen::Scheduled->value, TheScheduledRuns::class);
             Router::native(AStacksScreen::Settled->value, WhatThisStackWasSetUpWith::class);
+            Router::native(AStacksScreen::Served->value, HowThisStackIsServed::class);
 
             // A guard on the data location, held while its screen asks. A
             // screen of its own rather than a row of the one above, because

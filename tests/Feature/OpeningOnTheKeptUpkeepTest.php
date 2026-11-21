@@ -21,6 +21,7 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
+use Tests\Support\Fakes\AStackThatSaysWhatIsComingDown;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatIsKeptOfUpdates;
@@ -85,6 +86,7 @@ function theCellarsUpdates(AStackThatKeepsCurrent $stack, KeepingTheLastUpkeep $
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(clock: FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_UPDATES_WERE_OPENED))),
         $kept,
+        AStackThatSaysWhatIsComingDown::nothing(),
     );
     $screen->setParams(['stack' => $cellar->id()->stored()]);
 

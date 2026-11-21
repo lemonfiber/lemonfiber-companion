@@ -36,12 +36,18 @@ final readonly class PairingMaterialAsItReads
             return $data;
         }
 
-        $pin = str_repeat('ab', intdiv(Fingerprint::CHARACTERS, 2));
+        $pin = self::thePin();
 
         return [
             ...$data,
             $under => [...$data[$under], WireField::Fingerprint->value => $pin],
             PairingField::Compare->value => AtAGlance::of(Fingerprint::of($pin))->shown(),
         ];
+    }
+
+    /** The fingerprint a stand-in stack pins phones to and presents. */
+    public static function thePin(): string
+    {
+        return str_repeat('ab', intdiv(Fingerprint::CHARACTERS, 2));
     }
 }

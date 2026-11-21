@@ -98,7 +98,15 @@
 
     {{-- Drawn and not usable while the listing drawn is one the phone kept:
          a verb is agreed to only against a fresh one. --}}
-    <x-design::action :label="__('health.go_ahead')" tap="agree()" :disabled="$this->answer()->waitsForTheStack" />
+    @if ($this->comingDown !== null)
+        <x-operator::what-a-stop-interrupts :coming-down="$this->comingDown" />
+    @endif
+    @if ($this->comingDown?->offersWaiting())
+        <x-design::action :label="__('health.coming.let_them_finish')" tap="agree('for_the_downloads')" :disabled="$this->answer()->waitsForTheStack" />
+        <x-design::action :label="__('health.coming.go_ahead_now')" tap="agree('go_ahead_now')" tone="tonal" :disabled="$this->answer()->waitsForTheStack" />
+    @else
+        <x-design::action :label="__('health.go_ahead')" tap="agree()" :disabled="$this->answer()->waitsForTheStack" />
+    @endif
     @if ($this->answer()->waitsForTheStack)
         <x-design::note>{{ __('connection.usable_once_the_stack_answers', ['ago' => trans_choice($this->answer()->readAgo->said, $this->answer()->readAgo->count)]) }}</x-design::note>
     @endif

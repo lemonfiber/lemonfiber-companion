@@ -19,7 +19,9 @@ use Modules\Kernel\Api\AskingHowItRunsWithoutLemonfiber;
 use Modules\Kernel\Api\AskingWhatSetupSettled;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\HowItRunsWithoutLemonfiber;
+use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -31,6 +33,8 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheStackMadeOfIt;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhereTheChangeStands;
+use Modules\Kernel\Api\WhetherToWait;
+use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAChangeReads;
 use Modules\Operator\Internal\Presenters\HowTheSettingsRead;
@@ -44,6 +48,7 @@ use Modules\Wayfinding\Api\Screens\ReadsAStackOnceAFrame;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
+use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function view;
@@ -72,8 +77,8 @@ use function view;
  */
 #[Lazy]
 #[Concealed]
-#[ItsContent(WhatItShowsDoes::ChangesOnlyWhenAsked)]
-final class WhatThisStackIsSetTo extends NativeComponent
+#[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
+final class WhatThisStackIsSetTo extends NativeComponent implements AwaitsAnOutcome
 {
     use WritesItsTaps;
     use AsksTheStackAgain;
@@ -112,6 +117,12 @@ final class WhatThisStackIsSetTo extends NativeComponent
 
     /** Where the proposal stands, once one has been put to the stack. */
     public ?WhatAChangeTurnedOutToBe $proposed = null;
+
+    /** The name of a change agreed to once the downloads land, while the stack waits for them. */
+    public ?string $landing = null;
+
+    /** The key for why a change agreed to once the downloads land was not made, where it was not. */
+    public ?string $landingSaid = null;
 
     public function __construct(
         private readonly Arranging $arranging,
@@ -213,6 +224,7 @@ final class WhatThisStackIsSetTo extends NativeComponent
         $this->changing = null;
         $this->typed = null;
         $this->proposed = null;
+        $this->landingSaid = null;
     }
 
     /**
@@ -240,8 +252,14 @@ final class WhatThisStackIsSetTo extends NativeComponent
      * the row would be showing the operator what it believes rather than what
      * is there.
      */
-    public function agree(string $key): void
+    public function agree(string $key, string $letting = WhetherToWait::GoAheadNow->value): void
     {
+        if (WhetherToWait::tryFrom($letting) === WhetherToWait::ForTheDownloads) {
+            $this->letThemLand($key);
+
+            return;
+        }
+
         $this->proposed = $this->put($key, static fn(
             Adjusting $adjusting,
             Stack $stack,
@@ -250,6 +268,63 @@ final class WhatThisStackIsSetTo extends NativeComponent
         ): WhatTheStackMadeOfIt => $adjusting->agreedTo($stack, $session, $asked));
         $this->answered = null;
         $this->forgetWhatSetupSettled();
+    }
+
+    /** Whether a change agreed to once the downloads land is still waiting on them. */
+    public function awaitsAnOutcome(): bool
+    {
+        return $this->landing !== null;
+    }
+
+    /**
+     * Ask after a change agreed to once the downloads land, while the stack waits for them.
+     *
+     * What it came to replaces the proposal, as an agreed change's review does.
+     */
+    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
+    public function whileTheyLand(): void
+    {
+        $landing = $this->landing;
+
+        if ($landing === null) {
+            return;
+        }
+
+        $stack = $this->stack();
+        $standing = $this->proposed ?? new HowAChangeReads()->nothingOpen();
+        $this->proposed = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): WhatAChangeTurnedOutToBe => $this->adjusting->whatBecameOf($stack, $session, Job::named($landing))->either(
+                stillRunning: static fn(): WhatAChangeTurnedOutToBe => $standing,
+                done: function (WhereTheChangeStands $stands): WhatAChangeTurnedOutToBe {
+                    $this->landed();
+
+                    return new HowAChangeReads()->stands($stands);
+                },
+                ended: function () use ($standing): WhatAChangeTurnedOutToBe {
+                    $this->landed();
+                    $this->landingSaid = 'config.landing.ended';
+
+                    return $standing;
+                },
+                met: function (Obstacle $why) use ($stack): WhatAChangeTurnedOutToBe {
+                    $this->landed();
+                    $this->letGoOfTheSession($why, $stack);
+
+                    return new HowAChangeReads()->met($why);
+                },
+                moved: function () use ($standing): WhatAChangeTurnedOutToBe {
+                    $this->landed();
+                    $this->landingSaid = 'config.landing.moved';
+
+                    return $standing;
+                },
+            ),
+            notHeld: function (): WhatAChangeTurnedOutToBe {
+                $this->landed();
+
+                return new HowAChangeReads()->signedOut();
+            },
+        );
     }
 
     /** Where the proposal stands, or nothing where none has been put. */
@@ -288,6 +363,49 @@ final class WhatThisStackIsSetTo extends NativeComponent
     public function answer(): WhatThisStackIsSetToTurnedOutToBe
     {
         return $this->answered ??= $this->ask();
+    }
+
+    /**
+     * Set it once the downloads land: the stack waits, and the screen follows the name it answers with.
+     */
+    private function letThemLand(string $key): void
+    {
+        $typed = $this->typed;
+
+        if ($this->changing !== $key || $typed === null) {
+            $this->proposed = new HowAChangeReads()->nothingOpen();
+
+            return;
+        }
+
+        $stack = $this->stack();
+        $asked = WhatToSet::to($key, $typed);
+        $standing = $this->proposed ?? new HowAChangeReads()->nothingOpen();
+        $this->landingSaid = null;
+
+        $this->proposed = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): WhatAChangeTurnedOutToBe => $this->adjusting->agreedToOnceLanded($stack, $session, $asked)->either(
+                started: function (Job $job) use ($standing): WhatAChangeTurnedOutToBe {
+                    $this->landing = $job->shown();
+
+                    return $standing;
+                },
+                met: function (Obstacle $why) use ($stack): WhatAChangeTurnedOutToBe {
+                    $this->letGoOfTheSession($why, $stack);
+
+                    return new HowAChangeReads()->met($why);
+                },
+            ),
+            notHeld: static fn(): WhatAChangeTurnedOutToBe => new HowAChangeReads()->signedOut(),
+        );
+    }
+
+    /** The waiting is over: the listing and what setup settled are read again. */
+    private function landed(): void
+    {
+        $this->landing = null;
+        $this->answered = null;
+        $this->forgetWhatSetupSettled();
     }
 
     /**

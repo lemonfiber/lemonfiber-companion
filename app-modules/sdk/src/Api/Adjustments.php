@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
+use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
+use Lemonfiber\Sdk\Exception\NoSuchJob;
 use Lemonfiber\Sdk\Exception\RequestFailed;
 use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
@@ -13,12 +15,18 @@ use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\ConfigSetAction;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\Entropy;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\IdempotencyKey;
+use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SettingIsUnnamed;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatTheStackMadeOfIt;
 use Modules\Kernel\Api\WhatToSet;
+use Modules\Kernel\Api\WhereTheChangeStands;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 
@@ -44,6 +52,50 @@ final readonly class Adjustments implements Adjusting
     public function agreedTo(Stack $stack, Session $session, WhatToSet $asked): WhatTheStackMadeOfIt
     {
         return $this->asking($stack, $session, $asked, agreed: true);
+    }
+
+    public function agreedToOnceLanded(Stack $stack, Session $session, WhatToSet $asked): Underway
+    {
+        try {
+            return Underway::as(Handles::in(GatedClient::of($this->clients, $stack, $session)->act(
+                new ConfigSetAction(wait: true, key: $asked->key, value: $asked->value, confirm: true),
+                IdempotencyKey::from($this->entropy->nonce())->sent(),
+            )));
+        } catch (CertificateWasRefused|RequestFailed $why) {
+            return Underway::met(WhatARefusalMeant::obstacle($why));
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|HandleIsUnreadable|JobHasNoName $why) {
+            return Underway::met($this->clients->whatStoodInTheWay($stack, $why));
+        }
+    }
+
+    /** @return HowAgreedWorkIsGoing<WhereTheChangeStands> */
+    public function whatBecameOf(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing
+    {
+        try {
+            return $this->outcome($stack, $session, $job);
+        } catch (CertificateWasRefused|RequestFailed $why) {
+            return HowAgreedWorkIsGoing::met(WhatARefusalMeant::obstacle($why));
+        } catch (ApiVersionMismatch|Unreachable|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed $why) {
+            return HowAgreedWorkIsGoing::met($this->clients->whatStoodInTheWay($stack, $why));
+        }
+    }
+
+    /**
+     * What the stack says about the change, with only `NoSuchJob` caught, for {@see Upkeepers::outcome()}'s reason.
+     *
+     * @return HowAgreedWorkIsGoing<WhereTheChangeStands>
+     */
+    private function outcome(Stack $stack, Session $session, Job $job): HowAgreedWorkIsGoing
+    {
+        try {
+            return GatedClient::of($this->clients, $stack, $session)->whatBecameOf($job->shown())->answering(
+                stillRunning: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::stillRunning(),
+                finished: static fn(Envelope $envelope): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::done(Dials::reviewIn($envelope)),
+                ended: static fn(string $why): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::ended(WhyTheWorkEnded::from($why)),
+            );
+        } catch (NoSuchJob) {
+            return HowAgreedWorkIsGoing::noOutcome();
+        }
     }
 
     /**

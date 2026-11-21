@@ -58,7 +58,8 @@ const AN_ENVELOPE_BY_NAME = 'envelope:';
  * The path whose answer a call is given, where it is not the one it asked.
  *
  * The stand-in answers a change to a setting as work, which leaves nothing
- * here for the reader to refuse, so the change is given the listing, reviewed.
+ * here for the reader to refuse, so the change is given the listing, reviewed;
+ * a change agreed to once the downloads land is answered as the work it is.
  * The stand-in answers an update's job as a repair's, which an update's reader
  * refuses as the wrong kind, so an update's job is given the update's reading.
  * The stand-in answers handing a command over as work too, where the stack
@@ -77,6 +78,7 @@ const AN_ENVELOPE_BY_NAME = 'envelope:';
 function theAnswerACallIsGiven(string $which, string $asked): string
 {
     return match (true) {
+        $which === 'Adjustments::agreedToOnceLanded' => $asked,
         str_starts_with($which, 'Adjustments::') => Api::CONFIG_ENDPOINT,
         $which === 'Upkeepers::whatBecameOf' => Api::UPDATE_ENDPOINT,
         $which === 'Keepers::handOver' => Api::HOSTING_ENDPOINT,

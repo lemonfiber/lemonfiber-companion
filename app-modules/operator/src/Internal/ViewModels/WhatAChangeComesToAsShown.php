@@ -9,6 +9,9 @@ namespace Modules\Operator\Internal\ViewModels;
  */
 final readonly class WhatAChangeComesToAsShown
 {
-    /** @param list<ALineOfWhatAChangeComesTo> $lines */
-    public function __construct(public array $lines) {}
+    /**
+     * @param list<ALineOfWhatAChangeComesTo> $lines      every line, in the order drawn
+     * @param bool                            $interrupts whether it would interrupt a download still coming down
+     */
+    public function __construct(public array $lines, public bool $interrupts) {}
 }

@@ -25,6 +25,7 @@ use Tests\Support\Fakes\ADoorThatWasKnockedOn;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
+use Tests\Support\Fakes\AStackThatSaysWhatIsComingDown;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\TheWaysAround;
@@ -66,6 +67,7 @@ function aTabToChooseFrom(?AKeychainInMemory $keychain = null, ?StandingsInMemor
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
         WhatThePhoneKeeps::noUpkeepYet(),
+        AStackThatSaysWhatIsComingDown::nothing(),
     );
     $screen->setParams(['stack' => $attic->id()->stored()]);
 

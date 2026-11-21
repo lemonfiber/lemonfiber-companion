@@ -65,6 +65,9 @@ enum AStacksScreen: string
     /** What setup settled, as facts about the stack. */
     case Settled = '/stacks/{stack}/settled';
 
+    /** How the stack serves its web surface, and the certificate it presents. */
+    case Served = '/stacks/{stack}/served';
+
     /** A guard on this machine's data location, held only while its screen keeps asking. */
     case Guard = '/stacks/{stack}/guard';
 

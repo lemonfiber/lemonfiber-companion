@@ -5,8 +5,11 @@ declare(strict_types=1);
 use Lemonfiber\Sdk\Http\ActRequest;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Adjusting;
+use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -533,3 +536,51 @@ it('the fake and the adapter both carry what a change would disturb', function (
         ->toBe('stops qbittorrent; keeps sabnzbd; Every service restarts.')
         ->and(whatAPutChangeWouldDisturb($fake))->toBe('stops qbittorrent; keeps sabnzbd; Every service restarts.');
 });
+
+/** The adapter, answering with these in turn. */
+function anAdjustmentAnswered(MockResponse ...$answered): Adjustments
+{
+    MockClient::destroyGlobal();
+    MockClient::global(array_values($answered));
+
+    return new Adjustments(new PinnedClients(), SequencedEntropy::counting());
+}
+
+/**
+ * What asking after a change agreed to once the downloads land came to, as a word.
+ *
+ * @param HowAgreedWorkIsGoing<WhereTheChangeStands> $going
+ */
+function whatTheLandingCameTo(HowAgreedWorkIsGoing $going): string
+{
+    return $going->either(
+        stillRunning: static fn(): TheWordCarriedOut => new TheWordCarriedOut('still running'),
+        done: static fn(WhereTheChangeStands $stands): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s:%s', $stands->change->key, $stands->stance->value)),
+        ended: static fn(): TheWordCarriedOut => new TheWordCarriedOut('ended'),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
+        moved: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('moved: %s', $why->summary())),
+    )->said;
+}
+
+it('sets a change once the downloads land by sending config-set with wait and the yes, and comes away with the job the stack named', function (): void {
+    $adjusting = anAdjustmentAnswered(MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'config-set', 'job' => 'a-landing']]), 202));
+
+    $went = $adjusting->agreedToOnceLanded(theMachineBeingChanged(), theSessionBehindAChange(), WhatToSet::to('LIBRARY_PATH', '/data/films'))->either(
+        started: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut($job->shown()),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->name),
+    )->said;
+    $sent = MockClient::global()->getRecordedResponses()[0]->getPendingRequest();
+
+    expect($went)->toBe('a-landing')
+        ->and($sent->getRequest()->resolveEndpoint())->toBe('/api/actions/config-set')
+        ->and($sent->body()?->all())->toMatchArray(['wait' => true, 'key' => 'LIBRARY_PATH', 'value' => '/data/films', 'confirm' => true]);
+});
+
+it('reads a change still waiting on the downloads, the change once the stack made it, and one the stack no longer has', function (MockResponse $answered, string $said): void {
+    expect(whatTheLandingCameTo(anAdjustmentAnswered($answered)->whatBecameOf(theMachineBeingChanged(), theSessionBehindAChange(), Job::named('a-landing'))))->toBe($said);
+})->with([
+    'still waiting' => [MockResponse::make((string) json_encode(['api_version' => 1, 'kind' => 'job', 'data' => ['action' => 'config-set', 'job' => 'a-landing', 'state' => 'running']]), 202), 'still running'],
+    'made' => [MockResponse::make((string) json_encode(whatAStackSendsAboutAChange(stance: 'applied'))), 'LIBRARY_PATH:applied'],
+    'no longer had' => [MockResponse::make('{"error":"no such job"}', 404), 'ended'],
+    'a stack that failed' => [MockResponse::make('{"error":"gone"}', 500), 'StackDidNotAnswer'],
+]);
