@@ -716,11 +716,12 @@ jobs:
       actions: read # used only by verdict and deliver, to find the run's HTML report the comment links
       pull-requests: write # used only by the deliver jobs, which post the comment and run none of this repository's code
       id-token: write # used only by fetch and deliver, for a store that signs in through OIDC; this repository names none
-    uses: nightworksio/php-mutation-gate/.github/workflows/mutation-gate.yml@71d2e8f2023383776dcf2338603c96badf7f51ff # main
+    uses: nightworksio/php-mutation-gate/.github/workflows/mutation-gate.yml@c13e3be9e2d8a8687c9024242d84e76917b68b0c # main
     with:
       php-version: '8.5'
       coverage: ${{ needs.tests.result == 'success' && 'mutation-gate-map' || '' }}
       runs-on: ubuntu-24.04-arm
+      merged-records: true
     secrets:
       COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
 
