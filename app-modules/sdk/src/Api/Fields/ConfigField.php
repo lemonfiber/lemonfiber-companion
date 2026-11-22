@@ -37,4 +37,22 @@ enum ConfigField: string implements NamesAWireField
 
     /** What changing a decision affects, in the stack's words. */
     case Affects = 'affects';
+
+    /** Every area the operator told the stack to leave alone. */
+    case Unmanaged = 'unmanaged';
+
+    /** How many areas left alone the stack left out of the list. */
+    case UnmanagedMore = 'unmanaged_more';
+
+    /** The area left alone, as the operator wrote it. */
+    case Area = 'area';
+
+    /** Whether the area was cut short. */
+    case AreaCut = 'area_cut';
+
+    /** Whether the operator's reason was cut short. */
+    case WhyCut = 'why_cut';
+
+    /** How many covered things the stack left out of an area's list. */
+    case CoversMore = 'covers_more';
 }

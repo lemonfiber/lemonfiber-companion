@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\Locked;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
+use Modules\Operator\Internal\Screens\WhatIsLeftAloneHere;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\TheHouseholdsTabs;
 use Native\Mobile\Edge\NativeRouter;
@@ -219,4 +220,11 @@ it('serves the member\'s Home for the plugins and the catalogue they are chosen 
     expect(everyOperatorsScreenAMemberIsKeptFrom()[AStacksScreen::Plugins->value] ?? '')->toBe(WhatExtendsThisStack::class)
         ->and($said)->toContain(whereAMemberLands())
         ->and($said)->not->toContain(WhatExtendsThisStack::class);
+});
+
+it('keeps a member from what the operator told lemonfiber to leave alone', function (): void {
+    expect(everyOperatorsScreenAMemberIsKeptFrom())->toHaveKey(AStacksScreen::LeftAlone->value)
+        ->and(everyOperatorsScreenAMemberIsKeptFrom()[AStacksScreen::LeftAlone->value])->toBe(WhatIsLeftAloneHere::class)
+        ->and(whatIsBuiltFor(aKeychainHoldingBothSessions(), WhatIsLeftAloneHere::class, aHouseSignedInto(A_MEMBERS_HOUSE)))->toBe(whereAMemberLands())
+        ->and(whatIsBuiltFor(aKeychainHoldingBothSessions(), WhatIsLeftAloneHere::class, aHouseSignedInto(THE_OPERATORS_HOUSE)))->toBe(WhatIsLeftAloneHere::class);
 });

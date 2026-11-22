@@ -48,6 +48,7 @@ use Modules\Operator\Internal\Screens\WhatEachStackMayTellThisPhone;
 use Modules\Operator\Internal\Screens\WhatElseIsRunningHere;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Modules\Operator\Internal\Screens\WhatIsAlreadyOnThisMachine;
+use Modules\Operator\Internal\Screens\WhatIsLeftAloneHere;
 use Modules\Operator\Internal\Screens\WhatIsNewOnEveryStack;
 use Modules\Operator\Internal\Screens\WhatIsPlayingNow;
 use Modules\Operator\Internal\Screens\WhatIsRunningHere;
@@ -255,6 +256,7 @@ final class OperatorServiceProvider extends ServiceProvider
             // it.
             Router::native(AStacksScreen::Settings->value, WhatThisStackIsSetTo::class);
             Router::native(AStacksScreen::OwnSettings->value, WhatTheStackItselfReads::class);
+            Router::native(AStacksScreen::LeftAlone->value, WhatIsLeftAloneHere::class);
 
             // What this phone keeps of the machine, and taking it off the
             // phone: the menu's Stack settings.

@@ -100,6 +100,7 @@ final readonly class HowTheWiringReads
             yours: $ended->yours(),
             breakage: $connection->breaks()->breakage(),
             remediation: $connection->breaks()->remediation(),
+            leftAloneByDeclaration: $ended->state() === WhereAConnectionStands::Observed,
         );
     }
 

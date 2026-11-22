@@ -198,25 +198,6 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'work, which `N2-R14` refuses.',
     ],
     [
-        'requirement' => 'N19-R5',
-        'asks' => 'to show each area the operator declared unmanaged, with the reason they gave, as a choice in force',
-        // Unnamed, because a list of declarations could land on the settings
-        // listing or on a reading of its own. `unmanaged` is free on this wire
-        // as a field; it is spent only as a value, on a connection, a repair
-        // outcome and a line of the room.
-        'envelope' => null,
-        'field' => 'unmanaged',
-        'shape' => null,
-        'raised' => 'What the operator declared unmanaged is carried only as the raw value of the '
-            . '`LEMONFIBER_UNMANAGED` setting on the settings listing, in the core\'s own notation. '
-            . 'The app does not parse it: a reading of that notation kept here would be a second '
-            . 'copy of what a declaration covers, and wrong the day the core changes it. So an area '
-            . 'left alone is shown only where an answer names one: a connection the wiring '
-            . '`observed`, a repair that came to `unmanaged`, a change the stack refused with the '
-            . 'operator\'s reason, and the room\'s line for what the operator said to leave alone. What '
-            . 'closes this row is the declarations carried as a list, each with what it covers and why.',
-    ],
-    [
         'requirement' => 'N19-R7',
         'asks' => 'to state that the stack runs without lemonfiber and that every action has a non-interactive equivalent',
         // Unnamed, for the row above's reason. The plainest name for the

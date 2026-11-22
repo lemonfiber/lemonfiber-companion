@@ -6,6 +6,7 @@ namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Settings;
+use Modules\Kernel\Api\WhatWasFoundOfTheAreasLeftAlone;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 use Modules\Operator\Internal\ViewModels\WhatThisStackIsSetToTurnedOutToBe;
 
@@ -22,7 +23,7 @@ final readonly class HowTheSettingsRead
         return new WhatThisStackIsSetToTurnedOutToBe(HowTheReadingWent::theSessionEnded());
     }
 
-    public function these(Settings $set): WhatThisStackIsSetToTurnedOutToBe
+    public function these(Settings $set, WhatWasFoundOfTheAreasLeftAlone $leftAlone): WhatThisStackIsSetToTurnedOutToBe
     {
         $rows = [];
 
@@ -30,7 +31,7 @@ final readonly class HowTheSettingsRead
             $rows[] = new HowASettingReads()->in($one);
         }
 
-        return new WhatThisStackIsSetToTurnedOutToBe(HowTheReadingWent::itCameBack(), $rows);
+        return new WhatThisStackIsSetToTurnedOutToBe(HowTheReadingWent::itCameBack(), $rows, new HowTheAreasLeftAloneRead()->found($leftAlone));
     }
 
     public function met(Obstacle $why): WhatThisStackIsSetToTurnedOutToBe

@@ -21,17 +21,17 @@ use Closure;
  */
 final readonly class HowItIsSet
 {
-    private function __construct(private Settings $set, private ?Obstacle $why) {}
+    private function __construct(private Settings $set, private WhatWasFoundOfTheAreasLeftAlone|Obstacle $beside) {}
 
     /**
-     * The stack answered, and this is what it is set to.
+     * The stack answered, and this is what it is set to and what the same answer said it leaves alone.
      *
      * An empty {@see Settings} is an answer. A screen says so in as many words
      * rather than by drawing nothing.
      */
-    public static function told(Settings $set): self
+    public static function told(Settings $set, WhatWasFoundOfTheAreasLeftAlone $leftAlone): self
     {
-        return new self(set: $set, why: null);
+        return new self(set: $set, beside: $leftAlone);
     }
 
     /**
@@ -39,7 +39,7 @@ final readonly class HowItIsSet
      */
     public static function refused(Obstacle $why): self
     {
-        return new self(set: Settings::none(), why: $why);
+        return new self(set: Settings::none(), beside: $why);
     }
 
     /**
@@ -48,13 +48,13 @@ final readonly class HowItIsSet
      * @template TTold of object
      * @template TRefused of object
      *
-     * @param  Closure(Settings): TTold  $told
+     * @param  Closure(Settings, WhatWasFoundOfTheAreasLeftAlone): TTold  $told
      * @param  Closure(Obstacle): TRefused  $refused
      * @return TTold|TRefused
      */
     public function either(Closure $told, Closure $refused): object
     {
         // Read off the refusal, as the rest of these do.
-        return $this->why instanceof Obstacle ? $refused($this->why) : $told($this->set);
+        return $this->beside instanceof Obstacle ? $refused($this->beside) : $told($this->set, $this->beside);
     }
 }

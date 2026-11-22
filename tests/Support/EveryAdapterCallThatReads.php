@@ -328,6 +328,7 @@ final readonly class EveryAdapterCallThatReads
             'Archivists::declaredOn' => static fn(): object => new Archivists($clients)->declaredOn($stack, $session),
             'Arrangements::asItStands' => static fn(): object => new Arrangements($clients)->asItStands($stack, $session),
             'Arrangements::decidedOn' => static fn(): object => new Arrangements($clients)->decidedOn($stack, $session),
+            'Arrangements::leftAloneOn' => static fn(): object => new Arrangements($clients)->leftAloneOn($stack, $session),
             'Cataloguers::describedOn' => static fn(): object => new Cataloguers($clients)->describedOn($stack, $session),
             'Linkers::linkedOn' => static fn(): object => new Linkers($clients)->linkedOn($stack, $session),
             'KeyKeepers::listedOn' => static fn(): object => new KeyKeepers($clients)->listedOn($stack, $session),

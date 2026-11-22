@@ -74,6 +74,7 @@ use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatGoingBackDoes;
 use Modules\Kernel\Api\WhatHappenedToIt;
+use Modules\Kernel\Api\WhatIsLeftAlone;
 use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
@@ -229,6 +230,10 @@ function everyDerivedKey(): array
         Cost::class => aPairPerCase(
             Cost::cases(),
             static fn(Cost $cost): array => [$cost->saidOnTheScreen()],
+        ),
+        WhatIsLeftAlone::class => aPairPerCase(
+            WhatIsLeftAlone::cases(),
+            static fn(WhatIsLeftAlone $kind): array => [$kind->saidOnTheScreen()],
         ),
         Stance::class => aPairPerCase(
             Stance::cases(),

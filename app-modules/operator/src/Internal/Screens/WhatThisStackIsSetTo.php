@@ -28,6 +28,7 @@ use Modules\Kernel\Api\Sharing;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
+use Modules\Kernel\Api\WhatWasFoundOfTheAreasLeftAlone;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheSettingsRead;
@@ -206,8 +207,8 @@ final class WhatThisStackIsSetTo extends NativeComponent implements AwaitsAnOutc
     private function asked(Stack $stack, Session $session): WhatThisStackIsSetToTurnedOutToBe
     {
         return $this->arranging->asItStands($stack, $session)->either(
-            told: static fn(Settings $set): WhatThisStackIsSetToTurnedOutToBe
-                => new HowTheSettingsRead()->these($set),
+            told: static fn(Settings $set, WhatWasFoundOfTheAreasLeftAlone $leftAlone): WhatThisStackIsSetToTurnedOutToBe
+                => new HowTheSettingsRead()->these($set, $leftAlone),
             refused: function (Obstacle $why) use ($stack): WhatThisStackIsSetToTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 

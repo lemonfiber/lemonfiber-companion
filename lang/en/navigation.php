@@ -62,6 +62,7 @@ return [
         'uninstall' => 'Uninstall',
         'general' => 'General',
         'own_settings' => 'Own settings',
+        'left_alone' => 'Left alone',
         'quality' => 'Quality',
         'connections' => 'Connections',
         'plugins' => 'Plugins',
