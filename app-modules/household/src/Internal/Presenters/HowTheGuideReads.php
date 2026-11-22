@@ -34,6 +34,10 @@ use function usort;
  * programme the core left out for the member's limits looks; and a row stops
  * where its guide ends. Nothing here widens, narrows or fills the window the
  * core answered.
+ *
+ * A programme too short to press on its own is drawn together with the short
+ * ones beside it, by {@see ARowBeingCut}, so the time along every row stays
+ * where the half hours say it is.
  */
 final readonly class HowTheGuideReads
 {
@@ -42,6 +46,12 @@ final readonly class HowTheGuideReads
 
     /** What pressing a later programme calls on the screen. */
     public const string TELLS_ABOUT = 'aboutTheProgramme';
+
+    /** What pressing several programmes drawn together calls on the screen. */
+    public const string LISTS = 'listTheProgrammes';
+
+    /** How a stretch of time is written, from its start to its end. */
+    public const string FROM_TO = '%s–%s';
 
     private Instant $starts;
 
@@ -90,7 +100,7 @@ final readonly class HowTheGuideReads
         $order = array_keys($airings);
         usort($order, static fn(int $one, int $other): int => $airings[$one]->starts()->epochSeconds() <=> $airings[$other]->starts()->epochSeconds());
 
-        $cells = [];
+        $pieces = [];
         $reached = $this->starts->epochSeconds();
 
         foreach ($order as $sent) {
@@ -103,12 +113,19 @@ final readonly class HowTheGuideReads
             }
 
             if ($from > $reached) {
-                $cells[] = WhatACellSays::aGap($this->width($reached, $from));
+                $pieces[] = APieceOfARow::empty($this->width($reached, $from));
             }
 
-            $cells[] = $this->programme($channel, $airing, $this->width($from, $to), $at, $sent);
+            $pieces[] = APieceOfARow::of(
+                $this->programme($channel, $airing, $this->width($from, $to), $at, $sent),
+                isCut: $from > $airing->starts()->epochSeconds(),
+                starts: $this->clock($airing->starts()),
+                ends: $this->clock($airing->ends()),
+            );
             $reached = $to;
         }
+
+        $cells = new ARowBeingCut($at, $pieces)->cut();
 
         return new WhatAGuideRowSays(
             id: $channel->id()->named(),
@@ -150,7 +167,7 @@ final readonly class HowTheGuideReads
 
     private function times(AnAiring $airing): string
     {
-        return sprintf('%s–%s', $this->clock($airing->starts()), $this->clock($airing->ends()));
+        return sprintf(self::FROM_TO, $this->clock($airing->starts()), $this->clock($airing->ends()));
     }
 
     private function clock(Instant $at): string

@@ -27,6 +27,8 @@ use Native\Mobile\Edge\NativeComponent;
  * A channel, or the programme on it now, tunes it as the shelf does; a later
  * programme opens a sheet with its title, times and certificate, and nothing
  * to press. A programme the core left out has no cell, so it has no sheet.
+ * Programmes too short to press one by one are drawn as one cell, which opens
+ * a list of them, each pressed as its own cell would be.
  *
  * Read once on opening and again when pulled down; nothing reads it on a
  * timer. What came of a channel pressed here, or how it stopped, is said
@@ -89,7 +91,13 @@ final class WhatIsOnLiveTv extends NativeComponent implements HearsThePlayer
         $this->answered = $this->guide()->about($row, $at);
     }
 
-    /** Close the programme's sheet. */
+    /** Open the list of the programmes drawn together, by their channel's row and the cell's place in it. */
+    public function listTheProgrammes(int $row, int $place): void
+    {
+        $this->answered = $this->guide()->listing($row, $place);
+    }
+
+    /** Close the programme's sheet, or the list of programmes drawn together. */
     public function closeTheProgramme(): void
     {
         $this->answered = $this->guide()->closed();

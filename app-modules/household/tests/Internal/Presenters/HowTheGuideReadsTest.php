@@ -6,8 +6,10 @@ namespace Modules\Household\Tests\Internal\Presenters;
 
 use function array_map;
 use function expect;
+use function implode;
 use function it;
 
+use Modules\Household\Internal\Presenters\APieceOfARow;
 use Modules\Household\Internal\Presenters\HowTheGuideReads;
 use Modules\Household\Internal\ViewModels\WhatACellSays;
 use Modules\Household\Internal\ViewModels\WhatAGuideRowSays;
@@ -20,6 +22,8 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\TheGuide;
 use Modules\Kernel\Api\WhenItSays;
 use Modules\Kernel\Api\Zone;
+
+use function str_starts_with;
 
 /** Eight in the evening, UTC: the half hour these grids start at. */
 const EIGHT = 1_893_441_600;
@@ -38,6 +42,20 @@ function readAtTenPast(WhenItSays $until, AnAiring ...$airings): WhatTheGuideTur
 function from(string $title, int $starts, int $ends): AnAiring
 {
     return AnAiring::of($title, Instant::atEpochSeconds(EIGHT + ($starts * MINUTE)), Instant::atEpochSeconds(EIGHT + ($ends * MINUTE)), '');
+}
+
+/**
+ * Each cell, as its title or the titles it holds together, its width and its tap.
+ *
+ * @return list<array{string, int, string}>
+ */
+function cutOf(WhatAGuideRowSays $row): array
+{
+    return array_map(static fn(WhatACellSays $cell): array => [
+        $cell->isSeveral() ? implode(' + ', array_map(static fn(WhatACellSays $one): string => $one->title, $cell->together)) : $cell->title,
+        $cell->width,
+        $cell->tap,
+    ], $row->cells);
 }
 
 /**
@@ -107,9 +125,9 @@ it('names a channel by its number and name together, or its name alone where it 
 });
 
 it('widens nothing to keep up: widths add up to where each moment is drawn from the start', function (): void {
-    $read = readAtTenPast(WhenItSays::unsaid(), from('A', 0, 7), from('B', 7, 13), from('C', 13, 20));
+    $read = readAtTenPast(WhenItSays::unsaid(), from('A', 0, 17), from('B', 17, 29), from('C', 29, 41));
 
-    expect(array_map(static fn(WhatACellSays $cell): int => $cell->width, $read->rows[0]->cells))->toBe([28, 24, 28]);
+    expect(array_map(static fn(WhatACellSays $cell): int => $cell->width, $read->rows[0]->cells))->toBe([68, 48, 48]);
 });
 
 it('rounds each edge to the nearest point, so a programme off the minute is drawn neither short nor long', function (): void {
@@ -118,9 +136,207 @@ it('rounds each edge to the nearest point, so a programme off the minute is draw
         'NPO 1',
         '1',
         WhenItSays::unsaid(),
-        AnAiring::of('A', Instant::atEpochSeconds(EIGHT), Instant::atEpochSeconds(EIGHT + 430), ''),
-        AnAiring::of('B', Instant::atEpochSeconds(EIGHT + 430), Instant::atEpochSeconds(EIGHT + 800), ''),
+        AnAiring::of('A', Instant::atEpochSeconds(EIGHT), Instant::atEpochSeconds(EIGHT + 1630), ''),
+        AnAiring::of('B', Instant::atEpochSeconds(EIGHT + 1630), Instant::atEpochSeconds(EIGHT + 3000), ''),
     )));
 
-    expect(array_map(static fn(WhatACellSays $cell): int => $cell->width, $read->rows[0]->cells))->toBe([29, 24]);
+    expect(array_map(static fn(WhatACellSays $cell): int => $cell->width, $read->rows[0]->cells))->toBe([109, 91]);
+});
+
+it('draws whole programmes too short to press, one after another, as one cell across the time they run, which lists them', function (): void {
+    $read = readAtTenPast(WhenItSays::unsaid(), from('Now', 0, 30), from('A', 30, 35), from('B', 35, 40), from('C', 40, 45), from('Later', 45, 90));
+    $together = $read->rows[0]->cells[1];
+
+    expect(cutOf($read->rows[0]))->toBe([
+        ['Now', 120, 'tuneTo(\'c1\')'],
+        ['A + B + C', 60, 'listTheProgrammes(0, 1)'],
+        ['Later', 180, 'aboutTheProgramme(0, 4)'],
+    ])
+        ->and([$together->title, $together->certificate, $together->times, $together->isOnNow, $together->at, $together->isAGap()])->toBe(['', '', '20:30–20:45', false, -1, false])
+        ->and(array_map(static fn(WhatACellSays $one): array => [$one->times, $one->tap], $together->together))->toBe([
+            ['20:30–20:35', 'aboutTheProgramme(0, 1)'],
+            ['20:35–20:40', 'aboutTheProgramme(0, 2)'],
+            ['20:40–20:45', 'aboutTheProgramme(0, 3)'],
+        ]);
+});
+
+it('widens a short programme over the empty time after it first, keeping the rest of that time empty', function (): void {
+    $read = readAtTenPast(WhenItSays::unsaid(), from('Now', 0, 30), from('Short', 30, 35), from('Later', 60, 90));
+
+    expect(cutOf($read->rows[0]))->toBe([
+        ['Now', 120, 'tuneTo(\'c1\')'],
+        ['Short', 48, 'aboutTheProgramme(0, 1)'],
+        ['', 72, ''],
+        ['Later', 120, 'aboutTheProgramme(0, 2)'],
+    ]);
+});
+
+it('widens a short programme over the empty time before it where none follows it', function (): void {
+    $read = readAtTenPast(WhenItSays::unsaid(), from('Now', 0, 20), from('Short', 30, 35), from('Later', 35, 60));
+
+    expect(cutOf($read->rows[0]))->toBe([
+        ['Now', 80, 'tuneTo(\'c1\')'],
+        ['', 12, ''],
+        ['Short', 48, 'aboutTheProgramme(0, 1)'],
+        ['Later', 100, 'aboutTheProgramme(0, 2)'],
+    ]);
+});
+
+it('takes the programme after a short one into its cell where no empty time is beside it', function (): void {
+    $read = readAtTenPast(WhenItSays::unsaid(), from('Now', 0, 30), from('Short', 30, 35), from('Long', 35, 60));
+
+    expect(cutOf($read->rows[0]))->toBe([
+        ['Now', 120, 'tuneTo(\'c1\')'],
+        ['Short + Long', 120, 'listTheProgrammes(0, 1)'],
+    ])
+        ->and($read->rows[0]->cells[1]->times)->toBe('20:30–21:00');
+});
+
+it('draws a short programme past its row\'s end where nothing is beside it, as wide as a finger needs', function (): void {
+    $read = readAtTenPast(WhenItSays::at(Instant::atEpochSeconds(EIGHT + (35 * MINUTE))), from('Now', 0, 30), from('Short', 30, 35));
+
+    expect(cutOf($read->rows[0]))->toBe([['Now', 120, 'tuneTo(\'c1\')'], ['Short', 48, 'aboutTheProgramme(0, 1)']]);
+});
+
+it('draws a programme the grid\'s start or the programme before it cut too short to press as an edge, which takes no press', function (): void {
+    $read = readAtTenPast(WhenItSays::unsaid(), from('Ending', -20, 5), from('Middle', 5, 60), from('Cut', 58, 62), from('Later', 62, 90));
+    $edges = array_map(static fn(WhatACellSays $cell): array => [$cell->title, $cell->width, $cell->isAnEdge, $cell->tap, $cell->isAGap()], $read->rows[0]->cells);
+
+    expect($edges)->toBe([
+        ['Ending', 20, true, '', false],
+        ['Middle', 220, false, 'tuneTo(\'c1\')', false],
+        ['Cut', 8, true, '', false],
+        ['Later', 112, false, 'aboutTheProgramme(0, 3)', false],
+    ]);
+});
+
+it('keeps every long programme where its time is, whatever the short ones around it take of the empty time', function (): void {
+    $read = readAtTenPast(
+        WhenItSays::unsaid(),
+        from('Long one', 0, 26),
+        from('a', 26, 29),
+        from('b', 29, 30),
+        from('Long two', 40, 70),
+        from('c', 70, 71),
+        from('Long three', 85, 120),
+    );
+    $placed = [];
+    $left = 0;
+
+    foreach ($read->rows[0]->cells as $cell) {
+        if (str_starts_with($cell->title, 'Long')) {
+            $placed[$cell->title] = [$left, $cell->width];
+        }
+
+        $left += $cell->width;
+    }
+
+    expect($placed)->toBe(['Long one' => [0, 104], 'Long two' => [160, 120], 'Long three' => [340, 140]])
+        ->and(cutOf($read->rows[0]))->toBe([
+            ['Long one', 104, 'tuneTo(\'c1\')'],
+            ['a + b', 48, 'listTheProgrammes(0, 1)'],
+            ['', 8, ''],
+            ['Long two', 120, 'aboutTheProgramme(0, 3)'],
+            ['c', 48, 'aboutTheProgramme(0, 4)'],
+            ['', 12, ''],
+            ['Long three', 140, 'aboutTheProgramme(0, 5)'],
+        ]);
+});
+
+it('takes all the empty time beside short programmes where that is not enough, then the programme after them', function (): void {
+    $after = readAtTenPast(WhenItSays::unsaid(), from('Now', 0, 30), from('Short', 30, 35), from('Long', 37, 60));
+    $before = readAtTenPast(WhenItSays::unsaid(), from('Now', 0, 20), from('Short', 25, 30), from('Long', 30, 60));
+
+    expect(cutOf($after->rows[0]))->toBe([['Now', 120, 'tuneTo(\'c1\')'], ['Short + Long', 120, 'listTheProgrammes(0, 1)']])
+        ->and(cutOf($before->rows[0]))->toBe([['Now', 80, 'tuneTo(\'c1\')'], ['Short + Long', 160, 'listTheProgrammes(0, 1)']]);
+});
+
+it('marks several drawn together as on now where one of them is', function (): void {
+    $read = readAtTenPast(WhenItSays::unsaid(), from('A', 9, 11), from('B', 11, 21));
+
+    expect(cutOf($read->rows[0]))->toBe([['', 36, ''], ['A + B', 48, 'listTheProgrammes(0, 1)']])
+        ->and($read->rows[0]->cells[1]->isOnNow)->toBeTrue();
+});
+
+it('draws no empty space for time between two programmes too short to reach a point', function (): void {
+    $read = new HowTheGuideReads(Zone::utc(), Instant::atEpochSeconds(EIGHT))->these(TheGuide::of(AChannelsGuide::of(
+        ChannelId::called('c1'),
+        'NPO 1',
+        '1',
+        WhenItSays::unsaid(),
+        AnAiring::of('A', Instant::atEpochSeconds(EIGHT), Instant::atEpochSeconds(EIGHT + 1800), ''),
+        AnAiring::of('B', Instant::atEpochSeconds(EIGHT + 1807), Instant::atEpochSeconds(EIGHT + 3600), ''),
+    )));
+
+    expect(cutOf($read->rows[0]))->toBe([['A', 120, 'tuneTo(\'c1\')'], ['B', 120, 'aboutTheProgramme(0, 1)']]);
+});
+
+it('takes the empty time after an edge it took in, where a short programme and the edge are still too narrow together', function (): void {
+    $read = readAtTenPast(WhenItSays::unsaid(), from('Now', 0, 30), from('Short', 30, 35), from('Over', 33, 37), from('Later', 45, 60));
+
+    expect(cutOf($read->rows[0]))->toBe([
+        ['Now', 120, 'tuneTo(\'c1\')'],
+        ['Short + Over', 48, 'listTheProgrammes(0, 1)'],
+        ['', 12, ''],
+        ['Later', 60, 'aboutTheProgramme(0, 3)'],
+    ])
+        ->and($read->rows[0]->cells[1]->times)->toBe('20:30–20:37');
+});
+
+it('draws empty time of a single point, and none for time too short to reach one', function (int $after, array $cut): void {
+    $read = new HowTheGuideReads(Zone::utc(), Instant::atEpochSeconds(EIGHT))->these(TheGuide::of(AChannelsGuide::of(
+        ChannelId::called('c1'),
+        'NPO 1',
+        '1',
+        WhenItSays::unsaid(),
+        AnAiring::of('A', Instant::atEpochSeconds(EIGHT), Instant::atEpochSeconds(EIGHT + 1800), ''),
+        AnAiring::of('B', Instant::atEpochSeconds(EIGHT + 1800 + $after), Instant::atEpochSeconds(EIGHT + 3600), ''),
+    )));
+
+    expect(cutOf($read->rows[0]))->toBe($cut);
+})->with([
+    'a point' => [15, [['A', 120, 'tuneTo(\'c1\')'], ['', 1, ''], ['B', 119, 'aboutTheProgramme(0, 1)']]],
+    'less than a point' => [7, [['A', 120, 'tuneTo(\'c1\')'], ['B', 120, 'aboutTheProgramme(0, 1)']]],
+]);
+
+it('goes on to the programme after empty time it took whole, where that was still not enough', function (): void {
+    $read = readAtTenPast(WhenItSays::unsaid(), from('Now', 0, 30), from('Short', 30, 35), from('Over', 33, 37), from('Later', 39, 60));
+
+    expect(cutOf($read->rows[0]))->toBe([
+        ['Now', 120, 'tuneTo(\'c1\')'],
+        ['Short + Over + Later', 120, 'listTheProgrammes(0, 1)'],
+    ]);
+});
+
+it('takes nothing from the empty time beside short programmes that already fill a finger', function (): void {
+    $exactly = readAtTenPast(WhenItSays::unsaid(), from('Now', 0, 20), from('A', 25, 31), from('B', 31, 37), from('Later', 40, 60));
+    $past = readAtTenPast(WhenItSays::unsaid(), from('Now', 0, 20), from('A', 25, 31), from('B', 31, 38), from('Later', 40, 60));
+
+    expect(cutOf($exactly->rows[0]))->toBe([
+        ['Now', 80, 'tuneTo(\'c1\')'],
+        ['', 20, ''],
+        ['A + B', 48, 'listTheProgrammes(0, 2)'],
+        ['', 12, ''],
+        ['Later', 80, 'aboutTheProgramme(0, 3)'],
+    ])
+        ->and(cutOf($past->rows[0]))->toBe([
+            ['Now', 80, 'tuneTo(\'c1\')'],
+            ['', 20, ''],
+            ['A + B', 52, 'listTheProgrammes(0, 2)'],
+            ['', 8, ''],
+            ['Later', 80, 'aboutTheProgramme(0, 3)'],
+        ]);
+});
+
+it('draws a programme the grid\'s start cut to exactly a finger\'s width as its own cell, to press', function (): void {
+    $read = readAtTenPast(WhenItSays::unsaid(), from('Began', -5, 12), from('Later', 12, 60));
+
+    expect(cutOf($read->rows[0]))->toBe([['Began', 48, 'tuneTo(\'c1\')'], ['Later', 192, 'aboutTheProgramme(0, 1)']])
+        ->and($read->rows[0]->cells[0]->isAnEdge)->toBeFalse();
+});
+
+it('keeps empty time as empty, with nothing cut and no clock', function (): void {
+    $empty = APieceOfARow::empty(12);
+
+    expect([$empty->isCut, $empty->starts, $empty->ends, $empty->isEmpty(), $empty->isShortAndWhole(), $empty->isAnEdge()])->toBe([false, '', '', true, false, false]);
 });

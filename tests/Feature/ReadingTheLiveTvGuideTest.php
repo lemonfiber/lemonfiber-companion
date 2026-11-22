@@ -263,6 +263,104 @@ it('opens no sheet for the programme on now, a gap, or a place nothing sits at',
     'past the channels' => [7, 0],
 ]);
 
+/**
+ * Whether a drawn node is a sheet that is open.
+ *
+ * @param array<array-key, mixed> $node
+ * @param array<array-key, mixed> $props
+ */
+function isAnOpenSheet(array $node, array $props): bool
+{
+    return ($node['type'] ?? null) === 'bottom_sheet' && ($props['visible'] ?? false) === true;
+}
+
+/**
+ * What a screen reader hears for each control in the sheet that is open, in the order it is drawn.
+ *
+ * @param array<array-key, mixed> $node
+ *
+ * @return list<string>
+ */
+function controlsInTheOpenSheet(array $node, bool $inAnOpenSheet = false): array
+{
+    $props = is_array($node['props'] ?? null) ? $node['props'] : [];
+    $open = $inAnOpenSheet || isAnOpenSheet($node, $props);
+    $label = $props['a11y_label'] ?? null;
+    $heard = $open && ($node['type'] ?? null) === 'pressable' && is_string($label) ? [$label] : [];
+
+    foreach (is_array($node['children'] ?? null) ? $node['children'] : [] as $child) {
+        $heard = is_array($child) ? [...$heard, ...controlsInTheOpenSheet($child, $open)] : $heard;
+    }
+
+    return $heard;
+}
+
+/** NPO 1 until nine: the news on now, the weather and the lottery too short to press one by one, and the quiz. */
+function anEveningWithShortProgrammes(): ATunerThatAnswered
+{
+    $at = static fn(int $minutes): Instant => Instant::atEpochSeconds(GUIDE_READ_AT + (($minutes - 10) * 60));
+
+    return ATunerThatAnswered::listing(TheChannels::these())->guiding(TheGuide::of(AChannelsGuide::of(
+        ChannelId::called('c1'),
+        'NPO 1',
+        '1',
+        WhenItSays::at($at(60)),
+        AnAiring::of('The news', $at(-15), $at(30), '6'),
+        AnAiring::of('The weather', $at(30), $at(35), ''),
+        AnAiring::of('The lottery', $at(35), $at(42), ''),
+        AnAiring::of('The quiz', $at(42), $at(60), ''),
+    )));
+}
+
+it('draws programmes too short to press one by one as one cell, said with how many and the time they run across', function (): void {
+    $screen = theGuideScreen(anEveningWithShortProgrammes(), aMemberReadingTheGuide());
+    $together = $screen->guide()->rows[0]->cells[1];
+
+    expect([$together->width, $together->times, $together->tap])->toBe([48, '20:30–20:42', 'listTheProgrammes(0, 1)'])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain('Two programmes, 20:30–20:42');
+});
+
+it('lists the programmes drawn together, each a control said as its own cell would be, and opens a later one\'s sheet in the list\'s place', function (): void {
+    $screen = theGuideScreen(anEveningWithShortProgrammes(), aMemberReadingTheGuide());
+    $screen->listTheProgrammes(0, 1);
+    $listing = $screen->guide()->listing;
+
+    expect([$listing?->channel, $listing?->times])->toBe(['NPO 1', '20:30–20:42'])
+        ->and(controlsInTheOpenSheet(WhatTheDeviceWouldDraw::tree($screen)))->toBe(['The weather, 20:30–20:35', 'The lottery, 20:35–20:42'])
+        ->and(array_map(static fn(WhatACellSays $one): string => $one->tap, $listing->programmes ?? []))->toBe(['aboutTheProgramme(0, 1)', 'aboutTheProgramme(0, 2)']);
+
+    $screen->aboutTheProgramme(0, 2);
+
+    expect($screen->guide()->about?->title)->toBe('The lottery')
+        ->and($screen->guide()->listing)->toBeNull();
+
+    $screen->listTheProgrammes(0, 1);
+    $screen->closeTheProgramme();
+
+    expect($screen->guide()->listing)->toBeNull();
+});
+
+it('keeps the list open behind a channel tuned while it is', function (): void {
+    $tuner = anEveningWithShortProgrammes()->tuning(WhatTuningCameTo::tuned(aStreamOpenedFromTheGuide()));
+    $screen = theGuideScreen($tuner, aMemberReadingTheGuide());
+    $screen->listTheProgrammes(0, 1);
+    $screen->tuneTo('c1');
+
+    expect($tuner->tuned())->toBe(['c1'])
+        ->and($screen->guide()->listing?->times)->toBe('20:30–20:42');
+});
+
+it('opens no list for a cell holding one programme, a gap, or a place nothing sits at', function (int $row, int $place): void {
+    $screen = theGuideScreen(anEveningWithShortProgrammes(), aMemberReadingTheGuide());
+    $screen->listTheProgrammes($row, $place);
+
+    expect($screen->guide()->listing)->toBeNull();
+})->with([
+    'one programme' => [0, 0],
+    'past the cells' => [0, 9],
+    'past the channels' => [7, 0],
+]);
+
 it('says the house lists no live TV where the core answers no channel', function (): void {
     $said = WhatTheDeviceWouldDraw::by(theGuideScreen(ATunerThatAnswered::listing(TheChannels::these()), aMemberReadingTheGuide()))->said();
 
