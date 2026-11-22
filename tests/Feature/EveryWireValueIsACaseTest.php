@@ -96,6 +96,7 @@ use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Kernel\Api\WhyTheWorkEnded;
+use Modules\Sdk\Internal\HowThePluginCatalogueStands;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
 use Tests\Support\TheGeneratedEnvelopes;
@@ -268,6 +269,15 @@ it('everything the check after a start can come to has a case', function (): voi
 
     expect($ended)->not->toBe([], 'no outcome union was found in the generated boot envelope');
     expect(TheWireUnions::valuesOf(HowTheCheckAfterAStartEnded::cases()))->toBe($ended);
+});
+
+it('every state the plugin catalogue can answer with has a case', function (): void {
+    // Read from the plugin-catalogue envelope. A state read as the nearest
+    // word could draw a catalogue that was not read as an empty one.
+    $states = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('PluginCatalogueEnvelope'), 'state');
+
+    expect($states)->not->toBe([], 'no state union was found in the generated plugin-catalogue envelope');
+    expect(TheWireUnions::valuesOf(HowThePluginCatalogueStands::cases()))->toBe($states);
 });
 
 it('every kind of notification the contract describes has a case', function (): void {

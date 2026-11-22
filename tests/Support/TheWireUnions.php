@@ -114,6 +114,7 @@ use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyItIsWedged;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Kernel\Api\WhyTheWorkEnded;
+use Modules\Sdk\Internal\HowThePluginCatalogueStands;
 
 use function preg_match_all;
 use function preg_quote;
@@ -170,6 +171,7 @@ final readonly class TheWireUnions
         Medium::class => 'medium',
         Cost::class => 'cost',
         Stance::class => 'stance',
+        HowThePluginCatalogueStands::class => 'state',
 
         HowItIsHosted::class => 'standing',
         WhatKeepsItRunning::class => 'manager',

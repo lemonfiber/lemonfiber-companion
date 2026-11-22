@@ -43,7 +43,7 @@ use Tests\Support\WhatTheReadersRead;
 const OFFERED = [
     'Adoption', 'Alert', 'Alerts', 'Archives', 'Askable', 'AskableKinds', 'Asked', 'Backup', 'Boot', 'Bandwidth', 'Beside', 'Bundle', 'Capabilities', 'Catalogue', 'Channels', 'Clients', 'Config',
     'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Grant', 'Guide', 'Held', 'History', 'Hosting',
-    'Handoff', 'Household', 'Import', 'InFlight', 'Invitation', 'Job', 'Keys', 'DeviceKeys', 'DeviceKey', 'DeviceChallenge', 'KeyClaim', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Notify', 'NotifyMine', 'Outbound', 'Pairing', 'PartWay', 'Pausing', 'Playing', 'Plugins', 'Preview',
+    'Handoff', 'Household', 'Import', 'InFlight', 'Invitation', 'Job', 'Keys', 'DeviceKeys', 'DeviceKey', 'DeviceChallenge', 'KeyClaim', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Notify', 'NotifyMine', 'Outbound', 'Pairing', 'PartWay', 'Pausing', 'Playing', 'PluginCatalogue', 'Plugins', 'Preview',
     'Provenance', 'PushEndpoint', 'PushEndpoints', 'Quality', 'Queue', 'Ran', 'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Served', 'Settings', 'Settled', 'Space', 'Stack',
     'Start', 'Status', 'Step', 'StopSeeding', 'Stored', 'Stuck', 'Substitution', 'Title', 'Trace', 'Tuned', 'Undo', 'Uninstall', 'Update', 'Upgrade',
     'Version', 'Walkthrough', 'Watch', 'Watched', 'Watcher', 'Wiring', 'Word',
