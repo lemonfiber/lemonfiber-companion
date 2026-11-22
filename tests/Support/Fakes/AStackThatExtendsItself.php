@@ -47,6 +47,9 @@ final class AStackThatExtendsItself implements ExtendingTheStack
     /** What every reading of the catalogue answers: by default, a stack that does not offer one. */
     private ?WhatWasFoundOfThePluginCatalogue $catalogue = null;
 
+    /** How many times the catalogue was read, apart from what was asked, so a screen reading it beside its listing changes no other count. */
+    private int $cataloguesRead = 0;
+
     /** @param list<HowExtendingItIsGoing> $answers */
     private function __construct(private readonly WhatWasFoundOfThePlugins $listing, private array $answers) {}
 
@@ -76,6 +79,11 @@ final class AStackThatExtendsItself implements ExtendingTheStack
         return $this->asked;
     }
 
+    public function cataloguesRead(): int
+    {
+        return $this->cataloguesRead;
+    }
+
     public function installedOn(Stack $stack, Session $session): WhatWasFoundOfThePlugins
     {
         $this->asked[] = 'list';
@@ -85,7 +93,7 @@ final class AStackThatExtendsItself implements ExtendingTheStack
 
     public function catalogueOf(Stack $stack, Session $session): WhatWasFoundOfThePluginCatalogue
     {
-        $this->asked[] = 'catalogue';
+        $this->cataloguesRead++;
 
         return $this->catalogue ?? $this->listing->either(
             found: static fn(): WhatWasFoundOfThePluginCatalogue => WhatWasFoundOfThePluginCatalogue::met(Obstacle::of(KindOfObstacle::NotOnThisStack)),

@@ -32,6 +32,58 @@
     <x-operator::emphasis>{{ __('plugins.no_outcome') }}</x-operator::emphasis>
     <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
 @elseif (! $this->answer()->stands->wasAsked())
+    {{-- What the stack's verified catalogue offers, above the typed source.
+         Choosing an entry rehearses it as a typed name is rehearsed. --}}
+    @if ($this->catalogue()->listed)
+        <x-operator::heading>{{ __('plugins.catalogue.heading') }}</x-operator::heading>
+        @if ($this->catalogue()->published->said !== '')
+            <x-operator::note>{{ __('plugins.catalogue.published', ['when' => trans_choice($this->catalogue()->published->said, $this->catalogue()->published->count)]) }}</x-operator::note>
+        @endif
+        @forelse ($this->catalogue()->entries as $at => $entry)
+            <x-design::card>
+                <x-design::strong>{{ __('plugins.named', ['name' => $entry->name, 'version' => $entry->version]) }}</x-design::strong>
+                <x-design::body>{{ $entry->description }}</x-design::body>
+                <x-design::body>{{ __('plugins.catalogue.without_it', ['without' => $entry->withoutIt]) }}</x-design::body>
+                @if ($entry->installed !== '')
+                    <x-operator::note>{{ __('plugins.catalogue.installed', ['version' => $entry->installed]) }}</x-operator::note>
+                @endif
+                @if ($entry->newer)
+                    <x-operator::note>{{ __('plugins.catalogue.newer', ['version' => $entry->version]) }}</x-operator::note>
+                @endif
+            </x-design::card>
+            @if ($entry->installed !== '')
+                <x-operator::quiet-action :label="__('plugins.settings.open', ['name' => $entry->name])" :goes="$this->goes()->aPluginsSettings($entry->id)" />
+            @else
+                <x-operator::offered-action :label="__('plugins.catalogue.choose', ['name' => $entry->name])" :tap="$this->tapping('choose', $at)" :offer="$this->offered(ExtendingIt::Install)" />
+            @endif
+        @empty
+            <x-operator::note>{{ __('plugins.catalogue.empty') }}</x-operator::note>
+        @endforelse
+        @if ($this->catalogue()->unreadable > 0)
+            <x-operator::note>{{ __('plugins.catalogue.unreadable', ['count' => $this->catalogue()->unreadable]) }}</x-operator::note>
+        @endif
+    @elseif (! $this->catalogue()->isBeingRead())
+        {{-- Off, not reached, or not asked: said in the stack's words. The
+             typed source below still installs from a directory or git. --}}
+        <x-design::notice tone="unknown">
+            <x-design::strong>{{ __($this->catalogue()->said, $this->catalogue()->filling) }}</x-design::strong>
+            @if ($this->catalogue()->remedy !== '')
+                <x-design::body>{{ __($this->catalogue()->remedy, $this->catalogue()->filling) }}</x-design::body>
+            @endif
+        </x-design::notice>
+        @if ($this->catalogue()->reach === '')
+            <x-operator::quiet-action :label="__('plugins.catalogue.again')" tap="catalogueAgain()" />
+        @elseif ($this->changing() === $this->catalogue()->reach)
+            {{-- The setting the stack named, through the review every
+                 config key takes: nothing is switched without it. --}}
+            <x-operator::the-review :key="$this->catalogue()->reach" :proposal="$this->proposalFor($this->catalogue()->reach)" :waiting="$this->landing !== null" :landing-said="$this->landingSaid" agreeing="agreeToTheChange" />
+        @else
+            <x-design::action :label="__('plugins.catalogue.turn_on')" :answers-to="__('config.what_would_happen_to', ['key' => $this->catalogue()->reach])" :tap="$this->tapping('change', $this->catalogue()->reach)" />
+        @endif
+    @endif
+    @if ($this->waitsForTheNextFrame())
+        <x-design::the-next-frame />
+    @endif
     <native:outlined-text-input native:model="source" label="{{ __('plugins.where_from') }}" supporting="{{ __('plugins.source_is') }}" />
     @if ($this->nothingWasScanned())
         <x-design::notice tone="unknown">
@@ -192,8 +244,18 @@
 
     <x-operator::quiet-action :label="__('plugins.back')" tap="backToThePlugins()" />
 @else
+    @if (! $this->catalogue()->listed && ! $this->catalogue()->isBeingRead())
+        {{-- An unread catalogue never reads as every plugin up to date. --}}
+        <x-operator::note>{{ __('plugins.catalogue.newer_unread', ['why' => __($this->catalogue()->said, $this->catalogue()->filling)]) }}</x-operator::note>
+    @endif
+    @if ($this->waitsForTheNextFrame())
+        <x-design::the-next-frame />
+    @endif
     @forelse ($this->answer()->installed as $at => $plugin)
         <x-operator::the-plugin :plugin="$plugin" />
+        @if ($this->catalogue()->newerFor($plugin->id) !== '')
+            <x-operator::note>{{ __('plugins.catalogue.newer', ['version' => $this->catalogue()->newerFor($plugin->id)]) }}</x-operator::note>
+        @endif
         <x-operator::quiet-action :label="__('plugins.settings.open', ['name' => $plugin->name])" :goes="$this->goes()->aPluginsSettings($plugin->id)" />
         @if ($plugin->updatable)
             <x-operator::offered-action :label="__('plugins.update_it', ['name' => $plugin->name])" :tap="$this->tapping('actOnTheRow', 'update', $at)" :offer="$this->offered(ExtendingIt::Update)" />

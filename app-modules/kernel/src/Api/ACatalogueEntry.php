@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use function trim;
 
 /**
- * One plugin the stack's verified catalogue offers: the name it is installed by, its own name, what it does, its version, what the household is without it, and the version installed here where it is (ARCH-R451).
+ * One plugin the stack's verified catalogue offers: the name it is installed by, its own name, what it does, its version, what the household is without it, and the version installed here where it is.
  *
  * Whether the catalogue's version is newer than the one installed is the
  * stack's answer, never this app's: a second comparer of versions here would
@@ -39,14 +39,16 @@ final readonly class ACatalogueEntry
         return new self(trim($id), trim($name), trim($description), trim($version), trim($withoutIt), installed: '', newer: false);
     }
 
-    /** The same entry, installed here at that version, and whether the stack says the catalogue's is newer; a blank version is refused. */
-    public function installedAt(string $version, bool $newer): self
+    /** An entry installed here at that version, and whether the stack says the catalogue's is newer; a blank word or installed version is refused. */
+    public static function installedHere(string $id, string $name, string $description, string $version, string $withoutIt, string $installed, bool $newer): self
     {
-        if (trim($version) === '') {
+        if (trim($installed) === '') {
             throw ThePluginCatalogueIsUnreadable::blank('installed.version');
         }
 
-        return new self($this->id, $this->name, $this->description, $this->version, $this->withoutIt, trim($version), $newer);
+        $offered = self::offered($id, $name, $description, $version, $withoutIt);
+
+        return new self($offered->id, $offered->name, $offered->description, $offered->version, $offered->withoutIt, trim($installed), $newer);
     }
 
     /** The name it is installed by. */
@@ -71,7 +73,7 @@ final readonly class ACatalogueEntry
         return $this->version;
     }
 
-    /** What the household is without it (N5-R8). */
+    /** What the household is without it. */
     public function withoutIt(): string
     {
         return $this->withoutIt;

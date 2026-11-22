@@ -28,12 +28,18 @@ function anEntry(): ACatalogueEntry
     return ACatalogueEntry::offered(' bazarr ', 'Bazarr', 'Finds subtitles for films and series.', '1.4.0', 'Films and series play without subtitles.');
 }
 
+/** The same entry, installed here at that version. */
+function anEntryInstalledAt(string $installed, bool $newer): ACatalogueEntry
+{
+    return ACatalogueEntry::installedHere(' bazarr ', 'Bazarr', 'Finds subtitles for films and series.', '1.4.0', 'Films and series play without subtitles.', $installed, $newer);
+}
+
 /**
  * Which arm a catalogue took, with what it carried.
  *
- * @return list<mixed>
+ * @return array<int, int|string>
  */
-function whichArm(ThePluginCatalogue $catalogue): array
+function whichCatalogueArm(ThePluginCatalogue $catalogue): array
 {
     return $catalogue->either(
         listed: static fn(Instant $published, int $serial, int $unreadable, array $entries): ArrayObject => new ArrayObject(['listed', $published->epochSeconds(), $serial, $unreadable, count($entries)]),
@@ -50,26 +56,26 @@ it('keeps every word of an entry, trimmed, and says it is not installed', functi
 });
 
 it('keeps the version installed here and the stack\'s word on whether the catalogue\'s is newer', function (): void {
-    $older = anEntry()->installedAt(' 1.3.2 ', newer: true);
-    $same = anEntry()->installedAt('1.4.0', newer: false);
+    $older = anEntryInstalledAt(' 1.3.2 ', newer: true);
+    $same = anEntryInstalledAt('1.4.0', newer: false);
 
     expect([$older->installed(), $older->isNewer(), $older->version()])->toBe(['1.3.2', true, '1.4.0'])
         ->and([$same->installed(), $same->isNewer()])->toBe(['1.4.0', false]);
 });
 
-it('refuses an entry with any word blank, naming it', function (string $field, array $words): void {
-    expect(static fn(): ACatalogueEntry => ACatalogueEntry::offered(...$words))
+it('refuses an entry with any word blank, naming it', function (string $field, string $id, string $name, string $description, string $version, string $withoutIt): void {
+    expect(static fn(): ACatalogueEntry => ACatalogueEntry::offered($id, $name, $description, $version, $withoutIt))
         ->toThrow(ThePluginCatalogueIsUnreadable::class, sprintf('`%s`', $field));
 })->with([
-    'id' => ['id', [' ', 'Bazarr', 'd', '1', 'w']],
-    'name' => ['name', ['b', '', 'd', '1', 'w']],
-    'description' => ['description', ['b', 'B', ' ', '1', 'w']],
-    'version' => ['version', ['b', 'B', 'd', '', 'w']],
-    'without it' => ['without_it', ['b', 'B', 'd', '1', ' ']],
+    'id' => ['id', ' ', 'Bazarr', 'd', '1', 'w'],
+    'name' => ['name', 'b', '', 'd', '1', 'w'],
+    'description' => ['description', 'b', 'B', ' ', '1', 'w'],
+    'version' => ['version', 'b', 'B', 'd', '', 'w'],
+    'without it' => ['without_it', 'b', 'B', 'd', '1', ' '],
 ]);
 
 it('refuses an installed version that is blank', function (): void {
-    expect(static fn(): ACatalogueEntry => anEntry()->installedAt(' ', newer: false))
+    expect(static fn(): ACatalogueEntry => anEntryInstalledAt(' ', newer: false))
         ->toThrow(ThePluginCatalogueIsUnreadable::class, '`installed.version`');
 });
 
@@ -93,14 +99,14 @@ it('refuses a setting written by an act this app does not know, or with its key 
 ]);
 
 it('answers each of the three states through its own arm, never an empty list for another', function (): void {
-    $listed = ThePluginCatalogue::listed(Instant::atEpochSeconds(1_893_441_600), 42, 2, anEntry(), anEntry()->installedAt('1.3.2', newer: true));
+    $listed = ThePluginCatalogue::listed(Instant::atEpochSeconds(1_893_441_600), 42, 2, anEntry(), anEntryInstalledAt('1.3.2', newer: true));
     $off = ThePluginCatalogue::switchedOff(ASettingThatReaches::named('LEMONFIBER_OFFLINE', 'off', 'config-set'));
     $failed = ThePluginCatalogue::unreached(' catalogue_unreachable ', ' The catalogue could not be reached. ');
 
-    expect(whichArm($listed))->toBe(['listed', 1_893_441_600, 42, 2, 2])
-        ->and(whichArm(ThePluginCatalogue::listed(Instant::atEpochSeconds(1), 1, 0)))->toBe(['listed', 1, 1, 0, 0])
-        ->and(whichArm($off))->toBe(['off', 'LEMONFIBER_OFFLINE', 'off'])
-        ->and(whichArm($failed))->toBe(['failed', 'catalogue_unreachable', 'The catalogue could not be reached.']);
+    expect(whichCatalogueArm($listed))->toBe(['listed', 1_893_441_600, 42, 2, 2])
+        ->and(whichCatalogueArm(ThePluginCatalogue::listed(Instant::atEpochSeconds(1), 1, 0)))->toBe(['listed', 1, 1, 0, 0])
+        ->and(whichCatalogueArm($off))->toBe(['off', 'LEMONFIBER_OFFLINE', 'off'])
+        ->and(whichCatalogueArm($failed))->toBe(['failed', 'catalogue_unreachable', 'The catalogue could not be reached.']);
 });
 
 it('refuses a failure with its code or summary blank', function (string $field, string $code, string $summary): void {

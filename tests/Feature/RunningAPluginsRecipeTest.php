@@ -8,7 +8,6 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowExtendingItIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Nonce;
-use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
@@ -17,16 +16,11 @@ use Modules\Kernel\Api\TheInstalledPlugins;
 use Modules\Kernel\Api\ThePlugins;
 use Modules\Kernel\Api\ThePluginSources;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
-use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Tests\Support\APluginAsItArrives;
 use Tests\Support\ARecipeRunAsItArrives;
-use Tests\Support\AroundThePhone;
-use Tests\Support\Fakes\ACameraInMemory;
-use Tests\Support\Fakes\AKeychainInMemory;
-use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExtendsItself;
-use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\ThePluginsScreen;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 /** Where in Tdarr's recipes the one it installs with sits. */
@@ -50,12 +44,7 @@ function aMachineWhoseRecipeIsRun(): Stack
 
 function thePluginsWhoseRecipeIsRun(AStackThatExtendsItself $extending): WhatExtendsThisStack
 {
-    $stack = aMachineWhoseRecipeIsRun();
-    $keychain = AKeychainInMemory::working();
-    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
-
-    $screen = new WhatExtendsThisStack($extending, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), ACameraInMemory::reading('tdarr'));
-    $screen->setParams(['stack' => $stack->id()->stored()]);
+    $screen = ThePluginsScreen::on(aMachineWhoseRecipeIsRun(), $extending);
     $screen->answer();
 
     return $screen;

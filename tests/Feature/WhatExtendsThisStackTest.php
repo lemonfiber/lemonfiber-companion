@@ -15,7 +15,6 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
-use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
@@ -28,18 +27,15 @@ use Modules\Kernel\Api\WhatBecameOfAMoveInPlace;
 use Modules\Kernel\Api\WhatBecameOfTheMovesInPlace;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatVouchesForAPlugin;
-use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyNothingWasScanned;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Tests\Support\APluginAsItArrives;
-use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACameraInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
-use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExtendsItself;
-use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\ThePluginsScreen;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
 // The plugins on a machine, and installing one: rehearsed, agreed to in two
@@ -62,14 +58,7 @@ function theMachinePluginsExtend(): Stack
 /** The screen, signed in, in front of a stack that answers as the case says. */
 function thePluginsScreen(AStackThatExtendsItself $extending, ?AKeychainInMemory $keychain = null, ?ACameraInMemory $camera = null): WhatExtendsThisStack
 {
-    $stack = theMachinePluginsExtend();
-    $keychain ??= AKeychainInMemory::working();
-    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
-
-    $screen = new WhatExtendsThisStack($extending, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), $camera ?? ACameraInMemory::reading('tdarr'));
-    $screen->setParams(['stack' => $stack->id()->stored()]);
-
-    return $screen;
+    return ThePluginsScreen::on(theMachinePluginsExtend(), $extending, $keychain, $camera);
 }
 
 /** A stack listing Tdarr, then answering the rehearsal and anything after it with these. */
@@ -237,7 +226,7 @@ it('approves each value apart from the install, and sends only what was approved
     expect($screen->approved)->toBe([])
         ->and($approved->said())->toContain(aPluginsLine('plugins.approvals_apart'))
         ->and($extending->asked())->toBe(['rehearse:tdarr', 'after:j-1', sprintf('install:tdarr:%s:%s', APluginAsItArrives::AGREEMENT, APluginAsItArrives::APPROVAL)])
-        ->and($screen->following)->toBe('j-2')
+        ->and($screen->followingTheAct)->toBe('j-2')
         ->and($screen->agreed)->toBeTrue();
 });
 
@@ -455,7 +444,7 @@ it('says installed only where the record was written, its proofs held and nothin
         ->and($drawn->said())->toContain(aPluginsLine('plugins.broke_nothing'))
         ->and($drawn->said())->not->toContain(aPluginsLine('plugins.rehearsal'))
         ->and($drawn->offers())->not->toContain(aPluginsLine('plugins.install'))
-        ->and($screen->following)->toBeNull();
+        ->and($screen->followingTheAct)->toBeNull();
 });
 
 it('says an install that did not hold was put back, with what went back and what did not and why', function (): void {
@@ -530,14 +519,12 @@ it('lets go of the rehearsal and every approval when it goes back, and asks afte
     $screen->backToThePlugins();
 
     expect($extending->asked())->toBe(['rehearse:tdarr', 'after:j-1', 'rehearse:tdarr'])
-        ->and($screen->following)->toBe('j-2');
+        ->and($screen->followingTheAct)->toBe('j-2');
 });
 
 it('says the session has ended where this phone holds none, and asks nothing', function (): void {
     $extending = aStackWithTdarr();
-    $stack = theMachinePluginsExtend();
-    $screen = new WhatExtendsThisStack($extending, AKeychainInMemory::working(), AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), ACameraInMemory::reading('tdarr'));
-    $screen->setParams(['stack' => $stack->id()->stored()]);
+    $screen = ThePluginsScreen::signedOut(theMachinePluginsExtend(), $extending);
 
     expect($screen->answer()->stands->went->cameBack())->toBeFalse()
         ->and($screen->awaitsAnOutcome())->toBeFalse()

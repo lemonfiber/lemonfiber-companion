@@ -35,6 +35,23 @@ return [
     'rehearse' => 'Installatie oefenen',
     'back' => 'Terug naar plug-ins',
 
+    // What the stack's verified catalogue offers, above the typed source.
+    'catalogue' => [
+        'heading' => 'Uit de catalogus',
+        'published' => 'Gepubliceerd :when',
+        'without_it' => 'Zonder: :without',
+        'installed' => 'Hier geïnstalleerd in versie :version',
+        'newer' => 'Versie :version staat in de catalogus',
+        'choose' => 'Installatie van :name oefenen',
+        'empty' => 'De catalogus biedt nu niets aan',
+        'unreadable' => 'Items in de catalogus die de machine niet kon tonen: :count',
+        'off' => 'De catalogus raadplegen staat uit door :key, dus er is niets gevraagd',
+        'failed' => 'De catalogus kon niet worden gelezen: :summary (:code)',
+        'turn_on' => 'Catalogus raadplegen',
+        'again' => 'Opnieuw lezen',
+        'newer_unread' => 'Of de catalogus nieuwere versies heeft, kon niet worden gelezen: :why',
+    ],
+
     // The rehearsal, and what an install came to.
     'rehearsal' => 'Oefening: er is niets geschreven. Dit is wat installeren zou doen',
     'installed_it' => 'Geïnstalleerd: vastgelegd, zijn bewijzen hielden stand en niets wat de machine controleert ging stuk',

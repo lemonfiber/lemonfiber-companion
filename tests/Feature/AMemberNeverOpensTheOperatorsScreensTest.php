@@ -13,6 +13,7 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\Locked;
 use Modules\Operator\Internal\Screens\SignIntoAStack;
+use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\TheHouseholdsTabs;
 use Native\Mobile\Edge\NativeRouter;
@@ -210,4 +211,12 @@ it('builds the lock for an operator\'s path on a member\'s session while the loc
     $said = whatTheApplicationBuiltFor(aKeychainHoldingBothSessions(), thePathOf(AStacksScreen::Services->value, aHouseSignedInto(A_MEMBERS_HOUSE)), ADeviceThatKnowsYou::refusing());
 
     expect($said)->toContain(Locked::class);
+});
+
+it('serves the member\'s Home for the plugins and the catalogue they are chosen from, through the application, for a member\'s session', function (): void {
+    $said = whatTheApplicationBuiltFor(aKeychainHoldingBothSessions(), thePathOf(AStacksScreen::Plugins->value, aHouseSignedInto(A_MEMBERS_HOUSE)));
+
+    expect(everyOperatorsScreenAMemberIsKeptFrom()[AStacksScreen::Plugins->value] ?? '')->toBe(WhatExtendsThisStack::class)
+        ->and($said)->toContain(whereAMemberLands())
+        ->and($said)->not->toContain(WhatExtendsThisStack::class);
 });

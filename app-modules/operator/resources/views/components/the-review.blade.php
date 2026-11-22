@@ -77,19 +77,19 @@
             <x-design::action
                 :label="__('health.coming.let_them_finish')"
                 :answers-to="__('config.agree_to', ['key' => $key])"
-                :tap="$tapping('agree', $key, 'for_the_downloads')"
+                :tap="$tapping($agreeing ?? 'agree', $key, 'for_the_downloads')"
             />
             <x-design::action
                 :label="__('health.coming.go_ahead_now')"
                 :answers-to="__('config.agree_to', ['key' => $key])"
-                :tap="$tapping('agree', $key, 'go_ahead_now')"
+                :tap="$tapping($agreeing ?? 'agree', $key, 'go_ahead_now')"
                 tone="tonal"
             />
         @else
             <x-design::action
                 :label="__('config.agree')"
                 :answers-to="__('config.agree_to', ['key' => $key])"
-                :tap="$tapping('agree', $key)"
+                :tap="$tapping($agreeing ?? 'agree', $key)"
             />
         @endif
     @endif

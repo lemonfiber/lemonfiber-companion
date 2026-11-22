@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use function trim;
 
 /**
- * The setting the stack names as the one that turns reaching its catalogue on: its key, the value that turns it on, and the act that writes it (ARCH-R450).
+ * The setting the stack names as the one that turns reaching its catalogue on: its key, the value that turns it on, and the act that writes it.
  *
  * This app writes exactly what the stack names and hardcodes neither: a key
  * or a value spelled here would be this app deciding something the stack

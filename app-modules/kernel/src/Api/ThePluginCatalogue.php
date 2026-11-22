@@ -11,7 +11,7 @@ use Closure;
 use function trim;
 
 /**
- * What the stack says of its verified plugin catalogue: listed, switched off, or not reached (ARCH-R450).
+ * What the stack says of its verified plugin catalogue: listed, switched off, or not reached.
  *
  * Three answers, and none of them is an empty list standing in for another: a
  * catalogue that was not asked, or could not be read, is never one that
