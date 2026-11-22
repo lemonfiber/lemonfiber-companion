@@ -78,6 +78,7 @@ use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatGoingBackDoes;
 use Modules\Kernel\Api\WhatHappenedToIt;
+use Modules\Kernel\Api\WhatIsLeftAlone;
 use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
@@ -171,6 +172,7 @@ final readonly class TheWireUnions
         Medium::class => 'medium',
         Cost::class => 'cost',
         Stance::class => 'stance',
+        WhatIsLeftAlone::class => 'kind',
         HowThePluginCatalogueStands::class => 'state',
 
         HowItIsHosted::class => 'standing',

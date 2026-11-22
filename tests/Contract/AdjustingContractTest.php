@@ -79,6 +79,8 @@ function whatAStackSendsAboutAChange(
             'changed' => in_array($stance, ['pending', 'applied'], strict: true),
             'rehearsed' => true,
             'decisions' => [],
+            'unmanaged' => [],
+            'unmanaged_more' => 0,
             'settings' => [],
             'review' => [
                 'change' => ['key' => $key, 'from' => $from, 'to' => $to, 'cost' => $cost],

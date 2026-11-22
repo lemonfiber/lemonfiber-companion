@@ -60,6 +60,7 @@ use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatGoingBackDoes;
 use Modules\Kernel\Api\WhatHappenedToIt;
+use Modules\Kernel\Api\WhatIsLeftAlone;
 use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
@@ -420,6 +421,13 @@ it('every stance the contract describes has a case', function (): void {
 
     expect($stances)->not->toBe([], 'no stance union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(Stance::cases()))->toBe($stances);
+});
+
+it('every kind of thing left alone has a case', function (): void {
+    $kinds = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedConfigEnvelope(), 'kind');
+
+    expect($kinds)->not->toBe([], 'no kind union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhatIsLeftAlone::cases()))->toBe($kinds);
 });
 
 it('every way a service can be running has a case', function (): void {
