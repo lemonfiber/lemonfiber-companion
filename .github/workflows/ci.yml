@@ -708,9 +708,12 @@ jobs:
   # job gets: each job of the called workflow declares its own permissions, the
   # ones that run this repository's code read only, and GitHub refuses to start
   # a called workflow whose jobs ask for more than its caller grants.
+  #
+  # Paused: the job starts only where the repository variable `MUTATION` is
+  # `on`, and branch protection names neither of its checks meanwhile.
   mutation:
     needs: tests
-    if: ${{ !cancelled() && needs.tests.result != 'failure' }}
+    if: ${{ vars.MUTATION == 'on' && !cancelled() && needs.tests.result != 'failure' }}
     permissions:
       contents: write # used only by publish, on main, which writes the badge and the trend
       actions: read # used only by verdict and deliver, to find the run's HTML report the comment links
