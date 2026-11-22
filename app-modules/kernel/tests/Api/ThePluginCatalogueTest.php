@@ -25,7 +25,7 @@ use function sprintf;
 /** An entry the catalogue offers, not installed here. */
 function anEntry(): ACatalogueEntry
 {
-    return ACatalogueEntry::offered(' bazarr ', 'Bazarr', 'Finds subtitles for films and series.', '1.4.0', 'Films and series play without subtitles.');
+    return ACatalogueEntry::offered(' bazarr ', ' Bazarr ', ' Finds subtitles for films and series. ', ' 1.4.0 ', ' Films and series play without subtitles. ');
 }
 
 /** The same entry, installed here at that version. */

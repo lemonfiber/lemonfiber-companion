@@ -20,28 +20,27 @@ use function trim;
 final readonly class ThePluginCatalogue
 {
     /**
-     * @param list<ACatalogueEntry> $entries
+     * Exactly one of the three is held, so no state carries a word it does not have.
+     *
+     * @param array{Instant, int, int, list<ACatalogueEntry>}|null $listed  when it was published, its serial, how many could not be listed, and each entry
+     * @param array{string, string}|null                           $failure the problem's code and summary
      */
     private function __construct(
-        private ?Instant $published,
-        private int $serial,
-        private int $unreadable,
-        private array $entries,
+        private ?array $listed,
         private ?ASettingThatReaches $setting,
-        private string $code,
-        private string $summary,
+        private ?array $failure,
     ) {}
 
     /** The verified index: when it was published, its serial, each entry it lists, and how many it holds that could not be listed. */
     public static function listed(Instant $published, int $serial, int $unreadable, ACatalogueEntry ...$entries): self
     {
-        return new self($published, $serial, $unreadable, array_values($entries), setting: null, code: '', summary: '');
+        return new self([$published, $serial, $unreadable, array_values($entries)], setting: null, failure: null);
     }
 
     /** Reaching the catalogue is switched off, and this is the setting that turns it on. */
     public static function switchedOff(ASettingThatReaches $setting): self
     {
-        return new self(published: null, serial: 0, unreadable: 0, entries: [], setting: $setting, code: '', summary: '');
+        return new self(listed: null, setting: $setting, failure: null);
     }
 
     /** The index could not be fetched, verified or read, with the problem an install by name would be refused with; a blank code or summary is refused. */
@@ -53,7 +52,7 @@ final readonly class ThePluginCatalogue
             }
         }
 
-        return new self(published: null, serial: 0, unreadable: 0, entries: [], setting: null, code: trim($code), summary: trim($summary));
+        return new self(listed: null, setting: null, failure: [trim($code), trim($summary)]);
     }
 
     /**
@@ -72,9 +71,19 @@ final readonly class ThePluginCatalogue
     public function either(Closure $listed, Closure $switchedOff, Closure $unreached): object
     {
         return match (true) {
-            $this->published instanceof Instant => $listed($this->published, $this->serial, $this->unreadable, $this->entries),
+            $this->listed !== null => $listed(...$this->listed),
             $this->setting instanceof ASettingThatReaches => $switchedOff($this->setting),
-            default => $unreached($this->code, $this->summary),
+            default => $unreached(...$this->failed()),
         };
+    }
+
+    /**
+     * The problem's code and summary, which a catalogue neither listed nor switched off always holds.
+     *
+     * @return array{string, string}
+     */
+    private function failed(): array
+    {
+        return $this->failure ?? throw ThePluginCatalogueIsUnreadable::blank('failure');
     }
 }

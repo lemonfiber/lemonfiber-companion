@@ -328,3 +328,22 @@ it('reads the catalogue again after going back, so what is installed is what it 
 
     expect($extending->cataloguesRead())->toBe(2);
 });
+
+it('reads the catalogue on the frame after the one where an act it followed came back to the listing', function (): void {
+    $extending = aStackCataloguing(theCatalogueListed(), HowExtendingItIsGoing::underway(Job::named('j-1')), HowExtendingItIsGoing::done(APluginAsItArrives::theListing()));
+    $screen = theCatalogueOpen($extending);
+    $screen->source = 'tdarr';
+    $screen->rehearse();
+    $screen->whileItRuns();
+    $cameBack = WhatTheDeviceWouldDraw::by($screen);
+    $readsOnTheFrameItCameBack = $extending->cataloguesRead();
+    $waited = $screen->waitsForTheNextFrame();
+    WhatTheDeviceWouldDraw::by($screen);
+
+    expect($extending->asked())->toBe(['rehearse:tdarr', 'after:j-1'])
+        ->and($screen->followingTheAct)->toBeNull()
+        ->and($cameBack->said())->toContain(aCatalogueLine('plugins.named', ['name' => 'Tdarr', 'version' => '2.1.0']))
+        ->and($readsOnTheFrameItCameBack)->toBe(0)
+        ->and($waited)->toBeTrue()
+        ->and($extending->cataloguesRead())->toBe(1);
+});
