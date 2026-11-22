@@ -19,6 +19,17 @@
     <x-design::note>{{ __('config.listing_is_the_stacks') }}</x-design::note>
     <x-design::action :label="__('navigation.menu.decided')" :goes="$this->goes()->to(AStacksScreen::Decided)" tone="tonal" />
 
+    @if ($this->answer()->leftAlone !== null)
+        <x-design::section :label="__('stacks.left_alone.heading')">
+            @if ($this->answer()->leftAlone->went->cameBack())
+                <x-design::body>{{ trans_choice($this->answer()->leftAlone->said, $this->answer()->leftAlone->howMany) }}</x-design::body>
+            @else
+                <x-design::body>{{ __('stacks.left_alone.unread') }}</x-design::body>
+            @endif
+            <x-design::link :label="__('stacks.left_alone.open')" :goes="$this->goes()->to(AStacksScreen::LeftAlone)" />
+        </x-design::section>
+    @endif
+
     @forelse ($this->answer()->set as $setting)
         <x-design::card>
             <x-design::strong>{{ $setting->key }}</x-design::strong>

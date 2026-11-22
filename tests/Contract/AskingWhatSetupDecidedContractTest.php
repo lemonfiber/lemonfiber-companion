@@ -58,6 +58,8 @@ function whatAStackSendsAboutItsDecisions(array $decisions = [
             'changed' => false,
             'rehearsed' => false,
             'decisions' => $decisions,
+            'unmanaged' => [],
+            'unmanaged_more' => 0,
             'settings' => [['key' => 'DATA_ROOT', 'value' => '/srv/media', 'secret' => false, 'origin' => ['origin' => 'bundled']]],
         ],
     ];

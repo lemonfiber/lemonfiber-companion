@@ -10,6 +10,8 @@ use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Settings;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\TheAreasLeftAlone;
+use Modules\Kernel\Api\WhatWasFoundOfTheAreasLeftAlone;
 use Override;
 
 /**
@@ -26,6 +28,7 @@ final class AStackThatIsSet implements Arranging
     private function __construct(
         private readonly Settings $set,
         private readonly ?Obstacle $why,
+        private readonly ?WhatWasFoundOfTheAreasLeftAlone $leftAlone = null,
         private ?Stack $asked = null,
         private int $askings = 0,
     ) {}
@@ -52,6 +55,12 @@ final class AStackThatIsSet implements Arranging
         return new self(set: Settings::none(), why: $why);
     }
 
+    /** The same stack, saying this of what it was told to leave alone beside its settings. */
+    public function leaving(WhatWasFoundOfTheAreasLeftAlone $leftAlone): self
+    {
+        return new self(set: $this->set, why: $this->why, leftAlone: $leftAlone);
+    }
+
     public function askedAbout(): ?Stack
     {
         return $this->asked;
@@ -70,6 +79,6 @@ final class AStackThatIsSet implements Arranging
 
         return $this->why instanceof Obstacle
             ? HowItIsSet::refused($this->why)
-            : HowItIsSet::told($this->set);
+            : HowItIsSet::told($this->set, $this->leftAlone ?? WhatWasFoundOfTheAreasLeftAlone::listed(TheAreasLeftAlone::these(0)));
     }
 }

@@ -32,12 +32,14 @@ final readonly class HowAnOutcomeReads
                     became: $became->saidOnTheScreen(),
                     left: $what,
                     worthAnotherGo: $became->worthAnotherGo(),
+                    leftAloneByDeclaration: $became === WhatBecameOfIt::Unmanaged,
                 ),
                 nothing: static fn(): WhatOneOutcomeSays => new WhatOneOutcomeSays(
                     repair: new HowARepairReads()->in($repair),
                     became: $became->saidOnTheScreen(),
                     left: '',
                     worthAnotherGo: $became->worthAnotherGo(),
+                    leftAloneByDeclaration: $became === WhatBecameOfIt::Unmanaged,
                 ),
             ),
         );

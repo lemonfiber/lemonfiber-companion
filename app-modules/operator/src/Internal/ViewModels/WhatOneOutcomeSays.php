@@ -36,11 +36,13 @@ final readonly class WhatOneOutcomeSays
      * @param string            $became        the key for what became of it
      * @param string            $left          what it left on the machine, or empty where it left nothing
      * @param bool              $worthAnotherGo whether agreeing again could produce a different answer
+     * @param bool              $leftAloneByDeclaration whether the stack left it alone because the operator declared its area unmanaged
      */
     public function __construct(
         public WhatOneRepairSays $repair,
         public string $became,
         public string $left,
         public bool $worthAnotherGo,
+        public bool $leftAloneByDeclaration,
     ) {}
 }

@@ -27,6 +27,7 @@ use Modules\Kernel\Api\AskingTheIndexers;
 use Modules\Kernel\Api\AskingTheQueue;
 use Modules\Kernel\Api\AskingTheWatcher;
 use Modules\Kernel\Api\AskingWhatAStopWouldInterrupt;
+use Modules\Kernel\Api\AskingWhatIsLeftAlone;
 use Modules\Kernel\Api\AskingWhatSetupDecided;
 use Modules\Kernel\Api\AskingWhatSetupSettled;
 use Modules\Kernel\Api\Cataloguing;
@@ -347,6 +348,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // screen saying when it was taken.
         $this->app->bind(Arranging::class, Arrangements::class);
         $this->app->bind(AskingWhatSetupDecided::class, Arrangements::class);
+        $this->app->bind(AskingWhatIsLeftAlone::class, Arrangements::class);
 
         // Changing one. Apart from the reading above rather than folded into
         // it, so a caller that only wants to look is not also handed the

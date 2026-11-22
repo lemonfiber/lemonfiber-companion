@@ -4,7 +4,9 @@ declare(strict_types=1);
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ADownloadItWouldInterrupt;
 use Modules\Kernel\Api\ALibraryAMoveReaches;
+use Modules\Kernel\Api\AnAreaLeftAlone;
 use Modules\Kernel\Api\AnEditFoundInTheFile;
+use Modules\Kernel\Api\AThingLeftAlone;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowADownloadComes;
@@ -21,12 +23,16 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Stance;
+use Modules\Kernel\Api\TheAreasLeftAlone;
 use Modules\Kernel\Api\WhatAChangeAsksFor;
 use Modules\Kernel\Api\WhatAChangeComesTo;
 use Modules\Kernel\Api\WhatAChangeLeavesAlone;
+use Modules\Kernel\Api\WhatAnAreaCovers;
 use Modules\Kernel\Api\WhatASettingHolds;
+use Modules\Kernel\Api\WhatIsLeftAlone;
 use Modules\Kernel\Api\WhatItHoldsNow;
 use Modules\Kernel\Api\WhatItReplaced;
+use Modules\Kernel\Api\WhatWasFoundOfTheAreasLeftAlone;
 use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
@@ -290,7 +296,7 @@ it('offers a change on a shown setting and on no withheld one', function (): voi
 it('draws a way to change each shown setting, named for it, and none beside a withheld one', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo())));
 
-    expect($drawn->offers())->toBe([__('navigation.menu.decided'), __('config.change_key', ['key' => 'LIBRARY_PATH']), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('config.ask_again')])
+    expect($drawn->offers())->toBe([__('navigation.menu.decided'), __('stacks.left_alone.open'), __('config.change_key', ['key' => 'LIBRARY_PATH']), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('config.ask_again')])
         ->and($drawn->said())->toContain('/data/media')
         ->and($drawn->said())->toContain('set, not shown');
 });
@@ -368,7 +374,7 @@ it('draws both sides of a staged change, and offers to make it or to leave it', 
         ->and($drawn->said())->toContain(__($cost->saidOnTheScreen()))
         ->and($drawn->said())->toContain(__(Stance::Pending->saidOnTheScreen()))
         ->and(in_array(__('config.worth_reading_twice'), $drawn->said(), strict: true))->toBe($warned)
-        ->and($drawn->offers())->toBe([__('navigation.menu.decided'), __('config.agree'), __('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('without.copy'), __('config.ask_again')]);
+        ->and($drawn->offers())->toBe([__('navigation.menu.decided'), __('stacks.left_alone.open'), __('config.agree'), __('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('without.copy'), __('config.ask_again')]);
 })->with([
     'cheap' => [Cost::Cheap, false],
     'consequential' => [Cost::Consequential, true],
@@ -741,5 +747,48 @@ it('draws a change refused because the operator declared the area unmanaged in t
 
     expect($drawn->said())->toContain(__(Stance::Blocked->saidOnTheScreen()), $refusal)
         ->and($screen->proposal()?->canBeAgreedTo)->toBeFalse()
-        ->and($drawn->offers())->toBe([__('navigation.menu.decided'), __('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('without.copy'), __('config.ask_again')]);
+        ->and($drawn->offers())->toBe([__('navigation.menu.decided'), __('stacks.left_alone.open'), __('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('without.copy'), __('config.ask_again')]);
+});
+
+/**
+ * The lines the section on what is left alone draws, from its heading on.
+ *
+ * @return list<string>
+ */
+function whatTheSectionOnWhatIsLeftAloneSays(WhatThisStackIsSetTo $screen): array
+{
+    $said = WhatTheDeviceWouldDraw::by($screen)->said();
+    $from = array_search(__('stacks.left_alone.heading'), $said, strict: true);
+
+    return is_int($from) ? array_slice($said, $from, 3) : [];
+}
+
+it('counts what the operator told lemonfiber to leave alone above the settings, from the same answer, and leads to it', function (): void {
+    $areas = TheAreasLeftAlone::these(
+        4,
+        AnAreaLeftAlone::declared('recyclarr', areaCut: false, why: 'my own profiles', whyCut: false, covers: WhatAnAreaCovers::these(0, AThingLeftAlone::of(WhatIsLeftAlone::Service, 'recyclarr'))),
+        AnAreaLeftAlone::declared('sonar', areaCut: false, why: 'a typo', whyCut: false, covers: WhatAnAreaCovers::these(0)),
+    );
+    $arranging = AStackThatIsSet::to(whatTheLoftIsSetTo())->leaving(WhatWasFoundOfTheAreasLeftAlone::listed($areas));
+    $screen = theSettingsScreen($arranging);
+
+    expect(whatTheSectionOnWhatIsLeftAloneSays($screen))->toBe([__('stacks.left_alone.heading'), trans_choice('stacks.left_alone.declared', 6), __('stacks.left_alone.open')])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('stacks.left_alone.open'))
+        ->and($screen->answer()->howMany())->toBe(3)
+        ->and($arranging->askings())->toBe(1);
+});
+
+it('says on the settings that nothing is declared, that the stack does not say, or that its list could not be read, and keeps the settings', function (WhatWasFoundOfTheAreasLeftAlone $found, string $line): void {
+    $screen = theSettingsScreen(AStackThatIsSet::to(whatTheLoftIsSetTo())->leaving($found));
+
+    expect(whatTheSectionOnWhatIsLeftAloneSays($screen))->toBe([__('stacks.left_alone.heading'), __($line), __('stacks.left_alone.open')])
+        ->and($screen->answer()->howMany())->toBe(3);
+})->with([
+    'nothing declared' => [WhatWasFoundOfTheAreasLeftAlone::listed(TheAreasLeftAlone::these(0)), 'stacks.left_alone.none'],
+    'an older stack' => [WhatWasFoundOfTheAreasLeftAlone::notCarried(), 'stacks.left_alone.not_carried'],
+    'unreadable' => [WhatWasFoundOfTheAreasLeftAlone::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)), 'stacks.left_alone.unread'],
+]);
+
+it('draws no section on what is left alone where the settings could not be read', function (): void {
+    expect(whatTheSectionOnWhatIsLeftAloneSays(theSettingsScreen(AStackThatIsSet::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)))))->toBe([]);
 });

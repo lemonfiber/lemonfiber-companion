@@ -264,7 +264,7 @@ it('shows what the service holds beside what lemonfiber would write, and offers 
         ->and($drawn->said())->toContain(__('stacks.wiring.yours', ['value' => '/mnt/downloads']))
         ->and($drawn->said())->toContain(__('stacks.wiring.ours', ['value' => '/downloads']))
         ->and($drawn->said())->toContain(__('stacks.wiring.ours', ['value' => '8989']))
-        ->and($drawn->offers())->toBe([__('stacks.wiring.wire'), __('stacks.wiring.rehearse_adopting'), __('health.ask_again')]);
+        ->and($drawn->offers())->toBe([__('stacks.left_alone.open_for', ['what' => 'J']), __('stacks.wiring.wire'), __('stacks.wiring.rehearse_adopting'), __('health.ask_again')]);
 });
 
 it('says what a warning breaks and what puts it right, and nothing of the kind where nothing breaks', function (): void {
@@ -460,7 +460,7 @@ it('renders its own view', function (): void {
     expect(theWiringScreen(AStackThatWires::answering())->render()->name())->toBe('operator::how-the-services-are-wired');
 });
 
-it('draws an area the operator declared unmanaged as left alone in their words, never as a change, with no value and nothing to do about it', function (): void {
+it('draws an area the operator declared unmanaged as left alone in their words, never as a change, with no value, nothing to do about it and a way to the declarations', function (): void {
     $leftAlone = TheWiring::written(
         HowDriftWasJudged::Assessed,
         aConnectionEnded('Sonarr to qBittorrent', HowAConnectionEnded::because(WhereAConnectionStands::Observed, 'Tuned by hand for the seedbox')),
@@ -474,7 +474,7 @@ it('draws an area the operator declared unmanaged as left alone in their words, 
         ->and($drawn->said())->not->toContain(__('stacks.wiring.state.drifted'))
         ->and($drawn->said())->not->toContain(__('stacks.wiring.state.failed'))
         ->and($drawn->said())->not->toContain(__('stacks.wiring.state.skipped'))
-        ->and($drawn->offers())->toBe([__('stacks.wiring.wire'), __('stacks.wiring.rehearse_adopting'), __('health.ask_again')]);
+        ->and($drawn->offers())->toBe([__('stacks.left_alone.open_for', ['what' => 'Sonarr to qBittorrent']), __('stacks.wiring.wire'), __('stacks.wiring.rehearse_adopting'), __('health.ask_again')]);
 });
 
 /** A link asking for a capability, each claimant with where it came from. */
@@ -639,4 +639,19 @@ it('leaves what answers what as it was read where the stream says nothing of it'
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.wiring.fills.outright', ['service' => 'qbittorrent']))
         ->and($linking->askings())->toBe(1);
+});
+
+it('leads to what the operator told lemonfiber to leave alone from a connection left alone by their declaration, and from no other', function (): void {
+    $screen = theScreenAfterWiring(AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::answered(aRunOfEveryConnection())));
+    $declared = [];
+    $named = [];
+
+    foreach (theRunDrawn($screen)->connections as $connection) {
+        $declared[$connection->connection] = $connection->leftAloneByDeclaration;
+        $named[] = __('stacks.left_alone.open_for', ['what' => $connection->connection]);
+    }
+
+    expect(array_keys(array_filter($declared)))->toBe(['J'])
+        ->and(count($declared))->toBe(17)
+        ->and(array_values(array_filter(WhatTheDeviceWouldDraw::by($screen)->offers(), static fn(string $offer): bool => in_array($offer, $named, strict: true))))->toBe([__('stacks.left_alone.open_for', ['what' => 'J'])]);
 });

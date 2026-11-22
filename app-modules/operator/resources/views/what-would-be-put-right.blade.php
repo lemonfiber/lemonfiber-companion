@@ -94,6 +94,9 @@
                 <x-design::card>
                     <x-design::strong>{{ $outcome->repair->does }}</x-design::strong>
                     <x-design::body>{{ __($outcome->became) }}</x-design::body>
+                    @if ($outcome->leftAloneByDeclaration)
+                        <x-design::link :label="__('stacks.left_alone.open')" :answers-to="__('stacks.left_alone.open_for', ['what' => $outcome->repair->does])" :goes="$this->goes()->to(AStacksScreen::LeftAlone)" />
+                    @endif
 
                     {{-- What a stopped repair left, which is the whole of what
                          tells an operator whether they may simply try again. --}}

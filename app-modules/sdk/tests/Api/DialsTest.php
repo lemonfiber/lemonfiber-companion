@@ -219,6 +219,8 @@ it('reads a body the contract would accept', function (): void {
             'changed' => true,
             'rehearsed' => false,
             'decisions' => [],
+            'unmanaged' => [],
+            'unmanaged_more' => 0,
             'settings' => [],
             'consequence' => 'Every service restarts on the new location.',
             'review' => [

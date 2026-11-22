@@ -158,6 +158,9 @@
                 <x-design::card>
                     <x-design::strong>{{ $connection->connection }}</x-design::strong>
                     <x-design::body>{{ __($connection->stateSaid) }}</x-design::body>
+                    @if ($connection->leftAloneByDeclaration)
+                        <x-design::link :label="__('stacks.left_alone.open')" :answers-to="__('stacks.left_alone.open_for', ['what' => $connection->connection])" :goes="$this->goes()->to(AStacksScreen::LeftAlone)" />
+                    @endif
                     @if ($connection->said !== '')
                         {{-- The stack's words, or the service's own, as they came. --}}
                         <x-design::body>{{ $connection->said }}</x-design::body>

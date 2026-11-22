@@ -19,10 +19,14 @@ use function count;
  */
 final readonly class WhatThisStackIsSetToTurnedOutToBe
 {
-    /** @param list<WhatOneSettingSays> $set */
+    /**
+     * @param list<WhatOneSettingSays> $set
+     * @param TheAreasLeftAloneAsShown|null $leftAlone what the same answer said the stack leaves alone, where it came back
+     */
     public function __construct(
         public HowTheReadingWent $went,
         public array $set = [],
+        public ?TheAreasLeftAloneAsShown $leftAlone = null,
     ) {}
 
     /**

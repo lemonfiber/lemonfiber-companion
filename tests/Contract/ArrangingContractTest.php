@@ -18,7 +18,9 @@ use Modules\Kernel\Api\Settings;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
+use Modules\Kernel\Api\TheAreasLeftAlone;
 use Modules\Kernel\Api\WhatASettingHolds;
+use Modules\Kernel\Api\WhatWasFoundOfTheAreasLeftAlone;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Sdk\Api\Arrangements;
 use Modules\Sdk\Api\Dials;
@@ -106,6 +108,8 @@ function whatAStackSendsAboutItsSettings(): array
             'changed' => false,
             'rehearsed' => false,
             'decisions' => [],
+            'unmanaged' => [],
+            'unmanaged_more' => 0,
             'settings' => [
                 // `origin` is required and is a union of four arms. Two
                 // different ones here rather than the same twice: a stand-in
@@ -278,16 +282,20 @@ it('HowItIsSet reaches the arm the answer calls for, and hands it what it was gi
     // thing — an arm that fired with the wrong payload would pass a test that
     // only counted which one it was.
     $whichArm = static fn(HowItIsSet $how): string => $how->either(
-        told: static fn(Settings $set): TheWordCarriedOut => new TheWordCarriedOut(
-            sprintf('told:%d', count($set)),
+        told: static fn(Settings $set, WhatWasFoundOfTheAreasLeftAlone $leftAlone): TheWordCarriedOut => new TheWordCarriedOut(
+            sprintf('told:%d:%s', count($set), $leftAlone->either(
+                listed: static fn(TheAreasLeftAlone $areas): TheWordCarriedOut => new TheWordCarriedOut(sprintf('listed %d', count($areas))),
+                notCarried: static fn(): TheWordCarriedOut => new TheWordCarriedOut('not carried'),
+                met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
+            )->said),
         ),
         refused: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut(
             sprintf('refused:%s', $why->kind()->value),
         ),
     )->said;
 
-    expect($whichArm(HowItIsSet::told(Settings::none())))->toBe('told:0')
-        ->and($whichArm(HowItIsSet::told(theSameSettings())))->toBe('told:2')
+    expect($whichArm(HowItIsSet::told(Settings::none(), WhatWasFoundOfTheAreasLeftAlone::notCarried())))->toBe('told:0:not carried')
+        ->and($whichArm(HowItIsSet::told(theSameSettings(), WhatWasFoundOfTheAreasLeftAlone::listed(TheAreasLeftAlone::these(0)))))->toBe('told:2:listed 0')
         ->and($whichArm(HowItIsSet::refused(Obstacle::of(KindOfObstacle::StackDidNotAnswer))))->toBe('refused:no_answer');
 });
 

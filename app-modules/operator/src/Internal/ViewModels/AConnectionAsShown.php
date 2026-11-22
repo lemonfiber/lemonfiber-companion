@@ -20,6 +20,7 @@ final readonly class AConnectionAsShown
      * @param string $yours       what the service holds, or empty
      * @param string $breakage    what it breaks, or empty where nothing is broken
      * @param string $remediation what would put it right, or empty where nothing is broken
+     * @param bool   $leftAloneByDeclaration whether it was left alone because the operator declared its area unmanaged
      */
     public function __construct(
         public string $connection,
@@ -29,5 +30,6 @@ final readonly class AConnectionAsShown
         public string $yours,
         public string $breakage,
         public string $remediation,
+        public bool $leftAloneByDeclaration,
     ) {}
 }

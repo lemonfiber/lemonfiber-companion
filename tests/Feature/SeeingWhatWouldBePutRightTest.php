@@ -473,7 +473,9 @@ it('a finished run says what became of each repair, and what one left', function
         ->and($done->came?->outcomes[0]->worthAnotherGo)->toBeFalse()
         ->and($done->came?->outcomes[1]->became)->toBe(WhatBecameOfIt::Stopped->saidOnTheScreen())
         ->and($done->came?->outcomes[1]->left)->toBe('Half of the library on the old disk')
-        ->and($done->came?->outcomes[1]->worthAnotherGo)->toBeTrue();
+        ->and($done->came?->outcomes[1]->worthAnotherGo)->toBeTrue()
+        ->and([$done->came?->outcomes[0]->leftAloneByDeclaration, $done->came?->outcomes[1]->leftAloneByDeclaration])->toBe([false, false])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('stacks.left_alone.open_for', ['what' => $done->came?->outcomes[0]->repair->does]), __('stacks.left_alone.open_for', ['what' => $done->came?->outcomes[1]->repair->does]));
 });
 
 it('an outcome still carries what the repair said it would do', function (): void {
@@ -795,6 +797,9 @@ it('says a repair the stack left alone because the area was declared unmanaged c
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($done->came?->changed)->toBe(0)
+        ->and($done->came?->outcomes[0]->leftAloneByDeclaration)->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('stacks.left_alone.open_for', ['what' => 'Move the library onto the larger disk']))
+        ->and($screen->goes()->to(AStacksScreen::LeftAlone))->toBe(str_replace('{stack}', $screen->stack()->id()->stored(), AStacksScreen::LeftAlone->value))
         ->and($done->came?->outcomes[0]->became)->toBe(WhatBecameOfIt::Unmanaged->saidOnTheScreen())
         ->and($done->came?->outcomes[0]->worthAnotherGo)->toBeFalse()
         ->and($drawn)->toContain(__(WhatBecameOfIt::Unmanaged->saidOnTheScreen()))
