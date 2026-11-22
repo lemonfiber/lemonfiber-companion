@@ -146,7 +146,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     public function __construct(
         private readonly ExtendingTheStack $extending,
         protected readonly Adjusting $adjusting,
-        private readonly SettingWhatServicesRead $tuning,
+        protected readonly SettingWhatServicesRead $tuning,
         private readonly SecureStorage $storage,
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
