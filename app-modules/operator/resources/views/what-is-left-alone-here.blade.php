@@ -7,7 +7,7 @@
     <x-design::body>{{ __('stacks.left_alone.intro') }}</x-design::body>
     <x-design::strong>{{ trans_choice($this->answer()->said, $this->answer()->howMany) }}</x-design::strong>
 
-    @foreach ($this->answer()->areas as $area)
+    @forelse ($this->answer()->areas as $area)
         <x-design::card>
             <x-design::strong>{{ $area->area }}</x-design::strong>
             @if ($area->areaCut)
@@ -24,15 +24,19 @@
                 <x-design::note>{{ __('stacks.left_alone.covers_nothing') }}</x-design::note>
             @else
                 <x-design::note>{{ __('stacks.left_alone.covers') }}</x-design::note>
-                @foreach ($area->covers as $thing)
+                @forelse ($area->covers as $thing)
                     <x-design::row :headline="$thing->name" :supporting="__($thing->kindSaid)" />
-                @endforeach
+                @empty
+                    {{-- Nothing: what it covers beyond the list is counted below. --}}
+                @endforelse
                 @if ($area->coversMore > 0)
                     <x-design::note>{{ trans_choice('stacks.left_alone.covers_more', $area->coversMore) }}</x-design::note>
                 @endif
             @endif
         </x-design::card>
-    @endforeach
+    @empty
+        {{-- Nothing: the line above says why none is listed. --}}
+    @endforelse
 
     @if ($this->answer()->more > 0)
         <x-design::note>{{ trans_choice('stacks.left_alone.more', $this->answer()->more) }}</x-design::note>

@@ -20,6 +20,7 @@ return [
         'to_the_settings' => 'Open de instellingen',
         'unread' => 'De lijst van wat de stack met rust laat, kon niet worden gelezen.',
         'open' => 'Met rust gelaten',
+        'open_for' => 'Met rust gelaten: :what',
         'kind' => [
             'service' => 'Dienst',
             'path' => 'Bestand of map',

@@ -20,6 +20,7 @@ return [
         'to_the_settings' => 'Open the settings',
         'unread' => 'The stack\'s list of what it leaves alone could not be read.',
         'open' => 'Left alone',
+        'open_for' => 'Left alone: :what',
         'kind' => [
             'service' => 'Service',
             'path' => 'File or folder',
