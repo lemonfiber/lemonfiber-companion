@@ -247,37 +247,27 @@ enum WireField: string implements NamesAWireField
     case Cost = 'cost';
 
     /**
-     * Who put a setting's value there, as the tagged word inside `origin`.
-     *
-     * The field and the tag inside it are both spelled `origin`, which is the
-     * contract's doing and not worth a second case: the outer one is a table
-     * and the inner one is the word that says which arm of it this is.
-     *
-     * On the `credentials` envelope it is a plain word, not a table: who
-     * produced the credential.
+     * Who put a setting's value there, as the tagged word inside `origin`: the
+     * contract spells the table and the word that says its arm alike, which is
+     * not worth a second case. On the `credentials` envelope it is a plain
+     * word, not a table: who produced the credential.
      */
     case Origin = 'origin';
 
     /**
-     * Which plugin an origin is attributing a value to.
-     *
-     * Only on the `plugin` arm. Read into
-     * {@see \Modules\Kernel\Api\WhoPutItThere} rather than carried
-     * on beside the word, so that no screen holds a name it has not checked
-     * belongs to the arm that has one.
-     *
-     * On the front door, what the operator named as the door where the stack
-     * refused it.
+     * Which plugin an origin is attributing a value to, only on the `plugin`
+     * arm. Read into {@see \Modules\Kernel\Api\WhoPutItThere} rather than
+     * carried on beside the word, so that no screen holds a name it has not
+     * checked belongs to the arm that has one. On the front door, what the
+     * operator named as the door where the stack refused it.
      */
     case Named = 'named';
 
     /**
-     * Why an origin could not be established.
-     *
-     * Only on the `unknown` arm, and required there. A stack is required to
-     * say unknown rather than guess, and *unknown* with no reason after it is
-     * read as a default by everyone who sees it. Also why an answered cleanup
-     * left one item behind.
+     * Why an origin could not be established, only on the `unknown` arm and
+     * required there: a stack says unknown rather than guess, and *unknown*
+     * with no reason after it is read as a default by everyone who sees it.
+     * Also why an answered cleanup left one item behind.
      */
     case Why = 'why';
 
@@ -997,4 +987,13 @@ enum WireField: string implements NamesAWireField
 
     /** Every service held back a change starts; and when a programme in the guide starts. */
     case Starts = 'starts';
+
+    /** One setting's name; and the setting that turns reaching the plugin catalogue on. */
+    case Key = 'key';
+
+    /** The changes one group of the release notes lists; and the plugins a catalogue lists. */
+    case Entries = 'entries';
+
+    /** What going without one service, or one plugin, costs the house. */
+    case WithoutIt = 'without_it';
 }

@@ -35,6 +35,23 @@ return [
     'rehearse' => 'Rehearse installing',
     'back' => 'Back to plugins',
 
+    // What the stack's verified catalogue offers, above the typed source.
+    'catalogue' => [
+        'heading' => 'From the catalogue',
+        'published' => 'Published :when',
+        'without_it' => 'Without it: :without',
+        'installed' => 'Installed here at version :version',
+        'newer' => 'Version :version is in the catalogue',
+        'choose' => 'Rehearse installing :name',
+        'empty' => 'The catalogue lists nothing right now',
+        'unreadable' => 'Entries the catalogue holds that the machine could not list: :count',
+        'off' => 'Reaching the catalogue is switched off by :key, so nothing was asked of it',
+        'failed' => 'The catalogue could not be read: :summary (:code)',
+        'turn_on' => 'Reach the catalogue',
+        'again' => 'Read it again',
+        'newer_unread' => 'Whether the catalogue holds newer versions could not be read: :why',
+    ],
+
     // The rehearsal, and what an install came to.
     'rehearsal' => 'Rehearsal: nothing was written. This is what installing it would do',
     'installed_it' => 'Installed: recorded, its proofs held, and nothing the machine checks broke',

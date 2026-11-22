@@ -107,7 +107,7 @@ final readonly class Dials
     private static function proposed(array $change): ProposedChange
     {
         return ProposedChange::of(
-            self::text($change, ConfigField::Key),
+            self::text($change, WireField::Key),
             self::text($change, WireField::To),
             self::heldNow($change),
             self::cost($change),
@@ -271,7 +271,7 @@ final readonly class Dials
     private static function one(array $row): Setting
     {
         return Setting::called(
-            self::text($row, ConfigField::Key),
+            self::text($row, WireField::Key),
             self::holds($row),
             self::from($row),
         );

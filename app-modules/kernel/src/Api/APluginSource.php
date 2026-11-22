@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use function trim;
 
 /**
- * Where a plugin comes from, as the operator typed it.
+ * Where a plugin comes from, as the operator typed it or chose it from the stack's catalogue.
  *
  * One of three shapes, and the stack tells them apart rather than this app: a
  * name in the catalogue, a directory on the machine, or a git repository with
@@ -28,6 +28,12 @@ final readonly class APluginSource
         }
 
         return new self($trimmed);
+    }
+
+    /** The entry chosen from the stack's catalogue, by the name it is installed by: the same source a typed name would be. */
+    public static function listed(ACatalogueEntry $entry): self
+    {
+        return new self($entry->id());
     }
 
     /** The source, as it is sent and shown. */

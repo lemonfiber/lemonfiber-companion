@@ -19,11 +19,14 @@ use Modules\Kernel\Api\ARecipeRunAgreed;
 use Modules\Kernel\Api\ExtendingTheStack;
 use Modules\Kernel\Api\HowExtendingItIsGoing;
 use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\ThePluginCatalogue;
 use Modules\Kernel\Api\ThePlugins;
+use Modules\Kernel\Api\WhatWasFoundOfThePluginCatalogue;
 use Modules\Kernel\Api\WhatWasFoundOfThePlugins;
 
 use function sprintf;
@@ -41,6 +44,12 @@ final class AStackThatExtendsItself implements ExtendingTheStack
     /** @var list<string> each thing asked, in order, as the method that was asked and what it was asked with */
     private array $asked = [];
 
+    /** What every reading of the catalogue answers: by default, a stack that does not offer one. */
+    private ?WhatWasFoundOfThePluginCatalogue $catalogue = null;
+
+    /** How many times the catalogue was read, apart from what was asked, so a screen reading it beside its listing changes no other count. */
+    private int $cataloguesRead = 0;
+
     /** @param list<HowExtendingItIsGoing> $answers */
     private function __construct(private readonly WhatWasFoundOfThePlugins $listing, private array $answers) {}
 
@@ -56,10 +65,23 @@ final class AStackThatExtendsItself implements ExtendingTheStack
         return new self(WhatWasFoundOfThePlugins::met($why), [HowExtendingItIsGoing::met($why), HowExtendingItIsGoing::met($why)]);
     }
 
+    /** The same stack, whose every reading of the catalogue answers this. */
+    public function cataloguing(ThePluginCatalogue $catalogue): self
+    {
+        $this->catalogue = WhatWasFoundOfThePluginCatalogue::found($catalogue);
+
+        return $this;
+    }
+
     /** @return list<string> */
     public function asked(): array
     {
         return $this->asked;
+    }
+
+    public function cataloguesRead(): int
+    {
+        return $this->cataloguesRead;
     }
 
     public function installedOn(Stack $stack, Session $session): WhatWasFoundOfThePlugins
@@ -67,6 +89,16 @@ final class AStackThatExtendsItself implements ExtendingTheStack
         $this->asked[] = 'list';
 
         return $this->listing;
+    }
+
+    public function catalogueOf(Stack $stack, Session $session): WhatWasFoundOfThePluginCatalogue
+    {
+        $this->cataloguesRead++;
+
+        return $this->catalogue ?? $this->listing->either(
+            found: static fn(): WhatWasFoundOfThePluginCatalogue => WhatWasFoundOfThePluginCatalogue::met(Obstacle::of(KindOfObstacle::NotOnThisStack)),
+            met: static fn(Obstacle $why): WhatWasFoundOfThePluginCatalogue => WhatWasFoundOfThePluginCatalogue::met($why),
+        );
     }
 
     public function rehearseInstalling(Stack $stack, Session $session, APluginSource $source): HowExtendingItIsGoing

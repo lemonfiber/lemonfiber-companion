@@ -378,6 +378,7 @@ final readonly class EveryAdapterCallThatReads
             'Explainers::glossaryOn' => static fn(): object => new Explainers($clients)->glossaryOn($stack, $session),
             'Explainers::wordOn' => static fn(): object
                 => new Explainers($clients)->wordOn($stack, $session, AWordInUse::named('seed')),
+            'Extenders::catalogueOf' => static fn(): object => new Extenders($clients, $entropy)->catalogueOf($stack, $session),
             'Extenders::installedOn' => static fn(): object => new Extenders($clients, $entropy)->installedOn($stack, $session),
             'Extenders::rehearseInstalling' => static fn(): object
                 => new Extenders($clients, $entropy)->rehearseInstalling($stack, $session, APluginSource::typed('tdarr')),

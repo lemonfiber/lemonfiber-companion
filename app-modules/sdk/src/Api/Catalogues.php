@@ -84,7 +84,7 @@ final readonly class Catalogues
                 ServiceId::called(self::text($row, WireField::Services, WireField::Id, $position)),
                 self::text($row, WireField::Services, WireField::Name, $position),
                 self::text($row, WireField::Services, WireField::Describes, $position),
-                self::text($row, WireField::Services, CatalogueField::WithoutIt, $position),
+                self::text($row, WireField::Services, WireField::WithoutIt, $position),
                 self::matters($row, $position),
             );
         }

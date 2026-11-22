@@ -17,9 +17,6 @@ enum CatalogueField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** What going without one service costs the house. */
-    case WithoutIt = 'without_it';
-
     /** The stack version whose catalogue stopped carrying one. */
     case RemovedIn = 'removed_in';
 
