@@ -11,7 +11,6 @@ use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\TheCatalogue;
 use Modules\Sdk\Api\CatalogueIsUnreadable;
 use Modules\Sdk\Api\Catalogues;
-use Modules\Sdk\Api\Fields\CatalogueField;
 use Modules\Sdk\Api\WireField;
 use Tests\Support\WhatTheContractAccepts;
 
@@ -21,7 +20,7 @@ it('names the list a catalogue left out', function (): void {
 });
 
 it('names the list, the row and the field of an entry it could not read', function (): void {
-    expect(CatalogueIsUnreadable::entry(WireField::Services, CatalogueField::WithoutIt, 3)->getMessage())
+    expect(CatalogueIsUnreadable::entry(WireField::Services, WireField::WithoutIt, 3)->getMessage())
         ->toBe('Row 3 of `services` in the catalogue envelope has no readable `without_it`. It is refused rather than dropped: a catalogue one row short says the stack does not carry something it does.');
 });
 

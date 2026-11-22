@@ -17,9 +17,6 @@ enum ConfigField: string implements NamesAWireField
 {
     use SaysWhereItSits;
 
-    /** One setting's name. */
-    case Key = 'key';
-
     /** A proposed change, read against what is in force, and where it stands. */
     case Review = 'review';
 

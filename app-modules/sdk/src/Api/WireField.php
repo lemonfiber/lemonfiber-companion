@@ -997,4 +997,13 @@ enum WireField: string implements NamesAWireField
 
     /** Every service held back a change starts; and when a programme in the guide starts. */
     case Starts = 'starts';
+
+    /** One setting's name; and the setting that turns reaching the plugin catalogue on. */
+    case Key = 'key';
+
+    /** The changes one group of the release notes lists; and the plugins a catalogue lists. */
+    case Entries = 'entries';
+
+    /** What going without one service, or one plugin, costs the house. */
+    case WithoutIt = 'without_it';
 }

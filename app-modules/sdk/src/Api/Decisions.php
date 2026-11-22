@@ -53,7 +53,7 @@ final readonly class Decisions
     /** @param array<mixed> $row */
     private static function one(array $row, SettingIsUnreadable $refused): ADecision
     {
-        $key = Required::text($row, ConfigField::Key, $refused);
+        $key = Required::text($row, WireField::Key, $refused);
         $cost = Cost::tryFrom(Required::text($row, WireField::Cost, $refused)) ?? throw $refused;
         $affects = Required::text($row, ConfigField::Affects, $refused);
         $held = Required::flag($row, WireField::Held, $refused);

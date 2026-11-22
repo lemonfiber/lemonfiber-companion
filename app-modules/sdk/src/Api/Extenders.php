@@ -36,7 +36,9 @@ use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\PluginSaysNothing;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\ThePluginCatalogueIsUnreadable;
 use Modules\Kernel\Api\UndoSaysNothing;
+use Modules\Kernel\Api\WhatWasFoundOfThePluginCatalogue;
 use Modules\Kernel\Api\WhatWasFoundOfThePlugins;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\GatedClient;
@@ -86,6 +88,19 @@ final readonly class Extenders implements ExtendingTheStack
             return WhatWasFoundOfThePlugins::met(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|PluginsAreUnreadable|PluginSaysNothing|UndoIsUnreadable|UndoSaysNothing $why) {
             return WhatWasFoundOfThePlugins::met($this->clients->whatStoodInTheWay($stack, $why));
+        }
+    }
+
+    public function catalogueOf(Stack $stack, Session $session): WhatWasFoundOfThePluginCatalogue
+    {
+        $client = GatedClient::of($this->clients, $stack, $session);
+
+        try {
+            return WhatWasFoundOfThePluginCatalogue::found(ThePluginCatalogueRead::in($client->read(Api::PLUGIN_CATALOGUE_ENDPOINT)));
+        } catch (CertificateWasRefused|RequestFailed $why) {
+            return WhatWasFoundOfThePluginCatalogue::met(WhatARefusalMeant::obstacle($why));
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|PluginCatalogueIsUnreadable|ThePluginCatalogueIsUnreadable $why) {
+            return WhatWasFoundOfThePluginCatalogue::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 

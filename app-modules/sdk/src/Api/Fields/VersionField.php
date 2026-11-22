@@ -25,7 +25,4 @@ enum VersionField: string implements NamesAWireField
 
     /** The running release's notes, gathered by what kind of change each is. */
     case Groups = 'groups';
-
-    /** The changes one group of the notes lists. */
-    case Entries = 'entries';
 }

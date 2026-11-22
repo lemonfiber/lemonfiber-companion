@@ -44,6 +44,7 @@ use Modules\Sdk\Api\Fields\PairingField;
 use Modules\Sdk\Api\Fields\PartWayField;
 use Modules\Sdk\Api\Fields\PausingField;
 use Modules\Sdk\Api\Fields\PlayingField;
+use Modules\Sdk\Api\Fields\PluginCatalogueField;
 use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
@@ -132,6 +133,7 @@ function everyFieldNamedOnTheWire(): array
         ...MusicField::cases(),
         ...OutboundField::cases(),
         ...PairingField::cases(),
+        ...PluginCatalogueField::cases(),
         ...PluginsField::cases(),
         ...PreviewField::cases(),
         ...ProvenanceField::cases(),

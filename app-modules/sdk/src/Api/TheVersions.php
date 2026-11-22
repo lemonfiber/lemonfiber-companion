@@ -126,16 +126,16 @@ final readonly class TheVersions
         if (
             ! is_array($group)
             || ! array_key_exists(WireField::Title->value, $group)
-            || ! array_key_exists(VersionField::Entries->value, $group)
+            || ! array_key_exists(WireField::Entries->value, $group)
             || ! is_string($group[WireField::Title->value])
-            || ! is_array($group[VersionField::Entries->value])
+            || ! is_array($group[WireField::Entries->value])
         ) {
             throw VersionsAreUnreadable::group($position);
         }
 
         $summaries = [];
 
-        foreach ($group[VersionField::Entries->value] as $entry) {
+        foreach ($group[WireField::Entries->value] as $entry) {
             if (! is_array($entry) || ! array_key_exists(WireField::Summary->value, $entry) || ! is_string($entry[WireField::Summary->value])) {
                 throw VersionsAreUnreadable::group($position);
             }
