@@ -8,6 +8,7 @@ use function array_key_exists;
 use function array_values;
 
 use Modules\Kernel\Api\ALineItSaid;
+use Modules\Kernel\Api\AWalkFollowed;
 use Modules\Kernel\Api\HearingTheWalk;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -63,7 +64,7 @@ final class AStackThatNarrates implements HearingTheWalk
     }
 
     /** @return WhatAStreamSaid<ALineItSaid> */
-    public function whereItIs(Stack $stack, Session $session): WhatAStreamSaid
+    public function whereItIs(Stack $stack, Session $session, AWalkFollowed $walk): WhatAStreamSaid
     {
         $this->asked++;
 

@@ -14,4 +14,5 @@ return [
     ...require __DIR__ . '/stacks/the-line-and-help.php',
     ...require __DIR__ . '/stacks/putting-the-configuration-back.php',
     ...require __DIR__ . '/stacks/left-alone.php',
+    ...require __DIR__ . '/stacks/what-a-job-said.php',
 ];

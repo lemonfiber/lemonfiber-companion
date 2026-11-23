@@ -72,6 +72,7 @@ use Modules\Kernel\Api\ATextToSign;
 use Modules\Kernel\Api\AWakeToRegister;
 use Modules\Kernel\Api\AWakingKey;
 use Modules\Kernel\Api\AWakingSecret;
+use Modules\Kernel\Api\AWalkFollowed;
 use Modules\Kernel\Api\AWordInUse;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Capability;
@@ -236,6 +237,7 @@ use Modules\Sdk\Api\Guides;
 use Modules\Sdk\Api\Healers;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
+use Modules\Sdk\Api\JobLines;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Keyholders;
 use Modules\Sdk\Api\KeyKeepers;
@@ -438,7 +440,7 @@ final readonly class EveryAdapterCallThatReads
             'Keepers::handOver' => static fn(): object
                 => new Keepers($clients, $entropy)->handOver($stack, $session, HostingAgreed::to(HandingOver::Install, 'Name')),
             'Listeners::howItIs' => static fn(): object => new Listeners($clients, new NullLogger(), WhereHearingLeftOffInMemory::nowhere())->howItIs($stack, $session),
-            'Narrators::whereItIs' => static fn(): object => new Narrators($clients)->whereItIs($stack, $session),
+            'Narrators::whereItIs' => static fn(): object => new Narrators($clients)->whereItIs($stack, $session, AWalkFollowed::named(Job::named('a-job'))),
             'Pictures::posterOfAHolding' => static fn(): object
                 => new Pictures($clients)->posterOfAHolding($stack, $session, Whose::member('sanne'), HoldingId::called('a1')),
             'Pictures::backdropOfAHolding' => static fn(): object
@@ -449,7 +451,8 @@ final readonly class EveryAdapterCallThatReads
                 => new Pictures($clients)->coverOfAKeptAsk($stack, $session, RequestId::named('music-3')),
             'Players::now' => static fn(): object => new Players($clients)->now($stack, $session),
             'Players::heard' => static fn(): object => new Players($clients)->heard($stack, $session),
-            'StartLines::whatItWaitsOn' => static fn(): object => new StartLines($clients)->whatItWaitsOn($stack, $session),
+            'StartLines::whatItWaitsOn' => static fn(): object => new StartLines($clients)->whatItWaitsOn($stack, $session, Job::named('a-job')),
+            'JobLines::whatItSaid' => static fn(): object => new JobLines($clients)->whatItSaid($stack, $session, Job::named('a-job')),
             'Pairers::make' => static fn(): object => new Pairers($clients, $entropy)->make($stack, $session),
             'Connectors::handOver' => static fn(): object => new Connectors($clients, $entropy)->handOver($stack, $session, SomebodyInTheHousehold::called('Sam')),
             'Connectors::whatBecameOf' => static fn(): object

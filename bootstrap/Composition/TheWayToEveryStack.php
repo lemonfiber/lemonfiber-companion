@@ -50,6 +50,7 @@ use Modules\Kernel\Api\Granting;
 use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\HandingOverADevice;
 use Modules\Kernel\Api\Hearing;
+use Modules\Kernel\Api\HearingAJob;
 use Modules\Kernel\Api\HearingTheStart;
 use Modules\Kernel\Api\HearingTheWalk;
 use Modules\Kernel\Api\History;
@@ -146,6 +147,7 @@ use Modules\Sdk\Api\Guides;
 use Modules\Sdk\Api\Healers;
 use Modules\Sdk\Api\Heralds;
 use Modules\Sdk\Api\Inspectors;
+use Modules\Sdk\Api\JobLines;
 use Modules\Sdk\Api\Keepers;
 use Modules\Sdk\Api\Keyholders;
 use Modules\Sdk\Api\KeyKeepers;
@@ -306,6 +308,11 @@ final class TheWayToEveryStack extends ServiceProvider
         // singleton, for the reason above: the screen that sent the start
         // holds its own.
         $this->app->bind(HearingTheStart::class, StartLines::class);
+
+        // Holding the same stream for the lines one job says, which the screen
+        // following that job draws. Bound for the same reason: each screen
+        // holds its own.
+        $this->app->bind(HearingAJob::class, JobLines::class);
 
         // What the household has asked its stack for, which the requests screen
         // reads. Beside `Asking` and built the same way: both go through

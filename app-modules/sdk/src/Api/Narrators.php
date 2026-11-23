@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
-use Lemonfiber\Sdk\Envelope\EnvelopeReader;
-use Lemonfiber\Sdk\Events\ServerEvent;
+use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
@@ -15,13 +14,17 @@ use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\StepEnvelope;
 use Modules\Kernel\Api\ALineItSaid;
+use Modules\Kernel\Api\AWalkFollowed;
+use Modules\Kernel\Api\EnvelopeIsNotRead;
 use Modules\Kernel\Api\HearingTheWalk;
+use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatAStreamSaid;
 use Modules\Sdk\Internal\TheStreamsHeld;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Sdk\Internal\WhatArrivedOnTheStream;
+use Modules\Sdk\Internal\WhoseLines;
 
 /**
  * The steps a running walkthrough says, heard on a stack's event stream.
@@ -29,8 +32,9 @@ use Modules\Sdk\Internal\WhatArrivedOnTheStream;
  * {@see Listeners} for the other thing said there, and built the same way:
  * through the SDK, pinned like every other connection, never waiting on the
  * stack, and holding one connection for one screen. What it hands back is the
- * last `step` among everything that arrived since the screen last asked, read
- * by {@see Walkthroughs::said()} into the line the finished record would carry.
+ * last `step` the walk it follows said among everything that arrived since the
+ * screen last asked, read by {@see Walkthroughs::said()} into the line the
+ * finished record would carry.
  *
  * **Mutable, for {@see Listeners}' reason.** What it keeps between calls is the
  * connection itself, in {@see TheStreamsHeld}, and whether it ended, which is
@@ -62,7 +66,7 @@ final class Narrators implements HearingTheWalk
     }
 
     /** @return WhatAStreamSaid<ALineItSaid> */
-    public function whereItIs(Stack $stack, Session $session): WhatAStreamSaid
+    public function whereItIs(Stack $stack, Session $session, AWalkFollowed $walk): WhatAStreamSaid
     {
         if ($this->ended) {
             $this->ended = false;
@@ -70,7 +74,7 @@ final class Narrators implements HearingTheWalk
             return WhatAStreamSaid::closed();
         }
 
-        return $this->heardFrom($stack, $session);
+        return $this->heardFrom($stack, $session, $walk);
     }
 
     /** @return WhatAStreamSaid<ALineItSaid> */
@@ -87,13 +91,13 @@ final class Narrators implements HearingTheWalk
      *
      * @return WhatAStreamSaid<ALineItSaid>
      */
-    private function heardFrom(Stack $stack, Session $session): WhatAStreamSaid
+    private function heardFrom(Stack $stack, Session $session, AWalkFollowed $walk): WhatAStreamSaid
     {
         try {
-            return $this->heard($stack, $this->streams->taken($stack, $session));
+            return $this->heard($stack, $this->streams->taken($stack, $session), $walk);
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatAStreamSaid::met(WhatARefusalMeant::obstacle($why));
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|WalkthroughIsUnreadable $why) {
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|WalkthroughIsUnreadable|EnvelopeIsNotRead|JobHasNoName $why) {
             $this->letGoOf($stack);
 
             return WhatAStreamSaid::met($this->clients->whatStoodInTheWay($stack, $why));
@@ -112,9 +116,9 @@ final class Narrators implements HearingTheWalk
      *
      * @return WhatAStreamSaid<ALineItSaid>
      */
-    private function heard(Stack $stack, WhatArrivedOnTheStream $arrived): WhatAStreamSaid
+    private function heard(Stack $stack, WhatArrivedOnTheStream $arrived, AWalkFollowed $walk): WhatAStreamSaid
     {
-        $latest = $arrived->theLast(StepEnvelope::KIND);
+        $latest = $arrived->theLastSaidBy(WhoseLines::ofTheWalk($walk), StepEnvelope::KIND);
 
         if ($arrived->ended) {
             $this->letGoOf($stack);
@@ -122,7 +126,7 @@ final class Narrators implements HearingTheWalk
         }
 
         return match (true) {
-            $latest instanceof ServerEvent => WhatAStreamSaid::said(Walkthroughs::said(new EnvelopeReader()->read($latest->data))),
+            $latest instanceof Envelope => WhatAStreamSaid::said(Walkthroughs::said($latest)),
             $arrived->anything => WhatAStreamSaid::aSignOfLife(),
             $arrived->ended => WhatAStreamSaid::closed(),
             default => WhatAStreamSaid::nothing(),

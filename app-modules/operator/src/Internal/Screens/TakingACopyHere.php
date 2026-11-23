@@ -8,12 +8,13 @@ use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\ACopyTaken;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingAJob;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TakingCopies;
 use Modules\Kernel\Api\TheAppsSettings;
@@ -21,6 +22,7 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsAJob;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowACopyReads;
 use Modules\Operator\Internal\Presenters\HowAScopeReads;
@@ -32,7 +34,6 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
@@ -45,11 +46,10 @@ use function trim;
  * The report says what it covered, which older copies it removed and how its
  * size stood against the minute a copy is meant to take.
  *
- * **Taking a copy answers a handle,** and the report arrives only through it.
- * The handle is held, asked after on a declared cadence while the stack is
- * taking the copy, and the report drawn once it finishes. The stack says
- * nothing about how far a copy has got until it has finished, so while it
- * runs the screen says that and nothing more.
+ * **Taking a copy answers a job,** followed by {@see FollowsAJob}: while the
+ * stack takes the copy the screen shows what the job says, and the report is
+ * drawn once it finishes. The stack says how large a copy came to only once
+ * it has finished, and the screen says so while it runs.
  *
  * The services a copy can be narrowed to are the ones the stack says it runs,
  * read once per frame.
@@ -65,7 +65,10 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use AsksWhatTheStackIsRunning;
-    use FindsItsWayAround;
+    /** @use FollowsAJob<HowTheCopyWent> */
+    use FollowsAJob, FindsItsWayAround {
+        FollowsAJob::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use DrawsItsTemplate;
 
     public const string TEMPLATE = 'operator::taking-a-copy-here';
@@ -81,12 +84,6 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
     /** The copy that was sent, so what it covers can be said while it runs. */
     public ?ACopyAsked $taking = null;
 
-    /** The handle taking it answered. Not shown and never kept past this screen. */
-    public ?string $took = null;
-
-    /** What became of it, once this frame has asked. */
-    public ?HowTheCopyWent $lastCopy = null;
-
     public function __construct(
         private readonly TakingCopies $copying,
         private readonly Supervising $supervising,
@@ -94,13 +91,8 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingAJob $hearingAJob,
     ) {}
-
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->lastCopy()->stands->isWorking();
-    }
 
     /** The services a copy can be narrowed to, asked once per frame. */
     public function answer(): WhatThisStackRunsTurnedOutToBe
@@ -165,32 +157,45 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
     /** What became of the copy taken here, or that none was. */
     public function lastCopy(): HowTheCopyWent
     {
-        return $this->lastCopy ??= $this->followed();
-    }
-
-    /**
-     * Ask after the copy again while the stack is taking it.
-     *
-     * It does nothing unless a copy is being taken, so a finished report is
-     * not read over and over. The interval is {@see HowOftenAScreenLooks}'s constant.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
-    {
-        if ($this->lastCopy()->stands->isWorking()) {
-            $this->lastCopy = null;
-        }
+        return $this->whatBecameOfTheJob();
     }
 
     /** Ask the stack again: the services, and what became of the copy. */
     public function again(): void
     {
         $this->answered = null;
-        $this->lastCopy = null;
+        $this->became = null;
+    }
+
+    /** What became of the copy taken, or that none was where the copy sent is not held. */
+    protected function whatBecameOfIt(Stack $stack, Session $session, Job $job): HowTheCopyWent
+    {
+        $asked = $this->taking;
+
+        if (! $asked instanceof ACopyAsked) {
+            return new HowACopyReads()->notAsked();
+        }
+
+        return $this->copying->whatBecameOf($stack, $session, $job)->either(
+            stillRunning: static fn(): HowTheCopyWent => new HowACopyReads()->running($asked->scope()),
+            done: static fn(ACopyTaken $report): HowTheCopyWent => new HowACopyReads()->done($report),
+            ended: static fn(?WhyTheWorkEnded $why): HowTheCopyWent => new HowACopyReads()->ended($why, $asked->scope()),
+            met: $this->lettingGoIfRefused($stack, new HowACopyReads()->met(...)),
+        );
+    }
+
+    protected function whileNothingIsFollowed(): HowTheCopyWent
+    {
+        return new HowACopyReads()->notAsked();
+    }
+
+    protected function withoutASession(): HowTheCopyWent
+    {
+        return new HowACopyReads()->signedOut();
     }
 
     /**
-     * Send the copy agreed to, and hold what to follow it by.
+     * Send the copy agreed to, and follow the job it answers with.
      *
      * A refusal is kept as what became of it, so the screen says what stood
      * in the way rather than carrying on as though a copy were being taken.
@@ -198,13 +203,13 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
     private function takeIt(ACopyAsked $asked): void
     {
         $stack = $this->stack();
-        $this->took = null;
+        $this->forget();
         $this->taking = $asked;
 
-        $this->lastCopy = $this->storage->resume($stack->id())->either(
+        $this->became = $this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowTheCopyWent => $this->copying->take($stack, $session, $asked)->either(
                 started: function (Job $job) use ($asked): HowTheCopyWent {
-                    $this->took = $job->shown();
+                    $this->follow($job);
 
                     return new HowACopyReads()->running($asked->scope());
                 },
@@ -213,28 +218,4 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
             notHeld: static fn(): HowTheCopyWent => new HowACopyReads()->signedOut(),
         );
     }
-
-    /** Ask the stack what became of the copy taken, or say that none was. */
-    private function followed(): HowTheCopyWent
-    {
-        $took = $this->took;
-        $asked = $this->taking;
-
-        if ($took === null || ! $asked instanceof ACopyAsked) {
-            return new HowACopyReads()->notAsked();
-        }
-
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): HowTheCopyWent => $this->copying->whatBecameOf($stack, $session, Job::named($took))->either(
-                stillRunning: static fn(): HowTheCopyWent => new HowACopyReads()->running($asked->scope()),
-                done: static fn(ACopyTaken $report): HowTheCopyWent => new HowACopyReads()->done($report),
-                ended: static fn(?WhyTheWorkEnded $why): HowTheCopyWent => new HowACopyReads()->ended($why, $asked->scope()),
-                met: $this->lettingGoIfRefused($stack, new HowACopyReads()->met(...)),
-            ),
-            notHeld: static fn(): HowTheCopyWent => new HowACopyReads()->signedOut(),
-        );
-    }
-
 }

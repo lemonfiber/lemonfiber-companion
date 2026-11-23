@@ -12,7 +12,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * *did*, and a type holding either would be one a template has to ask which it
  * is looking at. What the stack did is there only where it answered.
  */
-final readonly class WhatThisStackPutRight
+final readonly class WhatThisStackPutRight implements SaysWhereTheWorkStands
 {
     /** @param ?WhatTheMendingCameTo $came what the stack did about each repair, where it answered */
     public function __construct(

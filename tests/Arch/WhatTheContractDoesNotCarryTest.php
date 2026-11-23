@@ -119,21 +119,6 @@ const WHAT_THE_CONTRACT_DOES_NOT_CARRY = [
             . 'forms it would stop.',
     ],
     [
-        'requirement' => 'N15-R5',
-        'asks' => 'to tie a stage said on the event stream to the job it is about',
-        // Named, and watched as a whole payload: a job's name could arrive under
-        // any word, and `job` is spent on this wire already, on the `job`
-        // envelope itself.
-        'envelope' => 'StepEnvelope',
-        'field' => null,
-        'shape' => 'array{detail: string, said: string, step: \'choosing\'|\'searching\'|\'grabbing\'|\'downloading\'|\'importing\'|\'scanning\'|\'available\'}',
-        'raised' => 'A `step` carries the stage, what was said and the detail, and nothing naming the walk '
-            . 'it belongs to. The screen following a walk takes every step heard while its walk runs '
-            . 'as that walk\'s, which holds while one walk runs at a time; a second walk started from '
-            . 'another surface meanwhile would be heard as this one. No other job carries a stage at '
-            . 'all: the `job` envelope is `action` and `job`, so a repair, an update or a copy is shown '
-            . 'as running and never as at a stage.',
-    ],    [
         'requirement' => 'N19-R1',
         'asks' => 'to show the command changing a setting runs, before the yes as well as after',
         // Named: the command a rehearsal of `config-set` would run can only arrive

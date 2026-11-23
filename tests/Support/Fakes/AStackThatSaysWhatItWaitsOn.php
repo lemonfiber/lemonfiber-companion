@@ -8,6 +8,7 @@ use function array_key_exists;
 use function array_values;
 
 use Modules\Kernel\Api\HearingTheStart;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatAStartWaitsOn;
@@ -39,7 +40,7 @@ final class AStackThatSaysWhatItWaitsOn implements HearingTheStart
         return new self(array_values($said));
     }
 
-    public function whatItWaitsOn(Stack $stack, Session $session): WhatAStartWaitsOn
+    public function whatItWaitsOn(Stack $stack, Session $session, Job $start): WhatAStartWaitsOn
     {
         $this->asked++;
 
