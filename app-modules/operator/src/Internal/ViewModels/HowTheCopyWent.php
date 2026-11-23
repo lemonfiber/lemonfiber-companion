@@ -10,7 +10,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * Every field the stack's report fills is empty until there is a report, so a
  * template cannot read what a copy removed off a copy still being taken.
  */
-final readonly class HowTheCopyWent
+final readonly class HowTheCopyWent implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands  $stands         where the work stands, and whether the stack could be asked at all

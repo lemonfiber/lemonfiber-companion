@@ -26,6 +26,8 @@
             tone="working"
         />
 
+        <x-operator::following-a-job :said="$this->whatItSays()" />
+
         {{-- The stack says how far a copy got once it has finished, and not
              while it runs, so this says that rather than drawing progress
              nobody measured. --}}

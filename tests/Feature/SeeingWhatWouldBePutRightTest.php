@@ -7,6 +7,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HearingAJob;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\LeftBehind;
@@ -25,6 +26,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Undoing;
 use Modules\Kernel\Api\WhatBecameOfIt;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
+use Modules\Kernel\Api\WhatWasHeardFromAJob;
 use Modules\Kernel\Api\WhatWasMended;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
@@ -32,6 +34,7 @@ use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatWouldMend;
@@ -88,6 +91,7 @@ function theRepairsScreen(
     ?string $named = null,
     bool $signedIn = true,
     ?AKeychainInMemory $keychain = null,
+    ?HearingAJob $hearing = null,
 ): WhatWouldBePutRight {
     $stack = theStackBeingOfferedRepairs();
     $keychain ??= AKeychainInMemory::working();
@@ -96,7 +100,7 @@ function theRepairsScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatWouldBePutRight($mending, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatWouldBePutRight($mending, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), $hearing ?? AJobThatSays::nothing());
     $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
     return $screen;
@@ -805,4 +809,23 @@ it('says a repair the stack left alone because the area was declared unmanaged c
         ->and($drawn)->toContain(__(WhatBecameOfIt::Unmanaged->saidOnTheScreen()))
         ->and($drawn)->not->toContain(__(WhatBecameOfIt::WouldOverwrite->saidOnTheScreen()))
         ->and($drawn)->not->toContain(__(WhatBecameOfIt::FixFailed->saidOnTheScreen()));
+});
+
+it('draws what the repair the operator agreed to says while the stack carries it out', function (): void {
+    $hearing = AJobThatSays::saying(WhatWasHeardFromAJob::said('Moving the library'));
+    $screen = theRepairsScreen(AStackThatWouldMend::carryingOutStill(aListingWorthReading()), hearing: $hearing);
+    $screen->offer();
+    $screen->agreeTo('storage.one-filesystem');
+    $screen->whileItRuns();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Moving the library');
+});
+
+it('draws what the asking says while the stack works out what it could put right', function (): void {
+    $hearing = AJobThatSays::saying(WhatWasHeardFromAJob::said('Checking the disks'));
+    $screen = theRepairsScreen(AStackThatWouldMend::stillWorkingItOut(), hearing: $hearing);
+    $screen->offer();
+    $screen->whileItRuns();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Checking the disks');
 });

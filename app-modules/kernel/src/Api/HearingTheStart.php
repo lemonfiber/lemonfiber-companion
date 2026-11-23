@@ -22,8 +22,8 @@ namespace Modules\Kernel\Api;
  */
 interface HearingTheStart
 {
-    /** The newest line said since the screen last asked, opening the subscription where it is not open. */
-    public function whatItWaitsOn(Stack $stack, Session $session): WhatAStartWaitsOn;
+    /** The newest line this start or no job said since the screen last asked, opening the subscription where it is not open. */
+    public function whatItWaitsOn(Stack $stack, Session $session, Job $start): WhatAStartWaitsOn;
 
     /** Let go of the subscription, after which nothing new has been heard. */
     public function letGo(): WhatAStartWaitsOn;

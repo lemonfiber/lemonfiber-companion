@@ -21,11 +21,12 @@ namespace Modules\Kernel\Api;
 interface HearingTheWalk
 {
     /**
-     * The last step said since the screen last asked, opening the subscription where it is not open.
+     * The last step this walk said since the screen last asked, opening the subscription where it is not open.
+     *
      *
      * @return WhatAStreamSaid<ALineItSaid>
      */
-    public function whereItIs(Stack $stack, Session $session): WhatAStreamSaid;
+    public function whereItIs(Stack $stack, Session $session, AWalkFollowed $walk): WhatAStreamSaid;
 
     /** @return WhatAStreamSaid<ALineItSaid> */
     public function letGo(): WhatAStreamSaid;

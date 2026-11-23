@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ALineItSaid;
+use Modules\Kernel\Api\AWalkFollowed;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HearingTheWalk;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -41,6 +43,9 @@ use Tests\Support\WhereEachOpenResumed;
 afterEach(function (): void {
     MockClient::destroyGlobal();
 });
+
+/** The job the walk followed was named by the stack. */
+const THE_WALK_FOLLOWED = 'walk-sintel';
 
 /** A stack a walk runs on, reachable and pinned so the adapter will build a client. */
 function aStackAWalkRunsOn(): Stack
@@ -92,12 +97,12 @@ function aDownloadingStep(): array
 /**
  * One step, as the envelope the stream carries it in.
  *
- * @param  array<string, mixed>  $step
+ * @param  array<string, mixed>|string  $step  a step, or anything else a test sends in its place
  * @return array<string, mixed>
  */
-function aStepEnvelope(array $step): array
+function aStepEnvelope(array|string $step, ?string $saidBy = THE_WALK_FOLLOWED): array
 {
-    return ['api_version' => 1, 'kind' => 'step', 'data' => $step];
+    return ['api_version' => 1, 'kind' => 'step', 'data' => $step, 'job' => $saidBy];
 }
 
 /** One event on the stream, as the core frames it. */
@@ -109,11 +114,11 @@ function anEventOnTheWalk(string $kind, string $data): string
 /**
  * One step event.
  *
- * @param  array<string, mixed>  $step
+ * @param  array<string, mixed>|string  $step  a step, or anything else a test sends in its place
  */
-function aStepEvent(array $step): string
+function aStepEvent(array|string $step, ?string $saidBy = THE_WALK_FOLLOWED): string
 {
-    return anEventOnTheWalk('step', json_encode(aStepEnvelope($step), JSON_THROW_ON_ERROR));
+    return anEventOnTheWalk('step', json_encode(aStepEnvelope($step, $saidBy), JSON_THROW_ON_ERROR));
 }
 
 /** The line both implementations answer with, where the walk is searching. */
@@ -181,9 +186,10 @@ function aLineHeardAsAWord(ALineItSaid $line): string
 function whatWakesOfTheWalkHear(HearingTheWalk $hearing, int $wakes): array
 {
     $heard = [];
+    $walk = AWalkFollowed::named(Job::named(THE_WALK_FOLLOWED));
 
     for ($wake = 0; $wake < $wakes; $wake++) {
-        $heard[] = theWordForWhatTheWalkSaidAsAWord($hearing->whereItIs(aStackAWalkRunsOn(), theSessionAWalkIsFollowedWith()));
+        $heard[] = theWordForWhatTheWalkSaidAsAWord($hearing->whereItIs(aStackAWalkRunsOn(), theSessionAWalkIsFollowedWith(), $walk));
     }
 
     return $heard;
@@ -264,7 +270,8 @@ it('cannot hear a step it cannot read, and says so as an answer it could not rea
         aStepEvent(aStepTheWalkSays('dawdling', 'Doing nothing much', '')),
         aStepEvent(aStepTheWalkSays('searching', '  ', '')),
         aStepEvent(aStepTheWalkSays('searching', 'Searching the indexers for Sintel', '   ')),
-        anEventOnTheWalk('step', '{"api_version":1,"kind":"step","data":"searching"}'),
+        aStepEvent('searching'),
+        aStepEvent(aSearchingStep(), '  '),
     ] as $said) {
         foreach (everyWayOfFollowingAWalk(
             [MockResponse::make($said)],
@@ -370,4 +377,36 @@ it('stands in for a stack with steps the contract would accept', function (): vo
         expect(WhatTheContractAccepts::complaintsAbout('StepEnvelope', aStepEnvelope($step)))
             ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
     }
+});
+
+it('takes no step another walk said, or one no walk said, as the stage of the walk it follows', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(sprintf(
+        '%s%s',
+        aStepEvent(aSearchingStep(), 'walk-another'),
+        aStepEvent(aDownloadingStep(), null),
+    ))]);
+
+    expect(whatWakesOfTheWalkHear(new Narrators(new PinnedClients()), 1))->toBe(['alive']);
+});
+
+it('takes the step of the walk it follows from among the steps of others', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(sprintf(
+        '%s%s',
+        aStepEvent(aSearchingStep()),
+        aStepEvent(aDownloadingStep(), 'walk-another'),
+    ))]);
+
+    expect(whatWakesOfTheWalkHear(new Narrators(new PinnedClients()), 1))
+        ->toBe(['searching: Searching the indexers for Sintel (Two indexers answered)']);
+});
+
+it('takes no step as the stage of a walk the stack has not named yet', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(aStepEvent(aSearchingStep()))]);
+
+    $heard = theWordForWhatTheWalkSaidAsAWord(new Narrators(new PinnedClients())->whereItIs(aStackAWalkRunsOn(), theSessionAWalkIsFollowedWith(), AWalkFollowed::notNamedYet()));
+
+    expect($heard)->toBe('alive');
 });

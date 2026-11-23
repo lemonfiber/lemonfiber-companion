@@ -6,6 +6,8 @@ namespace Modules\Operator\Internal;
 
 use Modules\Health\Api\WhatAStreamSaidSoFar;
 use Modules\Kernel\Api\ALineItSaid;
+use Modules\Kernel\Api\AWalkFollowed;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -31,6 +33,9 @@ use Native\Mobile\Edge\NativeComponent;
  * **Held only while somebody can see it**, for {@see HoldsItsStacksStream}'s
  * reason: every wake asks the device whether the app is in front, and lets go
  * where it is not, and leaving the screen lets go too.
+ *
+ * **Only the walk's own steps are its stage**: the steps of the job the screen
+ * holds in `$took`, and none before the stack has named it.
  *
  * **A session the stream refuses is let go of**, for {@see LetsGoOfARefusedSession}'s
  * reason, which the screen using this also uses.
@@ -149,7 +154,7 @@ trait HearsWhereTheWalkIs
     {
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatAStreamSaid => $this->lettingGoOfARefusal(
-                $this->followsTheWalkWith()->hearing->whereItIs($stack, $session),
+                $this->followsTheWalkWith()->hearing->whereItIs($stack, $session, $this->took === null ? AWalkFollowed::notNamedYet() : AWalkFollowed::named(Job::named($this->took))),
                 $stack,
             ),
             notHeld: static fn(): WhatAStreamSaid => WhatAStreamSaid::closed(),

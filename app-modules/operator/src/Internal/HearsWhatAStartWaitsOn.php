@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\AgreedTo;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -26,10 +27,12 @@ use Native\Mobile\Edge\NativeComponent;
  * ends.
  *
  * **It reads the screen's own `$hearingTheStart` and `$storage`**, and the verb
- * {@see FollowsWhatTheVerbCameTo} follows. That is the coupling, stated here
- * because a trait cannot declare it. The screen takes `$hearingTheStart` as
- * protected, because only this trait reads it, and an analyser that does not
- * follow a trait reads a private one as never used.
+ * and the job {@see FollowsWhatTheVerbCameTo} follows. It takes the lines that
+ * job said and the lines no job said, which are the command line's own starts.
+ * That is the coupling, stated here because a trait cannot declare it. The
+ * screen takes `$hearingTheStart` as protected, because only this trait reads
+ * it, and an analyser that does not follow a trait reads a private one as
+ * never used.
  *
  * @phpstan-require-extends NativeComponent
  */
@@ -67,8 +70,9 @@ trait HearsWhatAStartWaitsOn
     {
         $stack = $this->stack();
         $sent = $this->sent;
+        $took = $this->took;
 
-        if (! $this->awaitsAnOutcome() || ! $sent instanceof AgreedTo || ! $sent->doing()->bringsSomethingUp()) {
+        if (! $this->awaitsAnOutcome() || $took === null || ! $sent instanceof AgreedTo || ! $sent->doing()->bringsSomethingUp()) {
             $this->hearingTheStart->letGo();
 
             return;
@@ -77,7 +81,7 @@ trait HearsWhatAStartWaitsOn
         $kept = new AStartLineAsShown($this->waitsOn);
 
         $this->waitsOn = $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): AStartLineAsShown => $this->hearingTheStart->whatItWaitsOn($stack, $session)->either(
+            held: fn(Session $session): AStartLineAsShown => $this->hearingTheStart->whatItWaitsOn($stack, $session, Job::named($took))->either(
                 saying: static fn(string $line): AStartLineAsShown => new AStartLineAsShown($line),
                 nothingNew: static fn(): AStartLineAsShown => $kept,
                 met: function (Obstacle $why) use ($kept, $stack): AStartLineAsShown {

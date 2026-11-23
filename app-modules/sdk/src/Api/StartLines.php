@@ -6,8 +6,7 @@ namespace Modules\Sdk\Api;
 
 use function is_string;
 
-use Lemonfiber\Sdk\Envelope\EnvelopeReader;
-use Lemonfiber\Sdk\Events\ServerEvent;
+use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Exception\ApiVersionMismatch;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\RequestFailed;
@@ -16,13 +15,18 @@ use Lemonfiber\Sdk\Exception\UnexpectedKind;
 use Lemonfiber\Sdk\Exception\Unreachable;
 use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\StartEnvelope;
+use Modules\Kernel\Api\EnvelopeIsNotRead;
 use Modules\Kernel\Api\HearingTheStart;
+use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StartSaysNothing;
 use Modules\Kernel\Api\WhatAStartWaitsOn;
 use Modules\Sdk\Internal\TheStreamsHeld;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Modules\Sdk\Internal\WhoseLines;
+use Modules\Sdk\Internal\Wire;
 
 /**
  * What a running start is waiting for, heard on a stack's event stream.
@@ -30,7 +34,8 @@ use Modules\Sdk\Internal\WhatARefusalMeant;
  * {@see Listeners} for the other thing said there, and built the same way:
  * through the SDK, pinned like every other connection, never waiting on the
  * stack, and holding one connection for one screen. What it hands back is the
- * last `start` line among everything that arrived since the screen last asked.
+ * last `start` line the start it follows, or no job, said among everything that
+ * arrived since the screen last asked.
  *
  * **It keeps the connection between calls**, in {@see TheStreamsHeld}, which
  * is why it is bound fresh for each screen.
@@ -55,22 +60,22 @@ final readonly class StartLines implements HearingTheStart
         $this->streams = new TheStreamsHeld($clients);
     }
 
-    public function whatItWaitsOn(Stack $stack, Session $session): WhatAStartWaitsOn
+    public function whatItWaitsOn(Stack $stack, Session $session, Job $start): WhatAStartWaitsOn
     {
         try {
             $arrived = $this->streams->taken($stack, $session);
-            $latest = $arrived->theLast(StartEnvelope::KIND);
+            $latest = $arrived->theLastSaidBy(WhoseLines::ofOrOfNoJob($start), StartEnvelope::KIND);
 
             if ($arrived->ended) {
                 $this->streams->letGoOf($stack);
             }
 
-            return $latest instanceof ServerEvent
+            return $latest instanceof Envelope
                 ? WhatAStartWaitsOn::saying($this->lineIn($latest))
                 : WhatAStartWaitsOn::nothingNew();
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatAStartWaitsOn::met(WhatARefusalMeant::obstacle($why));
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|StartSaysNothing $why) {
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|StartSaysNothing|EnvelopeIsNotRead|JobHasNoName $why) {
             $this->streams->letGoOf($stack);
 
             return WhatAStartWaitsOn::met($this->clients->whatStoodInTheWay($stack, $why));
@@ -89,10 +94,12 @@ final readonly class StartLines implements HearingTheStart
      *
      * The envelope's payload is a bare string, and the generated reader
      * asserts that without checking it, so it is checked here.
+     *
+     * @param Envelope<mixed> $envelope
      */
-    private function lineIn(ServerEvent $event): string
+    private function lineIn(Envelope $envelope): string
     {
-        $said = $this->payloadOf($event);
+        $said = $this->payloadOf($envelope);
 
         if (! is_string($said)) {
             throw StartSaysNothing::inItsLine();
@@ -106,11 +113,11 @@ final readonly class StartLines implements HearingTheStart
      *
      * `mixed` deliberately, for {@see Origins::payload()}'s reason: the
      * generated envelope asserts its shape without checking it.
+     *
+     * @param Envelope<mixed> $envelope
      */
-    private function payloadOf(ServerEvent $event): mixed
+    private function payloadOf(Envelope $envelope): mixed
     {
-        $envelope = new EnvelopeReader()->read($event->data);
-
-        return StartEnvelope::in($envelope)->data;
+        return StartEnvelope::in(Wire::checked($envelope))->data;
     }
 }

@@ -39,6 +39,7 @@ use Lemonfiber\Sdk\Generated\SettingsClearAction;
 use Lemonfiber\Sdk\Generated\SettingsEnvelope;
 use Lemonfiber\Sdk\Generated\SettingsSetAction;
 use Lemonfiber\Sdk\Generated\SignInCodeEnvelope;
+use Lemonfiber\Sdk\Generated\StartEnvelope;
 use Lemonfiber\Sdk\Generated\StoredEnvelope;
 use Lemonfiber\Sdk\Generated\SwitchAction;
 use Lemonfiber\Sdk\Generated\TunedEnvelope;
@@ -234,7 +235,7 @@ final readonly class WhatTheWireWouldAnswer
      * The three a screen holds the stream for: the dashboard the health summary
      * is read out of, a step of a running walk, and what the household is
      * playing. Each screen takes the last event of its own kind and reads the
-     * others as a sign of life.
+     * others as a sign of life. A line the stand-in's work says follows them.
      */
     private const array WHAT_THE_STREAM_CARRIES = ['dashboard', 'step', 'playing'];
 
@@ -640,19 +641,27 @@ final readonly class WhatTheWireWouldAnswer
      * way the core frames an event, with the envelope's kind as the event's
      * name. A screen holding the stream reads what it holds the stream for out
      * of it, finds the stream ended, and opens it again on its declared cadence,
-     * which is the path a stack that restarted takes too.
+     * which is the path a stack that restarted takes too. Its `start` line names
+     * the work every action here is answered with as its job, so a screen
+     * following that work hears it.
      */
     private static function aStreamThatSaysWhatItCarries(): string
     {
-        $said = '';
+        $work = WhatAStackWouldSay::inside(self::A_NAME_FOR_WORK);
+        $events = [];
 
         foreach (self::WHAT_THE_STREAM_CARRIES as $kind) {
-            $said = sprintf(
-                "%sevent: %s\ndata: %s\n\n",
-                $said,
-                $kind,
-                json_encode(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind($kind)), JSON_THROW_ON_ERROR),
-            );
+            $events[$kind] = self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind($kind));
+        }
+
+        $events[StartEnvelope::KIND->value] = [
+            ...self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(StartEnvelope::KIND->value)),
+            WireField::Job->value => is_array($work) && array_key_exists(WireField::Job->value, $work) ? $work[WireField::Job->value] : null,
+        ];
+        $said = '';
+
+        foreach ($events as $kind => $envelope) {
+            $said = sprintf("%sevent: %s\ndata: %s\n\n", $said, $kind, json_encode($envelope, JSON_THROW_ON_ERROR));
         }
 
         return $said;

@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Internal;
 
+use function array_last;
+use function array_map;
+use function in_array;
+
+use Lemonfiber\Sdk\Envelope\Envelope;
+use Lemonfiber\Sdk\Envelope\EnvelopeReader;
 use Lemonfiber\Sdk\Events\ServerEvent;
 use Lemonfiber\Sdk\Generated\Kind;
 
@@ -50,6 +56,41 @@ final readonly class WhatArrivedOnTheStream
         foreach ($this->events as $event) {
             if ($event->kind === $kind->value) {
                 $every[] = $event;
+            }
+        }
+
+        return $every;
+    }
+
+    /**
+     * The envelope of the last event of one kind among everything that arrived, said by whose lines it takes, where one was.
+     *
+     * @return Envelope<mixed>|null
+     */
+    public function theLastSaidBy(WhoseLines $whose, Kind $kind): ?Envelope
+    {
+        return array_last($this->everySaidBy($whose, $kind));
+    }
+
+    /**
+     * The envelope of every event of these kinds said by whose lines it takes, in the order they arrived.
+     *
+     * @return list<Envelope<mixed>>
+     */
+    public function everySaidBy(WhoseLines $whose, Kind ...$kinds): array
+    {
+        $names = array_map(static fn(Kind $kind): string => $kind->value, $kinds);
+        $every = [];
+
+        foreach ($this->events as $event) {
+            if (! in_array($event->kind, $names, strict: true)) {
+                continue;
+            }
+
+            $envelope = new EnvelopeReader()->read($event->data);
+
+            if ($whose->take($envelope->job)) {
+                $every[] = $envelope;
             }
         }
 

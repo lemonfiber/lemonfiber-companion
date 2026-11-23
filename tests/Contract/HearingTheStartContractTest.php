@@ -6,6 +6,7 @@ use Modules\Dx\Internal\WhatAStackWouldSay;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HearingTheStart;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -39,6 +40,9 @@ afterEach(function (): void {
     MockClient::destroyGlobal();
 });
 
+/** The job the start followed was named by the stack. */
+const THE_START_FOLLOWED = 'start-the-stack';
+
 /** A stack a start runs on, reachable and pinned so the adapter will build a client. */
 function aStackAStartRunsOn(): Stack
 {
@@ -68,10 +72,10 @@ function anEventWhileItStarts(string $kind, string $data): string
     return sprintf("id: run-1\nevent: %s\ndata: %s\n\n", $kind, $data);
 }
 
-/** One start line as the core frames it, carrying whatever payload a test names. */
-function aStartLine(mixed $said): string
+/** One start line as the core frames it, carrying whatever payload a test names, said by the start followed unless another job is named. */
+function aStartLine(mixed $said, ?string $saidBy = THE_START_FOLLOWED): string
 {
-    return anEventWhileItStarts('start', json_encode(['api_version' => 1, 'kind' => 'start', 'data' => $said], JSON_THROW_ON_ERROR));
+    return anEventWhileItStarts('start', json_encode(['api_version' => 1, 'kind' => 'start', 'data' => $said, 'job' => $saidBy], JSON_THROW_ON_ERROR));
 }
 
 /**
@@ -104,7 +108,7 @@ function whatWakesHearOfAStart(HearingTheStart $hearing, int $wakes): array
     $heard = [];
 
     for ($wake = 0; $wake < $wakes; $wake++) {
-        $heard[] = $hearing->whatItWaitsOn(aStackAStartRunsOn(), theSessionAStartIsFollowedWith())->either(
+        $heard[] = $hearing->whatItWaitsOn(aStackAStartRunsOn(), theSessionAStartIsFollowedWith(), Job::named(THE_START_FOLLOWED))->either(
             saying: static fn(string $line): TheWordCarriedOut => new TheWordCarriedOut(sprintf('saying "%s"', $line)),
             nothingNew: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing new'),
             met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
@@ -236,6 +240,22 @@ it('hears nothing new once let go of', function (): void {
 });
 
 it('stands in for a stack with start lines the contract would accept', function (): void {
-    expect(WhatTheContractAccepts::complaintsAbout('StartEnvelope', ['api_version' => 1, 'kind' => 'start', 'data' => 'Waiting for the database']))
+    expect(WhatTheContractAccepts::complaintsAbout('StartEnvelope', ['api_version' => 1, 'kind' => 'start', 'data' => 'Waiting for the database', 'job' => THE_START_FOLLOWED]))
         ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
+});
+
+it('takes the start lines no job said, which are the command line\'s own, and never another job\'s', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([
+        MockResponse::make(sprintf('%s%s', aStartLine('Waiting for the database', null), aStartLine('Waiting for sonarr to answer', 'start-another'))),
+    ]);
+
+    expect(whatWakesHearOfAStart(new StartLines(new PinnedClients()), 1))->toBe(['saying "Waiting for the database"']);
+});
+
+it('hears nothing new from a stream that carried only another job\'s start lines', function (): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(aStartLine('Waiting for sonarr to answer', 'start-another'))]);
+
+    expect(whatWakesHearOfAStart(new StartLines(new PinnedClients()), 1))->toBe(['nothing new']);
 });

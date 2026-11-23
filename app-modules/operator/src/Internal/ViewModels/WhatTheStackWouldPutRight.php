@@ -25,7 +25,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * glass is exactly that, dressed as a diagnostic. The screen holds it; this
  * does not.
  */
-final readonly class WhatTheStackWouldPutRight
+final readonly class WhatTheStackWouldPutRight implements SaysWhereTheWorkStands
 {
     /** @param list<WhatOneRepairSays> $repairs what it would put right, in the order offered, where it offered anything */
     public function __construct(

@@ -25,13 +25,16 @@ reading of that stack, so the request or the button it was asked for waits for
 the next frame (`Modules\Kernel\Api\TheReadingWaitsAFrame`), unless the stack
 refused the request, which sends nothing more.
 
-Four adapters hold a stream between calls: `Listeners`, for `Hearing`,
-`Narrators`, for `HearingTheWalk`, `StartLines`, for `HearingTheStart`, and
-`Players`, for `FollowingWhatIsPlaying`. Each holds a stack's event stream open
-for the one screen it belongs to, and reads it without waiting for what has not
-arrived: the first for the health summary and the newest the stack names, the
-second for the steps of a running walk, the third for what a running start is
-waiting for, and the fourth for what the household is playing.
+Five adapters hold a stream between calls: `Listeners`, for `Hearing`,
+`Narrators`, for `HearingTheWalk`, `StartLines`, for `HearingTheStart`,
+`JobLines`, for `HearingAJob`, and `Players`, for `FollowingWhatIsPlaying`.
+Each holds a stack's event stream open for the one screen it belongs to, and
+reads it without waiting for what has not arrived: the first for the health
+summary and the newest the stack names, the second for the steps of the walk
+the screen follows, the third for what the start it sent is waiting for and
+what the command line's own starts say, the fourth for every line one job
+says, and the fifth for what the household is playing. The second, third and
+fourth tell lines apart by the job each envelope names.
 
 `Pictures`, for `FetchingArtwork`, reads a title's poster and backdrop from the
 core's `/api/held/{id}/…` paths, a found title's poster from

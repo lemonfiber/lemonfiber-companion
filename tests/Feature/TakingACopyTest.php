@@ -5,11 +5,15 @@ declare(strict_types=1);
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\ACopyTaken;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AJobFollowed;
 use Modules\Kernel\Api\AnExistingSetup;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HearingAJob;
 use Modules\Kernel\Api\HowACopyPaced;
+use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowTheCopyIsGoing;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -22,6 +26,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheCopies;
 use Modules\Kernel\Api\WhatACopyHolds;
+use Modules\Kernel\Api\WhatWasHeardFromAJob;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
@@ -30,6 +35,7 @@ use Modules\Operator\Internal\ViewModels\APaceAsShown;
 use Modules\Operator\Internal\ViewModels\AScopeAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheCopyWent;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatSupervises;
@@ -75,6 +81,7 @@ function theCopyingScreen(
     ?Supervising $supervising = null,
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
+    ?HearingAJob $hearing = null,
 ): TakingACopyHere {
     $stack = theStackACopyIsTakenOf();
     $keychain ??= AKeychainInMemory::working();
@@ -83,7 +90,7 @@ function theCopyingScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new TakingACopyHere($copying, $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new TakingACopyHere($copying, $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), $hearing ?? AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -471,10 +478,10 @@ it('asks the stack for its services once, however often a frame reads them', fun
     expect($supervising->askings())->toBe(1);
 });
 
-it('follows nothing where it holds a handle but not the copy the handle was for', function (): void {
+it('follows nothing where it holds a job but not the copy the job was for', function (): void {
     $copying = AStackThatTakesCopies::whichTook(HowTheCopyIsGoing::stillRunning());
     $screen = theCopyingScreen($copying);
-    $screen->took = AStackThatTakesCopies::THE_JOB;
+    $screen->followed = AJobFollowed::named(Job::named(AStackThatTakesCopies::THE_JOB));
 
     expect(everythingAboutTheCopy($screen->lastCopy()))->toBe(nothingReportedOfTheCopy(['wasAsked' => false]))
         ->and($copying->followed())->toBe([]);
@@ -488,4 +495,123 @@ it('refuses a route parameter that is not text as naming a stack', function (): 
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
+});
+
+/** A copy of the whole stack agreed to, on a stack whose job says these in turn. */
+function aCopyWhoseJobSays(AStackThatTakesCopies $copying, WhatWasHeardFromAJob ...$said): TakingACopyHere
+{
+    $screen = theCopyingScreen($copying, hearing: AJobThatSays::saying(...$said));
+    $screen->copyTheWholeStack();
+    $screen->agree();
+
+    return $screen;
+}
+
+/** A copy still being taken. */
+function aCopyStillBeingTaken(): AStackThatTakesCopies
+{
+    return AStackThatTakesCopies::whichTook(HowTheCopyIsGoing::stillRunning());
+}
+
+it('draws the newest line the job said in the stack\'s words, and offers the rest', function (): void {
+    $screen = aCopyWhoseJobSays(aCopyStillBeingTaken(), WhatWasHeardFromAJob::said('Stopping sonarr', 'Writing the archive'));
+    $screen->whileItRuns();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->said())->toContain('Writing the archive')
+        ->and($drawn->said())->not->toContain('Stopping sonarr')
+        ->and($drawn->offers())->toContain(__('stacks.what_it_said.show_all'));
+});
+
+it('opens every line the job said, oldest first, with how many it keeps, and closes them again', function (): void {
+    $screen = aCopyWhoseJobSays(aCopyStillBeingTaken(), WhatWasHeardFromAJob::said('Stopping sonarr'), WhatWasHeardFromAJob::said('Writing the archive'));
+    $screen->whileItRuns();
+    $screen->whileItRuns();
+    $screen->showAllItSaid();
+    $all = WhatTheDeviceWouldDraw::by($screen)->said();
+    $screen->showTheNewestItSaid();
+    $newest = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect(array_values(array_intersect($all, ['Stopping sonarr', 'Writing the archive'])))->toBe(['Stopping sonarr', 'Writing the archive'])
+        ->and($all)->toContain(__('stacks.what_it_said.kept', ['count' => HowManyLines::ON_A_PHONE]))
+        ->and($all)->toContain(__('stacks.what_it_said.show_the_newest'))
+        ->and($newest)->not->toContain('Stopping sonarr')
+        ->and($newest)->toContain('Writing the archive');
+});
+
+it('says how many older lines it let go of, once there are more than it keeps', function (): void {
+    $lines = array_map(static fn(int $line): string => sprintf('Line %d', $line), range(1, HowManyLines::ON_A_PHONE + 2));
+    $screen = aCopyWhoseJobSays(aCopyStillBeingTaken(), WhatWasHeardFromAJob::said(...$lines));
+    $screen->whileItRuns();
+    $screen->showAllItSaid();
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($drawn)->not->toContain('Line 2')
+        ->and($drawn)->toContain('Line 3')
+        ->and($drawn)->toContain(trans_choice('stacks.what_it_said.let_go', 2));
+});
+
+it('draws nothing of the job and offers nothing more while it has said nothing', function (): void {
+    $screen = aCopyWhoseJobSays(aCopyStillBeingTaken());
+    $screen->whileItRuns();
+    $drawn = WhatTheDeviceWouldDraw::by($screen);
+
+    expect($drawn->offers())->not->toContain(__('stacks.what_it_said.show_all'))
+        ->and($drawn->said())->toContain(__('stacks.copy.no_progress_while_running'));
+});
+
+it('draws a line as the text it is, never as markup', function (): void {
+    $said = '<b>Writing</b> & {{ $archive }}';
+    $screen = aCopyWhoseJobSays(aCopyStillBeingTaken(), WhatWasHeardFromAJob::said($said));
+    $screen->whileItRuns();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain($said);
+});
+
+it('asks for the lines of the job the copy answered with, and keeps the last line heard when the stream could not be heard', function (): void {
+    $hearing = AJobThatSays::saying(WhatWasHeardFromAJob::said('Writing the archive'), WhatWasHeardFromAJob::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
+    $screen = theCopyingScreen(aCopyStillBeingTaken(), hearing: $hearing);
+    $screen->copyTheWholeStack();
+    $screen->agree();
+    $screen->whileItRuns();
+    $screen->whileItRuns();
+
+    expect(array_map(static fn(Job $job): string => $job->shown(), $hearing->asked()))->toBe([AStackThatTakesCopies::THE_JOB, AStackThatTakesCopies::THE_JOB])
+        ->and($screen->whatItSays()->newest)->toBe('Writing the archive')
+        ->and($screen->awaitsAnOutcome())->toBeTrue();
+});
+
+it('takes the last lines and lets go of the stream once the job has finished, and asks for none after', function (): void {
+    $hearing = AJobThatSays::saying(WhatWasHeardFromAJob::said('Writing the archive'), WhatWasHeardFromAJob::said('Pruned two older copies'));
+    $screen = theCopyingScreen(aStackThatFinishedTaking(aCopyReported(ScopeOfACopy::theWholeStack(), TheCopies::named(), brisk: true, holds: WhetherItHoldsASecret::Secret, was: WhetherItWasRehearsed::CarriedOut)), hearing: $hearing);
+    $screen->copyTheWholeStack();
+    $screen->agree();
+    $lettingsGo = $hearing->lettingsGo();
+    $screen->whileItRuns();
+    $screen->lastCopy();
+    $screen->whileItRuns();
+
+    expect($hearing->asked())->toHaveCount(2)
+        ->and($hearing->lettingsGo())->toBe($lettingsGo + 1)
+        ->and($screen->whatItSays()->newest)->toBe('Pruned two older copies')
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
+});
+
+it('follows a new job afresh, forgetting what the one before it said', function (): void {
+    $screen = aCopyWhoseJobSays(aCopyStillBeingTaken(), WhatWasHeardFromAJob::said('Writing the archive'));
+    $screen->whileItRuns();
+    $screen->showAllItSaid();
+    $screen->copyTheWholeStack();
+    $screen->agree();
+
+    expect($screen->whatItSays()->newest)->toBeNull()
+        ->and($screen->whatItSays()->showingAll)->toBeFalse();
+});
+
+it('follows nothing, and so awaits nothing, before the operator sends anything', function (): void {
+    $screen = theCopyingScreen(aCopyStillBeingTaken());
+    $screen->whileItRuns();
+
+    expect($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($screen->whatItSays()->newest)->toBeNull();
 });
