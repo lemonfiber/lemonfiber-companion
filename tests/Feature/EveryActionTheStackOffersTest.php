@@ -44,7 +44,7 @@ const OFFERED = [
     'Adoption', 'Alert', 'Alerts', 'Archives', 'Askable', 'AskableKinds', 'Asked', 'Backup', 'Boot', 'Bandwidth', 'Beside', 'Bundle', 'Capabilities', 'Catalogue', 'Channels', 'Clients', 'Config',
     'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Grant', 'Guide', 'Held', 'History', 'Hosting',
     'Handoff', 'Household', 'Import', 'InFlight', 'Invitation', 'Job', 'Keys', 'DeviceKeys', 'DeviceKey', 'DeviceChallenge', 'KeyClaim', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Notify', 'NotifyMine', 'Outbound', 'Pairing', 'PartWay', 'Pausing', 'Playing', 'PluginCatalogue', 'Plugins', 'Preview',
-    'Provenance', 'PushEndpoint', 'PushEndpoints', 'Quality', 'Queue', 'Ran', 'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Served', 'Settings', 'Settled', 'Space', 'Stack',
+    'Provenance', 'Pull', 'PushEndpoint', 'PushEndpoints', 'Quality', 'Queue', 'Ran', 'Removal', 'Repair', 'Replacement', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Served', 'Settings', 'Settled', 'Space', 'Stack',
     'Start', 'Status', 'Step', 'StopSeeding', 'Stored', 'Stuck', 'Substitution', 'Title', 'Trace', 'Tuned', 'Undo', 'Uninstall', 'Update', 'Upgrade',
     'Version', 'Walkthrough', 'Watch', 'Watched', 'Watcher', 'Wiring', 'Word',
 ];
@@ -90,10 +90,6 @@ const ELSEWHERE = [
     // waits below with everything else nobody has offered yet.
     'Setup' => 'N1-R4 — setup settles at the machine, and the app says so rather than offering it',
     'Wizard' => 'N1-R4 — the wizard is setup asking its questions, which happens at the machine',
-    // Fetching a form's images is offered, through the `pull` action, whose
-    // outcome is `lifecycle`. The `pull` kind is something else: the lines the
-    // command line prints while it fetches, which no endpoint serves.
-    'Pull' => 'N2-R24 — fetching is offered through the `pull` action, which answers `lifecycle`; the `pull` kind is the command line\'s own output and is served by no endpoint',
     'Certificate' => 'N1-R79 — replacing the certificate paired phones pin is done at the machine: the phone that asked would refuse the machine once it is replaced',
     'MintedKey' => 'N29-R2 — the app mints a key only as a claim, whose answer is `key-claim`; `minted-key` carries the secret, which the app never receives',
     'Play' => 'N3-R45 — a title plays through the grant the core gave this device, never on the pass in an address the `play` kind carries for a browser',
