@@ -28,6 +28,7 @@ use Modules\Kernel\Api\WhatBecameOfTheMovesInPlace;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatVouchesForAPlugin;
 use Modules\Kernel\Api\WhyNothingWasScanned;
+use Modules\Operator\Internal\PluginActFollowed;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
@@ -226,7 +227,7 @@ it('approves each value apart from the install, and sends only what was approved
     expect($screen->approved)->toBe([])
         ->and($approved->said())->toContain(aPluginsLine('plugins.approvals_apart'))
         ->and($extending->asked())->toBe(['rehearse:tdarr', 'after:j-1', sprintf('install:tdarr:%s:%s', APluginAsItArrives::AGREEMENT, APluginAsItArrives::APPROVAL)])
-        ->and($screen->followingTheAct)->toBe('j-2')
+        ->and($screen->followed[PluginActFollowed::TheAct->name]->job->shown())->toBe('j-2')
         ->and($screen->agreed)->toBeTrue();
 });
 
@@ -444,7 +445,7 @@ it('says installed only where the record was written, its proofs held and nothin
         ->and($drawn->said())->toContain(aPluginsLine('plugins.broke_nothing'))
         ->and($drawn->said())->not->toContain(aPluginsLine('plugins.rehearsal'))
         ->and($drawn->offers())->not->toContain(aPluginsLine('plugins.install'))
-        ->and($screen->followingTheAct)->toBeNull();
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
 });
 
 it('says an install that did not hold was put back, with what went back and what did not and why', function (): void {
@@ -519,7 +520,7 @@ it('lets go of the rehearsal and every approval when it goes back, and asks afte
     $screen->backToThePlugins();
 
     expect($extending->asked())->toBe(['rehearse:tdarr', 'after:j-1', 'rehearse:tdarr'])
-        ->and($screen->followingTheAct)->toBe('j-2');
+        ->and($screen->followed[PluginActFollowed::TheAct->name]->job->shown())->toBe('j-2');
 });
 
 it('says the session has ended where this phone holds none, and asks nothing', function (): void {
@@ -867,4 +868,17 @@ it('names each guard a plugin act moved for good', function (): void {
     )));
 
     expect($drawn->said())->toContain(__('updates.guards.heading'), __('updates.guards.moved', ['plugin' => 'plugin-decline', 'service' => 'decline']));
+});
+
+it('says the session went where it went while the act ran', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $screen = thePluginsScreen(aStackWithTdarr(HowExtendingItIsGoing::underway(Job::named('j-1'))), $keychain);
+    $screen->installOne();
+    $screen->source = 'tdarr';
+    $screen->rehearse();
+    $keychain->forget(theMachinePluginsExtend()->id());
+    $screen->whileItRuns();
+
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
 });

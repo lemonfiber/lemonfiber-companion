@@ -9,6 +9,7 @@ use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Copying;
 use Modules\Kernel\Api\Forgetting;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -65,9 +66,10 @@ final class WhatThisMachineKeepsHere extends NativeComponent implements AwaitsAn
     use LooksAgainWhileOpen;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
     use ReadsAStackOnceAFrame;
-    use ForgetsWhatIsKept;
+    use ForgetsWhatIsKept, FindsItsWayAround {
+        ForgetsWhatIsKept::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     /**
      * What came back, once the frame has asked.
@@ -87,6 +89,7 @@ final class WhatThisMachineKeepsHere extends NativeComponent implements AwaitsAn
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /** Ask the machine again, both readings. */
@@ -94,11 +97,6 @@ final class WhatThisMachineKeepsHere extends NativeComponent implements AwaitsAn
     {
         $this->answered = null;
         $this->copiesFound = null;
-    }
-
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->howForgettingIsGoing()->stands->isWorking();
     }
 
     public function render(): View

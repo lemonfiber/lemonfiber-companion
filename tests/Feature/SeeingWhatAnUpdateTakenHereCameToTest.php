@@ -121,7 +121,6 @@ it('an update just taken is running, and the screen says so', function (): void 
 
 it('asks after an update again only while it runs', function (): void {
     $running = AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending());
-    // Each tick while it runs forgets the answer, and the next one asks.
     $screen = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($running);
     $screen->whileItRuns();
     $screen->whileItRuns();
@@ -131,7 +130,7 @@ it('asks after an update again only while it runs', function (): void {
     $done->whileItRuns();
     $done->whileItRuns();
 
-    expect($running->followed())->toHaveCount(2)
+    expect($running->followed())->toHaveCount(3)
         ->and($finished->followed())->toHaveCount(1);
 });
 
@@ -280,9 +279,11 @@ it('carries the name the reading gave its offer back with the update taken', fun
 
 it('says the stack\'s own words and reads again where the update agreed to was refused because what it would apply moved', function (): void {
     $keeping = aStackWhoseUpdateMoved();
-    $screen = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate($keeping);
+    $screen = TheUpkeepScreenOfTheLoft::theUpkeepScreen($keeping);
+    $screen->wouldYouLike();
+    $screen->agree();
     WhatTheDeviceWouldDraw::by($screen);
-    $askedOnHearingTheRefusal = $keeping->askings();
+    $askedBeforeTheRefusal = $keeping->askings();
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
     $screen->wouldYouLike();
@@ -290,8 +291,8 @@ it('says the stack\'s own words and reads again where the update agreed to was r
     expect($drawn)->toContain(WhatAMovedOfferSays::SUMMARY)
         ->and($drawn)->toContain(WhatAMovedOfferSays::MEANING)
         ->and($drawn)->toContain(__('updates.nothing_applied'))
-        ->and($screen->took)->toBeNull()
-        ->and($keeping->askings())->toBe($askedOnHearingTheRefusal + 1)
+        ->and($screen->followed)->toBe([])
+        ->and($keeping->askings())->toBe($askedBeforeTheRefusal + 1)
         ->and($screen->asking())->not->toBeNull()
         ->and($keeping->taken())->toHaveCount(1);
 });
@@ -307,3 +308,13 @@ it('puts what the stack said about a moved update away once the fresh offer is a
     expect($before)->not->toBeNull()
         ->and($screen->movedOn)->toBeNull();
 })->with(['agreeing', 'never minding']);
+
+it('says the session went where it went while the update ran', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $screen = TheUpkeepScreenOfTheLoft::aScreenThatTookTheUpdate(AStackThatKeepsCurrent::with(TheUpkeepScreenOfTheLoft::anEveningWorthSpending()), $keychain);
+    $keychain->forget(TheUpkeepScreenOfTheLoft::theStackWhoseUpkeepIsRead()->id());
+    $screen->whileItRuns();
+
+    expect($screen->lastUpdate()->stands->went->isSignedIn)->toBeFalse()
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
+});

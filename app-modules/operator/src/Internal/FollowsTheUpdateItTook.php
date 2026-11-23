@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use Modules\Kernel\Api\ARefusalInItsWords;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -16,18 +15,18 @@ use Modules\Operator\Internal\Presenters\HowARefusalReads;
 use Modules\Operator\Internal\Presenters\HowTheLastUpdateReads;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheLastUpdateWent;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
  * A screen that takes an update and follows it to the stack's report.
  *
- * Taking an update answers a handle, and the stack's report of how each
- * service took it arrives only through that handle: a plain reading of where
- * the stack stands leaves it out. So the handle is held, asked after while the
- * update runs, and the report drawn once it finishes.
+ * Taking an update answers a job, and the stack's report of how each service
+ * took it arrives only through that job: a plain reading of where the stack
+ * stands leaves it out. So the job is followed by {@see FollowsOneJobAtATime}, which
+ * shows what it says while the update runs, and the report is drawn once it
+ * finishes.
  *
- * **It reads the using screen's own `$keeping` and `$storage`**, for the
+ * **It reads the using screen's own `$keeping`, `$storage` and `$hearingTheJobs`**, for the
  * reason {@see LetsGoOfARefusedSession} gives, and lets go of a session the
  * stack refused through that trait, which the screen also uses.
  *
@@ -35,11 +34,8 @@ use Native\Mobile\Edge\NativeComponent;
  */
 trait FollowsTheUpdateItTook
 {
-    /** The handle taking the update answered. Public for {@see Screens\HowCurrentThisStackIs::$answered}'s reason. */
-    public ?string $took = null;
-
-    /** What became of it, once this frame has asked. */
-    public ?HowTheLastUpdateWent $lastUpdated = null;
+    /** @use FollowsOneJobAtATime<HowTheLastUpdateWent> */
+    use FollowsOneJobAtATime;
 
     /** The update last sent, so a request other work held can be sent again as it was agreed to. */
     public ?TakingAnUpdate $taken = null;
@@ -50,32 +46,8 @@ trait FollowsTheUpdateItTook
     /** What became of the update taken here, or that none was. */
     public function lastUpdate(): HowTheLastUpdateWent
     {
-        return $this->lastUpdated ??= $this->followed();
+        return $this->whatBecameOfTheJob();
     }
-
-    /**
-     * Ask after the update again while the stack is carrying it out.
-     *
-     * It does nothing unless the update is running, which is what keeps this
-     * from being polling: a finished report answers the
-     * same thing however often it is read. The interval is
-     * {@see HowOftenAScreenLooks}'s constant.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
-    {
-        if ($this->lastUpdate()->stands->isWorking()) {
-            $this->lastUpdated = null;
-        }
-    }
-
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->lastUpdate()->stands->isWorking();
-    }
-
-    abstract public function stack(): Stack;
 
     /** Read again what the stack would do, on the next frame. */
     abstract public function again(): void;
@@ -96,8 +68,41 @@ trait FollowsTheUpdateItTook
         $this->takeIt($taken);
     }
 
+    protected function whileNoJobIsFollowed(): HowTheLastUpdateWent
+    {
+        return new HowTheLastUpdateReads()->notTaken();
+    }
+
+    protected function withNoSessionHeld(): HowTheLastUpdateWent
+    {
+        return new HowTheLastUpdateReads()->signedOut();
+    }
+
+    /** Ask the stack what became of the update taken. */
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): HowTheLastUpdateWent
+    {
+        return $this->keeping->whatBecameOf($stack, $session, $job)->either(
+            stillRunning: static fn(): HowTheLastUpdateWent => new HowTheLastUpdateReads()->running(),
+            done: static fn(Upkeep $report): HowTheLastUpdateWent => new HowTheLastUpdateReads()->done($report),
+            ended: static fn(?WhyTheWorkEnded $why): HowTheLastUpdateWent => new HowTheLastUpdateReads()->ended($why),
+            met: $this->lettingGoIfRefused($stack, new HowTheLastUpdateReads()->met(...)),
+            // Refused and offered again, as a repair is: nothing was
+            // applied, the yes was given for what has since moved, so what
+            // the stack said is kept and what it would do now is read
+            // again for a fresh yes.
+            moved: function (ARefusalInItsWords $why): HowTheLastUpdateWent {
+                $this->forget();
+                $this->taken = null;
+                $this->movedOn = new HowARefusalReads()->inItsWords($why);
+                $this->again();
+
+                return new HowTheLastUpdateReads()->notTaken();
+            },
+        );
+    }
+
     /**
-     * Take the update agreed to, and hold what to follow it by.
+     * Take the update agreed to, and follow the job it answers with.
      *
      * Just taken, it is running, and the cadence asks after it from there. A
      * refusal is kept as what became of it, so the screen says what stood in
@@ -106,55 +111,21 @@ trait FollowsTheUpdateItTook
     private function takeIt(TakingAnUpdate $taking): void
     {
         $stack = $this->stack();
-        $this->took = null;
+        $this->forget();
         $this->movedOn = null;
         $this->taken = $taking;
 
-        $this->lastUpdated = $this->storage->resume($stack->id())->either(
+        $this->reported($this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowTheLastUpdateWent => $this->keeping->take($stack, $session, $taking)->either(
                 started: function (Job $job): HowTheLastUpdateWent {
-                    $this->took = $job->shown();
+                    $this->follow($job);
 
                     return new HowTheLastUpdateReads()->running();
                 },
                 met: $this->lettingGoIfRefused($stack, new HowTheLastUpdateReads()->met(...)),
             ),
             notHeld: static fn(): HowTheLastUpdateWent => new HowTheLastUpdateReads()->signedOut(),
-        );
-    }
-
-    /** Ask the stack what became of the update taken, or say that none was. */
-    private function followed(): HowTheLastUpdateWent
-    {
-        $took = $this->took;
-
-        if ($took === null) {
-            return new HowTheLastUpdateReads()->notTaken();
-        }
-
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): HowTheLastUpdateWent => $this->keeping->whatBecameOf($stack, $session, Job::named($took))->either(
-                stillRunning: static fn(): HowTheLastUpdateWent => new HowTheLastUpdateReads()->running(),
-                done: static fn(Upkeep $report): HowTheLastUpdateWent => new HowTheLastUpdateReads()->done($report),
-                ended: static fn(?WhyTheWorkEnded $why): HowTheLastUpdateWent => new HowTheLastUpdateReads()->ended($why),
-                met: $this->lettingGoIfRefused($stack, new HowTheLastUpdateReads()->met(...)),
-                // Refused and offered again, as a repair is: nothing was
-                // applied, the yes was given for what has since moved, so what
-                // the stack said is kept and what it would do now is read
-                // again for a fresh yes.
-                moved: function (ARefusalInItsWords $why): HowTheLastUpdateWent {
-                    $this->took = null;
-                    $this->taken = null;
-                    $this->movedOn = new HowARefusalReads()->inItsWords($why);
-                    $this->again();
-
-                    return new HowTheLastUpdateReads()->notTaken();
-                },
-            ),
-            notHeld: static fn(): HowTheLastUpdateWent => new HowTheLastUpdateReads()->signedOut(),
-        );
+        ));
     }
 
 }

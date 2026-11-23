@@ -11,6 +11,7 @@ use Modules\Operator\Internal\ASettingBeingChanged;
 use Modules\Operator\Internal\ViewModels\AnOffer;
 use Modules\Operator\Internal\ViewModels\AStackSettingAsShown;
 use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhatAJobSaidAsShown;
 use Modules\Operator\Internal\WhereAStackIs;
 
 use function view;
@@ -37,6 +38,7 @@ final class AStackSetting extends Component
         public readonly AStackSettingAsShown $setting,
         public readonly ?ASettingBeingChanged $changing,
         public readonly TheSettingChangeTurnedOutToBe $going,
+        public readonly WhatAJobSaidAsShown $said,
         public readonly AnOffer $offerToSet,
         public readonly AnOffer $offerToClear,
         public readonly bool $settingsWouldNotOpen,

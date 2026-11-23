@@ -32,6 +32,7 @@ use Modules\Operator\Internal\Screens\WhatSetupDecided;
 use Modules\Operator\Internal\ViewModels\ADecisionAsShown;
 use Tests\Support\AroundThePhone;
 use Tests\Support\ASettingChangeAsReported;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -94,6 +95,7 @@ function theDecidedScreenOver(TheDecisions $decided, ?AStackThatTunesItsSettings
         AroundThePhone::listening(),
         AShareSheetThatWasOffered::working(),
         app(Translator::class),
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
     WhatTheDeviceWouldDraw::onTheFourthFrame($screen);

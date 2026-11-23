@@ -27,7 +27,7 @@ refused the request, which sends nothing more.
 
 Five adapters hold a stream between calls: `Listeners`, for `Hearing`,
 `Narrators`, for `HearingTheWalk`, `StartLines`, for `HearingTheStart`,
-`JobLines`, for `HearingAJob`, and `Players`, for `FollowingWhatIsPlaying`.
+`JobLines`, for `HearingTheJobs`, and `Players`, for `FollowingWhatIsPlaying`.
 Each holds a stack's event stream open for the one screen it belongs to, and
 reads it without waiting for what has not arrived: the first for the health
 summary and the newest the stack names, the second for the steps of the walk

@@ -11,7 +11,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * because a listing of what would happen and a report of what did are drawn
  * from different values, so one can never be drawn as the other.
  */
-final readonly class HowPuttingItBackWent
+final readonly class HowPuttingItBackWent implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands   $stands       where the work stands, and whether the stack could be asked at all

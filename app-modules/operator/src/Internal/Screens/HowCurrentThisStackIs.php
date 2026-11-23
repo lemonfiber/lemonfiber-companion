@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\AskingWhatAStopWouldInterrupt;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\ItsContent;
@@ -79,9 +80,10 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
 {
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
-    use FollowsTheUpdateItTook;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
+    use FollowsTheUpdateItTook, FindsItsWayAround {
+        FollowsTheUpdateItTook::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use DrawsItsTemplate;
     use SaysWhatAStopWouldInterrupt;
 
@@ -116,6 +118,7 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
         protected readonly WhatItListensWith $listening,
         private readonly KeepingTheLastUpkeep $kept,
         private readonly AskingWhatAStopWouldInterrupt $interrupting,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /**
@@ -142,7 +145,7 @@ final class HowCurrentThisStackIs extends NativeComponent implements AwaitsAnOut
     public function again(): void
     {
         $this->answered = null;
-        $this->lastUpdated = null;
+        $this->askAfterAgain();
     }
 
     /**

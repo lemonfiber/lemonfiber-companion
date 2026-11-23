@@ -8,6 +8,7 @@ use function app;
 
 use Illuminate\Contracts\Translation\Translator;
 use Modules\Kernel\Api\Cost;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ProposedChange;
@@ -20,6 +21,7 @@ use Modules\Kernel\Api\WhatWasFoundOfTheSettings;
 use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisStackIsSetTo;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -46,6 +48,7 @@ final readonly class TheSettingsOfTheLoft
         ?AStackThatSaysHowItRunsWithout $without = null,
         ?AShareSheetThatWasOffered $sheet = null,
         ?AStackThatSaysWhatSetupSettled $settled = null,
+        ?HearingTheJobs $hearing = null,
     ): WhatThisStackIsSetTo {
         $stack = TheHealthScreenOfTheLoft::theStackBeingLookedAt();
         $keychain ??= AKeychainInMemory::working();
@@ -66,6 +69,7 @@ final readonly class TheSettingsOfTheLoft
             $settled ?? AStackThatSaysWhatSetupSettled::setUp(),
             $sheet ?? AShareSheetThatWasOffered::working(),
             app(Translator::class),
+            $hearing ?? AJobThatSays::nothing(),
         );
         $screen->setParams(['stack' => $stack->id()->stored()]);
 

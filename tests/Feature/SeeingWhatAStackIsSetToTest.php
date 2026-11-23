@@ -389,7 +389,7 @@ it('refuses to open a withheld setting even when asked directly', function (): v
     $screen->change('API_KEY');
 
     expect($screen->changing())->toBe('')
-        ->and($screen->typed())->toBeNull();
+        ->and($screen->typed)->toBeNull();
 });
 
 it('opens a shown setting seeded with what it holds', function (): void {
@@ -398,7 +398,7 @@ it('opens a shown setting seeded with what it holds', function (): void {
     $screen->change('LIBRARY_PATH');
 
     expect($screen->changing())->toBe('LIBRARY_PATH')
-        ->and($screen->typed())->toBe('/data/media');
+        ->and($screen->typed)->toBe('/data/media');
 });
 
 it('asks what a change would do without making it', function (): void {
@@ -416,7 +416,7 @@ it('asks what a change would do without making it', function (): void {
         ->and($adjusting->askedFor()?->key)->toBe('LIBRARY_PATH')
         ->and($adjusting->askedFor()?->value)->toBe('/data/films');
 
-    $proposal = $screen->proposal();
+    $proposal = $screen->proposed;
 
     expect($proposal?->toSaid)->toBe('/data/films')
         ->and($proposal?->fromSaid)->toBe('/data/media')
@@ -442,7 +442,7 @@ it('writes only when the operator agrees, and asks the stack again after', funct
 
     expect($adjusting->writes())->toBe(1)
         ->and($adjusting->rehearsals())->toBe(0)
-        ->and($screen->proposal()?->wroteSomething)->toBeTrue();
+        ->and($screen->proposed?->wroteSomething)->toBeTrue();
 
     // The listing is dropped rather than patched: what the stack now holds is
     // the stack's to say, and a screen editing its own copy of the row would
@@ -466,8 +466,8 @@ it('tells a setting that already held the value apart from one that was written'
     $screen->change('BIND');
     $screen->wouldBe('BIND');
 
-    expect($screen->proposal()?->holdsWhatWasAsked)->toBeTrue()
-        ->and($screen->proposal()?->wroteSomething)->toBeFalse();
+    expect($screen->proposed?->holdsWhatWasAsked)->toBeTrue()
+        ->and($screen->proposed?->wroteSomething)->toBeFalse();
 });
 
 it('carries the stack\'s own reason when a change was blocked', function (): void {
@@ -481,10 +481,10 @@ it('carries the stack\'s own reason when a change was blocked', function (): voi
     $screen->change('LIBRARY_PATH');
     $screen->wouldBe('LIBRARY_PATH');
 
-    expect($screen->proposal()?->stanceSaid)->toBe(Stance::Blocked->saidOnTheScreen())
-        ->and($screen->proposal()?->refusalSaid)
+    expect($screen->proposed?->stanceSaid)->toBe(Stance::Blocked->saidOnTheScreen())
+        ->and($screen->proposed?->refusalSaid)
         ->toBe('That path is not on a filesystem this machine can write to.')
-        ->and($screen->proposal()?->mustBeAgreedFirst)->toBeTrue();
+        ->and($screen->proposed?->mustBeAgreedFirst)->toBeTrue();
 });
 
 it('says a setting holds nothing yet rather than showing a blank', function (): void {
@@ -498,8 +498,8 @@ it('says a setting holds nothing yet rather than showing a blank', function (): 
     $screen->change('BIND');
     $screen->wouldBe('BIND');
 
-    expect($screen->proposal()?->holdsNothingYet)->toBeTrue()
-        ->and($screen->proposal()?->fromSaid)->toBe('');
+    expect($screen->proposed?->holdsNothingYet)->toBeTrue()
+        ->and($screen->proposed?->fromSaid)->toBe('');
 });
 
 it('reports what stood in the way of a change rather than a silent nothing', function (): void {
@@ -511,8 +511,8 @@ it('reports what stood in the way of a change rather than a silent nothing', fun
     $screen->change('LIBRARY_PATH');
     $screen->wouldBe('LIBRARY_PATH');
 
-    expect($screen->proposal()?->went->cameBack())->toBeFalse()
-        ->and($screen->proposal()?->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
+    expect($screen->proposed?->went->cameBack())->toBeFalse()
+        ->and($screen->proposed?->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
 });
 
 it('puts nothing to the stack when nothing is open', function (): void {
@@ -523,8 +523,8 @@ it('puts nothing to the stack when nothing is open', function (): void {
 
     expect($adjusting->rehearsals())->toBe(0)
         ->and($adjusting->writes())->toBe(0)
-        ->and($screen->proposal()?->went->cameBack())->toBeTrue()
-        ->and($screen->proposal()?->key)->toBe('');
+        ->and($screen->proposed?->went->cameBack())->toBeTrue()
+        ->and($screen->proposed?->key)->toBe('');
 });
 
 it('closes an open setting without asking anything', function (): void {
@@ -535,8 +535,8 @@ it('closes an open setting without asking anything', function (): void {
     $screen->never();
 
     expect($screen->changing())->toBe('')
-        ->and($screen->typed())->toBeNull()
-        ->and($screen->proposal())->toBeNull()
+        ->and($screen->typed)->toBeNull()
+        ->and($screen->proposed)->toBeNull()
         ->and($adjusting->rehearsals())->toBe(0);
 });
 
@@ -595,7 +595,7 @@ it('shows no proposal under any row when the reading did not come back', functio
     // as a review under the row, so this returns nothing while
     // `proposal()` still carries what stood in the way.
     expect($screen->proposalFor('LIBRARY_PATH'))->toBeNull()
-        ->and($screen->proposal()?->went->cameBack())->toBeFalse();
+        ->and($screen->proposed?->went->cameBack())->toBeFalse();
 });
 
 it('says nothing happened when the session went between the reading and the tap', function (): void {
@@ -613,7 +613,7 @@ it('says nothing happened when the session went between the reading and the tap'
     $keychain->forget($stack->id());
     $screen->wouldBe('LIBRARY_PATH');
 
-    expect($screen->proposal()?->went->isSignedIn)->toBeFalse()
+    expect($screen->proposed?->went->isSignedIn)->toBeFalse()
         ->and($adjusting->rehearsals())->toBe(0);
 });
 
@@ -631,7 +631,7 @@ it('closes whatever was open when a key the listing did not offer arrives', func
     $screen->change('API_KEY');
 
     expect($screen->changing())->toBe('')
-        ->and($screen->typed())->toBeNull();
+        ->and($screen->typed)->toBeNull();
 });
 
 it('offers no proposal for a setting when none has been asked for', function (): void {
@@ -644,7 +644,7 @@ it('offers no proposal for a setting when none has been asked for', function ():
     $screen->change('LIBRARY_PATH');
 
     expect($screen->proposalFor('LIBRARY_PATH'))->toBeNull()
-        ->and($screen->proposal())->toBeNull();
+        ->and($screen->proposed)->toBeNull();
 });
 
 it('draws what has been typed in the field, so a frame between two taps keeps it', function (): void {
@@ -670,7 +670,7 @@ it('asks nothing of the stack for a setting that is not the open one', function 
 
     expect($adjusting->rehearsals())->toBe(0)
         ->and($adjusting->askedFor())->toBeNull()
-        ->and($screen->proposal()?->key)->toBe('');
+        ->and($screen->proposed?->key)->toBe('');
 });
 
 it('lets the session go when a change is refused on the credential', function (): void {
@@ -746,7 +746,7 @@ it('draws a change refused because the operator declared the area unmanaged in t
     $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
 
     expect($drawn->said())->toContain(__(Stance::Blocked->saidOnTheScreen()), $refusal)
-        ->and($screen->proposal()?->canBeAgreedTo)->toBeFalse()
+        ->and($screen->proposed?->canBeAgreedTo)->toBeFalse()
         ->and($drawn->offers())->toBe([__('navigation.menu.decided'), __('stacks.left_alone.open'), __('config.never_mind'), __('config.change_key', ['key' => 'BIND']), __('config.put_it_all_back'), __('without.copy'), __('config.ask_again')]);
 });
 

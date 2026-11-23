@@ -65,6 +65,7 @@ use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\ASettingChangeAsReported;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -203,6 +204,7 @@ function theDecidedScreen(
         AroundThePhone::listening(),
         $sheet ?? AShareSheetThatWasOffered::working(),
         app(Translator::class),
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
     WhatTheDeviceWouldDraw::onTheFourthFrame($screen);
@@ -255,7 +257,7 @@ it('changes a decision the configuration keeps through the stack review, by conf
     $screen->change($key);
 
     expect($screen->changing())->toBe($key)
-        ->and($screen->typed())->toBe($seeded);
+        ->and($screen->typed)->toBe($seeded);
 
     $screen->typed = 'news.example';
     $screen->wouldBe($key);
@@ -283,7 +285,7 @@ it('changes a decision the settings store keeps here through the stack review, b
     $screen->change($key);
 
     expect($screen->changing())->toBe($key)
-        ->and($screen->typed())->toBe($seeded)
+        ->and($screen->typed)->toBe($seeded)
         ->and(WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->offers())->toContain(__('config.what_would_happen'));
 
     $askings = $decided->askings();
@@ -292,9 +294,9 @@ it('changes a decision the settings store keeps here through the stack review, b
 
     expect($screen->awaitsAnOutcome())->toBeTrue();
 
-    $screen->whileTheyLand();
-    $screen->whileTheyLand();
-    $screen->whileTheyLand();
+    $screen->whileItRuns();
+    $screen->whileItRuns();
+    $screen->whileItRuns();
     $screen->answer();
 
     expect(whatTheStoreWasAsked($tuning))->toBe([[sprintf('settings-set %s=nl', $named)], []])
@@ -305,7 +307,7 @@ it('changes a decision the settings store keeps here through the stack review, b
 
     $askings = $decided->askings();
     $screen->agree($key);
-    $screen->whileTheyLand();
+    $screen->whileItRuns();
     $screen->howItIsGoing();
     $screen->answer();
 
@@ -347,13 +349,13 @@ it('leaves what a settings store change came to once the decision is left or ano
     $screen->change('LEMONFIBER_LOCALE');
     $screen->typed = 'nl';
     $screen->wouldBe('LEMONFIBER_LOCALE');
-    $screen->whileTheyLand();
+    $screen->whileItRuns();
     $screen->howItIsGoing();
 
     $then === 'never' ? $screen->never() : $screen->change('VPN_PROVIDER');
 
     expect($screen->howItIsGoing()->stands->wasAsked())->toBeFalse()
-        ->and([$screen->asked, $screen->report, $screen->following])->toBe([null, null, null]);
+        ->and([$screen->asked, $screen->report, $screen->awaitsAnOutcome()])->toBe([null, null, false]);
 })->with(['never', 'another']);
 
 it('puts no settings store change under a name the stack lists as a credential, for another key than the open one, or a yes to a rehearsal of anything else', function (): void {
@@ -383,7 +385,7 @@ it('puts no settings store change under a name the stack lists as a credential, 
     $screen->wouldBe('LEMONFIBER_LOCALE');
     $screen->typed = 'nl';
     $screen->wouldBe('LEMONFIBER_LOCALE');
-    $screen->whileTheyLand();
+    $screen->whileItRuns();
     $screen->howItIsGoing();
     $screen->wouldBe('TZ');
     $screen->agree('TZ');
@@ -583,7 +585,7 @@ it('refuses a name the stack lists as a credential in the field for any other se
 
     expect($screen->refusedName)->toBe(trim($named))
         ->and($screen->changing())->toBe('')
-        ->and($screen->typed())->toBeNull()
+        ->and($screen->typed)->toBeNull()
         ->and(WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said())->toContain(__('decided.another.refused', ['key' => trim($named)]));
 
     $screen->named = ' LEMONFIBER_EXPLANATIONS ';
@@ -611,7 +613,7 @@ it('opens the field with nothing typed yet', function (): void {
     $screen->typed = 'left over';
     $screen->another();
 
-    expect([$screen->changing(), $screen->typed()])->toBe(['LEMONFIBER_EXPLANATIONS', '']);
+    expect([$screen->changing(), $screen->typed])->toBe(['LEMONFIBER_EXPLANATIONS', '']);
 });
 
 it('refuses a credential the stack adds later from what it lists, with nothing kept in the app', function (): void {
@@ -631,7 +633,7 @@ it('opens nothing for an empty name, and hands on no words the screen does not n
 
     $screen->another();
 
-    expect([$screen->refusedName, $screen->changing(), $screen->typed()])->toBe([null, '', null]);
+    expect([$screen->refusedName, $screen->changing(), $screen->typed])->toBe([null, '', null]);
 
     $screen->named = '  ';
     $screen->another();
@@ -639,7 +641,7 @@ it('opens nothing for an empty name, and hands on no words the screen does not n
 
     expect($screen->refusedName)->toBeNull()
         ->and($screen->changing())->toBe('')
-        ->and($screen->typed())->toBeNull()
+        ->and($screen->typed)->toBeNull()
         ->and($sheet->copied())->toBeNull()
         ->and($screen->copied)->toBeNull();
 });

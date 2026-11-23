@@ -11,6 +11,7 @@ use Modules\Operator\Internal\ViewModels\ADecisionAsShown;
 use Modules\Operator\Internal\ViewModels\AnOffer;
 use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatAChangeTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhatAJobSaidAsShown;
 use Modules\Operator\Internal\WhereAStackIs;
 
 use function view;
@@ -30,8 +31,10 @@ final class OneDecision extends Component
         public readonly ?WhatAChangeTurnedOutToBe $proposal,
         public readonly bool $waiting,
         public readonly ?string $landingSaid,
+        public readonly WhatAJobSaidAsShown $landingSays,
         public readonly AnOffer $offer,
         public readonly TheSettingChangeTurnedOutToBe $going,
+        public readonly WhatAJobSaidAsShown $said,
         public readonly bool $settingsWouldNotOpen,
         public readonly WhereAStackIs $goes,
     ) {}

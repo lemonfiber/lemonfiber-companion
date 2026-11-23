@@ -34,6 +34,8 @@
             tone="working"
         />
 
+        <x-operator::following-a-job :said="$this->whatItSays()" />
+
         {{-- The stack says how far a restore got once it has finished, and
              not while it runs. --}}
         <x-design::body>{{ __('stacks.put_back.no_progress_while_running') }}</x-design::body>

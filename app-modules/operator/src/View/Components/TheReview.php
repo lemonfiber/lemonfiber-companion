@@ -8,6 +8,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Operator\Internal\ViewModels\WhatAChangeTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhatAJobSaidAsShown;
 
 use function view;
 
@@ -21,6 +22,7 @@ final class TheReview extends Component
         public readonly ?WhatAChangeTurnedOutToBe $proposal,
         public readonly bool $waiting,
         public readonly ?string $landingSaid,
+        public readonly WhatAJobSaidAsShown $landingSays,
     ) {}
 
     public function render(): View

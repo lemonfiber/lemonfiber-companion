@@ -11,6 +11,7 @@ use Modules\Kernel\Api\ASetting;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ExtendingTheStack;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
@@ -49,9 +50,10 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
     use DrawsItsTemplate;
-    use ChangesASetting;
+    use ChangesASetting, FindsItsWayAround {
+        ChangesASetting::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     public const string TEMPLATE = 'operator::how-this-plugin-is-set';
 
@@ -72,8 +74,8 @@ final class HowThisPluginIsSet extends NativeComponent implements AwaitsAnOutcom
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
-
 
     /** Read the plugin and its settings again. */
     public function again(): void

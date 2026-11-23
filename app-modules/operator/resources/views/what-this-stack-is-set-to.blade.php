@@ -1,3 +1,4 @@
+@use('Modules\Operator\Internal\ASettingChangeFollowed')
 @use('Modules\Kernel\Api\WhatToChange')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
@@ -45,7 +46,7 @@
                     supporting="{{ __('config.what_it_would_hold') }}"
                 />
 
-                <x-operator::the-review :key="$setting->key" :proposal="$this->proposalFor($setting->key)" :waiting="$this->landing !== null" :landing-said="$this->landingSaid" />
+                <x-operator::the-review :key="$setting->key" :proposal="$this->proposalFor($setting->key)" :waiting="$this->landing()->waitsToChange($setting->key)" :landing-said="$this->landing()->saidAbout($setting->key)" :landing-says="$this->whatItSays(ASettingChangeFollowed::OnceLanded)" />
             @elseif ($setting->withheld)
                 {{-- The stack's own note that the value is set and withheld,
                      shown as it stands. Not dots and not the word hidden: the

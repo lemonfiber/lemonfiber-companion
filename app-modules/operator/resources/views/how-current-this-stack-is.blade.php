@@ -236,6 +236,7 @@
             :said="__('updates.still_updating')"
             tone="working"
         />
+        <x-operator::following-a-job :said="$this->whatItSays()" />
     @elseif ($this->lastUpdate()->stands->hasEnded())
         <x-operator::why-it-ended :stands="$this->lastUpdate()->stands" />
         {{-- Not a failure: it may well have worked, and the reading above

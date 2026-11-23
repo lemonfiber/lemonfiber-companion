@@ -11,6 +11,7 @@ use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AServiceWaiting;
 use Modules\Kernel\Api\ASetting;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\ServiceId;
@@ -52,9 +53,10 @@ final class WhatThisServiceWaitsFor extends NativeComponent implements AwaitsAnO
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
     use DrawsItsTemplate;
-    use ChangesASetting;
+    use ChangesASetting, FindsItsWayAround {
+        ChangesASetting::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     public const string TEMPLATE = 'operator::what-this-service-waits-for';
 
@@ -70,6 +72,7 @@ final class WhatThisServiceWaitsFor extends NativeComponent implements AwaitsAnO
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /** The service this page is about. */

@@ -27,6 +27,7 @@ use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
 use Modules\Stacks\Api\AStacksScreen;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatResets;
@@ -78,7 +79,7 @@ function thePuttingItAllBackScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new PuttingTheConfigurationBack($resetting, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new PuttingTheConfigurationBack($resetting, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -605,4 +606,12 @@ it('asked again before anything was read, asks for the preview when the frame re
     $screen->answer();
 
     expect($resetting->previewsAskedFor())->toBe(1);
+});
+
+it('says a yes no job is followed for did nothing, and asks for no preview', function (): void {
+    $screen = thePuttingItAllBackScreen(aStackPreviewingTheReset());
+    $screen->__syncProperty('agreed', value: true);
+
+    expect($screen->answer()->stands->hasEnded())->toBeTrue()
+        ->and($screen->followed)->toBe([]);
 });

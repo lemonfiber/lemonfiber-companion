@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AJobFollowed;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Effects;
 use Modules\Kernel\Api\Fingerprint;
-use Modules\Kernel\Api\HearingAJob;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\LeftBehind;
 use Modules\Kernel\Api\Mended;
@@ -29,7 +31,11 @@ use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWasHeardFromAJob;
 use Modules\Kernel\Api\WhatWasMended;
 use Modules\Kernel\Api\Whose;
+use Modules\Operator\Internal\NotAJobItFollows;
+use Modules\Operator\Internal\PluginActFollowed;
 use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
+use Modules\Operator\Internal\ViewModels\WhatTheStackWouldPutRight;
+use Modules\Operator\Internal\ViewModels\WhatThisStackPutRight;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeRouter;
@@ -91,7 +97,7 @@ function theRepairsScreen(
     ?string $named = null,
     bool $signedIn = true,
     ?AKeychainInMemory $keychain = null,
-    ?HearingAJob $hearing = null,
+    ?HearingTheJobs $hearing = null,
 ): WhatWouldBePutRight {
     $stack = theStackBeingOfferedRepairs();
     $keychain ??= AKeychainInMemory::working();
@@ -848,3 +854,28 @@ it('says the session ended where it went while the stack worked out what it coul
         ->and($agreed->done()->stands->hasEnded())->toBeTrue()
         ->and($agreed->done()->stands->isWorking())->toBeFalse();
 });
+
+it('says a yes no job is followed for did nothing, without asking the stack', function (): void {
+    $mending = AStackThatWouldMend::offering(aListingWorthReading());
+    $screen = theRepairsScreen($mending);
+    $screen->__syncProperty('agreed', value: true);
+
+    expect($screen->done()->stands->hasEnded())->toBeTrue()
+        ->and($screen->followed)->toBe([])
+        ->and($mending->askings())->toBe(0)
+        ->and($mending->readings())->toBe(0);
+});
+
+it('answers for the asking and the yes, and for no other job it is made to follow', function (bool $signedIn): void {
+    $screen = theRepairsScreen(AStackThatWouldMend::offering(aListingWorthReading()), signedIn: $signedIn);
+    $screen->followed = [PluginActFollowed::TheAct->name => AJobFollowed::named(Job::named('a-job-for-another-screen'))];
+    $screen->followedFor = [PluginActFollowed::TheAct->name => PluginActFollowed::TheAct];
+    $unfollowed = Closure::bind(static fn(WhatWouldBePutRight $asked): WhatTheStackWouldPutRight|WhatThisStackPutRight => $asked->whatBecameOfTheJob(PluginActFollowed::TheAct), null, WhatWouldBePutRight::class);
+
+    expect($screen->whileItRuns(...))->toThrow(NotAJobItFollows::class);
+
+    $screen->followed = [];
+    $screen->followedFor = [];
+
+    expect(static fn(): WhatTheStackWouldPutRight|WhatThisStackPutRight => $unfollowed($screen))->toThrow(NotAJobItFollows::class);
+})->with(['signed in' => [true], 'signed out' => [false]]);

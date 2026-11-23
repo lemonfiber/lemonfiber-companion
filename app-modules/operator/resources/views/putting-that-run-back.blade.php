@@ -20,6 +20,7 @@
         />
     @elseif ($this->done()->stands->isWorking())
         <x-operator::emphasis>{{ __('stacks.run_back.putting_back') }}</x-operator::emphasis>
+        <x-operator::following-a-job :said="$this->whatItSays()" />
 
         {{-- The stack says what went back once it has finished, and not while
              it runs. --}}

@@ -10,7 +10,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Check;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Confirmed;
-use Modules\Kernel\Api\HearingAJob;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Mending;
@@ -31,6 +31,7 @@ use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAMendingReads;
 use Modules\Operator\Internal\Presenters\HowAnOfferOfRepairsReads;
 use Modules\Operator\Internal\Presenters\HowARefusalReads;
+use Modules\Operator\Internal\RepairsFollowed;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
 use Modules\Operator\Internal\ViewModels\WhatTheStackWouldPutRight;
 use Modules\Operator\Internal\ViewModels\WhatThisStackPutRight;
@@ -42,6 +43,8 @@ use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
+
+use UnitEnum;
 
 /**
  * What this stack would put right, stated before anybody is asked to agree.
@@ -84,15 +87,6 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
     public const string TEMPLATE = 'operator::what-would-be-put-right';
 
     /**
-     * The offer the yes was given against, while the yes is followed.
-     *
-     * `public`, which is what `NativeComponent`'s property syncing needs to
-     * reach: it writes only public, non-static properties, and a screen whose
-     * state it cannot write silently stops holding what it thinks it holds.
-     */
-    public ?WhatTheStackWouldPutRight $agreedAgainst = null;
-
-    /**
      * The listing, while there is one to agree to.
      *
      * Held as the value rather than as the fold, because {@see Confirmed} can
@@ -133,7 +127,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly HearingAJob $hearingAJob,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /** Whether this device still holds a session for it. */
@@ -160,11 +154,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
      */
     public function offer(): WhatTheStackWouldPutRight
     {
-        if ($this->agreedAgainst instanceof WhatTheStackWouldPutRight) {
-            return $this->agreedAgainst;
-        }
-
-        $report = $this->whatBecameOfTheJob();
+        $report = $this->whatBecameOfTheJob(RepairsFollowed::Asking);
 
         return $report instanceof WhatTheStackWouldPutRight ? $report : new HowAnOfferOfRepairsReads()->ended(null);
     }
@@ -178,7 +168,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
     /** What became of what was agreed to, once anything was; nothing to report before. */
     public function done(): WhatThisStackPutRight
     {
-        $report = $this->agreed ? $this->whatBecameOfTheJob() : null;
+        $report = $this->agreed ? $this->whatBecameOfTheJob(RepairsFollowed::TheYes) : null;
 
         return $report instanceof WhatThisStackPutRight ? $report : new HowAMendingReads()->ended(null);
     }
@@ -234,12 +224,12 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
     public function again(): void
     {
         if ($this->agreed || $this->awaitsAnOutcome()) {
-            $this->became = null;
+            $this->askAfterAgain($this->agreed ? RepairsFollowed::TheYes : RepairsFollowed::Asking);
 
             return;
         }
 
-        $this->forget();
+        $this->forget(RepairsFollowed::Asking);
     }
 
     /** Whether the stack is carrying something out right now, as the frame reads it. */
@@ -258,12 +248,12 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
      */
     public function lookAgain(): void
     {
-        $this->forget();
+        $this->forget(RepairsFollowed::Asking);
+        $this->forget(RepairsFollowed::TheYes);
         $this->movedOn = null;
         $this->agreed = false;
         $this->yesTo = null;
         $this->offered = null;
-        $this->agreedAgainst = null;
     }
 
     /**
@@ -276,9 +266,7 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
      */
     public function tryAgain(): void
     {
-        $held = $this->became;
-
-        if (! $held instanceof WhatTheStackWouldPutRight || ! $held->stands->went->wasHeldByOtherWork()) {
+        if (! $this->offer()->stands->went->wasHeldByOtherWork()) {
             return;
         }
 
@@ -294,20 +282,27 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
     }
 
     /** What became of the asking, or of the yes once there is one. */
-    protected function whatBecameOfIt(Stack $stack, Session $session, Job $job): WhatTheStackWouldPutRight|WhatThisStackPutRight
+    protected function whatBecameOfIt(Stack $stack, Session $session, Job $job, UnitEnum $for): WhatTheStackWouldPutRight|WhatThisStackPutRight
     {
-        return $this->agreed ? $this->whatWasDone($stack, $session, $job) : $this->whatTheAskingCameTo($stack, $session, $job);
+        return match (RepairsFollowed::asked($for)) {
+            RepairsFollowed::TheYes => $this->whatWasDone($stack, $session, $job),
+            RepairsFollowed::Asking => $this->whatTheAskingCameTo($stack, $session, $job),
+        };
     }
 
-    /** Ask the stack what it would put right, and follow the job it answers with. */
-    protected function whileNothingIsFollowed(): WhatTheStackWouldPutRight
+    /** Ask the stack what it would put right, and follow the job it answers with; before a yes, there is nothing it did. */
+    protected function whileNothingIsFollowed(UnitEnum $for): WhatTheStackWouldPutRight|WhatThisStackPutRight
     {
+        if (RepairsFollowed::asked($for) === RepairsFollowed::TheYes) {
+            return new HowAMendingReads()->ended(null);
+        }
+
         $stack = $this->stack();
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheStackWouldPutRight => $this->mending->wouldPutRight($stack, $session)->either(
                 started: function (Job $job) use ($stack, $session): WhatTheStackWouldPutRight {
-                    $this->follow($job);
+                    $this->follow($job, RepairsFollowed::Asking);
 
                     return $this->whatTheAskingCameTo($stack, $session, $job);
                 },
@@ -317,9 +312,12 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
         );
     }
 
-    protected function withoutASession(): WhatTheStackWouldPutRight|WhatThisStackPutRight
+    protected function withoutASession(UnitEnum $for): WhatTheStackWouldPutRight|WhatThisStackPutRight
     {
-        return $this->agreed ? new HowAMendingReads()->ended(null) : new HowAnOfferOfRepairsReads()->signedOut();
+        return match (RepairsFollowed::asked($for)) {
+            RepairsFollowed::TheYes => new HowAMendingReads()->ended(null),
+            RepairsFollowed::Asking => new HowAnOfferOfRepairsReads()->signedOut(),
+        };
     }
 
     /**
@@ -335,25 +333,24 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
         $against = $this->offer();
 
         $this->storage->resume($stack->id())->either(
-            held: function (Session $session) use ($stack, $offer, $repair, $against): WhatTheStackWouldPutRight {
+            held: function (Session $session) use ($stack, $offer, $repair, $against): WhatTheStackWouldPutRight|WhatThisStackPutRight {
                 $confirmed = Confirmed::against($repair, $offer, Reading::live($offer));
 
                 return $this->mending->agreeTo($stack, $session, $confirmed)->either(
                     started: function (Job $job) use ($against): WhatTheStackWouldPutRight {
-                        $this->follow($job);
-                        $this->agreedAgainst = $against;
+                        $this->follow($job, RepairsFollowed::TheYes);
                         $this->agreed = true;
                         $this->yesTo = null;
                         $this->movedOn = null;
 
                         return $against;
                     },
-                    met: fn(Obstacle $why): WhatTheStackWouldPutRight
-                        => $this->became = new HowAnOfferOfRepairsReads()->met($why),
+                    met: fn(Obstacle $why): WhatTheStackWouldPutRight|WhatThisStackPutRight
+                        => $this->reported(new HowAnOfferOfRepairsReads()->met($why), RepairsFollowed::Asking),
                 );
             },
-            notHeld: fn(): WhatTheStackWouldPutRight
-                => $this->became = new HowAnOfferOfRepairsReads()->signedOut(),
+            notHeld: fn(): WhatTheStackWouldPutRight|WhatThisStackPutRight
+                => $this->reported(new HowAnOfferOfRepairsReads()->signedOut(), RepairsFollowed::Asking),
         );
     }
 

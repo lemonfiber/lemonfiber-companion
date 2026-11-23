@@ -8,7 +8,7 @@ use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\ACopyTaken;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HearingAJob;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\SecureStorage;
@@ -22,7 +22,7 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\AwaitsAnOutcome;
-use Modules\Operator\Internal\FollowsAJob;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowACopyReads;
 use Modules\Operator\Internal\Presenters\HowAScopeReads;
@@ -46,7 +46,7 @@ use function trim;
  * The report says what it covered, which older copies it removed and how its
  * size stood against the minute a copy is meant to take.
  *
- * **Taking a copy answers a job,** followed by {@see FollowsAJob}: while the
+ * **Taking a copy answers a job,** followed by {@see FollowsOneJobAtATime}: while the
  * stack takes the copy the screen shows what the job says, and the report is
  * drawn once it finishes. The stack says how large a copy came to only once
  * it has finished, and the screen says so while it runs.
@@ -65,9 +65,9 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use AsksWhatTheStackIsRunning;
-    /** @use FollowsAJob<HowTheCopyWent> */
-    use FollowsAJob, FindsItsWayAround {
-        FollowsAJob::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    /** @use FollowsOneJobAtATime<HowTheCopyWent> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
     }
     use DrawsItsTemplate;
 
@@ -91,7 +91,7 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly HearingAJob $hearingAJob,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /** The services a copy can be narrowed to, asked once per frame. */
@@ -164,11 +164,11 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
     public function again(): void
     {
         $this->answered = null;
-        $this->became = null;
+        $this->askAfterAgain();
     }
 
     /** What became of the copy taken, or that none was where the copy sent is not held. */
-    protected function whatBecameOfIt(Stack $stack, Session $session, Job $job): HowTheCopyWent
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): HowTheCopyWent
     {
         $asked = $this->taking;
 
@@ -184,12 +184,12 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
         );
     }
 
-    protected function whileNothingIsFollowed(): HowTheCopyWent
+    protected function whileNoJobIsFollowed(): HowTheCopyWent
     {
         return new HowACopyReads()->notAsked();
     }
 
-    protected function withoutASession(): HowTheCopyWent
+    protected function withNoSessionHeld(): HowTheCopyWent
     {
         return new HowACopyReads()->signedOut();
     }
@@ -206,7 +206,7 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
         $this->forget();
         $this->taking = $asked;
 
-        $this->became = $this->storage->resume($stack->id())->either(
+        $this->reported($this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowTheCopyWent => $this->copying->take($stack, $session, $asked)->either(
                 started: function (Job $job) use ($asked): HowTheCopyWent {
                     $this->follow($job);
@@ -216,6 +216,6 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
                 met: $this->lettingGoIfRefused($stack, new HowACopyReads()->met(...)),
             ),
             notHeld: static fn(): HowTheCopyWent => new HowACopyReads()->signedOut(),
-        );
+        ));
     }
 }

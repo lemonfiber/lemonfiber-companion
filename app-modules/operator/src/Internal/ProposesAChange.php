@@ -9,7 +9,7 @@ use function array_keys;
 use Closure;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\ASettingChange;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -20,12 +20,24 @@ use Modules\Kernel\Api\WhatTheStackMadeOfIt;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Kernel\Api\WhetherToWait;
+use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Presenters\HowAChangeReads;
+use Modules\Operator\Internal\Presenters\HowALandingReads;
+use Modules\Operator\Internal\Presenters\HowASettingChangeReads;
+use Modules\Operator\Internal\ViewModels\HowTheLandingWent;
+use Modules\Operator\Internal\ViewModels\SaysWhereTheWorkStands;
+use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatAChangeTurnedOutToBe;
-use Native\Mobile\Attributes\Poll;
+use UnitEnum;
 
 /**
  * Changing one setting through the stack's review: asked, agreed to, and followed while the downloads land.
+ *
+ * It follows two jobs through {@see FollowsAJob}, each with its own report:
+ * a change to the settings store, and a change agreed to once the downloads
+ * land, which may wait a long while. Another setting may be opened and
+ * changed meanwhile; the landing is drawn on the row it changes, and on no
+ * other.
  *
  * The write is the one the stack names for the key: `settings-set` under the
  * name the screen's `keptAs()` reads off the stack's entry, `config-set` where
@@ -34,6 +46,8 @@ use Native\Mobile\Attributes\Poll;
 trait ProposesAChange
 {
     use PutsASettingChange;
+    /** @use FollowsAJob<SaysWhereTheWorkStands> */
+    use FollowsAJob;
 
     /**
      * What the operator has typed into the setting open for changing, while one is.
@@ -56,17 +70,8 @@ trait ProposesAChange
     /** Where the proposal stands, once one has been put to the stack. */
     public ?WhatAChangeTurnedOutToBe $proposed = null;
 
-    /** The name of a change agreed to once the downloads land, while the stack waits for them. */
-    public ?string $landing = null;
-
-    /** The key for why a change agreed to once the downloads land was not made, where it was not. */
-    public ?string $landingSaid = null;
-
-    /** What the operator has typed into the setting open for changing, or nothing while none is. */
-    public function typed(): ?string
-    {
-        return $this->typed;
-    }
+    /** The setting a change agreed to once the downloads land is for, while one is followed. */
+    public string $landingOn = '';
 
     /**
      * Which setting is open for changing, or nothing.
@@ -103,7 +108,6 @@ trait ProposesAChange
         $this->changing = null;
         $this->typed = null;
         $this->proposed = null;
-        $this->landingSaid = null;
     }
 
     /**
@@ -170,74 +174,18 @@ trait ProposesAChange
         $this->readAgainAfterAChange();
     }
 
-    /** Whether a change agreed to once the downloads land is still waiting on them. */
-    public function awaitsAnOutcome(): bool
+    /** The change agreed to once the downloads land, as the row it changes draws it, asked once per frame. */
+    public function landing(): HowTheLandingWent
     {
-        return $this->landing !== null || $this->howItIsGoing()->stands->isWorking();
+        $report = $this->whatBecameOfTheJob(ASettingChangeFollowed::OnceLanded);
+
+        return $report instanceof HowTheLandingWent ? $report : new HowALandingReads()->nothingWaits();
     }
 
     /**
-     * Ask after a change agreed to once the downloads land, while the stack waits for them.
-     *
-     * What it came to replaces the proposal, as an agreed change's review does.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileTheyLand(): void
-    {
-        $this->going = $this->howItIsGoing()->stands->isWorking() ? null : $this->going;
-        $landing = $this->landing;
-
-        if ($landing === null) {
-            return;
-        }
-
-        $stack = $this->stack();
-        $standing = $this->proposed ?? new HowAChangeReads()->nothingOpen();
-        $this->proposed = $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): WhatAChangeTurnedOutToBe => $this->adjusting->whatBecameOf($stack, $session, Job::named($landing))->either(
-                stillRunning: static fn(): WhatAChangeTurnedOutToBe => $standing,
-                done: function (WhereTheChangeStands $stands): WhatAChangeTurnedOutToBe {
-                    $came = new HowAChangeReads()->stands($stands);
-                    $this->proposed = $came;
-                    $this->landed();
-
-                    return $came;
-                },
-                ended: function () use ($standing): WhatAChangeTurnedOutToBe {
-                    $this->landed();
-                    $this->landingSaid = 'config.landing.ended';
-
-                    return $standing;
-                },
-                met: function (Obstacle $why) use ($stack): WhatAChangeTurnedOutToBe {
-                    $this->landed();
-                    $this->letGoOfTheSession($why, $stack);
-
-                    return new HowAChangeReads()->met($why);
-                },
-                moved: function () use ($standing): WhatAChangeTurnedOutToBe {
-                    $this->landed();
-                    $this->landingSaid = 'config.landing.moved';
-
-                    return $standing;
-                },
-            ),
-            notHeld: function (): WhatAChangeTurnedOutToBe {
-                $this->landed();
-
-                return new HowAChangeReads()->signedOut();
-            },
-        );
-    }
-
-    /** Where the proposal stands, or nothing where none has been put. */
-    public function proposal(): ?WhatAChangeTurnedOutToBe
-    {
-        return $this->proposed;
-    }
-
-    /**
-     * The proposal, where it is about this row and came back.
+     * The proposal, where it is about this row and came back: what a change
+     * agreed to once the downloads land came to, once it was made, and the
+     * review open for this row otherwise.
      *
      * Asked per row rather than held once and compared in the template,
      * because a control inside a listing acts on the row it is drawn beside —
@@ -246,7 +194,8 @@ trait ProposesAChange
      */
     public function proposalFor(string $key): ?WhatAChangeTurnedOutToBe
     {
-        $proposed = $this->proposed;
+        $landed = $this->landing();
+        $proposed = $landed->key === $key && $landed->came instanceof WhatAChangeTurnedOutToBe ? $landed->came : $this->proposed;
 
         if (!$proposed instanceof WhatAChangeTurnedOutToBe || $proposed->key !== $key || ! $proposed->went->cameBack()) {
             return null;
@@ -266,6 +215,31 @@ trait ProposesAChange
     /** The name `settings-set` takes for this key, as the stack's entry for it says, or nothing where `config-set` takes it. */
     abstract protected function keptAs(string $key): ?string;
 
+    /** What became of the change to the settings store, or of the change waiting for the downloads. */
+    protected function whatBecameOfIt(Stack $stack, Session $session, Job $job, UnitEnum $for): TheSettingChangeTurnedOutToBe|HowTheLandingWent
+    {
+        return match (ASettingChangeFollowed::asked($for)) {
+            ASettingChangeFollowed::InTheStore => $this->whatBecameOfTheChange($stack, $session, $job),
+            ASettingChangeFollowed::OnceLanded => $this->whatTheLandingCameTo($this->adjusting->whatBecameOf($stack, $session, $job), $stack),
+        };
+    }
+
+    protected function whileNothingIsFollowed(UnitEnum $for): TheSettingChangeTurnedOutToBe|HowTheLandingWent
+    {
+        return match (ASettingChangeFollowed::asked($for)) {
+            ASettingChangeFollowed::InTheStore => new HowASettingChangeReads()->notAsked(),
+            ASettingChangeFollowed::OnceLanded => new HowALandingReads()->nothingWaits(),
+        };
+    }
+
+    protected function withoutASession(UnitEnum $for): TheSettingChangeTurnedOutToBe|HowTheLandingWent
+    {
+        return match (ASettingChangeFollowed::asked($for)) {
+            ASettingChangeFollowed::InTheStore => new HowASettingChangeReads()->signedOut(),
+            ASettingChangeFollowed::OnceLanded => new HowALandingReads()->signedOut(),
+        };
+    }
+
     protected function theStoreAnswered(?TheSettingAsChanged $report): void
     {
         if (! $report instanceof TheSettingAsChanged || $report->did() !== WhatTheSettingRunDid::Rehearsed) {
@@ -274,7 +248,7 @@ trait ProposesAChange
     }
 
     /**
-     * Set it once the downloads land: the stack waits, and the screen follows the name it answers with.
+     * Set it once the downloads land: the stack waits, and the screen follows the job it answers with.
      */
     private function letThemLand(string $key): void
     {
@@ -288,24 +262,48 @@ trait ProposesAChange
 
         $stack = $this->stack();
         $asked = WhatToSet::to($key, $typed);
-        $standing = $this->proposed ?? new HowAChangeReads()->nothingOpen();
-        $this->landingSaid = null;
 
-        $this->proposed = $this->storage->resume($stack->id())->either(
+        $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatAChangeTurnedOutToBe => $this->adjusting->agreedToOnceLanded($stack, $session, $asked)->either(
-                started: function (Job $job) use ($standing): WhatAChangeTurnedOutToBe {
-                    $this->landing = $job->shown();
+                started: function (Job $job) use ($key): WhatAChangeTurnedOutToBe {
+                    $this->follow($job, ASettingChangeFollowed::OnceLanded);
+                    $this->landingOn = $key;
+                    $this->reported(new HowALandingReads()->waiting($key), ASettingChangeFollowed::OnceLanded);
 
-                    return $standing;
+                    return $this->proposed ?? new HowAChangeReads()->nothingOpen();
                 },
                 met: function (Obstacle $why) use ($stack): WhatAChangeTurnedOutToBe {
                     $this->letGoOfTheSession($why, $stack);
 
-                    return new HowAChangeReads()->met($why);
+                    return $this->proposed = new HowAChangeReads()->met($why);
                 },
             ),
-            notHeld: static fn(): WhatAChangeTurnedOutToBe => new HowAChangeReads()->signedOut(),
+            notHeld: fn(): WhatAChangeTurnedOutToBe => $this->proposed = new HowAChangeReads()->signedOut(),
         );
+    }
+
+    /** What the waiting came to, on the row it changes; once it is over, what the screen read is read again. */
+    private function whatTheLandingCameTo(HowAgreedWorkIsGoing $landed, Stack $stack): HowTheLandingWent
+    {
+        $key = $this->landingOn;
+        $reads = new HowALandingReads();
+        $came = $landed->either(
+            stillRunning: static fn(): HowTheLandingWent => $reads->waiting($key),
+            done: static fn(WhereTheChangeStands $stands): HowTheLandingWent => $reads->made($key, $stands),
+            ended: static fn(?WhyTheWorkEnded $why): HowTheLandingWent => $reads->ended($key, $why),
+            met: function (Obstacle $why) use ($stack, $key, $reads): HowTheLandingWent {
+                $this->letGoOfTheSession($why, $stack);
+
+                return $reads->met($key, $why);
+            },
+            moved: static fn(): HowTheLandingWent => $reads->moved($key),
+        );
+
+        if (! $came->stands->isWorking()) {
+            $this->readAgainAfterAChange();
+        }
+
+        return $came;
     }
 
     /** Whether this key is the one open, and both it and the name it is kept under may be changed, asked at the moment it is put. */
@@ -324,13 +322,6 @@ trait ProposesAChange
         }
 
         return array_keys($moved) === [$named];
-    }
-
-    /** The waiting is over: what the screen read is read again. */
-    private function landed(): void
-    {
-        $this->landing = null;
-        $this->readAgainAfterAChange();
     }
 
     /**

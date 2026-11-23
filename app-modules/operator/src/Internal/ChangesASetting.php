@@ -6,16 +6,19 @@ namespace Modules\Operator\Internal;
 
 use function array_keys;
 use function in_array;
-use function is_string;
 
 use Modules\Kernel\Api\ASetting;
 use Modules\Kernel\Api\ASettingChange;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\Job;
+use Modules\Kernel\Api\Session;
+use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheServicesSettings;
 use Modules\Kernel\Api\TheSettingAsChanged;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
+use Modules\Operator\Internal\Presenters\HowASettingChangeReads;
 use Modules\Operator\Internal\ViewModels\ARefusalAsShown;
-use Native\Mobile\Attributes\Poll;
+use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
+use UnitEnum;
 
 /**
  * Changing one or more of the settings a screen lists in one act: rehearsed, agreed to, and followed.
@@ -36,6 +39,8 @@ use Native\Mobile\Attributes\Poll;
 trait ChangesASetting
 {
     use PutsASettingChange;
+    /** @use FollowsOneJobAtATime<TheSettingChangeTurnedOutToBe> */
+    use FollowsOneJobAtATime;
 
     /** What is typed into the open setting's field. */
     public string $typed = '';
@@ -48,7 +53,7 @@ trait ChangesASetting
     {
         $held = $this->itsSetting($setting);
 
-        if (is_string($this->following) || ! $held instanceof ASetting) {
+        if ($this->awaitsAnOutcome() || ! $held instanceof ASetting) {
             return;
         }
 
@@ -63,7 +68,7 @@ trait ChangesASetting
         $open = $this->changing;
         $held = $this->itsSetting($setting);
 
-        if (is_string($this->following) || ! $open instanceof ASettingBeingChanged || $open->toDefault || ! $open->moves($setting) || ! $held instanceof ASetting || ! Among::theChoices($held->choices(), $value)) {
+        if ($this->awaitsAnOutcome() || ! $open instanceof ASettingBeingChanged || $open->toDefault || ! $open->moves($setting) || ! $held instanceof ASetting || ! Among::theChoices($held->choices(), $value)) {
             return;
         }
 
@@ -83,7 +88,7 @@ trait ChangesASetting
     {
         $open = $this->changing;
 
-        if (is_string($this->following) || ! $open instanceof ASettingBeingChanged || ! in_array($setting, $this->toMoveAlongside(), strict: true)) {
+        if ($this->awaitsAnOutcome() || ! $open instanceof ASettingBeingChanged || ! in_array($setting, $this->toMoveAlongside(), strict: true)) {
             return;
         }
 
@@ -96,7 +101,7 @@ trait ChangesASetting
     {
         $open = $this->changing;
 
-        if (is_string($this->following) || ! $open instanceof ASettingBeingChanged) {
+        if ($this->awaitsAnOutcome() || ! $open instanceof ASettingBeingChanged) {
             return;
         }
 
@@ -154,7 +159,7 @@ trait ChangesASetting
         $held = $open instanceof ASettingBeingChanged ? $this->itsSetting($open->named) : null;
         $change = $open?->asked($this->typed);
 
-        if (is_string($this->following) || ! $held instanceof ASetting || ! $change instanceof ASettingChange || ! $this->rehearsable($open, $held)) {
+        if ($this->awaitsAnOutcome() || ! $held instanceof ASetting || ! $change instanceof ASettingChange || ! $this->rehearsable($open, $held)) {
             return;
         }
 
@@ -164,7 +169,7 @@ trait ChangesASetting
     /** Ask what putting one of the screen's settings back to its default would do, writing nothing. */
     public function backToDefault(string $setting): void
     {
-        if (is_string($this->following) || ! $this->itsSetting($setting) instanceof ASetting) {
+        if ($this->awaitsAnOutcome() || ! $this->itsSetting($setting) instanceof ASetting) {
             return;
         }
 
@@ -178,23 +183,29 @@ trait ChangesASetting
         $this->carryOutWhatWasRehearsed();
     }
 
-    /** Ask after the work again while the stack is at it, at {@see HowOftenAScreenLooks}'s interval. */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
-    {
-        if ($this->howItIsGoing()->stands->isWorking()) {
-            $this->going = null;
-        }
-    }
-
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->howItIsGoing()->stands->isWorking();
-    }
-
     /** The setting of that name the screen lists, as last read, or none; a secret is never one. */
     abstract protected function itsSetting(string $setting): ?ASetting;
+
+    /** The change to the settings store, the one job a screen changing settings follows. */
+    protected function theJobItFollows(): UnitEnum
+    {
+        return ASettingChangeFollowed::InTheStore;
+    }
+
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): TheSettingChangeTurnedOutToBe
+    {
+        return $this->whatBecameOfTheChange($stack, $session, $job);
+    }
+
+    protected function whileNoJobIsFollowed(): TheSettingChangeTurnedOutToBe
+    {
+        return new HowASettingChangeReads()->notAsked();
+    }
+
+    protected function withNoSessionHeld(): TheSettingChangeTurnedOutToBe
+    {
+        return new HowASettingChangeReads()->signedOut();
+    }
 
     protected function theStoreAnswered(?TheSettingAsChanged $report): void
     {

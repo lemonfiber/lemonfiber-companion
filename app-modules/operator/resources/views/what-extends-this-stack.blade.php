@@ -1,3 +1,5 @@
+@use('Modules\Operator\Internal\PluginActFollowed')
+@use('Modules\Operator\Internal\ASettingChangeFollowed')
 @use('Modules\Kernel\Api\ExtendingIt')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -9,6 +11,7 @@
 
 @if ($this->answer()->stands->isWorking())
     <x-design::body>{{ __($this->answer()->working) }}</x-design::body>
+    <x-operator::following-a-job :said="$this->whatItSays(PluginActFollowed::TheAct)" />
 @elseif ($this->answer()->refused !== null)
     {{-- The stack's answer, in its words: a source holding no plugin, a
          plugin this build refuses, a value left unapproved or an offer that
@@ -76,7 +79,7 @@
         @elseif ($this->changing() === $this->catalogue()->reach)
             {{-- The setting the stack named, through the review every
                  config key takes: nothing is switched without it. --}}
-            <x-operator::the-review :key="$this->catalogue()->reach" :proposal="$this->proposalFor($this->catalogue()->reach)" :waiting="$this->landing !== null" :landing-said="$this->landingSaid" agreeing="agreeToTheChange" />
+            <x-operator::the-review :key="$this->catalogue()->reach" :proposal="$this->proposalFor($this->catalogue()->reach)" :waiting="$this->landing()->waitsToChange($this->catalogue()->reach)" :landing-said="$this->landing()->saidAbout($this->catalogue()->reach)" :landing-says="$this->whatItSays(ASettingChangeFollowed::OnceLanded)" agreeing="agreeToTheChange" />
         @else
             <x-design::action :label="__('plugins.catalogue.turn_on')" :answers-to="__('config.what_would_happen_to', ['key' => $this->catalogue()->reach])" :tap="$this->tapping('change', $this->catalogue()->reach)" />
         @endif

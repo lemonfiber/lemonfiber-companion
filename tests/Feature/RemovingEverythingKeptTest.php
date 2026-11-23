@@ -23,6 +23,7 @@ use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatForgets;
@@ -66,6 +67,7 @@ function theScreenThatForgets(AStackThatForgets $forgetting, ?AKeychainInMemory 
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -76,8 +78,8 @@ function theListShownToForget(AStackThatForgets $forgetting, ?AKeychainInMemory 
 {
     $screen = theScreenThatForgets($forgetting, $keychain);
     $screen->whatWouldGo();
-    $screen->whileForgettingRuns();
-    $screen->howForgettingIsGoing();
+    $screen->whileItRuns();
+    WhatTheDeviceWouldDraw::by($screen);
 
     return $screen;
 }
@@ -99,7 +101,7 @@ it('asks what would go, follows the work, and draws the stack\'s list with the y
 
     expect($screen->awaitsAnOutcome())->toBeTrue();
 
-    $screen->whileForgettingRuns();
+    $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($screen->awaitsAnOutcome())->toBeFalse()
@@ -117,7 +119,7 @@ it('sends the yes against the list shown, and says the way in went where the ans
     expect($forgetting->agreed())->toHaveCount(1)
         ->and($forgetting->agreed()[0]->shown()->listed())->toEqual(whatWouldGoFromTheLoft());
 
-    $screen->whileForgettingRuns();
+    $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->said())->toContain(__('stacks.forget.way_in_went'))
@@ -154,7 +156,7 @@ it('draws what went and what was left, where the stack could still say', functio
     $done = WhatBecameOfTheWork::answered(TheForgetting::said(whatWouldGoFromTheLoft(), WhereForgettingGot::done(ThePlacesGone::of('/home/op/.config/lemonfiber'), APathLeft::at('/home/op/.local/share/lemonfiber', 'permission denied'))));
     $screen = theListShownToForget(aStackThatListsThenRemoves($done));
     $screen->forgetEverything();
-    $screen->whileForgettingRuns();
+    $screen->whileItRuns();
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(
         __('stacks.forget.done'),
@@ -169,7 +171,7 @@ it('says the session ended where it went while what would go was asked', functio
     $screen = theScreenThatForgets(aStackThatListsThenRemoves(), $keychain);
     $screen->whatWouldGo();
     $keychain->forget(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id());
-    $screen->whileForgettingRuns();
+    $screen->whileItRuns();
 
     expect($screen->howForgettingIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->awaitsAnOutcome())->toBeFalse();

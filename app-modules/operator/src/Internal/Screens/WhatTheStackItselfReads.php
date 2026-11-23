@@ -10,6 +10,7 @@ use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\ASetting;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ExtendingTheStack;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Services;
@@ -52,8 +53,9 @@ final class WhatTheStackItselfReads extends NativeComponent implements AwaitsAnO
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
-    use ChangesASetting;
+    use ChangesASetting, FindsItsWayAround {
+        ChangesASetting::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use ReadsAStackOnceAFrame;
 
     /** Every service of every installed plugin, once they were read. */
@@ -72,6 +74,7 @@ final class WhatTheStackItselfReads extends NativeComponent implements AwaitsAnO
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /** Read the plugins and the settings again. */

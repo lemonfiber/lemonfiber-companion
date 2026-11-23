@@ -95,6 +95,7 @@
     @if ($this->howForgettingIsGoing()->stands->went->cameBack())
         @if ($this->howForgettingIsGoing()->stands->isWorking())
             <x-design::standing :said="__('stacks.forget.working')" tone="working" />
+            <x-operator::following-a-job :said="$this->whatItSays()" />
         @elseif ($this->howForgettingIsGoing()->theWayInWent)
             <x-design::notice tone="unknown">
                 <x-design::strong>{{ __('stacks.forget.way_in_went') }}</x-design::strong>

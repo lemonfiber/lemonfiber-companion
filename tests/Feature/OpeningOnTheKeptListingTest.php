@@ -29,6 +29,7 @@ use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Modules\Services\Api\KeepingWhatItRuns;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatRehearses;
@@ -110,6 +111,7 @@ function theAtticsServices(AStackThatSupervises $stack, KeepingWhatItRuns $kept,
         AroundThePhone::listening(),
         $kept,
         AStackThatSwitches::sayingAtOnce(WhatBecameOfTheWork::noOutcome()),
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $attic->id()->stored()]);
 

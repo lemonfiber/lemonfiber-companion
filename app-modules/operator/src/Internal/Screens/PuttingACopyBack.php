@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyPutBack;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\PuttingBack;
@@ -24,6 +22,7 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowPuttingItBackReads;
 use Modules\Operator\Internal\ViewModels\HowPuttingItBackWent;
@@ -33,7 +32,6 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
@@ -52,9 +50,9 @@ use function trim;
  * would not list the copy offers nothing to agree to, and the screen offers
  * nothing.
  *
- * **Putting it back answers a handle,** followed on a declared cadence while it
- * runs, as taking an update is. The report says what was restored and where
- * the data went.
+ * **Putting it back answers a job,** followed by {@see FollowsOneJobAtATime}: while it
+ * runs the screen shows what the job says, and the report says what was
+ * restored and where the data went.
  *
  * **A copy the stack will not restore is its answer, not a fault.** Refused
  * at the listing or while being put back, it is drawn in the stack's words,
@@ -78,7 +76,10 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
+    /** @use FollowsOneJobAtATime<HowPuttingItBackWent> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use DrawsItsTemplate;
 
     public const string TEMPLATE = 'operator::putting-a-copy-back';
@@ -101,12 +102,6 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
     /** Whether the operator has agreed, which is which of the two readings a frame draws. */
     public bool $agreed = false;
 
-    /** The handle agreeing answered. Not shown and never kept past this screen. */
-    public ?string $handle = null;
-
-    /** What became of the yes, once this frame has asked. */
-    public ?HowPuttingItBackWent $carriedOut = null;
-
     public function __construct(
         private readonly PuttingBack $puttingBack,
         private readonly SecureStorage $storage,
@@ -114,13 +109,8 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
         private readonly Clock $clock,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
-
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->isWorking();
-    }
 
     /** The copy this screen is about, by the name the route carries. */
     public function copyNamed(): string
@@ -143,7 +133,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
     /** What became of the yes, asked once per frame. */
     public function done(): HowPuttingItBackWent
     {
-        return $this->carriedOut ??= $this->followed();
+        return $this->whatBecameOfTheJob();
     }
 
     /**
@@ -162,34 +152,34 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
 
         $stack = $this->stack();
         $this->agreed = true;
-        $this->handle = null;
+        $this->forget();
 
-        $this->carriedOut = $this->storage->resume($stack->id())->either(
+        $this->reported($this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowPuttingItBackWent => $this->puttingBack->putBack($stack, $session, $listed)->either(
                 started: function (Job $job): HowPuttingItBackWent {
-                    $this->handle = $job->shown();
+                    $this->follow($job);
 
                     return new HowPuttingItBackReads()->running();
                 },
                 met: $this->lettingGoIfRefused($stack, new HowPuttingItBackReads()->met(...)),
             ),
             notHeld: static fn(): HowPuttingItBackWent => new HowPuttingItBackReads()->signedOut(),
-        );
+        ));
     }
 
     /**
      * Ask again, because the operator said so.
      *
-     * After a yes the stack took on, it asks after the same handle. Otherwise
+     * After a yes the stack took on, it asks after the same job. Otherwise
      * — before a yes, or after one the stack refused — it asks for the
      * listing afresh, since a listing can move on and a refused yes put
      * nothing back.
      */
     public function again(): void
     {
-        $this->carriedOut = null;
+        $this->askAfterAgain();
 
-        if ($this->agreed && is_string($this->handle)) {
+        if ($this->agreed && $this->follows()) {
             return;
         }
 
@@ -208,31 +198,37 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
     public function lookAgain(): void
     {
         $this->agreed = false;
-        $this->handle = null;
-        $this->carriedOut = null;
+        $this->forget();
         $this->listed = null;
         $this->answered = null;
-    }
-
-    /**
-     * Ask after the copy being put back while the stack is doing it.
-     *
-     * It does nothing unless that is running, so a rehearsal and a finished
-     * report are not read over and over. The interval is {@see HowOftenAScreenLooks}'s
-     * constant.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
-    {
-        if ($this->isWorking()) {
-            $this->carriedOut = null;
-        }
     }
 
     /** Whether the stack is putting the copy back right now. */
     public function isWorking(): bool
     {
         return $this->agreed && $this->done()->stands->isWorking();
+    }
+
+    /** What became of the yes. */
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): HowPuttingItBackWent
+    {
+        return $this->puttingBack->whatBecameOf($stack, $session, $job)->either(
+            stillRunning: static fn(): HowPuttingItBackWent => new HowPuttingItBackReads()->running(),
+            done: static fn(ACopyPutBack $report): HowPuttingItBackWent => new HowPuttingItBackReads()->done($report),
+            refused: static fn(ARefusalInItsWords $why): HowPuttingItBackWent => new HowPuttingItBackReads()->refused($why),
+            ended: static fn(?WhyTheWorkEnded $why): HowPuttingItBackWent => new HowPuttingItBackReads()->ended($why),
+            met: $this->lettingGoIfRefused($stack, new HowPuttingItBackReads()->met(...)),
+        );
+    }
+
+    protected function whileNoJobIsFollowed(): HowPuttingItBackWent
+    {
+        return new HowPuttingItBackReads()->ended(null);
+    }
+
+    protected function withNoSessionHeld(): HowPuttingItBackWent
+    {
+        return new HowPuttingItBackReads()->signedOut();
     }
 
     /** Resume the session and ask what putting the copy back would do. */
@@ -265,28 +261,4 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
             met: $this->lettingGoIfRefused($stack, new HowPuttingItBackReads()->notListed(...)),
         );
     }
-
-    /** Ask the stack what became of the yes. */
-    private function followed(): HowPuttingItBackWent
-    {
-        $held = $this->handle;
-
-        if (! is_string($held)) {
-            return new HowPuttingItBackReads()->ended(null);
-        }
-
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): HowPuttingItBackWent => $this->puttingBack->whatBecameOf($stack, $session, Job::named($held))->either(
-                stillRunning: static fn(): HowPuttingItBackWent => new HowPuttingItBackReads()->running(),
-                done: static fn(ACopyPutBack $report): HowPuttingItBackWent => new HowPuttingItBackReads()->done($report),
-                refused: static fn(ARefusalInItsWords $why): HowPuttingItBackWent => new HowPuttingItBackReads()->refused($why),
-                ended: static fn(?WhyTheWorkEnded $why): HowPuttingItBackWent => new HowPuttingItBackReads()->ended($why),
-                met: $this->lettingGoIfRefused($stack, new HowPuttingItBackReads()->met(...)),
-            ),
-            notHeld: static fn(): HowPuttingItBackWent => new HowPuttingItBackReads()->signedOut(),
-        );
-    }
-
 }

@@ -13,7 +13,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * asked, so each sentence arrives here as a catalogue key the presenter chose
  * from the report itself. A preview is never worded as having happened.
  */
-final readonly class AResetAsShown
+final readonly class AResetAsShown implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands   $stands           where the work stands, and whether the stack could be asked at all

@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\AResetAgreed;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowTheResetIsGoing;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
@@ -22,6 +20,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\TheReset;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAResetReads;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
@@ -30,7 +29,6 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
@@ -47,8 +45,8 @@ use Native\Mobile\Edge\NativeComponent;
  * **Only the preview can be agreed to.** The yes is an {@see AResetAgreed},
  * which only a preview that would revert something produces.
  *
- * **Both are work the stack names,** followed on a declared cadence while they
- * run. The report after the yes says what went back and which connections
+ * **Both are jobs the stack names,** followed in turn by {@see FollowsOneJobAtATime}:
+ * while each runs the screen shows what it says. The report after the yes says what went back and which connections
  * went with it, in the past tense only where the stack says it was carried out.
  *
  * `Concealed` for the reason every stack-facing screen here is.
@@ -61,20 +59,13 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
+    /** @use FollowsOneJobAtATime<AResetAsShown> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use DrawsItsTemplate;
 
     public const string TEMPLATE = 'operator::putting-the-configuration-back';
-
-    /**
-     * What the preview came to, once the frame has asked.
-     *
-     * `public` for {@see HowCurrentThisStackIs::$answered}'s reason.
-     */
-    public ?AResetAsShown $answered = null;
-
-    /** What became of the yes, once this frame has asked. */
-    public ?AResetAsShown $carriedOut = null;
 
     /**
      * The preview, while there is one to agree to.
@@ -84,15 +75,7 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
      */
     public ?TheReset $previewed = null;
 
-    /**
-     * The handle the stack answered with: the preview's, then the yes's.
-     *
-     * Kept so asking again reads the same job rather than starting a second.
-     * Not shown and never kept past this screen.
-     */
-    public ?string $handle = null;
-
-    /** Whether the operator has agreed, which is which of the two readings a frame draws. */
+    /** Whether the operator has agreed, which is which of the two jobs the screen follows. */
     public bool $agreed = false;
 
     public function __construct(
@@ -101,24 +84,13 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
-
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->answer()->stands->isWorking();
-    }
 
     /** The reading a frame draws: what the yes came to once it was given, and the preview until then. */
     public function answer(): AResetAsShown
     {
-        return $this->agreed ? $this->done() : $this->preview();
-    }
-
-    /** What putting the configuration back would revert, asked once per frame. */
-    public function preview(): AResetAsShown
-    {
-        return $this->answered ??= $this->ask();
+        return $this->agreed ? $this->done() : $this->whatBecameOfTheJob();
     }
 
     /** Whether the operator has agreed to the preview. */
@@ -127,10 +99,10 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
         return $this->agreed;
     }
 
-    /** What became of the yes, asked once per frame. */
+    /** What became of the yes, asked once per frame; nothing to report before one. */
     public function done(): AResetAsShown
     {
-        return $this->carriedOut ??= $this->followed();
+        return $this->agreed ? $this->whatBecameOfTheJob() : HowAResetReads::afterTheYes()->ended(null);
     }
 
     /**
@@ -150,60 +122,39 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
         $stack = $this->stack();
         $this->agreed = true;
 
-        $this->carriedOut = $this->storage->resume($stack->id())->either(
+        $this->reported($this->storage->resume($stack->id())->either(
             held: fn(Session $session): AResetAsShown => $this->resetting->revert($stack, $session, AResetAgreed::to($previewed))->either(
                 started: function (Job $job): AResetAsShown {
-                    $this->handle = $job->shown();
+                    $this->follow($job);
 
                     return HowAResetReads::afterTheYes()->running();
                 },
                 met: fn(Obstacle $why): AResetAsShown => $this->refusedBy($why, $stack, HowAResetReads::afterTheYes()),
             ),
             notHeld: static fn(): AResetAsShown => HowAResetReads::afterTheYes()->signedOut(),
-        );
+        ));
     }
 
     /**
      * Ask again, because the operator said so.
      *
-     * The handle is kept only while its job still runs, on either side of the
-     * yes, because reading it again is the only way to learn it has finished.
-     * Anything else asks for the preview afresh: a finished preview can have
-     * moved on, a refused yes put nothing back, and after a yes that finished
-     * or that the stack no longer knows, a fresh preview is what says what
-     * still differs.
+     * The job is kept only while it runs, on either side of the yes, because
+     * reading it again is the only way to learn it has finished. Anything else
+     * asks for the preview afresh: a finished preview can have moved on, a
+     * refused yes put nothing back, and after a yes that finished or that the
+     * stack no longer knows, a fresh preview is what says what still differs.
      */
     public function again(): void
     {
-        $reading = $this->agreed ? $this->carriedOut : $this->answered;
-        $working = $reading?->stands->isWorking() === true;
-        $this->carriedOut = null;
+        if ($this->awaitsAnOutcome()) {
+            $this->askAfterAgain();
 
-        if ($this->agreed && $working) {
             return;
         }
 
-        if (! $working) {
-            $this->handle = null;
-        }
-
+        $this->forget();
         $this->agreed = false;
         $this->previewed = null;
-        $this->answered = null;
-    }
-
-    /**
-     * Ask after the preview or the yes while the stack is at it.
-     *
-     * It does nothing unless one is running, so a finished report is not read
-     * over and over. The interval is {@see HowOftenAScreenLooks}'s constant.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
-    {
-        if ($this->answer()->stands->isWorking()) {
-            $this->again();
-        }
     }
 
     /** Whether the stack is at it right now. */
@@ -212,40 +163,42 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
         return $this->answer()->stands->isWorking();
     }
 
-    /** Resume the session and ask for the preview. */
-    private function ask(): AResetAsShown
+    /** What became of the preview, or of the yes once there is one. */
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): AResetAsShown
     {
+        $going = $this->resetting->whatBecameOf($stack, $session, $job);
+
+        return $this->agreed ? $this->carriedOutAs($going, $stack) : $this->previewedAs($going, $stack);
+    }
+
+    /**
+     * Ask for the preview and follow the job it answers with; after a yes
+     * with no job, there is nothing it did.
+     */
+    protected function whileNoJobIsFollowed(): AResetAsShown
+    {
+        if ($this->agreed) {
+            return HowAResetReads::afterTheYes()->ended(null);
+        }
+
         $stack = $this->stack();
 
         return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): AResetAsShown => $this->read($stack, $session),
+            held: fn(Session $session): AResetAsShown => $this->resetting->wouldRevert($stack, $session)->either(
+                started: function (Job $job) use ($stack, $session): AResetAsShown {
+                    $this->follow($job);
+
+                    return $this->previewedAs($this->resetting->whatBecameOf($stack, $session, $job), $stack);
+                },
+                met: fn(Obstacle $why): AResetAsShown => $this->refusedBy($why, $stack, HowAResetReads::beforeTheYes()),
+            ),
             notHeld: static fn(): AResetAsShown => HowAResetReads::beforeTheYes()->signedOut(),
         );
     }
 
-    /**
-     * Read the preview's handle, asking for the preview first where there is none.
-     *
-     * A handle already in hand is read, and only the absence of one starts
-     * anything, so asking again is a second read rather than a second piece of
-     * work on somebody's machine.
-     */
-    private function read(Stack $stack, Session $session): AResetAsShown
+    protected function withNoSessionHeld(): AResetAsShown
     {
-        $held = $this->handle;
-
-        if (is_string($held)) {
-            return $this->previewedAs($this->resetting->whatBecameOf($stack, $session, Job::named($held)), $stack);
-        }
-
-        return $this->resetting->wouldRevert($stack, $session)->either(
-            started: function (Job $job) use ($stack, $session): AResetAsShown {
-                $this->handle = $job->shown();
-
-                return $this->previewedAs($this->resetting->whatBecameOf($stack, $session, $job), $stack);
-            },
-            met: fn(Obstacle $why): AResetAsShown => $this->refusedBy($why, $stack, HowAResetReads::beforeTheYes()),
-        );
+        return ($this->agreed ? HowAResetReads::afterTheYes() : HowAResetReads::beforeTheYes())->signedOut();
     }
 
     /** What became of the preview, held to agree against where the stack reported one. */
@@ -266,27 +219,17 @@ final class PuttingTheConfigurationBack extends NativeComponent implements Await
         );
     }
 
-    /** Ask the stack what became of the yes. */
-    private function followed(): AResetAsShown
+    /** What became of the yes. */
+    private function carriedOutAs(HowTheResetIsGoing $going, Stack $stack): AResetAsShown
     {
         $reads = HowAResetReads::afterTheYes();
-        $held = $this->handle;
 
-        if (! is_string($held)) {
-            return $reads->ended(null);
-        }
-
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): AResetAsShown => $this->resetting->whatBecameOf($stack, $session, Job::named($held))->either(
-                stillRunning: $reads->running(...),
-                done: $reads->reported(...),
-                refused: $reads->refused(...),
-                ended: $reads->ended(...),
-                met: fn(Obstacle $why): AResetAsShown => $this->refusedBy($why, $stack, $reads),
-            ),
-            notHeld: $reads->signedOut(...),
+        return $going->either(
+            stillRunning: $reads->running(...),
+            done: $reads->reported(...),
+            refused: $reads->refused(...),
+            ended: $reads->ended(...),
+            met: fn(Obstacle $why): AResetAsShown => $this->refusedBy($why, $stack, $reads),
         );
     }
 

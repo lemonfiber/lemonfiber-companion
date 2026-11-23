@@ -1,4 +1,5 @@
 @use('Modules\Stacks\Api\AStacksScreen')
+@use('Modules\Operator\Internal\RepairsFollowed')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 <x-operator::content>
@@ -34,7 +35,7 @@
             :said="__('health.working_it_out')"
             tone="working"
         />
-        <x-operator::following-a-job :said="$this->whatItSays()" />
+        <x-operator::following-a-job :said="$this->whatItSays(RepairsFollowed::Asking)" />
         <x-design::body>{{ __('health.working_it_out_action') }}</x-design::body>
         <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
     @elseif ($this->offer()->stands->hasEnded())
@@ -59,7 +60,7 @@
                 :said="__('health.carrying_it_out')"
                 tone="working"
             />
-            <x-operator::following-a-job :said="$this->whatItSays()" />
+            <x-operator::following-a-job :said="$this->whatItSays(RepairsFollowed::TheYes)" />
             <x-design::body>{{ __('health.carrying_it_out_action') }}</x-design::body>
             <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
         @elseif (! $this->done()->stands->went->cameBack())

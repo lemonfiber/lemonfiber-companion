@@ -1,3 +1,4 @@
+@use('Modules\Operator\Internal\ASettingChangeFollowed')
 @use('Modules\Kernel\Api\ChangingASetting')
 @use('Modules\Kernel\Api\WhatToChange')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
@@ -21,10 +22,11 @@
                     :decision="$step"
                     :open="$this->changing() === $step->key"
                     :proposal="$this->proposalFor($step->key)"
-                    :waiting="$this->landing !== null"
-                    :landing-said="$this->landingSaid"
+                    :waiting="$this->landing()->waitsToChange($step->key)"
+                    :landing-said="$this->landing()->saidAbout($step->key)" :landing-says="$this->whatItSays(ASettingChangeFollowed::OnceLanded)"
                     :offer="$this->offered($step->setting === null ? WhatToChange::Setting : ChangingASetting::Set)"
                     :going="$this->howItIsGoing()"
+                    :said="$this->whatItSays(ASettingChangeFollowed::InTheStore)"
                     :settings-would-not-open="$this->theSettingsWouldNotOpen"
                     :goes="$this->goes()"
                 />
@@ -39,10 +41,11 @@
             :decision="$decision"
             :open="$this->changing() === $decision->key && ! ($this->answer()->opened?->among($decision->key) ?? false)"
             :proposal="$this->proposalFor($decision->key)"
-            :waiting="$this->landing !== null"
-            :landing-said="$this->landingSaid"
+            :waiting="$this->landing()->waitsToChange($decision->key)"
+            :landing-said="$this->landing()->saidAbout($decision->key)" :landing-says="$this->whatItSays(ASettingChangeFollowed::OnceLanded)"
             :offer="$this->offered($decision->setting === null ? WhatToChange::Setting : ChangingASetting::Set)"
             :going="$this->howItIsGoing()"
+            :said="$this->whatItSays(ASettingChangeFollowed::InTheStore)"
             :settings-would-not-open="$this->theSettingsWouldNotOpen"
             :goes="$this->goes()"
         />
@@ -76,7 +79,7 @@
         @endif
         @if ($this->opensFromTheField())
             <native:outlined-text-input native:model="typed" label="{{ $this->changing() }}" supporting="{{ __('config.what_it_would_hold') }}" />
-            <x-operator::the-review :key="$this->changing()" :proposal="$this->proposalFor($this->changing())" :waiting="$this->landing !== null" :landing-said="$this->landingSaid" />
+            <x-operator::the-review :key="$this->changing()" :proposal="$this->proposalFor($this->changing())" :waiting="$this->landing()->waitsToChange($this->changing())" :landing-said="$this->landing()->saidAbout($this->changing())" :landing-says="$this->whatItSays(ASettingChangeFollowed::OnceLanded)" />
         @endif
     @endif
 

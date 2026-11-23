@@ -25,9 +25,9 @@
                 supporting="{{ __('config.what_it_would_hold') }}"
             />
             @if ($decision->setting === null)
-                <x-operator::the-review :key="$decision->key" :proposal="$proposal" :waiting="$waiting" :landing-said="$landingSaid" />
+                <x-operator::the-review :key="$decision->key" :proposal="$proposal" :waiting="$waiting" :landing-said="$landingSaid" :landing-says="$landingSays" />
             @else
-                <x-operator::the-review-where-kept :key="$decision->key" :going="$going" :settings-would-not-open="$settingsWouldNotOpen" :goes="$goes" />
+                <x-operator::the-review-where-kept :key="$decision->key" :going="$going" :said="$said" :settings-would-not-open="$settingsWouldNotOpen" :goes="$goes" />
             @endif
         @else
             <x-operator::offered-action

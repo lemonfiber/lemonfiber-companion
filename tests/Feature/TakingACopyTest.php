@@ -9,7 +9,7 @@ use Modules\Kernel\Api\AJobFollowed;
 use Modules\Kernel\Api\AnExistingSetup;
 use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Fingerprint;
-use Modules\Kernel\Api\HearingAJob;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowACopyPaced;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowTheCopyIsGoing;
@@ -30,7 +30,11 @@ use Modules\Kernel\Api\WhatWasHeardFromAJob;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
+use Modules\Operator\Internal\NotAJobItFollows;
+use Modules\Operator\Internal\PluginActFollowed;
+use Modules\Operator\Internal\RepairsFollowed;
 use Modules\Operator\Internal\Screens\TakingACopyHere;
+use Modules\Operator\Internal\TheOnlyJob;
 use Modules\Operator\Internal\ViewModels\APaceAsShown;
 use Modules\Operator\Internal\ViewModels\AScopeAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheCopyWent;
@@ -81,7 +85,7 @@ function theCopyingScreen(
     ?Supervising $supervising = null,
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
-    ?HearingAJob $hearing = null,
+    ?HearingTheJobs $hearing = null,
 ): TakingACopyHere {
     $stack = theStackACopyIsTakenOf();
     $keychain ??= AKeychainInMemory::working();
@@ -481,11 +485,21 @@ it('asks the stack for its services once, however often a frame reads them', fun
 it('follows nothing where it holds a job but not the copy the job was for', function (): void {
     $copying = AStackThatTakesCopies::whichTook(HowTheCopyIsGoing::stillRunning());
     $screen = theCopyingScreen($copying);
-    $screen->followed = AJobFollowed::named(Job::named(AStackThatTakesCopies::THE_JOB));
+    $screen->followed = [TheOnlyJob::Followed->name => AJobFollowed::named(Job::named(AStackThatTakesCopies::THE_JOB))];
 
     expect(everythingAboutTheCopy($screen->lastCopy()))->toBe(nothingReportedOfTheCopy(['wasAsked' => false]))
         ->and($copying->followed())->toBe([]);
 });
+
+it('answers for the one job it follows and for no other it is made to follow', function (bool $signedIn): void {
+    $screen = theCopyingScreen(AStackThatTakesCopies::whichTook(HowTheCopyIsGoing::stillRunning()), signedIn: $signedIn);
+    $screen->followed = [PluginActFollowed::TheAct->name => AJobFollowed::named(Job::named(AStackThatTakesCopies::THE_JOB))];
+    $screen->followedFor = [PluginActFollowed::TheAct->name => PluginActFollowed::TheAct];
+    $unfollowed = Closure::bind(static fn(TakingACopyHere $asked): HowTheCopyWent => $asked->whatBecameOfTheJob(RepairsFollowed::TheYes), null, TakingACopyHere::class);
+
+    expect($screen->whileItRuns(...))->toThrow(NotAJobItFollows::class)
+        ->and(static fn(): HowTheCopyWent => $unfollowed($screen))->toThrow(NotAJobItFollows::class);
+})->with(['signed in' => [true], 'signed out' => [false]]);
 
 it('refuses a route parameter that is not text as naming a stack', function (): void {
     // A parameter arrives as `mixed`, because the navigation stack's own
@@ -537,6 +551,15 @@ it('opens every line the job said, oldest first, with how many it keeps, and clo
         ->and($all)->toContain(__('stacks.what_it_said.show_the_newest'))
         ->and($newest)->not->toContain('Stopping sonarr')
         ->and($newest)->toContain('Writing the archive');
+});
+
+it('opens the lines of no job a tap names that is not followed', function (): void {
+    $screen = aCopyWhoseJobSays(aCopyStillBeingTaken(), WhatWasHeardFromAJob::said('Stopping sonarr', 'Writing the archive'));
+    $screen->whileItRuns();
+    $screen->showAllItSaid('NotFollowed');
+
+    expect($screen->showingAllItSaid)->toBe([])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain('Stopping sonarr');
 });
 
 it('says how many older lines it let go of, once there are more than it keeps', function (): void {
