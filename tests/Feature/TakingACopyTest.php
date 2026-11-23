@@ -615,3 +615,16 @@ it('follows nothing, and so awaits nothing, before the operator sends anything',
     expect($screen->awaitsAnOutcome())->toBeFalse()
         ->and($screen->whatItSays()->newest)->toBeNull();
 });
+
+it('lets go of the job\'s stream when the screen stops', function (): void {
+    $hearing = AJobThatSays::saying(WhatWasHeardFromAJob::said('Writing the archive'));
+    $screen = theCopyingScreen(aCopyStillBeingTaken(), hearing: $hearing);
+    $screen->copyTheWholeStack();
+    $screen->agree();
+    $screen->whileItRuns();
+    $lettingsGo = $hearing->lettingsGo();
+    $screen->stop();
+
+    expect($hearing->lettingsGo())->toBe($lettingsGo + 1)
+        ->and($screen->whatItSays()->newest)->toBe('Writing the archive');
+});

@@ -829,3 +829,22 @@ it('draws what the asking says while the stack works out what it could put right
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Checking the disks');
 });
+
+it('says the session ended where it went while the stack worked out what it could put right, and nothing came of a yes it went during', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $asking = theRepairsScreen(AStackThatWouldMend::stillWorkingItOut(), keychain: $keychain);
+    $asking->offer();
+    $keychain->forget(theStackBeingOfferedRepairs()->id());
+    $asking->whileItRuns();
+
+    $keychain = AKeychainInMemory::working();
+    $agreed = theRepairsScreen(AStackThatWouldMend::carryingOutStill(aListingWorthReading()), keychain: $keychain);
+    $agreed->offer();
+    $agreed->agreeTo('storage.one-filesystem');
+    $keychain->forget(theStackBeingOfferedRepairs()->id());
+    $agreed->whileItRuns();
+
+    expect($asking->offer()->stands->went->isSignedIn)->toBeFalse()
+        ->and($agreed->done()->stands->hasEnded())->toBeTrue()
+        ->and($agreed->done()->stands->isWorking())->toBeFalse();
+});
