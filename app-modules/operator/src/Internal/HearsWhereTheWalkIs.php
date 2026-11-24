@@ -29,7 +29,8 @@ use Native\Mobile\Edge\NativeComponent;
  * **Opened by the operator's act and let go of when the walk is over.** The
  * stream is opened when the operator starts a walk, before the walk is asked
  * for, so the first step it says is one this screen hears. It is let go of on
- * the first wake after the walk stops running.
+ * the wake that learns the walk has stopped running, and at once where the
+ * stack starts no walk.
  *
  * **Held only while somebody can see it**, for {@see HoldsItsStacksStream}'s
  * reason: every wake asks the device whether the app is in front, and lets go
@@ -87,10 +88,10 @@ trait HearsWhereTheWalkIs
         }
     }
 
-    /** Let go of the walk's subscription once the walk no longer runs. */
+    /** Let go of the walk's subscription once the walk it follows no longer runs. */
     protected function letGoUnlessAnotherRuns(): void
     {
-        if (! $this->awaitsAnOutcome()) {
+        if ($this->follows() && ! $this->awaitsAnOutcome()) {
             $this->letGoOfAWalkThatIsOver();
         }
     }

@@ -263,6 +263,10 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
             ),
             notHeld: static fn(): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->signedOut(),
         ));
+
+        if (! $this->follows()) {
+            $this->letGoOfAWalkThatIsOver();
+        }
     }
 
     /**

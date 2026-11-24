@@ -178,19 +178,38 @@ it('lets go of the stream once the walk is over, and only once', function (): vo
     $narrating = AStackThatNarrates::holdingOpen();
     $screen = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::done(WalkthroughsToFollow::aWalkThatWorked())), narrating: $narrating);
     $screen->walk();
-    $screen->whileItRuns();
-    $screen->answer();
 
     // One let go as the walk began, before anything was held.
     expect($narrating->lettingsGo())->toBe(1)
+        ->and($narrating->asked())->toBe(1);
+
+    $screen->whileItRuns();
+
+    expect($narrating->lettingsGo())->toBe(2)
         ->and($narrating->asked())->toBe(2);
 
+    $screen->answer();
     $screen->whileItRuns();
     $screen->whileItRuns();
 
     expect($narrating->lettingsGo())->toBe(2)
         ->and($narrating->asked())->toBe(2)
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('health.walkthrough.stage_not_said_yet'));
+});
+
+it('lets go of the stream it opened for a walk the stack does not start', function (): void {
+    $narrating = AStackThatNarrates::holdingOpen();
+    $screen = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen(AStackThatWalksThrough::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), narrating: $narrating);
+
+    $screen->walk();
+
+    expect($narrating->asked())->toBe(1)
+        ->and($narrating->lettingsGo())->toBe(2);
+
+    $screen->whileItRuns();
+
+    expect($narrating->asked())->toBe(1)
+        ->and($narrating->lettingsGo())->toBe(2);
 });
 
 it('lets go of the stream when nobody can see it, opens it again when somebody can, and when the screen is left', function (): void {

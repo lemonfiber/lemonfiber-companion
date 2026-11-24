@@ -106,22 +106,25 @@ trait FollowsWhatTheVerbCameTo
     /**
      * Take the stack's newest line for what a running start waits on, on a wake whose last report said it runs.
      *
-     * Only for a start or a restart: that is when the stack says what the wait
-     * is for. A stream that could not be heard keeps the last line, because the
-     * verb's own report is what says whether anything stood in the way.
+     * Only for a start or a restart this screen sent: that is when the stack
+     * says what the wait is for, and anything else lets go. A stream that
+     * could not be heard keeps the last line, because the verb's own report
+     * is what says whether anything stood in the way.
      */
     protected function hearWhatTheySaid(): void
     {
         $stack = $this->stack();
         $sent = $this->sent;
         $job = $this->theRunningJob();
-        $runs = $this->lastSaidItRuns();
-
-        if ($runs) {
-            $this->theWakeAsks();
+        if (! $this->lastSaidItRuns()) {
+            return;
         }
 
-        if (! $runs || ! $job instanceof Job || ! $sent instanceof AgreedTo || ! $sent->doing()->bringsSomethingUp()) {
+        $this->theWakeAsks();
+
+        if (! $job instanceof Job || ! $sent instanceof AgreedTo || ! $sent->doing()->bringsSomethingUp()) {
+            $this->hearingTheStart->letGo();
+
             return;
         }
 

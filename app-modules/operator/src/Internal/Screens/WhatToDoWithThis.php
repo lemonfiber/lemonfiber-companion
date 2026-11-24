@@ -392,13 +392,18 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      *
      * Both, because a verb that finished changed what the listing says, and a
      * report that could not be asked after is one the operator can ask for
-     * again rather than one they leave the screen to retry.
+     * again rather than one they leave the screen to retry. A verb still
+     * running is asked after on the next wake, which keeps its last report
+     * until then.
      */
     public function again(): void
     {
         $this->answered = null;
-        $this->askAfterAgain();
         $this->formsAgain();
+
+        if (! $this->awaitsAnOutcome()) {
+            $this->askAfterAgain();
+        }
     }
 
     public function render(): View
