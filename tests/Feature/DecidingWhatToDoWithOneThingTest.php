@@ -42,6 +42,7 @@ use Tests\Support\Fakes\AStackThatSaysWhatIsComingDown;
 use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\StacksInMemory;
+use Tests\Support\TheThingScreenOfTheShed;
 use Tests\Support\WhatAMachineRuns;
 use Tests\Support\WhatANeedSays;
 use Tests\Support\WhatTheDeviceWouldDraw;
@@ -497,7 +498,7 @@ it('looks again only while something is settling', function (): void {
 
     expect($screen->answer()->isSettling)->toBeTrue();
 
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->answer();
 
     expect($supervising->askings())->toBe(2);
@@ -508,8 +509,8 @@ it('a standing thing is not polled', function (): void {
     $screen = theThingScreen($supervising);
 
     $screen->answer();
-    $screen->whileItSettles();
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->answer();
 
     expect($supervising->askings())->toBe(1);

@@ -14,6 +14,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatAStreamSaid;
 use Modules\Operator\Internal\Presenters\HowTheStageReads;
 use Modules\Operator\Internal\ViewModels\TheStageAsShown;
+use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
@@ -34,8 +35,9 @@ use Native\Mobile\Edge\NativeComponent;
  * reason: every wake asks the device whether the app is in front, and lets go
  * where it is not, and leaving the screen lets go too.
  *
- * **Only the walk's own steps are its stage**: the steps of the job the screen
- * holds in `$took`, and none before the stack has named it.
+ * **Only the walk's own steps are its stage**: the steps of the job followed
+ * through {@see FollowsOneJobAtATime}, and none before the stack has named it.
+ * It hears no job lines: the walk's stream is the screen's only progress.
  *
  * **A session the stream refuses is let go of**, for {@see LetsGoOfARefusedSession}'s
  * reason, which the screen using this also uses.
@@ -48,6 +50,10 @@ use Native\Mobile\Edge\NativeComponent;
  */
 trait HearsWhereTheWalkIs
 {
+    /** @use FollowsOneJobAtATime<WhatTheWalkthroughTurnedOutToBe> */
+    use FollowsOneJobAtATime;
+    use CountsTheAskOnItsWake;
+
     /**
      * What the subscription has said about the walk so far, and whether it still stands.
      *
@@ -63,8 +69,6 @@ trait HearsWhereTheWalkIs
         return new HowTheStageReads()->of($this->walkHeardSoFar(), $this->followsTheWalkWith()->clock->now());
     }
 
-    abstract public function stack(): Stack;
-
     /** Let go of the walk's subscription as the screen stops, keeping what was heard as no longer current. */
     protected function letGoOfWhatElseItHears(): void
     {
@@ -74,6 +78,22 @@ trait HearsWhereTheWalkIs
     /** The ports this screen follows a walk with, handed over by the screen that holds them. */
     abstract protected function followsTheWalkWith(): WhatTheWalkIsFollowedWith;
 
+    /** Take what the walk's stream delivered, on a wake whose last report said the walk runs. */
+    protected function hearWhatTheySaid(): void
+    {
+        if ($this->lastSaidItRuns()) {
+            $this->theWakeAsks();
+            $this->listenToTheWalk();
+        }
+    }
+
+    /** Let go of the walk's subscription once the walk no longer runs. */
+    protected function letGoUnlessAnotherRuns(): void
+    {
+        if (! $this->awaitsAnOutcome()) {
+            $this->letGoOfAWalkThatIsOver();
+        }
+    }
 
     /**
      * Start afresh for a walk about to begin: let go of anything held, and open the subscription.
@@ -136,6 +156,13 @@ trait HearsWhereTheWalkIs
         $this->stepHeard = $this->walkHeardSoFar()->after($with->hearing->letGo(), $with->clock->now())->wentAway();
     }
 
+    private function walkFollowed(): AWalkFollowed
+    {
+        $job = $this->theRunningJob();
+
+        return $job instanceof Job ? AWalkFollowed::named($job) : AWalkFollowed::notNamedYet();
+    }
+
     /** @return WhatAStreamSaidSoFar<ALineItSaid> */
     private function walkHeardSoFar(): WhatAStreamSaidSoFar
     {
@@ -154,7 +181,7 @@ trait HearsWhereTheWalkIs
     {
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatAStreamSaid => $this->lettingGoOfARefusal(
-                $this->followsTheWalkWith()->hearing->whereItIs($stack, $session, $this->took === null ? AWalkFollowed::notNamedYet() : AWalkFollowed::named(Job::named($this->took))),
+                $this->followsTheWalkWith()->hearing->whereItIs($stack, $session, $this->walkFollowed()),
                 $stack,
             ),
             notHeld: static fn(): WhatAStreamSaid => WhatAStreamSaid::closed(),

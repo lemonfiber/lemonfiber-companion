@@ -106,6 +106,13 @@ final readonly class TheThingScreenOfTheShed
         );
     }
 
+    /** One wake of the cadence work runs at: the screen's polls, in the order the device runs them. */
+    public static function aWakeOf(WhatToDoWithThis $screen): void
+    {
+        $screen->whileItSettles();
+        $screen->whileItRuns();
+    }
+
     /**
      * Start Sonarr from the screen, which needs no yes, and draw what that came to.
      *
@@ -114,7 +121,7 @@ final readonly class TheThingScreenOfTheShed
     public static function whatStartingSonarrDrew(WhatToDoWithThis $screen): array
     {
         $screen->wouldYouLike(WhatToDoWithIt::Start->value);
-        $screen->whileItSettles();
+        self::aWakeOf($screen);
 
         // The frame after the tick reads what is running, which the verb changed,
         // and the frame after that asks what the verb came to.

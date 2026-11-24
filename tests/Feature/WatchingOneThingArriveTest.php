@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Kernel\Api\ALineItSaid;
 use Modules\Kernel\Api\AWalkthrough;
 use Modules\Kernel\Api\AWord;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowTheImportLinked;
 use Modules\Kernel\Api\HowTheWalkthroughIsGoing;
 use Modules\Kernel\Api\Job;
@@ -26,6 +27,7 @@ use Modules\Kernel\Api\WhereTheWalkthroughIs;
 use Modules\Kernel\Api\WhichWalk;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
+use Modules\Operator\Internal\TheOnlyJob;
 use Modules\Operator\Internal\ViewModels\AStepOnAsShown;
 use Modules\Operator\Internal\ViewModels\TheWalkthroughAsRecorded;
 use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
@@ -72,6 +74,12 @@ function theWalkLeftOn(WorkLeftRunningInMemory $left): string
         job: static fn(Job $job): TheWordCarriedOut => new TheWordCarriedOut($job->shown()),
         nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('(nothing left running)'),
     )->said;
+}
+
+/** The handle of the walk the screen follows, or nothing where it follows none. */
+function theWalkFollowedBy(WatchingOneArrive $screen): ?string
+{
+    return array_key_exists(TheOnlyJob::Followed->name, $screen->followed) ? $screen->followed[TheOnlyJob::Followed->name]->job->shown() : null;
 }
 
 /** A device that holds the handle of a walk an earlier screen left running on the stack. */
@@ -184,7 +192,7 @@ it('walks what was typed, empties the box, and says it is running', function ():
     expect($walking->walked())->toHaveCount(1)
         ->and(whatItWasAskedToWalk($walking->walked()[0]))->toBe('Big Buck Bunny')
         ->and($screen->looking)->toBe('')
-        ->and($screen->took)->toBe(AStackThatWalksThrough::THE_JOB)
+        ->and(theWalkFollowedBy($screen))->toBe(AStackThatWalksThrough::THE_JOB)
         ->and(everythingAStateSays($screen->answer()))->toBe([
             'isSignedIn' => true, 'met' => '', 'wasStarted' => true, 'isWorking' => true, 'hasEnded' => false, 'record' => null, 'road' => [],
         ])
@@ -525,7 +533,7 @@ it('shows where a walk left running got to when the screen is opened again, and 
     $returnedTo = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen($walking, left: aPhoneThatLeftAWalkRunning());
     $drawn = WhatTheDeviceWouldDraw::by($returnedTo);
 
-    expect($returnedTo->took)->toBe(AStackThatWalksThrough::THE_JOB)
+    expect(theWalkFollowedBy($returnedTo))->toBe(AStackThatWalksThrough::THE_JOB)
         ->and(everythingAStateSays($returnedTo->answer()))->toBe([
             'isSignedIn' => true, 'met' => '', 'wasStarted' => true, 'isWorking' => true, 'hasEnded' => false, 'record' => null, 'road' => [],
         ])
@@ -570,7 +578,7 @@ it('opens on the road where no walk was left running', function (): void {
     $walking = AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning());
     $screen = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen($walking, left: WorkLeftRunningInMemory::working());
 
-    expect($screen->took)->toBeNull()
+    expect(theWalkFollowedBy($screen))->toBeNull()
         ->and($screen->answer()->wasStarted)->toBeFalse()
         ->and($walking->followed())->toBe([]);
 });
@@ -599,12 +607,12 @@ it('lets go of the walk before it when another is asked for, even where the star
     $screen = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen(AStackThatWalksThrough::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), left: $left);
 
     // Opened on the earlier walk, and moved on from it by asking for another.
-    expect($screen->took)->toBe('an-earlier-walk');
+    expect(theWalkFollowedBy($screen))->toBe('an-earlier-walk');
 
     $screen->walk();
 
     expect(theWalkLeftOn($left))->toBe('(nothing left running)')
-        ->and($screen->took)->toBeNull();
+        ->and(theWalkFollowedBy($screen))->toBeNull();
 });
 
 it('keeps the walk left running where the stack cannot be reached or the session has ended', function (): void {
@@ -633,17 +641,16 @@ it('says a walk the stack no longer knows has no outcome, which is not a failure
 
 it('says what stood in the way of starting one, and follows nothing', function (): void {
     $walking = AStackThatWalksThrough::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer));
-    $screen = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen($walking);
     // A handle from an earlier walk is not one this start answered, so it is
     // not kept to be followed.
-    $screen->took = 'an-earlier-walk';
+    $screen = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen($walking, left: aPhoneThatLeftAWalkRunning('an-earlier-walk'));
     $screen->walk();
 
     expect(everythingAStateSays($screen->answer()))->toBe([
         'isSignedIn' => true, 'met' => KindOfObstacle::StackDidNotAnswer->said(), 'wasStarted' => true, 'isWorking' => false, 'hasEnded' => false, 'record' => null, 'road' => [],
     ])
         ->and($screen->answer()->stands->went->remedy)->toEqual(KindOfObstacle::StackDidNotAnswer->remedy())
-        ->and($screen->took)->toBeNull()
+        ->and(theWalkFollowedBy($screen))->toBeNull()
         ->and($walking->followed())->toBe([]);
 });
 
@@ -658,8 +665,7 @@ it('lets go of a session the stack refused, before a walk, starting or following
     TheWalkthroughScreenOfTheLoft::theWalkthroughScreen(AStackThatWalksThrough::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $starting)->walk();
 
     $following = AKeychainInMemory::working();
-    $screen = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen(AStackThatWalksThrough::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $following);
-    $screen->took = AStackThatWalksThrough::THE_JOB;
+    $screen = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen(AStackThatWalksThrough::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)), $following, left: aPhoneThatLeftAWalkRunning());
 
     expect(everythingAStateSays($screen->answer()))->toBe([
         'isSignedIn' => false, 'met' => '', 'wasStarted' => true, 'isWorking' => false, 'hasEnded' => false, 'record' => null, 'road' => [],
@@ -673,8 +679,7 @@ it('starts and follows nothing on a phone whose session ended', function (): voi
     $screen = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen($walking, signedIn: false);
     $screen->walk();
 
-    $following = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen($walking, signedIn: false);
-    $following->took = AStackThatWalksThrough::THE_JOB;
+    $following = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen($walking, signedIn: false, left: aPhoneThatLeftAWalkRunning());
 
     expect(everythingAStateSays($screen->answer()))->toBe([
         'isSignedIn' => false, 'met' => '', 'wasStarted' => true, 'isWorking' => false, 'hasEnded' => false, 'record' => null, 'road' => [],
@@ -699,4 +704,37 @@ it('refuses a route parameter that is not text', function (): void {
     $screen->setParams(['stack' => 42]);
 
     expect(fn(): Stack => $screen->stack())->toThrow(StackIsUnidentified::class);
+});
+
+it('says the session ended where it ended after the walk was started, and keeps the way back to the walk', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $left = WorkLeftRunningInMemory::working();
+    $screen = aScreenThatWalked(AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning()), $keychain, left: $left);
+    $keychain->forget(TheWalkthroughScreenOfTheLoft::theStackAWalkRunsOn()->id());
+    $screen->whileItRuns();
+
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and(theWalkLeftOn($left))->toBe(AStackThatWalksThrough::THE_JOB);
+});
+
+it('asks after a running walk once a wake and takes its own stream once, holding no stream of job lines', function (): void {
+    $walking = AStackThatWalksThrough::whichWalked(HowTheWalkthroughIsGoing::stillRunning());
+    $narrating = AStackThatNarrates::holdingOpen();
+    $screen = TheWalkthroughScreenOfTheLoft::theWalkthroughScreen($walking, narrating: $narrating);
+    $screen->walk();
+    WhatTheDeviceWouldDraw::by($screen);
+    $asked = count($walking->followed());
+    $taken = $narrating->asked();
+
+    foreach ([1, 2, 3] as $wake) {
+        $screen->whileItRuns();
+        WhatTheDeviceWouldDraw::by($screen);
+    }
+
+    $ports = array_map(static fn(ReflectionParameter $port): string => (string) $port->getType(), new ReflectionMethod(WatchingOneArrive::class, '__construct')->getParameters());
+
+    expect(count($walking->followed()) - $asked)->toBe(3)
+        ->and($narrating->asked() - $taken)->toBe(3)
+        ->and($ports)->not->toContain(HearingTheJobs::class);
 });

@@ -26,6 +26,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
 use Saloon\Http\Request;
+use Tests\Support\TheThingScreenOfTheShed;
 use Tests\Support\WhatASettledScreenDraws;
 use Tests\Support\WhatTheDeviceWouldDraw;
 use Tests\Support\WhereAScreenCanSendYou;
@@ -311,13 +312,14 @@ function theFramesFollowingAVerbThatReadTwice(): array
     WhatTheDeviceWouldDraw::by($screen);
     WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+    WhatTheDeviceWouldDraw::by($screen);
 
     $twice = [];
     $all = [];
 
     foreach ([1, 2, 3, 4] as $frame) {
         $reads->exchangeArray([]);
-        $screen->whileItSettles();
+        TheThingScreenOfTheShed::aWakeOf($screen);
         WhatTheDeviceWouldDraw::by($screen);
         $all = [...$all, ...$reads->getArrayCopy()];
 

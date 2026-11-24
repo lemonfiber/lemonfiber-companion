@@ -8,7 +8,6 @@ use Modules\Operator\Internal\FollowsAJob;
 use Modules\Operator\Internal\LooksAgainWhileItMoves;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
-use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Native\Mobile\Attributes\Poll;
 use Tests\Support\Screens;
 
@@ -98,14 +97,14 @@ it('asks every screen that follows work whether it still awaits the outcome', fu
 });
 
 /**
- * Screens awaiting an outcome that follow their job on a stream of their own, each with why. A register that may shrink and may not grow.
+ * Whether a screen, read from this source, follows its job other than through FollowsAJob, or names a job itself.
+ *
+ * @param class-string $screen
  */
-const IT_FOLLOWS_ITS_JOB_ON_ITS_OWN_STREAM = [
-    // It hears the walk's stages on the walk's own stream.
-    WatchingOneArrive::class,
-    // It hears what a start waits on, the job's lines among them, on the start's own stream.
-    WhatToDoWithThis::class,
-];
+function followsItsJobApart(string $screen, string $source): bool
+{
+    return ! in_array(FollowsAJob::class, class_uses_recursive($screen), strict: true) || str_contains($source, 'Job::named(');
+}
 
 /**
  * Every screen awaiting an outcome, and those of them that follow their job some other way, or name a job themselves.
@@ -118,14 +117,13 @@ function whoFollowsTheirJobApart(): array
     $apart = [];
 
     foreach (Screens::byTheViewTheyRender() as $screen) {
-        if (! $screen->implementsInterface(AwaitsAnOutcome::class) || in_array($screen->getName(), IT_FOLLOWS_ITS_JOB_ON_ITS_OWN_STREAM, strict: true)) {
+        if (! $screen->implementsInterface(AwaitsAnOutcome::class)) {
             continue;
         }
 
         $awaiting[] = $screen->getName();
-        $source = (string) file_get_contents((string) $screen->getFileName());
 
-        if (! in_array(FollowsAJob::class, class_uses_recursive($screen->getName()), strict: true) || str_contains($source, 'Job::named(')) {
+        if (followsItsJobApart($screen->getName(), (string) file_get_contents((string) $screen->getFileName()))) {
             $apart[] = $screen->getShortName();
         }
     }
@@ -142,4 +140,13 @@ it('follows the job of every screen awaiting an outcome through the shared home'
             . 'Follow it through FollowsOneJobAtATime or FollowsAJob, and take the job from the stack\'s answer.',
             implode("\n  ", $apart),
         ));
+});
+
+it('would catch a screen that follows its job through FollowsAJob and holds a job by its name too', function (): void {
+    $source = (string) file_get_contents((string) new ReflectionClass(WatchingOneArrive::class)->getFileName());
+    $holding = str_replace('    public function walk(): void', "    private function held(): Job\n    {\n        return Job::named('a-walk');\n    }\n\n    public function walk(): void", $source);
+
+    expect($holding)->not->toBe($source)
+        ->and(followsItsJobApart(WatchingOneArrive::class, $source))->toBeFalse()
+        ->and(followsItsJobApart(WatchingOneArrive::class, $holding))->toBeTrue();
 });

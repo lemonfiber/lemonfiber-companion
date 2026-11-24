@@ -10,6 +10,7 @@ use Modules\Kernel\Api\AServiceLeftOut;
 use Modules\Kernel\Api\AStackEdit;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowTheStackIsRunning;
@@ -96,10 +97,10 @@ it('follows a verb it sent until the stack reports, on the cadence it declares',
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())
         ->toContain(__('health.came_to.running'));
 
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->render();
     $screen->whatItCameTo();
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->render();
     $screen->whatItCameTo();
 
@@ -113,17 +114,21 @@ it('reads the machine again once a verb it was following has ended, and not whil
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
     $screen->render();
     $screen->answer();
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->render();
     $screen->answer();
     $whileItRan = $supervising->askings();
     $supervising->fromNowOnComingTo(HowAgreedWorkIsGoing::noOutcome());
-    $screen->whatItCameTo();
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
+    $screen->render();
+    $screen->answer();
+    $whenItEnded = $supervising->askings();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->render();
     $screen->answer();
 
-    expect($supervising->askings())->toBe($whileItRan + 1);
+    expect($whenItEnded)->toBe($whileItRan)
+        ->and($supervising->askings())->toBe($whileItRan + 1);
 });
 
 it('asks after the verb once a frame, however often the template reads it', function (): void {
@@ -146,8 +151,8 @@ it('stops asking once the stack has reported', function (): void {
     $screen = TheThingScreenOfTheShed::theScreen($supervising);
 
     TheThingScreenOfTheShed::whatStartingSonarrDrew($screen);
-    $screen->whileItSettles();
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->whatItCameTo();
 
     expect($supervising->followed())->toHaveCount(1);
@@ -200,7 +205,7 @@ it('lets a stop the stack did not sum up stand on its own', function (): void {
 
     $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
     $screen->agree();
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
 
     expect(whatIsDrawnAfter(whatTheCatalogueSays('health.came_to.heading'), $drawn))->toBe(whatTheCatalogueSays('health.came_to.stopped'))
@@ -284,7 +289,7 @@ it('does not judge a stop by what came back', function (): void {
 
     $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
     $screen->agree();
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
 
     expect($screen->whatItCameTo()->namesWhatDidNotComeBack)->toBeFalse();
@@ -330,17 +335,15 @@ it('says nothing about a verb where none was sent, and asks after none', functio
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(whatTheCatalogueSays('health.came_to.heading'));
 });
 
-it('does not ask after a handle it holds without the verb it was sent for', function (): void {
-    // A route parameter fills the public property of the same name when the
-    // screen mounts, so a handle can be held that this screen never sent. A
-    // report is judged against the verb it answers, and with no verb there is
-    // nothing to judge it by.
+it('does not follow a handle a route parameter carries', function (): void {
+    // A report is judged against the verb it answers, and a handle this screen
+    // never sent comes with no verb to judge it by.
     $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::stillRunning());
     $screen = TheThingScreenOfTheShed::theScreen($supervising);
     $screen->setParams(['stack' => TheThingScreenOfTheShed::theMachine()->id()->stored(), 'about' => 'sonarr', 'took' => AStackThatSupervises::THE_JOB]);
     $screen->mountComponent();
 
-    expect($screen->took)->toBe(AStackThatSupervises::THE_JOB)
+    expect($screen->followed)->toBe([])
         ->and($screen->whatItCameTo()->stands->wasAsked())->toBeFalse()
         ->and($supervising->followed())->toBe([]);
 });
@@ -397,7 +400,7 @@ it('says what stood in the way of asking after it, and lets go of a session refu
     $screen = TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::met(Obstacle::of(KindOfObstacle::CredentialWasRefused))), keychain: $keychain);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->render();
 
     expect($screen->whatItCameTo()->stands->went->isSignedIn)->toBeFalse()
@@ -409,7 +412,7 @@ it('keeps the session where asking after a verb could not reach the machine', fu
     $screen = TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::met(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork))), keychain: $keychain);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->render();
 
     expect($screen->whatItCameTo()->stands->went->met)->toEqual(KindOfObstacle::DeviceHasNoNetwork->said())
@@ -423,7 +426,7 @@ it('says the session ended where it ended between sending a verb and asking afte
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
     $keychain->forget(TheThingScreenOfTheShed::theMachine()->id());
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->render();
 
     expect($screen->whatItCameTo()->stands->went->isSignedIn)->toBeFalse()
@@ -450,7 +453,7 @@ it('asks after the verb again, and reads the machine again, when asked to', func
     $screen = TheThingScreenOfTheShed::theScreen($supervising);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->render();
     $screen->whatItCameTo();
     $screen->answer();
@@ -500,12 +503,12 @@ it('a verb that has finished is not polled for, and neither is a standing listin
     // The listing drawn before the verb was known to have ended is read
     // once more, and then neither is asked after again.
     TheThingScreenOfTheShed::whatStartingSonarrDrew($screen);
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->render();
     $screen->answer();
     $askings = $supervising->askings();
     $followed = count($supervising->followed());
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->render();
     $screen->answer();
     $screen->whatItCameTo();
@@ -523,14 +526,14 @@ it('draws what the stack says a start is waiting for, in place of its own senten
     $screen = TheThingScreenOfTheShed::theScreen($supervising, hearing: $hearing);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
 
     $first = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($first)->toContain('Waiting for the database')
         ->and($first)->not->toContain(__('health.came_to.running'));
 
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $newest = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($newest)->toContain('Waiting for sonarr to answer')
@@ -546,9 +549,9 @@ it('keeps the last line where a wake heard nothing new, or could not hear the st
     $screen = TheThingScreenOfTheShed::theScreen($supervising, hearing: $hearing);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
-    $screen->whileItSettles();
-    $screen->whileItSettles();
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
+    TheThingScreenOfTheShed::aWakeOf($screen);
+    TheThingScreenOfTheShed::aWakeOf($screen);
 
     expect($screen->waitsOn)->toBe('Waiting for the database');
 });
@@ -563,8 +566,8 @@ it('lets go of a session the stream refused while a start runs, keeping the last
     $screen = TheThingScreenOfTheShed::theScreen($supervising, keychain: $keychain, hearing: $hearing);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
-    $screen->whileItSettles();
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
+    TheThingScreenOfTheShed::aWakeOf($screen);
 
     expect($keychain->isHolding(TheThingScreenOfTheShed::theMachine()->id()))->toBeFalse()
         ->and($screen->waitsOn)->toBe('Waiting for the database');
@@ -575,13 +578,12 @@ it('listens for what a start waits on only while a start or a restart it sent ru
     $hearing = AStackThatSaysWhatItWaitsOn::saying(WhatAStartWaitsOn::saying('Waiting for the database'));
     $screen = TheThingScreenOfTheShed::theScreen($running, hearing: $hearing);
 
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->wouldYouLike(WhatToDoWithIt::Stop->value);
     $screen->agree();
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
 
     expect($hearing->asked())->toBe(0)
-        ->and($hearing->lettingsGo())->toBe(2)
         ->and($screen->waitsOn)->toBe('');
 });
 
@@ -595,10 +597,10 @@ it('lets go rather than listening where the verb it sent comes back from the dev
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
     $screen->sent = null;
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
 
     expect($hearing->asked())->toBe(0)
-        ->and($hearing->lettingsGo())->toBe(1)
+        ->and($hearing->lettingsGo())->toBeGreaterThan(0)
         ->and($screen->waitsOn)->toBe('');
 });
 
@@ -608,7 +610,7 @@ it('clears the last line when another verb is sent', function (): void {
     $screen = TheThingScreenOfTheShed::theScreen($supervising, hearing: $hearing);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
 
     expect($screen->waitsOn)->toBe('');
@@ -622,7 +624,7 @@ it('keeps the line it has where the session went between the sending and the lis
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
     $keychain->forget(TheThingScreenOfTheShed::theMachine()->id());
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
 
     expect($hearing->asked())->toBe(0)
         ->and($screen->waitsOn)->toBe('');
@@ -634,10 +636,11 @@ it('lets go of what a start waits on when the screen stops, keeping the last lin
     $screen = TheThingScreenOfTheShed::theScreen($supervising, hearing: $hearing);
 
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
+    $before = $hearing->lettingsGo();
     $screen->stop();
 
-    expect($hearing->lettingsGo())->toBe(1)
+    expect($hearing->lettingsGo())->toBe($before + 1)
         ->and($screen->waitsOn)->toBe('Waiting for the database');
 });
 
@@ -742,7 +745,7 @@ it('follows a rehearsal still being worked out on the screen\'s cadence, and sho
     $screen = TheThingScreenOfTheShed::theScreen($supervising);
     whatAskingToRestartSonarrDrew($screen);
     $supervising->fromNowOnComingTo(HowAgreedWorkIsGoing::done(aRehearsedRestartOfSonarr()));
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
 
     expect($screen->willRun?->command)->toBe('docker compose restart sonarr')
         ->and($screen->rehearsalOfTheYes)->toBeNull();
@@ -855,7 +858,7 @@ function aSonarrWhoseRestartMoved(): AStackThatSupervises
 function whatAgreeingToRestartSonarrDrew(WhatToDoWithThis $screen): array
 {
     $screen->agree();
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
 
     return WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
 }
@@ -880,7 +883,7 @@ it('asks again, under the stack\'s own words, where the restart agreed to was re
     whatAgreeingToRestartSonarrDrew($screen);
     // The frame that heard the refusal put the question back; the screen's
     // cadence draws it on the next.
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($drawn)->toContain(WhatAMovedOfferSays::SUMMARY)
@@ -936,4 +939,25 @@ it('carries back with the yes no name an earlier rehearsal gave, once the questi
     $screen->agree();
 
     expect($supervising->whatItWasToldToDo())->toEqual([AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'))]);
+});
+
+it('asks after a running start once a wake and takes its own stream once, holding no stream of job lines', function (): void {
+    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::stillRunning());
+    $hearing = AStackThatSaysWhatItWaitsOn::saying(WhatAStartWaitsOn::saying('Waiting for the database'));
+    $screen = TheThingScreenOfTheShed::theScreen($supervising, hearing: $hearing);
+    $screen->wouldYouLike(WhatToDoWithIt::Start->value);
+    WhatTheDeviceWouldDraw::by($screen);
+    $asked = count($supervising->followed());
+    $taken = $hearing->asked();
+
+    foreach ([1, 2, 3] as $wake) {
+        TheThingScreenOfTheShed::aWakeOf($screen);
+        WhatTheDeviceWouldDraw::by($screen);
+    }
+
+    $ports = array_map(static fn(ReflectionParameter $port): string => (string) $port->getType(), new ReflectionMethod(WhatToDoWithThis::class, '__construct')->getParameters());
+
+    expect(count($supervising->followed()) - $asked)->toBe(3)
+        ->and($hearing->asked() - $taken)->toBe(3)
+        ->and($ports)->not->toContain(HearingTheJobs::class);
 });

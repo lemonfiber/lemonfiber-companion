@@ -48,7 +48,7 @@ function startingTheLibrary(AStackThatSupervises $stack): WhatToDoWithThis
     $screen = TheThingScreenOfTheShed::theScreen($stack, 'library');
     WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
     $screen->wouldYouLike(WhatToDoWithIt::Start->value);
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
 
     return $screen;
@@ -116,7 +116,7 @@ it('starts the form again with no yes where the installs it offered have moved, 
     $stack->fromNowOnComingTo(HowAgreedWorkIsGoing::moved($moved));
 
     $screen->installAndStart();
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
 
     expect(array_slice(theYesesEachStartCarried($stack), 0, 3))->toBe(['start library no-offer', 'start library the-installs-offer', 'start library no-offer']);

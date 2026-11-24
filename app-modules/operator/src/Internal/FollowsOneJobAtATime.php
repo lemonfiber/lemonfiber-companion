@@ -46,6 +46,18 @@ trait FollowsOneJobAtATime
         return null;
     }
 
+    /** Whether the one job's last report, kept until the screen asks again, said it runs. */
+    protected function lastSaidItRuns(): bool
+    {
+        foreach ($this->became as $for => $report) {
+            if ($for === $this->theJobItFollows()->name) {
+                return $report->stands->isWorking();
+            }
+        }
+
+        return false;
+    }
+
     /** What the one job is followed for. */
     protected function theJobItFollows(): UnitEnum
     {

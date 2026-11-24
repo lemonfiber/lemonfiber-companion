@@ -10,7 +10,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * Each state carries only its own: a walk still running has no lines, and one
  * nobody started has only the road a walk takes.
  */
-final readonly class WhatTheWalkthroughTurnedOutToBe
+final readonly class WhatTheWalkthroughTurnedOutToBe implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands             $stands       where the work stands, and whether the stack could be asked at all

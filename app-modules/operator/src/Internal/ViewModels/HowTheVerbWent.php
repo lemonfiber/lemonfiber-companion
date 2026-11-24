@@ -10,7 +10,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * Every field the stack's report fills is empty until there is a report, so a
  * template cannot name what did not come back off a verb still running.
  */
-final readonly class HowTheVerbWent
+final readonly class HowTheVerbWent implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands            $stands                    where the work stands, and whether the stack could be asked at all
