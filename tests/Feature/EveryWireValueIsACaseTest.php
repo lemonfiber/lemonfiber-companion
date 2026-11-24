@@ -95,6 +95,7 @@ use Modules\Kernel\Api\WhoSettledIt;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\HowThePluginCatalogueStands;
+use Modules\Sdk\Internal\WhatAReplayHolds;
 use Tests\Support\ApiSurface;
 use Tests\Support\Module;
 use Tests\Support\TheGeneratedEnvelopes;
@@ -514,6 +515,13 @@ it('every way an alert can have gone has a case', function (): void {
 
     expect($words)->not->toBe([], 'no moment union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhichWayItWent::cases()))->toBe($words);
+});
+
+it('every word a replay can say of the alerts that follow has a case', function (): void {
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('ReplayEnvelope'), 'alerts');
+
+    expect($words)->not->toBe([], 'no alerts union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhatAReplayHolds::cases()))->toBe($words);
 });
 
 it('every way the line\'s capacity can have been arrived at has a case', function (): void {
