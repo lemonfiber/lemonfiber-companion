@@ -83,6 +83,13 @@ final readonly class JobLines implements HearingTheJobs
         return WhatTheJobsSaid::nothingNew();
     }
 
+    public function letGoKeepingThePlace(): WhatTheJobsSaid
+    {
+        $this->streams->letGoOfEveryKeepingWhereEachLeftOff();
+
+        return WhatTheJobsSaid::nothingNew();
+    }
+
     /**
      * What each job asked about said, by the name the stack gave it.
      *

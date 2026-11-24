@@ -19,6 +19,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Api\StartLines;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Tests\Support\AStreamStillOpen;
 use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
@@ -161,26 +162,11 @@ it('tells a session the stack refused from a stack that could not be heard, whil
     }
 });
 
-/**
- * What a stream still open after the given lines sends, up to the read that
- * finds nothing.
- *
- * The SDK reads a stream 8192 bytes at a time and only learns it ended on the
- * read after the last byte. A body of exactly one read ends in a read that
- * comes back empty, which is what a stream that is still open looks like
- * between two lines. The padding is an event-stream comment, which carries
- * nothing.
- */
-function aStartStreamStillOpenAfter(string $said): string
-{
-    return sprintf("%s:%s\n", $said, str_repeat(' ', 8192 - strlen($said) - 2));
-}
-
 it('opens a start stream once while it runs, and takes what arrived after that without asking again', function (): void {
     // Only the adapter can be asked this. A wake that reopened the stream to
     // read it would be a request to the stack every time the screen settles.
     MockClient::destroyGlobal();
-    $stack = MockClient::global([MockResponse::make(aStartStreamStillOpenAfter(aStartLine('Waiting for the database'))), MockResponse::make('')]);
+    $stack = MockClient::global([MockResponse::make(AStreamStillOpen::after(aStartLine('Waiting for the database'))), MockResponse::make('')]);
 
     expect(whatWakesHearOfAStart(new StartLines(new PinnedClients()), 2))
         ->toBe(['saying "Waiting for the database"', 'nothing new']);
@@ -191,7 +177,7 @@ it('opens a start stream once while it runs, and takes what arrived after that w
 it('opens a start stream that ended again on the next ask', function (): void {
     MockClient::destroyGlobal();
     $stack = MockClient::global([
-        MockResponse::make(aStartStreamStillOpenAfter(aStartLine('Waiting for the database'))),
+        MockResponse::make(AStreamStillOpen::after(aStartLine('Waiting for the database'))),
         MockResponse::make(aStartLine('Waiting for sonarr to answer')),
     ]);
 
@@ -205,7 +191,7 @@ it('holds no start stream after a line it could not read, so the next ask opens 
     // but the refusal itself lets go of it.
     MockClient::destroyGlobal();
     $stack = MockClient::global([
-        MockResponse::make(aStartStreamStillOpenAfter(aStartLine('   '))),
+        MockResponse::make(AStreamStillOpen::after(aStartLine('   '))),
         MockResponse::make(aStartLine('Waiting for sonarr to answer')),
     ]);
 

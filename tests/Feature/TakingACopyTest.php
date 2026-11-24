@@ -616,19 +616,24 @@ it('takes the last lines and lets go of the stream once the job has finished, an
 
     expect($hearing->asked())->toHaveCount(2)
         ->and($hearing->lettingsGo())->toBe($lettingsGo + 1)
+        ->and($hearing->placesKept())->toBe(1)
         ->and($screen->whatItSays()->newest)->toBe('Pruned two older copies')
         ->and($screen->awaitsAnOutcome())->toBeFalse();
 });
 
-it('follows a new job afresh, forgetting what the one before it said', function (): void {
-    $screen = aCopyWhoseJobSays(aCopyStillBeingTaken(), WhatWasHeardFromAJob::said('Writing the archive'));
+it('follows a new job afresh, forgetting what the one before it said and where its stream left off', function (): void {
+    $hearing = AJobThatSays::saying(WhatWasHeardFromAJob::said('Writing the archive'));
+    $screen = theCopyingScreen(aCopyStillBeingTaken(), hearing: $hearing);
+    $screen->copyTheWholeStack();
+    $screen->agree();
     $screen->whileItRuns();
     $screen->showAllItSaid();
     $screen->copyTheWholeStack();
     $screen->agree();
 
     expect($screen->whatItSays()->newest)->toBeNull()
-        ->and($screen->whatItSays()->showingAll)->toBeFalse();
+        ->and($screen->whatItSays()->showingAll)->toBeFalse()
+        ->and($hearing->placesKept())->toBe(0);
 });
 
 it('follows nothing, and so awaits nothing, before the operator sends anything', function (): void {
@@ -649,5 +654,6 @@ it('lets go of the job\'s stream when the screen stops', function (): void {
     $screen->stop();
 
     expect($hearing->lettingsGo())->toBe($lettingsGo + 1)
+        ->and($hearing->placesKept())->toBe(0)
         ->and($screen->whatItSays()->newest)->toBe('Writing the archive');
 });

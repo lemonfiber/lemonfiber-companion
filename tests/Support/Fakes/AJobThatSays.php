@@ -20,8 +20,8 @@ use Modules\Kernel\Api\WhatWasHeardFromAJob;
  *
  * Every job asked about says the same in turn, or each job its own lines in
  * turn, and then nothing new, which is what the adapter answers once a job has
- * said its last line. It notes the jobs each wake asked about, and how often a
- * screen let go.
+ * said its last line. It notes the jobs each wake asked about, how often a
+ * screen let go, and how often it kept the place as it did.
  */
 final class AJobThatSays implements HearingTheJobs
 {
@@ -34,6 +34,8 @@ final class AJobThatSays implements HearingTheJobs
     private array $asked = [];
 
     private int $lettingsGo = 0;
+
+    private int $placesKept = 0;
 
     /**
      * @param list<WhatWasHeardFromAJob>                $everyJob what every job asked about hears, wake by wake
@@ -97,6 +99,13 @@ final class AJobThatSays implements HearingTheJobs
         return WhatTheJobsSaid::nothingNew();
     }
 
+    public function letGoKeepingThePlace(): WhatTheJobsSaid
+    {
+        $this->placesKept++;
+
+        return $this->letGo();
+    }
+
     /**
      * Every job asked about, each wake asked about it, in order.
      *
@@ -111,6 +120,12 @@ final class AJobThatSays implements HearingTheJobs
     public function lettingsGo(): int
     {
         return $this->lettingsGo;
+    }
+
+    /** How many of those let go keeping where the stream left off. */
+    public function placesKept(): int
+    {
+        return $this->placesKept;
     }
 
     /**

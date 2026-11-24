@@ -9,5 +9,9 @@ interface HearingTheJobs
 {
     public function whatTheySaid(Stack $stack, Session $session, Job $job, Job ...$others): WhatTheJobsSaid;
 
+    /** Let go of the stream, forgetting where it left off. */
     public function letGo(): WhatTheJobsSaid;
+
+    /** Let go of the stream, keeping where it left off, so the next reading hears what the stack still holds of what was said since. */
+    public function letGoKeepingThePlace(): WhatTheJobsSaid;
 }

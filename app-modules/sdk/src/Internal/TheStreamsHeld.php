@@ -28,7 +28,7 @@ use Modules\Sdk\Api\Listeners;
  * outlives it.** Every wake that carried an event notes the last one there,
  * and a stream opens after what is noted, so letting go of every stream, or
  * the app closing, loses nothing a stack still holds. Without one, where a
- * stream left off lasts until every stream is let go of.
+ * stream left off lasts until {@see letGoOfEvery()}.
  *
  * **Mutable, because a held connection is**, for {@see Listeners}' reason: it
  * is what keeps the connection between one wake of a screen and the next.
@@ -69,6 +69,16 @@ final class TheStreamsHeld
         }
 
         unset($this->held[$which]);
+    }
+
+    /** Let go of every stream, keeping where each left off for the stream opened in its place. */
+    public function letGoOfEveryKeepingWhereEachLeftOff(): void
+    {
+        foreach ($this->held as $which => $held) {
+            $this->leftOff = $this->leftOff->keeping($which, $held);
+        }
+
+        $this->held = [];
     }
 
     /** Let go of every stream, forgetting where each left off but for what is noted as heard to. */

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Lemonfiber\Sdk\Contract\Api;
 use Modules\Kernel\Api\AClaimant;
 use Modules\Kernel\Api\AConnection;
 use Modules\Kernel\Api\Address;
@@ -9,6 +10,7 @@ use Modules\Kernel\Api\ALink;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowAConnectionEnded;
 use Modules\Kernel\Api\HowDriftWasJudged;
 use Modules\Kernel\Api\HowItReaches;
@@ -46,10 +48,16 @@ use Modules\Operator\Internal\ViewModels\AClaimantAsShown;
 use Modules\Operator\Internal\ViewModels\AConnectionAsShown;
 use Modules\Operator\Internal\ViewModels\TheWiringAsShown;
 use Modules\Operator\Internal\ViewModels\WhatOneServiceSays;
+use Modules\Sdk\Api\JobLines;
+use Modules\Sdk\Api\PinnedClients;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
+use Saloon\Http\Faking\MockClient;
+use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\PendingRequest;
 use Tests\Support\AroundThePhone;
+use Tests\Support\AStreamStillOpen;
 use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -60,12 +68,18 @@ use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\AStackThatWires;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
+use Tests\Support\WhatTheContractAccepts;
 use Tests\Support\WhatTheDeviceWouldDraw;
+use Tests\Support\WhereEachOpenResumed;
 
 // Wiring the services to each other, and how each connection turned out.
 //
 // Here rather than in the operator module's own tests because a screen renders,
 // and rendering needs the application.
+
+afterEach(function (): void {
+    MockClient::destroyGlobal();
+});
 
 /** The machine whose services are wired. */
 function theStackWhoseServicesAreWired(): Stack
@@ -86,7 +100,7 @@ function theWiringScreen(
     ?AStackThatSupervises $supervising = null,
     ?AStackThatSaysWhatAnswersWhat $linking = null,
     ?AStackThatSpeaksUp $hearing = null,
-    ?AJobThatSays $jobs = null,
+    ?HearingTheJobs $jobs = null,
 ): HowTheServicesAreWired {
     $stack = theStackWhoseServicesAreWired();
     $keychain ??= AKeychainInMemory::working();
@@ -392,6 +406,46 @@ it('a run the stack could not be reached for is an obstacle that can be asked ag
 
     expect($wiring->asked())->toBe(['wire', 'after:j-1', 'after:j-1', 'after:j-1'])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Wiring Sonarr to qBittorrent');
+});
+
+/**
+ * A step the wiring run says, as the stack sends it.
+ *
+ * @return array<string, mixed>
+ */
+function aStepOfTheWiringRun(string $said): array
+{
+    return ['api_version' => 1, 'kind' => 'step', 'data' => ['step' => 'downloading', 'said' => $said, 'detail' => ''], 'job' => 'j-1'];
+}
+
+/** That step on the stream, as the stack frames it under this event's id. */
+function aStepTheWiringRunSays(string $id, string $said): string
+{
+    return sprintf("id: %s\nevent: step\ndata: %s\n\n", $id, json_encode(aStepOfTheWiringRun($said), JSON_THROW_ON_ERROR));
+}
+
+it('what a run says while an obstacle stands is drawn on the first wake after asking again, each line once and in order', function (): void {
+    $wiring = AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), WhatBecameOfTheWiring::underway(Job::named('j-1')));
+    MockClient::destroyGlobal();
+    $stream = MockClient::global([
+        MockResponse::make(AStreamStillOpen::after(aStepTheWiringRunSays('run-1', 'Reading the services'))),
+        static fn(PendingRequest $opened): MockResponse => MockResponse::make(AStreamStillOpen::after(sprintf(
+            '%s%s',
+            $opened->headers()->get(Api::RESUME_HEADER) === 'run-1' ? aStepTheWiringRunSays('run-2', 'Still reading') : '',
+            aStepTheWiringRunSays('run-3', 'Wiring Sonarr to qBittorrent'),
+        ))),
+    ]);
+    $screen = theWiringScreen($wiring, jobs: new JobLines(new PinnedClients()));
+    $screen->wire();
+    $screen->whileItRuns();
+    $screen->again();
+    $screen->howItIsGoing();
+    $screen->whileItRuns();
+    $screen->showAllItSaid();
+
+    expect($screen->whatItSays()->lines)->toBe(['Reading the services', 'Still reading', 'Wiring Sonarr to qBittorrent'])
+        ->and(WhereEachOpenResumed::in($stream))->toBe([null, 'run-1'])
+        ->and(WhatTheContractAccepts::complaintsAbout('StepEnvelope', aStepOfTheWiringRun('Still reading')))->toBe([]);
 });
 
 it('asking again reads the services afresh and keeps the report a run came to', function (): void {
