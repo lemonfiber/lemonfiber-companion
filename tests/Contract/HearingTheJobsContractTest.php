@@ -18,6 +18,7 @@ use Modules\Sdk\Api\JobLines;
 use Modules\Sdk\Api\PinnedClients;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Tests\Support\AStreamStillOpen;
 use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
@@ -185,28 +186,33 @@ it('tells a session the stack refused from a stack that could not be heard, whil
     }
 });
 
-/**
- * What a stream still open after the given lines sends, up to the read that finds nothing.
- *
- * The SDK reads a stream 8192 bytes at a time and learns it ended only on the
- * read after the last byte, so a body of exactly one read is a stream still
- * open between two lines. The padding is an event-stream comment.
- */
-function aJobStreamStillOpenAfter(string $said): string
-{
-    return sprintf("%s:%s\n", $said, str_repeat(' ', 8192 - strlen($said) - 2));
-}
-
 it('opens a job\'s stream once while it is held, and again after it ended, resuming where it left off', function (): void {
     MockClient::destroyGlobal();
     $stack = MockClient::global([
-        MockResponse::make(aJobStreamStillOpenAfter(aStartLineOfTheJob('Waiting for the database'))),
+        MockResponse::make(AStreamStillOpen::after(aStartLineOfTheJob('Waiting for the database'))),
         MockResponse::make(aPullLineOfTheJob('Pulling sonarr')),
     ]);
 
     expect(whatWakesHearOfAJob(new JobLines(new PinnedClients()), 3))
         ->toBe(['said Waiting for the database', 'nothing new', 'said Pulling sonarr'])
         ->and(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1']);
+});
+
+it('opens a job\'s stream after where it left off once let go of keeping the place, and from the start once let go of', function (): void {
+    MockClient::destroyGlobal();
+    $stack = MockClient::global([
+        MockResponse::make(AStreamStillOpen::after(aStartLineOfTheJob('Waiting for the database'))),
+        MockResponse::make(''),
+        MockResponse::make(''),
+    ]);
+    $hearing = new JobLines(new PinnedClients());
+    whatWakesHearOfAJob($hearing, 1);
+    $hearing->letGoKeepingThePlace();
+    whatWakesHearOfAJob($hearing, 1);
+    $hearing->letGo();
+    whatWakesHearOfAJob($hearing, 1);
+
+    expect(WhereEachOpenResumed::in($stack))->toBe([null, 'run-1', null]);
 });
 
 it('hears nothing new once let go of', function (): void {

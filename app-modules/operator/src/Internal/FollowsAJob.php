@@ -280,12 +280,27 @@ trait FollowsAJob
         );
     }
 
-    /** Let go of the jobs' subscription where no job is left running. */
+    /**
+     * Let go of the jobs' subscription where no job is left running.
+     *
+     * Where it left off is kept while a job is still followed, because one that
+     * met an obstacle can be found running again, and what the stack still
+     * holds of what it said meanwhile is heard from there. It is forgotten once
+     * no job is followed.
+     */
     private function letGoUnlessAnotherRuns(): void
     {
-        if ($this->running() === []) {
-            $this->hearingTheJobs->letGo();
+        if ($this->running() !== []) {
+            return;
         }
+
+        if ($this->followed === []) {
+            $this->hearingTheJobs->letGo();
+
+            return;
+        }
+
+        $this->hearingTheJobs->letGoKeepingThePlace();
     }
 
     /** @return array<string, AJobFollowed> */
