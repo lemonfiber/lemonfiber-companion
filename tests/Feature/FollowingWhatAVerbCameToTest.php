@@ -14,7 +14,6 @@ use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowTheStackIsRunning;
-use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
@@ -23,7 +22,6 @@ use Modules\Kernel\Api\TheCommandLine;
 use Modules\Kernel\Api\ThePortsHeld;
 use Modules\Kernel\Api\TheServicesLeftOut;
 use Modules\Kernel\Api\TheStackEdits;
-use Modules\Kernel\Api\Underway;
 use Modules\Kernel\Api\WhatAStartWaitsOn;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
@@ -35,7 +33,7 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Presenters\HowAStackEditReads;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
-use Modules\Operator\Internal\TheLineTheYesRuns;
+use Tests\Support\Catalogue;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatSaysWhatItWaitsOn;
 use Tests\Support\Fakes\AStackThatSupervises;
@@ -53,38 +51,6 @@ use Tests\Support\WhatTheDeviceWouldDraw;
 // and cannot say that a start was declined, that it was a rehearsal, or which
 // of the services a restart waited for never came back — so the screen follows
 // the handle and draws the report.
-
-/**
- * A line of the catalogue, with what fills it.
- *
- * @param array<string, string> $with
- */
-function whatTheCatalogueSays(string $key, array $with = []): string
-{
-    $said = __($key, $with);
-
-    return is_string($said) ? $said : $key;
-}
-
-/**
- * The line a frame draws straight after another, or empty where it draws none.
- *
- * @param list<string> $drawn
- */
-function whatIsDrawnAfter(string $line, array $drawn): string
-{
-    $seen = false;
-
-    foreach ($drawn as $said) {
-        if ($seen) {
-            return $said;
-        }
-
-        $seen = $said === $line;
-    }
-
-    return '';
-}
 
 it('follows a verb it sent until the stack reports, on the cadence it declares', function (): void {
     $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::stillRunning());
@@ -173,14 +139,14 @@ it('names what a restart did not bring back, and does not call it a completed st
     $drawn = TheThingScreenOfTheShed::whatStartingSonarrDrew(TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done($restarted))));
 
     expect($drawn)->toContain(
-        whatTheCatalogueSays('health.came_to.not_everything_back'),
-        whatTheCatalogueSays('health.running.degraded'),
-        whatTheCatalogueSays('health.came_to.not_back', ['name' => 'Sonarr', 'runs' => whatTheCatalogueSays('health.service.crash-looping')]),
-        whatTheCatalogueSays('health.came_to.not_back', ['name' => 'Prowlarr', 'runs' => whatTheCatalogueSays('health.service.absent')]),
+        Catalogue::line('health.came_to.not_everything_back'),
+        Catalogue::line('health.running.degraded'),
+        Catalogue::line('health.came_to.not_back', ['name' => 'Sonarr', 'runs' => Catalogue::line('health.service.crash-looping')]),
+        Catalogue::line('health.came_to.not_back', ['name' => 'Prowlarr', 'runs' => Catalogue::line('health.service.absent')]),
     );
     expect($drawn)->not->toContain(
-        whatTheCatalogueSays('health.came_to.everything_back'),
-        whatTheCatalogueSays('health.came_to.not_back', ['name' => 'Jellyfin', 'runs' => whatTheCatalogueSays('health.service.healthy')]),
+        Catalogue::line('health.came_to.everything_back'),
+        Catalogue::line('health.came_to.not_back', ['name' => 'Jellyfin', 'runs' => Catalogue::line('health.service.healthy')]),
     );
 });
 
@@ -190,8 +156,8 @@ it('is not a completed start where the stack called it active and a service is s
     $drawn = TheThingScreenOfTheShed::whatStartingSonarrDrew(TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done($restarted))));
 
     expect($drawn)->toContain(
-        whatTheCatalogueSays('health.came_to.not_everything_back'),
-        whatTheCatalogueSays('health.came_to.not_back', ['name' => 'Sonarr', 'runs' => whatTheCatalogueSays('health.service.starting')]),
+        Catalogue::line('health.came_to.not_everything_back'),
+        Catalogue::line('health.came_to.not_back', ['name' => 'Sonarr', 'runs' => Catalogue::line('health.service.starting')]),
     );
 });
 
@@ -200,8 +166,8 @@ it('says a report that does not say what the services amount to is not a complet
 
     // Nothing stands in for what the stack did not say: the next line is
     // the one naming what did not come back.
-    expect(whatIsDrawnAfter(whatTheCatalogueSays('health.came_to.not_everything_back'), $drawn))
-        ->toBe(whatTheCatalogueSays('health.came_to.none_named'));
+    expect(TheThingScreenOfTheShed::drawnAfter(Catalogue::line('health.came_to.not_everything_back'), $drawn))
+        ->toBe(Catalogue::line('health.came_to.none_named'));
 });
 
 it('lets a stop the stack did not sum up stand on its own', function (): void {
@@ -213,7 +179,7 @@ it('lets a stop the stack did not sum up stand on its own', function (): void {
     TheThingScreenOfTheShed::aWakeOf($screen);
     $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
 
-    expect(whatIsDrawnAfter(whatTheCatalogueSays('health.came_to.heading'), $drawn))->toBe(whatTheCatalogueSays('health.came_to.stopped'))
+    expect(TheThingScreenOfTheShed::drawnAfter(Catalogue::line('health.came_to.heading'), $drawn))->toBe(Catalogue::line('health.came_to.stopped'))
         ->and($screen->whatItCameTo()->amountsToSaid)->toBe('');
 });
 
@@ -222,8 +188,8 @@ it('says a start that brought everything back did', function (): void {
 
     $drawn = TheThingScreenOfTheShed::whatStartingSonarrDrew(TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done($started))));
 
-    expect($drawn)->toContain(whatTheCatalogueSays('health.came_to.everything_back'), whatTheCatalogueSays('health.running.active'));
-    expect($drawn)->not->toContain(whatTheCatalogueSays('health.came_to.not_everything_back'), whatTheCatalogueSays('health.came_to.none_named'));
+    expect($drawn)->toContain(Catalogue::line('health.came_to.everything_back'), Catalogue::line('health.running.active'));
+    expect($drawn)->not->toContain(Catalogue::line('health.came_to.not_everything_back'), Catalogue::line('health.came_to.none_named'));
 });
 
 it('shows the command the stack ran, under its heading', function (): void {
@@ -231,8 +197,8 @@ it('shows the command the stack ran, under its heading', function (): void {
 
     $drawn = TheThingScreenOfTheShed::whatStartingSonarrDrew(TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done($started))));
 
-    expect(whatIsDrawnAfter(whatTheCatalogueSays('stacks.command.ran'), $drawn))->toBe('docker compose up -d')
-        ->and($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'));
+    expect(TheThingScreenOfTheShed::drawnAfter(Catalogue::line('stacks.command.ran'), $drawn))->toBe('docker compose up -d')
+        ->and($drawn)->not->toContain(Catalogue::line('stacks.command.will_run'));
 });
 
 it('says a start the stack declined, with the stack\'s reason, and names nothing as not back', function (): void {
@@ -247,13 +213,13 @@ it('says a start the stack declined, with the stack\'s reason, and names nothing
 
     $drawn = TheThingScreenOfTheShed::whatStartingSonarrDrew(TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done($declined))));
 
-    expect($drawn)->toContain(whatTheCatalogueSays('health.came_to.declined', ['why' => 'This machine is on its battery.']));
+    expect($drawn)->toContain(Catalogue::line('health.came_to.declined', ['why' => 'This machine is on its battery.']));
     expect($drawn)->not->toContain(
-        whatTheCatalogueSays('health.came_to.not_everything_back'),
-        whatTheCatalogueSays('health.came_to.not_back', ['name' => 'Sonarr', 'runs' => whatTheCatalogueSays('health.service.stopped')]),
+        Catalogue::line('health.came_to.not_everything_back'),
+        Catalogue::line('health.came_to.not_back', ['name' => 'Sonarr', 'runs' => Catalogue::line('health.service.stopped')]),
         // It ran nothing, so there is no command to show for it.
-        whatTheCatalogueSays('stacks.command.ran'),
-        whatTheCatalogueSays('stacks.command.will_run'),
+        Catalogue::line('stacks.command.ran'),
+        Catalogue::line('stacks.command.will_run'),
     );
 });
 
@@ -271,17 +237,17 @@ it('labels a rehearsal as one, in the tense of what would happen, and names noth
     $drawn = TheThingScreenOfTheShed::whatStartingSonarrDrew($screen);
 
     expect($screen->whatItCameTo()->wasRehearsed)->toBeTrue();
-    expect(whatIsDrawnAfter(whatTheCatalogueSays('stacks.command.will_run'), $drawn))->toBe('docker compose up -d');
+    expect(TheThingScreenOfTheShed::drawnAfter(Catalogue::line('stacks.command.will_run'), $drawn))->toBe('docker compose up -d');
     expect($drawn)->toContain(
-        whatTheCatalogueSays('health.came_to.a_rehearsal'),
-        whatTheCatalogueSays('health.came_to.rehearsed'),
-        whatTheCatalogueSays('health.came_to.would_be_left_out', ['name' => 'qBittorrent', 'needs' => WhatANeedSays::of(WhatItWouldNeed::Torrent)]),
+        Catalogue::line('health.came_to.a_rehearsal'),
+        Catalogue::line('health.came_to.rehearsed'),
+        Catalogue::line('health.came_to.would_be_left_out', ['name' => 'qBittorrent', 'needs' => WhatANeedSays::of(WhatItWouldNeed::Torrent)]),
     );
     expect($drawn)->not->toContain(
-        whatTheCatalogueSays('health.came_to.left_out', ['name' => 'qBittorrent', 'needs' => WhatANeedSays::of(WhatItWouldNeed::Torrent)]),
-        whatTheCatalogueSays('health.came_to.not_everything_back'),
-        whatTheCatalogueSays('health.came_to.not_back', ['name' => 'Sonarr', 'runs' => whatTheCatalogueSays('health.service.stopped')]),
-        whatTheCatalogueSays('stacks.command.ran'),
+        Catalogue::line('health.came_to.left_out', ['name' => 'qBittorrent', 'needs' => WhatANeedSays::of(WhatItWouldNeed::Torrent)]),
+        Catalogue::line('health.came_to.not_everything_back'),
+        Catalogue::line('health.came_to.not_back', ['name' => 'Sonarr', 'runs' => Catalogue::line('health.service.stopped')]),
+        Catalogue::line('stacks.command.ran'),
     );
 });
 
@@ -298,10 +264,10 @@ it('does not judge a stop by what came back', function (): void {
     $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
 
     expect($screen->whatItCameTo()->namesWhatDidNotComeBack)->toBeFalse();
-    expect($drawn)->toContain(whatTheCatalogueSays('health.came_to.stopped'), whatTheCatalogueSays('health.running.inactive'));
+    expect($drawn)->toContain(Catalogue::line('health.came_to.stopped'), Catalogue::line('health.running.inactive'));
     expect($drawn)->not->toContain(
-        whatTheCatalogueSays('health.came_to.not_everything_back'),
-        whatTheCatalogueSays('health.came_to.not_back', ['name' => 'Sonarr', 'runs' => whatTheCatalogueSays('health.service.stopped')]),
+        Catalogue::line('health.came_to.not_everything_back'),
+        Catalogue::line('health.came_to.not_back', ['name' => 'Sonarr', 'runs' => Catalogue::line('health.service.stopped')]),
     );
 });
 
@@ -337,7 +303,7 @@ it('says nothing about a verb where none was sent, and asks after none', functio
 
     expect($screen->whatItCameTo()->stands->wasAsked())->toBeFalse()
         ->and($supervising->followed())->toBe([]);
-    expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(whatTheCatalogueSays('health.came_to.heading'));
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(Catalogue::line('health.came_to.heading'));
 });
 
 it('does not follow a handle a route parameter carries', function (): void {
@@ -690,17 +656,17 @@ it('says a file the operator edited is kept, with what lemonfiber would change i
     $drawn = TheThingScreenOfTheShed::whatStartingSonarrDrew(TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done($started))));
 
     expect($drawn)->toContain(
-        whatTheCatalogueSays('stacks.edits.heading'),
-        whatTheCatalogueSays('stacks.edits.kept', ['path' => 'compose.yaml']),
-        whatTheCatalogueSays('stacks.edits.would_change'),
+        Catalogue::line('stacks.edits.heading'),
+        Catalogue::line('stacks.edits.kept', ['path' => 'compose.yaml']),
+        Catalogue::line('stacks.edits.would_change'),
         '- image: mine',
         '+ image: ours',
-        whatTheCatalogueSays('stacks.edits.legend'),
-        whatTheCatalogueSays('stacks.edits.kept', ['path' => 'env/sonarr.env']),
+        Catalogue::line('stacks.edits.legend'),
+        Catalogue::line('stacks.edits.kept', ['path' => 'env/sonarr.env']),
     );
     // The file whose difference no line shows says only that it is kept: the
     // legend is said once, under the file that has lines.
-    expect(array_count_values($drawn)[whatTheCatalogueSays('stacks.edits.legend')])->toBe(1);
+    expect(array_count_values($drawn)[Catalogue::line('stacks.edits.legend')])->toBe(1);
 });
 
 it('says nothing about edited files where the stack left none', function (): void {
@@ -708,168 +674,18 @@ it('says nothing about edited files where the stack left none', function (): voi
         TheThingScreenOfTheShed::aVerbThatRan(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Healthy)),
     ))));
 
-    expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.edits.heading'));
+    expect($drawn)->not->toContain(Catalogue::line('stacks.edits.heading'));
 });
 
 it('marks a diff\'s lines with the marks its legend names, in every language', function (string $locale): void {
     app()->setLocale($locale);
-    $theirs = explode(' ', whatTheCatalogueSays(HowAStackEditReads::THEIRS, ['line' => 'x']))[0];
-    $lemonfibers = explode(' ', whatTheCatalogueSays(HowAStackEditReads::LEMONFIBERS, ['line' => 'x']))[0];
+    $theirs = explode(' ', Catalogue::line(HowAStackEditReads::THEIRS, ['line' => 'x']))[0];
+    $lemonfibers = explode(' ', Catalogue::line(HowAStackEditReads::LEMONFIBERS, ['line' => 'x']))[0];
 
-    expect(whatTheCatalogueSays('stacks.edits.legend'))->toContain(sprintf(' %s ', $theirs))
-        ->and(whatTheCatalogueSays('stacks.edits.legend'))->toContain(sprintf(' %s ', $lemonfibers))
+    expect(Catalogue::line('stacks.edits.legend'))->toContain(sprintf(' %s ', $theirs))
+        ->and(Catalogue::line('stacks.edits.legend'))->toContain(sprintf(' %s ', $lemonfibers))
         ->and($theirs)->not->toBe($lemonfibers);
 })->with(['en', 'nl']);
-
-/** What the stack's rehearsal of restarting Sonarr reported. */
-function aRehearsedRestartOfSonarr(): WhatTheVerbCameTo
-{
-    return WhatTheVerbCameTo::reported(
-        WhetherItWasRehearsed::Rehearsed,
-        WhereTheServicesEndedUp::of(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Stopped)),
-        TheServicesLeftOut::of(),
-        ThePortsHeld::of(),
-        TheStackEdits::none(),
-        TheCommandLine::of('docker', 'compose', 'restart', 'sonarr'),
-    );
-}
-
-/**
- * Ask to restart Sonarr, which needs a yes, and draw the question.
- *
- * @return list<string>
- */
-function whatAskingToRestartSonarrDrew(WhatToDoWithThis $screen): array
-{
-    $screen->wouldYouLike(WhatToDoWithIt::Restart->value);
-
-    return WhatTheDeviceWouldDraw::by($screen)->said();
-}
-
-it('shows the command a yes will run before the yes, from the stack\'s own rehearsal of it', function (): void {
-    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done(aRehearsedRestartOfSonarr()));
-    $screen = TheThingScreenOfTheShed::theScreen($supervising);
-
-    $drawn = whatAskingToRestartSonarrDrew($screen);
-
-    expect(whatIsDrawnAfter(whatTheCatalogueSays('stacks.command.will_run'), $drawn))->toBe('docker compose restart sonarr')
-        ->and($supervising->whatItWasAskedToRehearse())->toEqual([AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'))])
-        // Rehearsing is not the yes: nothing is carried out until it is given.
-        ->and($supervising->whatItWasToldToDo())->toBe([]);
-});
-
-it('shows the command once the stack has finished working out the rehearsal, and nothing before', function (): void {
-    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::stillRunning());
-    $screen = TheThingScreenOfTheShed::theScreen($supervising);
-
-    $drawn = whatAskingToRestartSonarrDrew($screen);
-
-    expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
-        ->and($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.unread'))
-        ->and($screen->rehearsalOfTheYes)->toEqual(Job::named(AStackThatSupervises::THE_JOB))
-        ->and($screen->asking())->not->toBeNull();
-});
-
-it('follows a rehearsal still being worked out on the screen\'s cadence, and shows the command once it is', function (): void {
-    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::stillRunning());
-    $screen = TheThingScreenOfTheShed::theScreen($supervising);
-    whatAskingToRestartSonarrDrew($screen);
-    $supervising->fromNowOnComingTo(HowAgreedWorkIsGoing::done(aRehearsedRestartOfSonarr()));
-    TheThingScreenOfTheShed::aWakeOf($screen);
-
-    expect($screen->willRun?->command)->toBe('docker compose restart sonarr')
-        ->and($supervising->followed())->toEqual([Job::named(AStackThatSupervises::THE_JOB), Job::named(AStackThatSupervises::THE_JOB)])
-        ->and($screen->rehearsalOfTheYes)->toBeNull();
-});
-
-it('asks the question without the command where the stack would not rehearse it, and says it could not be read', function (Underway|HowAgreedWorkIsGoing $refused): void {
-    $supervising = $refused instanceof Underway
-        ? AStackThatSupervises::withButRefusing(WhatAMachineRuns::oneThing('sonarr', HowAServiceRuns::Stopped, HowTheStackIsRunning::Partial), Obstacle::of(KindOfObstacle::StackDidNotAnswer))
-        : TheThingScreenOfTheShed::aStoppedSonarrThatCameTo($refused);
-    $screen = TheThingScreenOfTheShed::theScreen($supervising);
-
-    $drawn = whatAskingToRestartSonarrDrew($screen);
-
-    expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
-        ->and($drawn)->toContain(whatTheCatalogueSays('stacks.command.unread'))
-        ->and($screen->asking())->not->toBeNull()
-        ->and($screen->rehearsalOfTheYes)->toBeNull();
-})->with([
-    'refused' => [Underway::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
-    'forgotten' => [HowAgreedWorkIsGoing::noOutcome()],
-    'met asking after it' => [HowAgreedWorkIsGoing::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))],
-    'said to have moved, which a rehearsal cannot be' => [HowAgreedWorkIsGoing::moved(ARefusalInItsWords::said(WhatAMovedOfferSays::SUMMARY, WhatAMovedOfferSays::MEANING, WhatTheRefusalNamed::nothing()))],
-]);
-
-it('never shows, before the yes, a command from a report that was not a rehearsal, and says the rehearsal could not be read', function (): void {
-    $carriedOut = WhatTheVerbCameTo::reported(
-        WhetherItWasRehearsed::CarriedOut,
-        WhereTheServicesEndedUp::of(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Running)),
-        TheServicesLeftOut::of(),
-        ThePortsHeld::of(),
-        TheStackEdits::none(),
-        TheCommandLine::of('docker', 'compose', 'restart', 'sonarr'),
-    );
-    $screen = TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done($carriedOut)));
-
-    $drawn = whatAskingToRestartSonarrDrew($screen);
-
-    expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
-        ->and($drawn)->toContain(whatTheCatalogueSays('stacks.command.unread'));
-});
-
-it('shows no command before the yes where the rehearsal says the verb would run nothing', function (): void {
-    $declined = WhatTheVerbCameTo::declined(
-        WhetherItWasRehearsed::Rehearsed,
-        WhereTheServicesEndedUp::of(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Stopped)),
-        TheServicesLeftOut::of(),
-        ThePortsHeld::of(),
-        'another run is already working on this stack',
-        TheStackEdits::none(),
-    );
-    $screen = TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done($declined)));
-
-    $drawn = whatAskingToRestartSonarrDrew($screen);
-
-    expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
-        ->and($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.unread'))
-        ->and($screen->willRun)->toBeNull()
-        ->and($screen->asking())->not->toBeNull();
-});
-
-it('puts the rehearsal away with the question, whichever way it is answered', function (): void {
-    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done(aRehearsedRestartOfSonarr()));
-    $agreed = TheThingScreenOfTheShed::theScreen($supervising);
-    $declined = TheThingScreenOfTheShed::theScreen($supervising);
-
-    whatAskingToRestartSonarrDrew($agreed);
-    $agreed->agree();
-    whatAskingToRestartSonarrDrew($declined);
-    $declined->neverMind();
-
-    expect($agreed->willRun)->toBeNull()
-        ->and($declined->willRun)->toBeNull()
-        ->and($supervising->whatItWasToldToDo())->toEqual([AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'))]);
-});
-
-it('puts away that a rehearsal could not be read with the question it was about', function (): void {
-    $screen = TheThingScreenOfTheShed::theScreen(TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::noOutcome()));
-
-    whatAskingToRestartSonarrDrew($screen);
-    $unreadWhileAsked = $screen->willRun;
-    $screen->neverMind();
-
-    expect($unreadWhileAsked)->toEqual(TheLineTheYesRuns::unread())
-        ->and($screen->willRun)->toBeNull();
-});
-
-it('rehearses nothing for a start, which asks no question', function (): void {
-    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::stillRunning());
-
-    TheThingScreenOfTheShed::whatStartingSonarrDrew(TheThingScreenOfTheShed::theScreen($supervising));
-
-    expect($supervising->whatItWasAskedToRehearse())->toBe([]);
-});
 
 /** The name the stack's rehearsal gives the restart it would carry out. */
 const THE_RESTART_OFFERED_HERE = '9b1e4f20';
@@ -877,7 +693,7 @@ const THE_RESTART_OFFERED_HERE = '9b1e4f20';
 /** A stopped Sonarr whose rehearsal of a restart names what it offers, and which refuses the yes because that moved. */
 function aSonarrWhoseRestartMoved(): AStackThatSupervises
 {
-    return TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done(aRehearsedRestartOfSonarr()->offering(AnOffer::named(THE_RESTART_OFFERED_HERE))))
+    return TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done(TheThingScreenOfTheShed::aRehearsedRestartOfSonarr()->offering(AnOffer::named(THE_RESTART_OFFERED_HERE))))
         ->whoseYesMoved(ARefusalInItsWords::said(WhatAMovedOfferSays::SUMMARY, WhatAMovedOfferSays::MEANING, WhatTheRefusalNamed::nothing()));
 }
 
@@ -895,10 +711,10 @@ function whatAgreeingToRestartSonarrDrew(WhatToDoWithThis $screen): array
 }
 
 it('carries the name the rehearsal gave what it offers back with the yes', function (): void {
-    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done(aRehearsedRestartOfSonarr()->offering(AnOffer::named(THE_RESTART_OFFERED_HERE))));
+    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done(TheThingScreenOfTheShed::aRehearsedRestartOfSonarr()->offering(AnOffer::named(THE_RESTART_OFFERED_HERE))));
     $screen = TheThingScreenOfTheShed::theScreen($supervising);
 
-    whatAskingToRestartSonarrDrew($screen);
+    TheThingScreenOfTheShed::whatAskingToRestartSonarrDrew($screen);
     $screen->agree();
 
     expect($supervising->whatItWasToldToDo())->toEqual([
@@ -910,7 +726,7 @@ it('asks again, under the stack\'s own words, where the restart agreed to was re
     $supervising = aSonarrWhoseRestartMoved();
     $screen = TheThingScreenOfTheShed::theScreen($supervising);
 
-    whatAskingToRestartSonarrDrew($screen);
+    TheThingScreenOfTheShed::whatAskingToRestartSonarrDrew($screen);
     whatAgreeingToRestartSonarrDrew($screen);
     // The frame that heard the refusal put the question back; the screen's
     // cadence draws it on the next.
@@ -919,7 +735,7 @@ it('asks again, under the stack\'s own words, where the restart agreed to was re
 
     expect($drawn)->toContain(WhatAMovedOfferSays::SUMMARY)
         ->and($drawn)->toContain(WhatAMovedOfferSays::MEANING)
-        ->and($drawn)->toContain(whatTheCatalogueSays('health.about_to', ['what' => 'sonarr']))
+        ->and($drawn)->toContain(Catalogue::line('health.about_to', ['what' => 'sonarr']))
         // The question as it stands now was rehearsed afresh, under no name
         // the first rehearsal gave, and the yes was sent once.
         ->and($supervising->whatItWasAskedToRehearse())->toEqual([
@@ -931,7 +747,7 @@ it('asks again, under the stack\'s own words, where the restart agreed to was re
 
 it('puts what the stack said about a moved restart away once the question is answered again', function (string $answer): void {
     $screen = TheThingScreenOfTheShed::theScreen(aSonarrWhoseRestartMoved());
-    whatAskingToRestartSonarrDrew($screen);
+    TheThingScreenOfTheShed::whatAskingToRestartSonarrDrew($screen);
     whatAgreeingToRestartSonarrDrew($screen);
     $before = $screen->movedOn;
 
@@ -956,17 +772,17 @@ it('offers nothing to put back a file the operator edited: the outcome offers wh
     $saidWhereEdited = TheThingScreenOfTheShed::whatStartingSonarrDrew($edited);
     TheThingScreenOfTheShed::whatStartingSonarrDrew($untouched);
 
-    expect($saidWhereEdited)->toContain(whatTheCatalogueSays('stacks.edits.kept', ['path' => 'compose.yaml']))
+    expect($saidWhereEdited)->toContain(Catalogue::line('stacks.edits.kept', ['path' => 'compose.yaml']))
         ->and(WhatTheDeviceWouldDraw::onTheSecondFrame($edited)->offers())->not->toBe([])->toBe(WhatTheDeviceWouldDraw::onTheSecondFrame($untouched)->offers());
 });
 
 it('carries back with the yes no name an earlier rehearsal gave, once the question is asked again', function (): void {
-    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done(aRehearsedRestartOfSonarr()->offering(AnOffer::named(THE_RESTART_OFFERED_HERE))));
+    $supervising = TheThingScreenOfTheShed::aStoppedSonarrThatCameTo(HowAgreedWorkIsGoing::done(TheThingScreenOfTheShed::aRehearsedRestartOfSonarr()->offering(AnOffer::named(THE_RESTART_OFFERED_HERE))));
     $screen = TheThingScreenOfTheShed::theScreen($supervising);
 
-    whatAskingToRestartSonarrDrew($screen);
+    TheThingScreenOfTheShed::whatAskingToRestartSonarrDrew($screen);
     $supervising->fromNowOnComingTo(HowAgreedWorkIsGoing::stillRunning());
-    whatAskingToRestartSonarrDrew($screen);
+    TheThingScreenOfTheShed::whatAskingToRestartSonarrDrew($screen);
     $screen->agree();
 
     expect($supervising->whatItWasToldToDo())->toEqual([AgreedTo::theService(WhatToDoWithIt::Restart, ServiceId::called('sonarr'))]);
