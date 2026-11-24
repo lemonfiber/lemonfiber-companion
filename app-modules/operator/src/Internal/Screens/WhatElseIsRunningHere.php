@@ -124,9 +124,6 @@ final class WhatElseIsRunningHere extends NativeComponent
         $answer = $this->supervising->running($stack, $session);
 
         return $answer->either(
-            // The listing itself is not read here: this screen is about what the
-            // stack did *not* declare, and the arm is only being asked which of
-            // the two answers came back.
             these: static fn(): WhatElseTurnedOutToBe
                 => new HowSomethingElseReads()->these($answer->whatElseIsRunning()),
             met: $this->lettingGoIfRefused($stack, new HowSomethingElseReads()->met(...)),

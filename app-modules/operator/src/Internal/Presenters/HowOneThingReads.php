@@ -42,9 +42,6 @@ final readonly class HowOneThingReads
             return null;
         }
 
-        // A host-managed service takes no verb at all, and the row already
-        // knows it — the verbs are about what this stack runs, and a verb
-        // about something it does not would be refused by the machine.
         return new WhatOneThingIs($named, verbs: $service->isOurs ? $service->verbs : [], service: $service);
     }
 
@@ -61,9 +58,6 @@ final readonly class HowOneThingReads
         }
 
         return in_array($named, $forms->names, strict: true)
-            // A form has no state of its own to ask, so it takes all three:
-            // what a form is, is several services at once, and the stack is the
-            // thing that knows which of them a verb will reach.
             ? new WhatOneThingIs($named, isAForm: true, verbs: WhatToDoWithIt::cases())
             : new WhatOneThingIs($named);
     }

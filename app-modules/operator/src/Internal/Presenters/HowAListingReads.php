@@ -152,19 +152,12 @@ final readonly class HowAListingReads
         $rows = [];
         $settling = false;
 
-        // A service the forms left out is drawn once, with why, below, and
-        // not again among the services as one that failed.
         foreach (new WithoutWhatWasLeftOut()->over($daemons) as $daemon) {
             $row = new HowAServiceReads()->in($daemon, $daemons);
             $rows[] = $row;
             $settling = $settling || $row->isSettling;
         }
 
-        // The overall comes off the listing rather than off the rows, so what
-        // the stack amounts to is decided where the stack said it — a fold that
-        // dropped a row could never quietly turn a degraded machine into a
-        // healthy one. A kept listing becomes nothing else by itself, however
-        // its rows stood when it was read, so it is never settling.
         return new WhatThisStackRunsTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
             services: $rows,

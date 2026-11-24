@@ -289,9 +289,6 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
             answered: function (AMove $move): TheMoveTurnedOutToBe {
                 $this->staged = $move->stance() === Stance::Pending ? $move : null;
 
-                // What is on the machine is the stack's to say again once a
-                // move has done something to it, rather than this screen's to
-                // patch.
                 if ($move->stance() === Stance::Applied) {
                     $this->answered = null;
                 }

@@ -164,7 +164,6 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
      */
     public function whatAnswersWhat(): ?TheLinksTurnedOutToBe
     {
-        // What the stack's stream said since replaces what was last read.
         $heard = $this->whatAnswersWhatHeard;
 
         if ($heard instanceof TheLinks) {

@@ -86,10 +86,6 @@ trait FollowsTheUpdateItTook
             done: static fn(Upkeep $report): HowTheLastUpdateWent => new HowTheLastUpdateReads()->done($report),
             ended: static fn(?WhyTheWorkEnded $why): HowTheLastUpdateWent => new HowTheLastUpdateReads()->ended($why),
             met: $this->lettingGoIfRefused($stack, new HowTheLastUpdateReads()->met(...)),
-            // Refused and offered again, as a repair is: nothing was
-            // applied, the yes was given for what has since moved, so what
-            // the stack said is kept and what it would do now is read
-            // again for a fresh yes.
             moved: function (ARefusalInItsWords $why): HowTheLastUpdateWent {
                 $this->forget();
                 $this->taken = null;

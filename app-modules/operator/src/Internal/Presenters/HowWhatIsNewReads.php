@@ -185,8 +185,6 @@ final readonly class HowWhatIsNewReads
             $filters[] = new AFilterAsShown(said: null, name: $one->name()->shown(), tap: ATap::calling('showStack', $one->id()->stored())->written(), chosen: $stack instanceof StackId && $one->id()->is($stack));
         }
 
-        // Every stack first and then each one, so one paired stack makes two
-        // filters that choose the same thing, and none is offered.
         return count($filters) > 2 ? $filters : [];
     }
 }

@@ -43,9 +43,6 @@ final readonly class HowAStallReads
             $rows[] = new HowAStalledItemReads()->in($one);
         }
 
-        // The key comes off the listing rather than off the rows, so how much
-        // is shown is decided where the stack said it and a fold that dropped a
-        // row could never quietly turn a partial listing into a complete one.
         return new WhatStoppedTurnedOutToBe(
             went: HowTheReadingWent::itCameBack(),
             stalled: $rows,

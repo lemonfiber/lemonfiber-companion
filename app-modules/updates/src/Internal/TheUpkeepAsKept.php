@@ -94,9 +94,6 @@ final readonly class TheUpkeepAsKept
                 Shape::One => self::inShapeOne(self::fieldsIn(json_decode($value->inTheClear(), associative: true))),
             };
         } catch (InvalidArgumentException) {
-            // A field missing or of the wrong type, and a kernel value
-            // refusing what it was handed — a blank version, an unmarked line
-            // of a diff — are the same answer: a reading that does not read.
             return null;
         }
     }

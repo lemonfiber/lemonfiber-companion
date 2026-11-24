@@ -165,9 +165,6 @@ trait FollowsWhatTheVerbCameTo
             done: static fn(WhatTheVerbCameTo $report): HowTheVerbWent => new HowAVerbEndedReads()->done($report, $sent->doing()),
             ended: static fn(?WhyTheWorkEnded $why): HowTheVerbWent => new HowAVerbEndedReads()->ended($why),
             met: $this->lettingGoIfRefused($stack, new HowAVerbEndedReads()->met(...)),
-            // Refused and offered again, as a repair is: nothing was done,
-            // the yes was given for what has since moved, so what the stack
-            // said is kept and the verb is put back as a question.
             moved: function (ARefusalInItsWords $why) use ($sent): HowTheVerbWent {
                 $this->forget();
                 $this->movedOn = new HowARefusalReads()->inItsWords($why);

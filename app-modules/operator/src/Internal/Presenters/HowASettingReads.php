@@ -34,11 +34,6 @@ final readonly class HowASettingReads
                 mayBeChanged: true,
                 from: $from,
             ),
-            // A withheld value is a credential, and this app does not offer to
-            // set one. Decided in the same fold that decided what to print, so
-            // there is no second place holding an opinion about which settings
-            // are sensitive — and no way to add a control to this arm without
-            // reading the sentence that says why not.
             withheld: static fn(string $note): WhatOneSettingSays => new WhatOneSettingSays(
                 key: $setting->key,
                 said: $note,

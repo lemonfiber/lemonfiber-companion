@@ -76,10 +76,6 @@ final readonly class HowTheHouseholdsAskingReads
             $rows[] = new HowARequestReads($now)->in($one);
         }
 
-        // The count comes off the collection rather than off the rows, so the
-        // line between "waiting" and "not" is drawn once — by `Waiting`, where
-        // it belongs — and a fold that dropped a field could never quietly
-        // change what this screen says is waiting.
         return new WhatTheHouseholdTurnedOutToWant(
             went: HowTheReadingWent::itCameBack(),
             requests: $rows,

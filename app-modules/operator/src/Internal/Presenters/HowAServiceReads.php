@@ -52,8 +52,6 @@ final readonly class HowAServiceReads
             id: $daemon->id(),
             name: $daemon->name(),
             runsSaid: $daemon->runs()->saidOnTheScreen(),
-            // Nothing is wrong with a service nobody asked for, so it is drawn
-            // in the quiet tone rather than the one an absence asked for has.
             tone: $isInstalled ? $this->toneOf($daemon->runs()) : Tone::Quiet->value,
             mattersSaid: $daemon->matters()->saidOnTheScreen(),
             isSettling: $daemon->runs()->isSettling(),
@@ -62,12 +60,6 @@ final readonly class HowAServiceReads
             leaning: $leaning,
             exited: $this->exited($daemon),
             stoppedSaid: $this->stopped($daemon),
-            // Asked of the state rather than worked out here, so one screen
-            // cannot come to a different answer from another about what a
-            // stopped service can be told to do. A walk over the three rather
-            // than a list handed back, because `D1` refuses an array crossing a
-            // module boundary — the decision is still the enum's and this is
-            // only the shape it arrives in.
             verbs: array_values(array_filter(
                 WhatToDoWithIt::cases(),
                 static fn(WhatToDoWithIt $verb): bool => $daemon->runs()->mayTake($verb),

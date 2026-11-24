@@ -145,8 +145,6 @@ final readonly class HowAMoveReads
                 default => $this->stance($move->stance()),
             },
             refusal: $move->refusal(),
-            // An import turned away carried nothing and was not asked to, so
-            // there is nothing it left behind to lead with.
             leftBehindSaid: match ($move->stance()) {
                 Stance::Pending => 'stacks.moving_in.would_leave_behind',
                 Stance::Blocked => '',

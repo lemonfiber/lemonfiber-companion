@@ -43,10 +43,6 @@ final readonly class HowAMendingReads
             $rows[] = new HowAnOutcomeReads()->in($one);
         }
 
-        // The count comes off the collection rather than off the rows, so the
-        // line between *something happened* and *nothing did* is drawn once —
-        // by `WhatBecameOfIt` — and this screen cannot come to disagree with
-        // another about whether a run did anything.
         return new WhatThisStackPutRight(
             stands: WhereTheWorkStands::answered(),
             came: new WhatTheMendingCameTo($rows, $mended->changed()),
@@ -62,12 +58,6 @@ final readonly class HowAMendingReads
     /** The machine could not be reached, and this is what the operator met. */
     public function met(Obstacle $why): WhatThisStackPutRight
     {
-        // A refused credential is a signed-out app rather than a
-        // sentence about a machine, and the screen must not go on rendering
-        // what it loaded before. Which of the two an obstacle is is
-        // {@see HowTheReadingWent}'s to answer — the outcome is not the thing
-        // that changed, this device's standing with the stack is, and that is
-        // a fact about the reading rather than a flag on the mending.
         return new WhatThisStackPutRight(stands: WhereTheWorkStands::met($why));
     }
 }

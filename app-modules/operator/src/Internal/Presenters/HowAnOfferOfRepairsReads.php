@@ -49,10 +49,6 @@ final readonly class HowAnOfferOfRepairsReads
             $rows[] = new HowARepairReads()->in($repair);
         }
 
-        // The listing's name is carried even though no template shows it.
-        // A yes quotes the listing it was given, and the screen that
-        // will offer that yes reads it from here — a fold that dropped it would
-        // have to ask the stack again to agree to what it is already showing.
         return new WhatTheStackWouldPutRight(
             stands: WhereTheWorkStands::answered(),
             repairs: $rows,

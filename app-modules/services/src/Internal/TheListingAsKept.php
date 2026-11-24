@@ -108,9 +108,6 @@ final readonly class TheListingAsKept
                 Shape::One => self::inShapeOne(self::fieldsIn(json_decode($value->inTheClear(), associative: true))),
             };
         } catch (InvalidArgumentException) {
-            // A field missing or of the wrong type, and a kernel value
-            // refusing what it was handed — a blank name, an unnamed form —
-            // are the same answer: a listing that does not read.
             return null;
         }
     }

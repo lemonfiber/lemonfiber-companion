@@ -82,9 +82,6 @@ final readonly class TheRequestsAsKept
                 Shape::One => self::inShapeOne(self::fieldsIn(json_decode($value->inTheClear(), associative: true))),
             };
         } catch (InvalidArgumentException) {
-            // A field missing or of the wrong type, and a kernel value
-            // refusing what it was handed — a request nobody made, one for
-            // nothing — are the same answer: a reading that does not read.
             return null;
         }
     }

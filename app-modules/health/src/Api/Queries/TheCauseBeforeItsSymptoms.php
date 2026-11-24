@@ -48,9 +48,6 @@ final readonly class TheCauseBeforeItsSymptoms
         $arranged = [];
 
         foreach ($findings as $finding) {
-            // A symptom is placed by its cause rather than in its own right, so
-            // a run where the cause was graded milder than what it broke still
-            // reads cause-first.
             if ($this->explainedBy($finding, $findings)->isExplained()) {
                 continue;
             }
