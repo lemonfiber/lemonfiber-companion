@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\ACredentialGrant;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AJobFollowed;
 use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\APlugin;
@@ -52,9 +53,14 @@ use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\WhereASecretCameFrom;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhoseASettingIs;
+use Modules\Operator\Internal\ASettingChangeFollowed;
+use Modules\Operator\Internal\NotAJobItFollows;
 use Modules\Operator\Internal\Screens\HowThisPluginIsSet;
+use Modules\Operator\Internal\TheOnlyJob;
+use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
 use Tests\Support\AroundThePhone;
 use Tests\Support\ASettingChangeAsReported;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExtendsItself;
@@ -179,6 +185,7 @@ function theGuardsSettingsScreen(
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening($hearing),
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $plugin]);
 
@@ -399,6 +406,16 @@ it('draws a refusal in the stack\'s own words, reads the settings again, and off
     expect($screen->howItIsGoing()->refused)->toBeNull()
         ->and($screen->changing?->named)->toBe('vpn.countries');
 });
+
+it('answers for the change to the settings store alone, and for no other job it is made to follow', function (bool $signedIn): void {
+    $screen = theGuardsSettingsScreen(aStackThatSetsTheGuard(), signedIn: $signedIn);
+    $screen->followed = [ASettingChangeFollowed::OnceLanded->name => AJobFollowed::named(Job::named(AStackThatTunesItsSettings::THE_REHEARSAL))];
+    $screen->followedFor = [ASettingChangeFollowed::OnceLanded->name => ASettingChangeFollowed::OnceLanded];
+    $unfollowed = Closure::bind(static fn(HowThisPluginIsSet $asked): TheSettingChangeTurnedOutToBe => $asked->whatBecameOfTheJob(TheOnlyJob::Followed), null, HowThisPluginIsSet::class);
+
+    expect($screen->whileItRuns(...))->toThrow(NotAJobItFollows::class)
+        ->and(static fn(): TheSettingChangeTurnedOutToBe => $unfollowed($screen))->toThrow(NotAJobItFollows::class);
+})->with(['signed in' => [true], 'signed out' => [false]]);
 
 it('says so where the stack has no outcome for the work any more', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by(aRehearsalOfGermany(aStackThatSetsTheGuard(rehearsal: WhatBecameOfTheWork::noOutcome())));

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
-use Modules\Kernel\Api\HearingAJob;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
@@ -23,7 +23,7 @@ use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 use Tests\Support\WhereEachOpenResumed;
 
-// The HearingAJob contract, run against the adapter and against the fake.
+// The HearingTheJobs contract, run against the adapter and against the fake.
 //
 // Every screen test that follows a job hands its subject an `AJobThatSays`
 // and never opens a stream, so a fake that answered in a way the adapter never
@@ -82,17 +82,17 @@ function aStepAJobSays(string $said): array
 }
 
 /**
- * Both ways of hearing a job, each set up to hear the same thing.
+ * Both ways of hearing the jobs, each set up to hear the same thing.
  *
  * @param  list<MockResponse>  $streams  what the far end answers each time the adapter opens the stream
  * @param  list<WhatWasHeardFromAJob>  $script  what the fake is scripted to answer, wake by wake
- * @return array<string, Closure(): HearingAJob>
+ * @return array<string, Closure(): HearingTheJobs>
  */
-function everyWayOfHearingAJob(array $streams, array $script): array
+function everyWayOfHearingTheJobs(array $streams, array $script): array
 {
     return [
-        'the fake' => static fn(): HearingAJob => AJobThatSays::saying(...$script),
-        'the adapter' => static function () use ($streams): HearingAJob {
+        'the fake' => static fn(): HearingTheJobs => AJobThatSays::saying(...$script),
+        'the adapter' => static function () use ($streams): HearingTheJobs {
             MockClient::destroyGlobal();
             MockClient::global($streams);
 
@@ -116,19 +116,19 @@ function whatWasHeardFromAJobAsAWord(WhatWasHeardFromAJob $heard): string
  *
  * @return list<string>
  */
-function whatWakesHearOfAJob(HearingAJob $hearing, int $wakes): array
+function whatWakesHearOfAJob(HearingTheJobs $hearing, int $wakes): array
 {
     $heard = [];
 
     for ($wake = 0; $wake < $wakes; $wake++) {
-        $heard[] = whatWasHeardFromAJobAsAWord($hearing->whatItSaid(aStackAJobRunsOn(), Session::of('a-session-not-a-secret'), Job::named(THE_JOB_FOLLOWED)));
+        $heard[] = whatWasHeardFromAJobAsAWord($hearing->whatTheySaid(aStackAJobRunsOn(), Session::of('a-session-not-a-secret'), Job::named(THE_JOB_FOLLOWED))->from(Job::named(THE_JOB_FOLLOWED)));
     }
 
     return $heard;
 }
 
 it('hears every line the job said, start, pull and step alike, in the order they arrived, and then nothing new', function (): void {
-    foreach (everyWayOfHearingAJob(
+    foreach (everyWayOfHearingTheJobs(
         [
             MockResponse::make(sprintf(
                 '%s%s%s',
@@ -145,7 +145,7 @@ it('hears every line the job said, start, pull and step alike, in the order they
 });
 
 it('takes no line another job said, or one no job said', function (): void {
-    foreach (everyWayOfHearingAJob(
+    foreach (everyWayOfHearingTheJobs(
         [MockResponse::make(sprintf(
             '%s%s',
             aStartLineOfTheJob('Waiting for the database', 'start-another'),
@@ -165,7 +165,7 @@ it('cannot hear a line that is blank or not text, and says so as an answer it co
         anEventTheJobSays('pull', 'not json at all'),
         aStartLineOfTheJob('Waiting for the database', '  '),
     ] as $said) {
-        foreach (everyWayOfHearingAJob(
+        foreach (everyWayOfHearingTheJobs(
             [MockResponse::make($said)],
             [WhatWasHeardFromAJob::met(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead))],
         ) as $which => $make) {
@@ -179,7 +179,7 @@ it('tells a session the stack refused from a stack that could not be heard, whil
         [MockResponse::make('{"error":"no"}', 401), Obstacle::of(KindOfObstacle::CredentialWasRefused)],
         [MockResponse::make('{"error":"gone"}', 500), Obstacle::of(KindOfObstacle::StackDidNotAnswer)],
     ] as [$answered, $why]) {
-        foreach (everyWayOfHearingAJob([$answered], [WhatWasHeardFromAJob::met($why)]) as $which => $make) {
+        foreach (everyWayOfHearingTheJobs([$answered], [WhatWasHeardFromAJob::met($why)]) as $which => $make) {
             expect(whatWakesHearOfAJob($make(), 1))->toBe([$why->kind()->value], $which);
         }
     }
@@ -210,8 +210,39 @@ it('opens a job\'s stream once while it is held, and again after it ended, resum
 });
 
 it('hears nothing new once let go of', function (): void {
-    foreach (everyWayOfHearingAJob([], []) as $which => $make) {
-        expect(whatWasHeardFromAJobAsAWord($make()->letGo()))->toBe('nothing new', $which);
+    foreach (everyWayOfHearingTheJobs([], []) as $which => $make) {
+        expect(whatWasHeardFromAJobAsAWord($make()->letGo()->from(Job::named(THE_JOB_FOLLOWED))))->toBe('nothing new', $which);
+    }
+});
+
+/** A job a screen follows beside the first, as the stack named it. */
+const THE_OTHER_JOB_FOLLOWED = 'set-the-library-once-landed';
+
+it('hears every job followed in the one reading, each its own lines, and nothing of a job not asked about', function (): void {
+    foreach ([
+        'the fake' => static fn(): HearingTheJobs => AJobThatSays::eachSaying([
+            THE_JOB_FOLLOWED => [WhatWasHeardFromAJob::said('Pulling sonarr')],
+            THE_OTHER_JOB_FOLLOWED => [WhatWasHeardFromAJob::said('Waiting on two downloads')],
+        ]),
+        'the adapter' => static function (): HearingTheJobs {
+            MockClient::destroyGlobal();
+            MockClient::global([MockResponse::make(sprintf(
+                '%s%s%s',
+                aPullLineOfTheJob('Pulling sonarr'),
+                aStartLineOfTheJob('Waiting on two downloads', THE_OTHER_JOB_FOLLOWED),
+                aStartLineOfTheJob('Not followed here', 'another-job'),
+            ))]);
+
+            return new JobLines(new PinnedClients());
+        },
+    ] as $which => $make) {
+        $heard = $make()->whatTheySaid(aStackAJobRunsOn(), Session::of('a-session-not-a-secret'), Job::named(THE_JOB_FOLLOWED), Job::named(THE_OTHER_JOB_FOLLOWED));
+
+        expect([
+            whatWasHeardFromAJobAsAWord($heard->from(Job::named(THE_JOB_FOLLOWED))),
+            whatWasHeardFromAJobAsAWord($heard->from(Job::named(THE_OTHER_JOB_FOLLOWED))),
+            whatWasHeardFromAJobAsAWord($heard->from(Job::named('another-job'))),
+        ])->toBe(['said Pulling sonarr', 'said Waiting on two downloads', 'nothing new'], $which);
     }
 });
 

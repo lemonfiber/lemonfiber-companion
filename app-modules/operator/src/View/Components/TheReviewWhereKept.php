@@ -8,6 +8,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhatAJobSaidAsShown;
 use Modules\Operator\Internal\WhereAStackIs;
 
 use function view;
@@ -20,6 +21,7 @@ final class TheReviewWhereKept extends Component
     public function __construct(
         public readonly string $key,
         public readonly TheSettingChangeTurnedOutToBe $going,
+        public readonly WhatAJobSaidAsShown $said,
         public readonly bool $settingsWouldNotOpen,
         public readonly WhereAStackIs $goes,
     ) {}

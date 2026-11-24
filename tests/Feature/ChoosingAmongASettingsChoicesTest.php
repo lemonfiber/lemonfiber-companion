@@ -47,6 +47,7 @@ use Modules\Kernel\Api\WhoseASettingIs;
 use Modules\Operator\Internal\Screens\HowThisPluginIsSet;
 use Tests\Support\AroundThePhone;
 use Tests\Support\ASettingChangeAsReported;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExtendsItself;
@@ -163,6 +164,7 @@ function theGuardsChoicesScreen(AStackThatTunesItsSettings $tuning): HowThisPlug
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        hearingTheJobs: AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => 'gluetun']);
     $screen->answer();
@@ -365,7 +367,7 @@ it('leaves nothing out of a change nobody opened, nor while the stack works on o
     $screen->leaveOut('vpn.type');
 
     expect($unopened)->toBeNull()
-        ->and($screen->following)->not->toBeNull()
+        ->and($screen->awaitsAnOutcome())->toBeTrue()
         ->and($screen->changing?->alongside)->toBe(['vpn.type' => 'openvpn']);
 });
 

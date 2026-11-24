@@ -18,7 +18,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * out name the same changes, and the keys here are the only difference between
  * *went back* and *would go back*, so a template cannot say one in the other's.
  */
-final readonly class HowPuttingARunBackWent
+final readonly class HowPuttingARunBackWent implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands           $stands        where the work stands, and whether the stack could be asked at all

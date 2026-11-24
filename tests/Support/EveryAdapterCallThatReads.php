@@ -452,7 +452,7 @@ final readonly class EveryAdapterCallThatReads
             'Players::now' => static fn(): object => new Players($clients)->now($stack, $session),
             'Players::heard' => static fn(): object => new Players($clients)->heard($stack, $session),
             'StartLines::whatItWaitsOn' => static fn(): object => new StartLines($clients)->whatItWaitsOn($stack, $session, Job::named('a-job')),
-            'JobLines::whatItSaid' => static fn(): object => new JobLines($clients)->whatItSaid($stack, $session, Job::named('a-job')),
+            'JobLines::whatTheySaid' => static fn(): object => new JobLines($clients)->whatTheySaid($stack, $session, Job::named('a-job')),
             'Pairers::make' => static fn(): object => new Pairers($clients, $entropy)->make($stack, $session),
             'Connectors::handOver' => static fn(): object => new Connectors($clients, $entropy)->handOver($stack, $session, SomebodyInTheHousehold::called('Sam')),
             'Connectors::whatBecameOf' => static fn(): object

@@ -10,6 +10,7 @@ use Modules\Kernel\Api\AnExistingSetup;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARelocation;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowPuttingItBackIsGoing;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
@@ -25,6 +26,7 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatACopyHolds;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
+use Modules\Kernel\Api\WhatWasHeardFromAJob;
 use Modules\Kernel\Api\WhatWroteACopy;
 use Modules\Kernel\Api\WhereTheDataGoes;
 use Modules\Kernel\Api\Whose;
@@ -35,6 +37,7 @@ use Modules\Operator\Internal\ViewModels\AScopeAsShown;
 use Modules\Operator\Internal\ViewModels\HowPuttingItBackWent;
 use Modules\Operator\Internal\ViewModels\WhatPuttingItBackWouldShow;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatPutsCopiesBack;
@@ -81,6 +84,7 @@ function thePuttingBackScreen(
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
     string $copy = 'lemonfiber-20260924-0300-full',
+    ?HearingTheJobs $hearing = null,
 ): PuttingACopyBack {
     $stack = theStackACopyGoesBackOn();
     $keychain ??= AKeychainInMemory::working();
@@ -89,7 +93,7 @@ function thePuttingBackScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new PuttingACopyBack($puttingBack, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), FrozenClock::at(Instant::atEpochSeconds(WHEN_A_COPY_IS_LISTED)));
+    $screen = new PuttingACopyBack($puttingBack, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), FrozenClock::at(Instant::atEpochSeconds(WHEN_A_COPY_IS_LISTED)), $hearing ?? AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $copy]);
 
     return $screen;
@@ -371,11 +375,11 @@ it('says a yes the stack stopped on a problem in its words, offers reading the l
     $screen->lookAgain();
 
     expect($screen->listed)->toBeNull()
-        ->and($screen->carriedOut)->toBeNull()
+        ->and($screen->followed)->toBe([])
         ->and($screen->answered)->toBeNull();
 
     expect($screen->wasAgreedTo())->toBeFalse()
-        ->and($screen->handle)->toBeNull()
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
         ->and($screen->answer()->went->cameBack())->toBeTrue()
         ->and($screen->answer()->refused)->toBeNull()
         ->and($puttingBack->rehearsed())->toHaveCount(2)
@@ -428,6 +432,16 @@ it('puts back exactly the listing it showed, and says it is running without draw
         ->and($drawn)->toContain(__('stacks.put_back.no_progress_while_running'))
         ->and($drawn)->not->toContain(__('stacks.a_rehearsal'))
         ->and($puttingBack->followed())->toBe([]);
+});
+
+it('draws what the restore says while the stack puts the copy back', function (): void {
+    $puttingBack = AStackThatPutsCopiesBack::listing(aListingOfTheCopy(toTheNewRoot()), HowPuttingItBackIsGoing::stillRunning());
+    $screen = thePuttingBackScreen($puttingBack, hearing: AJobThatSays::saying(WhatWasHeardFromAJob::said('Unpacking the archive')));
+    $screen->answer();
+    $screen->agree();
+    $screen->whileItRuns();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Unpacking the archive');
 });
 
 it('sends no yes before a listing has been read', function (): void {

@@ -13,6 +13,7 @@ use Modules\Kernel\Api\WhatWasFoundOfTheSettings;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Tests\Support\Fakes\ACameraInMemory;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExtendsItself;
@@ -56,6 +57,7 @@ final class ThePluginsScreen
             new AppsSettingsThatOpen(),
             AroundThePhone::listening(),
             $camera ?? ACameraInMemory::reading('tdarr'),
+            AJobThatSays::nothing(),
         );
         $screen->setParams(['stack' => $stack->id()->stored()]);
 

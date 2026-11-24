@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Api;
 
+use function array_key_exists;
+use function array_values;
 use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
@@ -19,11 +21,12 @@ use Lemonfiber\Sdk\Generated\StartEnvelope;
 use Lemonfiber\Sdk\Generated\StepEnvelope;
 use Modules\Kernel\Api\AJobSaidNothing;
 use Modules\Kernel\Api\EnvelopeIsNotRead;
-use Modules\Kernel\Api\HearingAJob;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\JobHasNoName;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
+use Modules\Kernel\Api\WhatTheJobsSaid;
 use Modules\Kernel\Api\WhatWasHeardFromAJob;
 use Modules\Sdk\Internal\TheStreamsHeld;
 use Modules\Sdk\Internal\WhatARefusalMeant;
@@ -31,11 +34,14 @@ use Modules\Sdk\Internal\WhoseLines;
 use Modules\Sdk\Internal\Wire;
 
 /**
- * The lines one job says on a stack's event stream: its `start`, `pull` and `step` lines, in the order they arrived.
+ * The lines the jobs a screen follows say on a stack's event stream: their `start`, `pull` and `step` lines, each job's in the order they arrived.
+ *
+ * Every job is heard in the one reading, because a reading takes what arrived
+ * since the last: a line read for one job is not there to read for another.
  *
  * Held as {@see StartLines} holds its stream, and bound fresh for each screen for its reason.
  */
-final readonly class JobLines implements HearingAJob
+final readonly class JobLines implements HearingTheJobs
 {
     private TheStreamsHeld $streams;
 
@@ -44,35 +50,54 @@ final readonly class JobLines implements HearingAJob
         $this->streams = new TheStreamsHeld($clients);
     }
 
-    public function whatItSaid(Stack $stack, Session $session, Job $job): WhatWasHeardFromAJob
+    public function whatTheySaid(Stack $stack, Session $session, Job $job, Job ...$others): WhatTheJobsSaid
     {
+        $jobs = [$job, ...array_values($others)];
+
         try {
             $arrived = $this->streams->taken($stack, $session);
             $lines = [];
 
-            foreach ($arrived->everySaidBy(WhoseLines::onlyOf($job), StartEnvelope::KIND, PullEnvelope::KIND, StepEnvelope::KIND) as $envelope) {
-                $lines[] = $this->lineIn($envelope);
+            foreach ($arrived->everySaidBy(WhoseLines::anyOf(...$jobs), StartEnvelope::KIND, PullEnvelope::KIND, StepEnvelope::KIND) as $envelope) {
+                $lines[(string) $envelope->job][] = $this->lineIn($envelope);
             }
 
             if ($arrived->ended) {
                 $this->streams->letGoOf($stack);
             }
 
-            return $lines === [] ? WhatWasHeardFromAJob::nothingNew() : WhatWasHeardFromAJob::said(...$lines);
+            return $this->heardIn($lines, $jobs);
         } catch (CertificateWasRefused|RequestFailed $why) {
-            return WhatWasHeardFromAJob::met(WhatARefusalMeant::obstacle($why));
+            return WhatTheJobsSaid::met(WhatARefusalMeant::obstacle($why));
         } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|AJobSaidNothing|WalkthroughIsUnreadable|EnvelopeIsNotRead|JobHasNoName $why) {
             $this->streams->letGoOf($stack);
 
-            return WhatWasHeardFromAJob::met($this->clients->whatStoodInTheWay($stack, $why));
+            return WhatTheJobsSaid::met($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
 
-    public function letGo(): WhatWasHeardFromAJob
+    public function letGo(): WhatTheJobsSaid
     {
         $this->streams->letGoOfEvery();
 
-        return WhatWasHeardFromAJob::nothingNew();
+        return WhatTheJobsSaid::nothingNew();
+    }
+
+    /**
+     * What each job asked about said, by the name the stack gave it.
+     *
+     * @param array<string, non-empty-list<string>> $lines
+     * @param list<Job>                             $jobs
+     */
+    private function heardIn(array $lines, array $jobs): WhatTheJobsSaid
+    {
+        $heard = WhatTheJobsSaid::nothingNew();
+
+        foreach ($jobs as $job) {
+            $heard = array_key_exists($job->shown(), $lines) ? $heard->with($job, WhatWasHeardFromAJob::said(...$lines[$job->shown()])) : $heard;
+        }
+
+        return $heard;
     }
 
     /**

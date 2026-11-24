@@ -72,6 +72,7 @@
              check. --}}
         @if ($waiting)
             <x-design::note>{{ __('config.landing.waiting') }}</x-design::note>
+            <x-operator::following-a-job :said="$landingSays" />
         @elseif ($proposal->comesTo->interrupts)
             <x-operator::note>{{ __('health.coming.interrupts') }}</x-operator::note>
             <x-design::action

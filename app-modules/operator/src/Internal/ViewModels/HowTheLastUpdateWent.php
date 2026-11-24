@@ -12,7 +12,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * where the stack stands, and only the update's own report says how each
  * service took it.
  */
-final readonly class HowTheLastUpdateWent
+final readonly class HowTheLastUpdateWent implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands               $stands               where the work stands, and whether the stack could be asked at all

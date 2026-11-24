@@ -17,6 +17,7 @@ use Modules\Kernel\Api\Arranging;
 use Modules\Kernel\Api\AskingHowItRunsWithoutLemonfiber;
 use Modules\Kernel\Api\AskingWhatSetupSettled;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowItRunsWithoutLemonfiber;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
@@ -77,11 +78,12 @@ final class WhatThisStackIsSetTo extends NativeComponent implements AwaitsAnOutc
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
     use ReadsAStackOnceAFrame;
     use ReadsHowItRunsWithout;
     use ReadsWhatSetupSettled;
-    use ProposesAChange;
+    use ProposesAChange, FindsItsWayAround {
+        ProposesAChange::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     /** The key for the name the share sheet shows the words under. */
     private const string COPY_NAMED = 'without.copy_named';
@@ -103,6 +105,7 @@ final class WhatThisStackIsSetTo extends NativeComponent implements AwaitsAnOutc
         protected readonly AskingWhatSetupSettled $askingSettled,
         private readonly Sharing $sharing,
         private readonly Translator $catalogue,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /**

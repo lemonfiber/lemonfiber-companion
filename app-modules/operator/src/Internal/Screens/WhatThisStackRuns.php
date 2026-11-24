@@ -9,6 +9,7 @@ use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AgreedTo;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\SecureStorage;
@@ -106,8 +107,9 @@ final class WhatThisStackRuns extends NativeComponent implements AwaitsAnOutcome
     use OffersTheAppsSettings;
     use TakesItsFormsAFrameLater;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
-    use SwitchesTheForms;
+    use SwitchesTheForms, FindsItsWayAround {
+        SwitchesTheForms::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     /**
      * Whether what is not installed is opened out.
@@ -125,12 +127,8 @@ final class WhatThisStackRuns extends NativeComponent implements AwaitsAnOutcome
         protected readonly WhatItListensWith $listening,
         private readonly KeepingWhatItRuns $kept,
         protected readonly Switching $switching,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
-
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->howTheSwitchIsGoing()->stands->isWorking();
-    }
 
     /**
      * What came back, asked once per frame.
@@ -149,7 +147,6 @@ final class WhatThisStackRuns extends NativeComponent implements AwaitsAnOutcome
     {
         return $this->formsOf($this->stack(), $this->storage, $this->supervising, $this->kept);
     }
-
 
     /**
      * Look again while the machine is settling into what it was told.
@@ -174,7 +171,6 @@ final class WhatThisStackRuns extends NativeComponent implements AwaitsAnOutcome
     {
         $this->showsWhatIsNotInstalled = ! $this->showsWhatIsNotInstalled;
     }
-
 
     /** The row that opens pausing or resuming the downloads. */
     public function pausingSays(WhatToDoWithTheDownloads $asked): string

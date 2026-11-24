@@ -122,6 +122,7 @@
             @if ($this->howTheSwitchIsGoing()->stands->went->cameBack())
                 @if ($this->howTheSwitchIsGoing()->stands->isWorking())
                     <x-design::standing :said="__('stacks.switch.working')" tone="working" />
+                    <x-operator::following-a-job :said="$this->whatItSays()" />
                 @elseif ($this->howTheSwitchIsGoing()->stands->hasEnded())
                     <x-operator::why-it-ended :stands="$this->howTheSwitchIsGoing()->stands" />
                     <x-design::notice tone="unknown">

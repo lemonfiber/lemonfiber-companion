@@ -22,7 +22,10 @@ use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
  * One change to the settings store put to the stack by `settings-set`: rehearsed, carried out on a yes to what the rehearsal described, and followed.
  *
  * The screen that uses it takes {@see \Modules\Kernel\Api\SettingWhatServicesRead}
- * as `$tuning` and {@see \Modules\Kernel\Api\SecureStorage} as `$storage`.
+ * as `$tuning` and {@see \Modules\Kernel\Api\SecureStorage} as `$storage`, and
+ * follows the job a change answers with as {@see ASettingChangeFollowed::InTheStore}
+ * through {@see FollowsAJob}, whose hooks it answers through
+ * {@see whatBecameOfTheChange()}.
  */
 trait PutsASettingChange
 {
@@ -32,39 +35,36 @@ trait PutsASettingChange
     /** What the stack last reported, rehearsed or written. */
     public ?TheSettingAsChanged $report = null;
 
-    /** The handle of the work being followed, while there is one. */
-    public ?string $following = null;
-
-    /** Where changing a setting has got to, once this frame has asked. Public for {@see Screens\WhatIsRunningHere::$answered}'s reason. */
-    public ?TheSettingChangeTurnedOutToBe $going = null;
-
     /** Leave what the change came to, keeping the setting open. */
     public function startAgain(): void
     {
         $this->asked = null;
         $this->report = null;
-        $this->following = null;
-        $this->going = null;
+        $this->forget(ASettingChangeFollowed::InTheStore);
     }
 
     /** Where changing a setting has got to, asked once per frame. */
     public function howItIsGoing(): TheSettingChangeTurnedOutToBe
     {
-        $following = $this->following;
+        $report = $this->whatBecameOfTheJob(ASettingChangeFollowed::InTheStore);
 
-        return $this->going ??= $following === null
-            ? new HowASettingChangeReads()->notAsked()
-            : $this->putToTheStore(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->tuning->whatBecameOf($stack, $session, Job::named($following)));
+        return $report instanceof TheSettingChangeTurnedOutToBe ? $report : new HowASettingChangeReads()->notAsked();
     }
 
     /** What the stack answered of a change to the settings store, or nothing where it refused one. */
     abstract protected function theStoreAnswered(?TheSettingAsChanged $report): void;
 
+    /** What became of the change to the settings store the job is for. */
+    protected function whatBecameOfTheChange(Stack $stack, Session $session, Job $job): TheSettingChangeTurnedOutToBe
+    {
+        return $this->heardFromTheStore($this->tuning->whatBecameOf($stack, $session, $job), $stack);
+    }
+
     private function rehearseInTheStore(ASettingChange $change): void
     {
         $this->startAgain();
         $this->asked = $change;
-        $this->going = $this->putToTheStore(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->tuning->rehearse($stack, $session, $change));
+        $this->reported($this->putToTheStore(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->tuning->rehearse($stack, $session, $change)), ASettingChangeFollowed::InTheStore);
     }
 
     /** Make the change the last rehearsal described; where none did, nothing is sent. */
@@ -79,7 +79,8 @@ trait PutsASettingChange
 
         $agreed = ASettingChangeAgreed::after($report, $asked);
         $this->report = null;
-        $this->going = $this->putToTheStore(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->tuning->carryOut($stack, $session, $agreed));
+        $this->forget(ASettingChangeFollowed::InTheStore);
+        $this->reported($this->putToTheStore(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->tuning->carryOut($stack, $session, $agreed)), ASettingChangeFollowed::InTheStore);
     }
 
     /**
@@ -106,24 +107,18 @@ trait PutsASettingChange
     {
         return $became->either(
             underway: function (Job $job): TheSettingChangeTurnedOutToBe {
-                $this->following = $job->shown();
+                $this->follow($job, ASettingChangeFollowed::InTheStore);
 
                 return new HowASettingChangeReads()->running();
             },
             answered: function (TheSettingAsChanged $report): TheSettingChangeTurnedOutToBe {
-                $this->following = null;
                 $this->report = $report;
                 $this->theStoreAnswered($report);
 
                 return new HowASettingChangeReads()->answered($report);
             },
-            ended: function (?WhyTheWorkEnded $why): TheSettingChangeTurnedOutToBe {
-                $this->following = null;
-
-                return new HowASettingChangeReads()->ended($why);
-            },
+            ended: fn(?WhyTheWorkEnded $why): TheSettingChangeTurnedOutToBe => new HowASettingChangeReads()->ended($why),
             refused: function (ARefusalInItsWords $why): TheSettingChangeTurnedOutToBe {
-                $this->following = null;
                 $this->theStoreAnswered(null);
 
                 return new HowASettingChangeReads()->refused($why);

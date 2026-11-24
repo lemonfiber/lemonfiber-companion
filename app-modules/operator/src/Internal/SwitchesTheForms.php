@@ -13,7 +13,6 @@ use function in_array;
 
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Form;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Session;
@@ -26,18 +25,22 @@ use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Presenters\HowTheSwitchReads;
 use Modules\Operator\Internal\ViewModels\TheFormsAsFound;
 use Modules\Operator\Internal\ViewModels\TheSwitchTurnedOutToBe;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
  * Making a chosen set of forms the active set: chosen from the forms the stack declares, rehearsed, and made only on a separate yes.
  *
  * The screen that uses it takes {@see \Modules\Kernel\Api\Switching} as a protected `$switching`.
+ * Rehearsing and switching each answer at once or as a job, followed by
+ * {@see FollowsOneJobAtATime}, which shows what the job says while it runs.
  *
  * @phpstan-require-extends NativeComponent
  */
 trait SwitchesTheForms
 {
+    /** @use FollowsOneJobAtATime<TheSwitchTurnedOutToBe> */
+    use FollowsOneJobAtATime;
+
     /** @var list<string> the forms chosen as the active set, by name */
     public array $switchingTo = [];
 
@@ -46,11 +49,6 @@ trait SwitchesTheForms
 
     /** The forms a yes sends, where the report on the screen is a rehearsal of them. */
     public ?TheFormsToSwitchTo $switchMayBeMade = null;
-
-    /** The handle of the work being followed, where there is one. */
-    public ?string $switchFollowing = null;
-
-    public ?TheSwitchTurnedOutToBe $switchGoing = null;
 
     abstract public function forms(): ?TheFormsAsFound;
 
@@ -67,7 +65,7 @@ trait SwitchesTheForms
     {
         $this->switchAsked = null;
         $this->switchMayBeMade = null;
-        $this->switchFollowing = null;
+        $this->forget();
 
         $declared = $this->forms()->names ?? [];
         $chosen = [];
@@ -79,14 +77,14 @@ trait SwitchesTheForms
         }
 
         if ($chosen === []) {
-            $this->switchGoing = new HowTheSwitchReads()->notAskable('stacks.switch.none_chosen');
+            $this->reported(new HowTheSwitchReads()->notAskable('stacks.switch.none_chosen'));
 
             return;
         }
 
         $forms = TheFormsToSwitchTo::these(...$chosen);
         $this->switchAsked = $forms;
-        $this->switchGoing = $this->switchPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->switching->rehearse($stack, $session, $forms));
+        $this->reported($this->switchPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->switching->rehearse($stack, $session, $forms)));
     }
 
     /** Make the switch the rehearsal on the screen was asked with. */
@@ -99,24 +97,28 @@ trait SwitchesTheForms
         }
 
         $this->switchMayBeMade = null;
-        $this->switchGoing = $this->switchPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->switching->carryOut($stack, $session, $forms));
-    }
-
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItSwitches(): void
-    {
-        if ($this->howTheSwitchIsGoing()->stands->isWorking()) {
-            $this->switchGoing = null;
-        }
+        $this->forget();
+        $this->reported($this->switchPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->switching->carryOut($stack, $session, $forms)));
     }
 
     public function howTheSwitchIsGoing(): TheSwitchTurnedOutToBe
     {
-        $following = $this->switchFollowing;
+        return $this->whatBecameOfTheJob();
+    }
 
-        return $this->switchGoing ??= $following === null
-            ? new HowTheSwitchReads()->notAsked()
-            : $this->switchPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->switching->whatBecameOf($stack, $session, Job::named($following)));
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): TheSwitchTurnedOutToBe
+    {
+        return $this->switchShown($this->switching->whatBecameOf($stack, $session, $job), $stack);
+    }
+
+    protected function whileNoJobIsFollowed(): TheSwitchTurnedOutToBe
+    {
+        return new HowTheSwitchReads()->notAsked();
+    }
+
+    protected function withNoSessionHeld(): TheSwitchTurnedOutToBe
+    {
+        return new HowTheSwitchReads()->signedOut();
     }
 
     /** @param Closure(Stack, Session): WhatBecameOfTheWork<TheSwitch> $asking */
@@ -137,12 +139,11 @@ trait SwitchesTheForms
     {
         return $became->either(
             underway: function (Job $job): TheSwitchTurnedOutToBe {
-                $this->switchFollowing = $job->shown();
+                $this->follow($job);
 
                 return new HowTheSwitchReads()->running();
             },
             answered: function (TheSwitch $switch): TheSwitchTurnedOutToBe {
-                $this->switchFollowing = null;
                 $this->switchMayBeMade = $switch->did() === WhetherItWasRehearsed::Rehearsed ? $this->switchAsked : null;
 
                 if (! $this->switchMayBeMade instanceof TheFormsToSwitchTo) {
@@ -151,18 +152,9 @@ trait SwitchesTheForms
 
                 return new HowTheSwitchReads()->answered($switch);
             },
-            ended: function (?WhyTheWorkEnded $why): TheSwitchTurnedOutToBe {
-                $this->switchFollowing = null;
-
-                return new HowTheSwitchReads()->ended($why);
-            },
-            refused: function (ARefusalInItsWords $why): TheSwitchTurnedOutToBe {
-                $this->switchFollowing = null;
-
-                return new HowTheSwitchReads()->refused($why);
-            },
+            ended: fn(?WhyTheWorkEnded $why): TheSwitchTurnedOutToBe => new HowTheSwitchReads()->ended($why),
+            refused: fn(ARefusalInItsWords $why): TheSwitchTurnedOutToBe => new HowTheSwitchReads()->refused($why),
             met: function (Obstacle $why) use ($stack): TheSwitchTurnedOutToBe {
-                $this->switchFollowing = null;
                 $this->letGoOfTheSession($why, $stack);
 
                 return new HowTheSwitchReads()->met($why);

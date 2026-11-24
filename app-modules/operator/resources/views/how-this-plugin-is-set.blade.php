@@ -1,3 +1,4 @@
+@use('Modules\Operator\Internal\ASettingChangeFollowed')
 @use('Modules\Kernel\Api\ChangingASetting')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
@@ -17,6 +18,7 @@
             :setting="$setting"
             :changing="$this->changing"
             :going="$this->howItIsGoing()"
+            :said="$this->whatItSays(ASettingChangeFollowed::InTheStore)"
             :offer-to-set="$this->offered(ChangingASetting::Set)"
             :offer-to-clear="$this->offered(ChangingASetting::Clear)"
             :settings-would-not-open="$this->theSettingsWouldNotOpen"

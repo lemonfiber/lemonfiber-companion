@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use function array_key_exists;
-use function is_string;
 
 use Modules\Kernel\Api\ACatalogueEntry;
 use Modules\Kernel\Api\APluginSource;
@@ -36,14 +35,17 @@ use Modules\Operator\Internal\ViewModels\ThePluginCatalogueAsShown;
  * The screen that uses it takes {@see \Modules\Kernel\Api\ExtendingTheStack}
  * as `$extending`, {@see \Modules\Kernel\Api\Adjusting} as `$adjusting`,
  * {@see \Modules\Kernel\Api\SettingWhatServicesRead} as `$tuning`, and
- * follows its own act under `$followingTheAct`, and draws a frame at a time
+ * follows its own act through {@see FollowsAJob} as {@see PluginActFollowed::TheAct},
+ * reading where it stands through its `answer()`, and draws a frame at a time
  * ({@see \Modules\Wayfinding\Api\Screens\DrawsItsTemplateAFrameAtATime}).
  */
 trait ChoosesFromTheCatalogue
 {
     use ProposesAChange {
         agree as agreeToTheChange;
-        awaitsAnOutcome as theChangeAwaitsAnOutcome;
+        whatBecameOfIt as whatBecameOfTheChangeFollowed;
+        whileNothingIsFollowed as whileNoChangeIsFollowed;
+        withoutASession as withoutASessionForTheChange;
     }
 
     /** The catalogue as drawn, once a frame has read it. Public for {@see Screens\WhatIsRunningHere::$answered}'s reason. */
@@ -70,7 +72,7 @@ trait ChoosesFromTheCatalogue
             $this->readsItsStack();
         }
 
-        if (is_string($this->followingTheAct) || ! $this->mayReadItsStack()) {
+        if ($this->awaitsAnOutcome(PluginActFollowed::TheAct) || ! $this->mayReadItsStack()) {
             return new HowThePluginCatalogueReads()->reading();
         }
 

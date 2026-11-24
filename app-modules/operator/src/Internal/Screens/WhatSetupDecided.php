@@ -18,6 +18,7 @@ use Modules\Kernel\Api\ACommandToHand;
 use Modules\Kernel\Api\Adjusting;
 use Modules\Kernel\Api\AskingWhatSetupDecided;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\Hosting;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
@@ -62,9 +63,10 @@ final class WhatSetupDecided extends NativeComponent implements AwaitsAnOutcome
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
     use ReadsAStackOnceAFrame;
-    use ProposesAChange;
+    use ProposesAChange, FindsItsWayAround {
+        ProposesAChange::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     private const string COPY_NAMED = 'decided.copy_named';
 
@@ -106,6 +108,7 @@ final class WhatSetupDecided extends NativeComponent implements AwaitsAnOutcome
         protected readonly WhatItListensWith $listening,
         private readonly Sharing $sharing,
         private readonly Translator $catalogue,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     public function again(): void

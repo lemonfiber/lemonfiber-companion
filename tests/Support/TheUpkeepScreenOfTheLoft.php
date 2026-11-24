@@ -30,6 +30,7 @@ use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 
 use function str_repeat;
 
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
@@ -107,7 +108,7 @@ final readonly class TheUpkeepScreenOfTheLoft
             $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
         }
 
-        $screen = new HowCurrentThisStackIs($keeping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noUpkeepYet(), $comingDown ?? AStackThatSaysWhatIsComingDown::nothing());
+        $screen = new HowCurrentThisStackIs($keeping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), WhatThePhoneKeeps::noUpkeepYet(), $comingDown ?? AStackThatSaysWhatIsComingDown::nothing(), AJobThatSays::nothing());
         $screen->setParams(['stack' => $stack->id()->stored()]);
 
         return $screen;

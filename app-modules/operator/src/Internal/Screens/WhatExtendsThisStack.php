@@ -11,7 +11,6 @@ use function array_values;
 use Closure;
 
 use function in_array;
-use function is_string;
 
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
@@ -28,8 +27,8 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\ExtendingIt;
 use Modules\Kernel\Api\ExtendingTheStack;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowExtendingItIsGoing;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
@@ -47,7 +46,9 @@ use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesFromTheCatalogue;
 use Modules\Operator\Internal\OffersTheAppsSettings;
+use Modules\Operator\Internal\PluginActFollowed;
 use Modules\Operator\Internal\Presenters\HowExtendingItReads;
+use Modules\Operator\Internal\ViewModels\SaysWhereTheWorkStands;
 use Modules\Operator\Internal\ViewModels\WhatExtendsItTurnedOutToBe;
 use Modules\Operator\Internal\WhatARowOffers;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
@@ -55,10 +56,11 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplateAFrameAtATime;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
+
+use UnitEnum;
 
 /**
  * The plugins on this machine, and installing, updating, removing or proving one, or running one of its demand recipes: each rehearsed, agreed to, and followed.
@@ -100,10 +102,11 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
     use DrawsItsTemplateAFrameAtATime;
     use ReadsACode;
-    use ChoosesFromTheCatalogue;
+    use ChoosesFromTheCatalogue, FindsItsWayAround {
+        ChoosesFromTheCatalogue::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     public const string TEMPLATE = 'operator::what-extends-this-stack';
 
@@ -134,14 +137,8 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     /** Every service the yes left unapproved to take its privileged shape, which a refusal of it names. */
     public ?TheShapesTaken $leftUnapproved = null;
 
-    /** The handle of the work being followed, while there is one. Not shown and never kept past this screen. */
-    public ?string $followingTheAct = null;
-
     /** Whether the work asked about is the act agreed to rather than its rehearsal. */
     public bool $agreed = false;
-
-    /** Where it has got to, once this frame has asked. Public for {@see WhatIsRunningHere::$answered}'s reason. */
-    public ?WhatExtendsItTurnedOutToBe $answered = null;
 
     public function __construct(
         private readonly ExtendingTheStack $extending,
@@ -152,24 +149,21 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
         private readonly Scanning $camera,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
-
-    /** The same question this screen's cadence asks, answered from what it last heard: the act, or turning reach on while the downloads land. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->answer()->stands->isWorking() || $this->theChangeAwaitsAnOutcome();
-    }
 
     /** Where it has got to, asked once per frame. */
     public function answer(): WhatExtendsItTurnedOutToBe
     {
-        return $this->answered ??= $this->asked();
+        $report = $this->whatBecameOfTheJob(PluginActFollowed::TheAct);
+
+        return $report instanceof WhatExtendsItTurnedOutToBe ? $report : new HowExtendingItReads()->ended(null);
     }
 
     /** Begin installing one: type where it comes from. */
     public function installOne(): void
     {
-        if (is_string($this->followingTheAct)) {
+        if ($this->awaitsAnOutcome(PluginActFollowed::TheAct)) {
             return;
         }
 
@@ -189,7 +183,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     /** Ask what installing from the typed source would do. A blank source asks nothing. */
     public function rehearse(): void
     {
-        if (is_string($this->followingTheAct) || trim($this->source) === '') {
+        if ($this->awaitsAnOutcome(PluginActFollowed::TheAct) || trim($this->source) === '') {
             return;
         }
 
@@ -198,9 +192,9 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         $this->act = ExtendingIt::Install;
         $this->subject = $source;
 
-        $this->answered = $this->putTheAct(
+        $this->reported($this->putTheAct(
             fn(Stack $stack, Session $session): HowExtendingItIsGoing => $this->extending->rehearseInstalling($stack, $session, $source),
-        );
+        ), PluginActFollowed::TheAct);
     }
 
     /**
@@ -259,7 +253,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         $this->approved = in_array($approval, $this->approved, strict: true)
             ? array_values(array_filter($this->approved, static fn(string $given): bool => $given !== $approval))
             : [...$this->approved, $approval];
-        $this->answered = null;
+        $this->reported(new HowExtendingItReads()->answered($rehearsal, $this->approved), PluginActFollowed::TheAct);
     }
 
     /**
@@ -282,13 +276,13 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         $this->rehearsal = null;
         $this->approved = [];
         $this->agreed = true;
-        $this->answered = $this->putTheAct($asking);
+        $this->reported($this->putTheAct($asking), PluginActFollowed::TheAct);
     }
 
     /** Back to what is installed, letting go of any source, rehearsal and approval. */
     public function backToThePlugins(): void
     {
-        if (is_string($this->followingTheAct)) {
+        if ($this->awaitsAnOutcome(PluginActFollowed::TheAct)) {
             return;
         }
 
@@ -299,32 +293,51 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     /**
      * Ask again, because the operator said so.
      *
-     * After work the stack took on, it asks after the same handle. Otherwise
-     * it reads what is installed afresh.
+     * After work the stack took on, it asks after the same job while it runs
+     * or could not be asked after. Otherwise it reads what is installed afresh.
      */
     public function again(): void
     {
-        $this->answered = null;
+        if ($this->awaitsAnOutcome(PluginActFollowed::TheAct) || ($this->follows(PluginActFollowed::TheAct) && ! $this->answer()->stands->went->cameBack())) {
+            $this->askAfterAgain(PluginActFollowed::TheAct);
 
-        if (is_string($this->followingTheAct)) {
             return;
         }
 
         $this->letGoOfTheRehearsal();
     }
 
-    /**
-     * Ask after the work again while the stack is at it.
-     *
-     * Nothing happens unless it is running. The interval is
-     * {@see HowOftenAScreenLooks}'s.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
+    /** What became of the act, or of a setting change the catalogue turned reach on with. */
+    protected function whatBecameOfIt(Stack $stack, Session $session, Job $job, UnitEnum $for): SaysWhereTheWorkStands
     {
-        if ($this->answer()->stands->isWorking()) {
-            $this->answered = null;
+        if ($for !== PluginActFollowed::TheAct) {
+            return $this->whatBecameOfTheChangeFollowed($stack, $session, $job, $for);
         }
+
+        $this->catalogueWaits = true;
+
+        return $this->shown($this->extending->whatBecameOf($stack, $session, $job), $stack);
+    }
+
+    /** Before any act: the rehearsal held, the source being typed, or what is installed. */
+    protected function whileNothingIsFollowed(UnitEnum $for): SaysWhereTheWorkStands
+    {
+        if ($for !== PluginActFollowed::TheAct) {
+            return $this->whileNoChangeIsFollowed($for);
+        }
+
+        $rehearsal = $this->rehearsal;
+
+        return match (true) {
+            $rehearsal instanceof ThePlugins => new HowExtendingItReads()->answered($rehearsal, $this->approved),
+            $this->typing => new HowExtendingItReads()->typing(),
+            default => $this->installedNow(),
+        };
+    }
+
+    protected function withoutASession(UnitEnum $for): SaysWhereTheWorkStands
+    {
+        return $for === PluginActFollowed::TheAct ? new HowExtendingItReads()->signedOut() : $this->withoutASessionForTheChange($for);
     }
 
     /**
@@ -369,7 +382,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
     {
         $listing = $this->listing;
 
-        if (is_string($this->followingTheAct) || ! $listing instanceof ThePlugins) {
+        if ($this->awaitsAnOutcome(PluginActFollowed::TheAct) || ! $listing instanceof ThePlugins) {
             return;
         }
 
@@ -385,34 +398,14 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         $this->act = $act;
         $this->subject = $chosen;
         $this->recipe = $running;
-        $this->answered = $this->putTheAct(
+        $this->reported($this->putTheAct(
             fn(Stack $stack, Session $session): HowExtendingItIsGoing => match (true) {
                 $act === ExtendingIt::Update => $this->extending->rehearseUpdating($stack, $session, $chosen),
                 $act === ExtendingIt::Prove => $this->extending->readProving($stack, $session, $chosen),
                 $running instanceof ARecipe => $this->extending->rehearseRunning($stack, $session, $chosen, $running),
                 default => $this->extending->rehearseRemoving($stack, $session, $chosen),
             },
-        );
-    }
-
-    /** What the stack is asked this frame: after the work, the rehearsal held, or what is installed. */
-    private function asked(): WhatExtendsItTurnedOutToBe
-    {
-        $following = $this->followingTheAct;
-
-        if (is_string($following)) {
-            return $this->putTheAct(
-                fn(Stack $stack, Session $session): HowExtendingItIsGoing => $this->extending->whatBecameOf($stack, $session, Job::named($following)),
-            );
-        }
-
-        $rehearsal = $this->rehearsal;
-
-        return match (true) {
-            $rehearsal instanceof ThePlugins => new HowExtendingItReads()->answered($rehearsal, $this->approved),
-            $this->typing => new HowExtendingItReads()->typing(),
-            default => $this->installedNow(),
-        };
+        ), PluginActFollowed::TheAct);
     }
 
     /** What is installed, asked now, or what the operator met instead. */
@@ -458,26 +451,17 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
 
         return $going->either(
             underway: function (Job $job) use ($act, $agreed): WhatExtendsItTurnedOutToBe {
-                $this->followingTheAct = $job->shown();
+                $this->follow($job, PluginActFollowed::TheAct);
 
                 return new HowExtendingItReads()->running($act, $agreed);
             },
             done: function (ThePlugins $plugins) use ($agreed): WhatExtendsItTurnedOutToBe {
-                $this->followingTheAct = null;
                 $this->rehearsal = ! $agreed && $plugins->agreement() !== '' ? $plugins : null;
 
                 return new HowExtendingItReads()->answered($plugins, $this->approved);
             },
-            refused: function (ARefusalInItsWords $why) use ($act, $agreed): WhatExtendsItTurnedOutToBe {
-                $this->followingTheAct = null;
-
-                return new HowExtendingItReads()->refused($why, $act, $agreed, $this->leftUnapproved ?? TheShapesTaken::these());
-            },
-            ended: function (?WhyTheWorkEnded $why): WhatExtendsItTurnedOutToBe {
-                $this->followingTheAct = null;
-
-                return new HowExtendingItReads()->ended($why);
-            },
+            refused: fn(ARefusalInItsWords $why): WhatExtendsItTurnedOutToBe => new HowExtendingItReads()->refused($why, $act, $agreed, $this->leftUnapproved ?? TheShapesTaken::these()),
+            ended: fn(?WhyTheWorkEnded $why): WhatExtendsItTurnedOutToBe => new HowExtendingItReads()->ended($why),
             met: function (Obstacle $why) use ($stack): WhatExtendsItTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 
@@ -497,7 +481,7 @@ final class WhatExtendsThisStack extends NativeComponent implements AwaitsAnOutc
         $this->recipe = null;
         $this->agreed = false;
         $this->typing = false;
-        $this->answered = null;
+        $this->forget(PluginActFollowed::TheAct);
         $this->catalogued = null;
     }
 }

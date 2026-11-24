@@ -7,6 +7,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\ASettingThatReaches;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\HowExtendingItIsGoing;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
@@ -22,6 +23,8 @@ use Modules\Kernel\Api\WhatAChangeComesTo;
 use Modules\Kernel\Api\WhatItHoldsNow;
 use Modules\Kernel\Api\WhatToSet;
 use Modules\Kernel\Api\WhereTheChangeStands;
+use Modules\Kernel\Api\WhetherToWait;
+use Modules\Operator\Internal\PluginActFollowed;
 use Modules\Operator\Internal\Presenters\AgoAsShown;
 use Modules\Operator\Internal\Screens\WhatExtendsThisStack;
 use Tests\Support\APluginAsItArrives;
@@ -314,7 +317,7 @@ it('reads no catalogue while an act is followed', function (): void {
     $screen->whileItRuns();
     WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->followingTheAct)->toBe('j-1')
+    expect($screen->followed[PluginActFollowed::TheAct->name]->job->shown())->toBe('j-1')
         ->and($screen->catalogue()->isBeingRead())->toBeTrue()
         ->and($extending->cataloguesRead())->toBe(0);
 });
@@ -341,9 +344,32 @@ it('reads the catalogue on the frame after the one where an act it followed came
     WhatTheDeviceWouldDraw::by($screen);
 
     expect($extending->asked())->toBe(['rehearse:tdarr', 'after:j-1'])
-        ->and($screen->followingTheAct)->toBeNull()
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
         ->and($cameBack->said())->toContain(aCatalogueLine('plugins.named', ['name' => 'Tdarr', 'version' => '2.1.0']))
         ->and($readsOnTheFrameItCameBack)->toBe(0)
         ->and($waited)->toBeTrue()
         ->and($extending->cataloguesRead())->toBe(1);
+});
+
+it('turns reach on once the downloads land, asking after the waiting on each wake, and reads the catalogue again once it is made', function (): void {
+    $adjusting = reachWouldBeTurnedOn();
+    $extending = aStackCataloguing(theCatalogueSwitchedOff());
+    $screen = theCatalogueOpen($extending, $adjusting);
+    WhatTheDeviceWouldDraw::by($screen);
+    $screen->change(THE_REACH_KEY);
+    $screen->wouldBe(THE_REACH_KEY);
+    $screen->agreeToTheChange(THE_REACH_KEY, WhetherToWait::ForTheDownloads->value);
+    $waited = $screen->awaitsAnOutcome();
+    $adjusting->thenBecomes(HowAgreedWorkIsGoing::done(WhereTheChangeStands::at(
+        ProposedChange::of(THE_REACH_KEY, 'on', WhatItHoldsNow::shown('off'), Cost::Cheap),
+        Stance::Applied,
+        WhatAChangeComesTo::nothing(),
+    )));
+    $screen->whileItRuns();
+
+    expect($waited)->toBeTrue()
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($screen->landing()->came?->went->cameBack())->toBeTrue()
+        ->and($screen->catalogueWaits)->toBeTrue()
+        ->and($extending->asked())->toBe([]);
 });

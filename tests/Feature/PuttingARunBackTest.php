@@ -41,6 +41,7 @@ use Modules\Operator\Internal\ViewModels\WhatPuttingARunBackWouldShow;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsARecord;
@@ -117,6 +118,7 @@ function thePuttingARunBackScreen(
         FrozenClock::at(Instant::atEpochSeconds(A_RUN_IS_PUT_BACK_AT)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $stamp]);
 

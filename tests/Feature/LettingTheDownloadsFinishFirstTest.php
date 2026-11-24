@@ -3,11 +3,13 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\ADownloadItWouldInterrupt;
+use Modules\Kernel\Api\AJobFollowed;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Cost;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\HowADownloadComes;
 use Modules\Kernel\Api\HowAgreedWorkIsGoing;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ProposedChange;
@@ -20,13 +22,20 @@ use Modules\Kernel\Api\WhatASettingHolds;
 use Modules\Kernel\Api\WhatItHoldsNow;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatToDoWithIt;
+use Modules\Kernel\Api\WhatWasHeardFromAJob;
 use Modules\Kernel\Api\WhereTheChangeStands;
 use Modules\Kernel\Api\WhetherToWait;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\WhyTheWorkEnded;
+use Modules\Operator\Internal\NotAJobItFollows;
+use Modules\Operator\Internal\PluginActFollowed;
+use Modules\Operator\Internal\Presenters\HowALandingReads;
+use Modules\Operator\Internal\RepairsFollowed;
 use Modules\Operator\Internal\Screens\WhatThisStackIsSetTo;
 use Modules\Operator\Internal\Screens\WhatToDoWithThis;
+use Modules\Operator\Internal\ViewModels\SaysWhereTheWorkStands;
 use Tests\Support\Catalogue;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AStackThatIsSet;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
@@ -244,7 +253,7 @@ it('lets them land, says it is waiting, and draws the change the stack made once
 
     $screen->agree('LIBRARY_PATH', 'for_the_downloads');
     $waiting = WhatTheDeviceWouldDraw::by($screen);
-    $screen->whileTheyLand();
+    $screen->whileItRuns();
     $stillWaiting = $screen->awaitsAnOutcome();
 
     $adjusting->thenBecomes(HowAgreedWorkIsGoing::done(WhereTheChangeStands::at(
@@ -252,7 +261,7 @@ it('lets them land, says it is waiting, and draws the change the stack made once
         Stance::Applied,
         WhatAChangeComesTo::nothing(),
     )));
-    $screen->whileTheyLand();
+    $screen->whileItRuns();
 
     expect($adjusting->landings())->toBe(1)
         ->and($adjusting->writes())->toBe(0)
@@ -260,7 +269,43 @@ it('lets them land, says it is waiting, and draws the change the stack made once
         ->and($waiting->offers())->not->toContain(__('health.coming.let_them_finish'))
         ->and($stillWaiting)->toBeTrue()
         ->and($screen->awaitsAnOutcome())->toBeFalse()
-        ->and($screen->proposal()?->wroteSomething)->toBeTrue();
+        ->and($screen->proposalFor('LIBRARY_PATH')?->wroteSomething)->toBeTrue();
+});
+
+it('draws what a landed change came to on its own row, leaving the review open since as it is', function (): void {
+    $adjusting = AStackToldToChangeSomething::saying(aChangeThatInterruptsAFilm());
+    $screen = aChangeAskedAbout($adjusting);
+    $screen->agree('LIBRARY_PATH', 'for_the_downloads');
+    $screen->change('LIBRARY_PATH');
+
+    $adjusting->thenBecomes(HowAgreedWorkIsGoing::done(WhereTheChangeStands::at(
+        ProposedChange::of('LIBRARY_PATH', '/data/films', WhatItHoldsNow::shown('/data/media'), Cost::Consequential),
+        Stance::Applied,
+        WhatAChangeComesTo::nothing(),
+    )));
+    $screen->whileItRuns();
+
+    expect($screen->proposed)->toBeNull()
+        ->and($screen->landing()->waitsToChange('LIBRARY_PATH'))->toBeFalse()
+        ->and($screen->proposalFor('LIBRARY_PATH')?->wroteSomething)->toBeTrue()
+        ->and($screen->proposalFor('BIND'))->toBeNull();
+});
+
+it('draws what the stack says while it waits for the downloads, on the row it will change', function (): void {
+    $adjusting = AStackToldToChangeSomething::saying(aChangeThatInterruptsAFilm());
+    $screen = TheSettingsOfTheLoft::screen(
+        AStackThatIsSet::to(Settings::of(Setting::called('LIBRARY_PATH', WhatASettingHolds::shown('/data/media'), WhoPutItThere::bundled()))),
+        $adjusting,
+        hearing: AJobThatSays::saying(WhatWasHeardFromAJob::said('Waiting on two downloads')),
+    );
+    $screen->change('LIBRARY_PATH');
+    $screen->__syncProperty('typed', '/data/films');
+    $screen->wouldBe('LIBRARY_PATH');
+    $screen->agree('LIBRARY_PATH', 'for_the_downloads');
+    $screen->whileItRuns();
+
+    expect($screen->landing()->waitsToChange('LIBRARY_PATH'))->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Waiting on two downloads');
 });
 
 it('reads what setup settled again once a change that let the downloads finish has landed', function (): void {
@@ -276,7 +321,7 @@ it('reads what setup settled again once a change that let the downloads finish h
         Stance::Applied,
         WhatAChangeComesTo::nothing(),
     )));
-    $screen->whileTheyLand();
+    $screen->whileItRuns();
     WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
 
     expect($settled->askings())->toBe($whileWaiting + 1);
@@ -287,14 +332,14 @@ it('says the change was not made where the stack stopped waiting or what it was 
     $screen = aChangeAskedAbout($adjusting);
     $screen->agree('LIBRARY_PATH', 'for_the_downloads');
     $adjusting->thenBecomes($became);
-    $screen->whileTheyLand();
+    $screen->whileItRuns();
 
     expect($screen->awaitsAnOutcome())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__($said));
 })->with([
-    'ended' => [HowAgreedWorkIsGoing::ended(WhyTheWorkEnded::LetGo), 'config.landing.ended'],
-    'no outcome' => [HowAgreedWorkIsGoing::noOutcome(), 'config.landing.ended'],
-    'moved' => [HowAgreedWorkIsGoing::moved(ARefusalInItsWords::said('The setting changed since it was read', '', WhatTheRefusalNamed::nothing())), 'config.landing.moved'],
+    'ended' => [HowAgreedWorkIsGoing::ended(WhyTheWorkEnded::LetGo), HowALandingReads::ENDED],
+    'no outcome' => [HowAgreedWorkIsGoing::noOutcome(), HowALandingReads::ENDED],
+    'moved' => [HowAgreedWorkIsGoing::moved(ARefusalInItsWords::said('The setting changed since it was read', '', WhatTheRefusalNamed::nothing())), HowALandingReads::MOVED],
 ]);
 
 it('says what stood in the way where the waiting could not be started or followed', function (): void {
@@ -307,12 +352,13 @@ it('says what stood in the way where the waiting could not be started or followe
     $followed = aChangeAskedAbout($adjusting);
     $followed->agree('LIBRARY_PATH', 'for_the_downloads');
     $adjusting->thenBecomes(HowAgreedWorkIsGoing::met($why));
-    $followed->whileTheyLand();
+    $followed->whileItRuns();
 
     expect($refused->awaitsAnOutcome())->toBeFalse()
-        ->and($refused->proposal()?->went->cameBack())->toBeFalse()
+        ->and($refused->proposed?->went->cameBack())->toBeFalse()
         ->and($followed->awaitsAnOutcome())->toBeFalse()
-        ->and($followed->proposal()?->went->cameBack())->toBeFalse();
+        ->and($followed->landing()->stands->went->cameBack())->toBeFalse()
+        ->and($followed->proposalFor('LIBRARY_PATH'))->toBeNull();
 });
 
 it('waits on nothing where what is let finish is not the setting open or nothing was typed into it', function (string $key, ?string $typed): void {
@@ -325,8 +371,8 @@ it('waits on nothing where what is let finish is not the setting open or nothing
     expect($adjusting->landings())->toBe(0)
         ->and($adjusting->writes())->toBe(0)
         ->and($screen->awaitsAnOutcome())->toBeFalse()
-        ->and($screen->proposal()?->key)->toBe('')
-        ->and($screen->proposal()?->went->cameBack())->toBeTrue();
+        ->and($screen->proposed?->key)->toBe('')
+        ->and($screen->proposed?->went->cameBack())->toBeTrue();
 })->with([
     'another setting' => ['BIND', '/data/films'],
     'nothing typed' => ['LIBRARY_PATH', null],
@@ -338,11 +384,21 @@ it('stops waiting and says the session ended where it went while the downloads l
     $screen->agree('LIBRARY_PATH', 'for_the_downloads');
     $keychain->forget(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id());
 
-    $screen->whileTheyLand();
-    $ended = $screen->proposal();
-    $screen->whileTheyLand();
+    $screen->whileItRuns();
+    $ended = $screen->landing();
+    $screen->whileItRuns();
 
-    expect($ended?->went->isSignedIn)->toBeFalse()
+    expect($ended->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->awaitsAnOutcome())->toBeFalse()
-        ->and($screen->proposal())->toBe($ended);
+        ->and($screen->landing())->toBe($ended);
 });
+
+it('answers for the change to the store and the landing, and for no other job it is made to follow', function (bool $signedIn): void {
+    $screen = TheSettingsOfTheLoft::screen(AStackThatIsSet::to(Settings::of(Setting::called('LIBRARY_PATH', WhatASettingHolds::shown('/data/media'), WhoPutItThere::bundled()))), signedIn: $signedIn);
+    $screen->followed = [PluginActFollowed::TheAct->name => AJobFollowed::named(Job::named('a-job-for-another-screen'))];
+    $screen->followedFor = [PluginActFollowed::TheAct->name => PluginActFollowed::TheAct];
+    $unfollowed = Closure::bind(static fn(WhatThisStackIsSetTo $asked): SaysWhereTheWorkStands => $asked->whatBecameOfTheJob(RepairsFollowed::TheYes), null, WhatThisStackIsSetTo::class);
+
+    expect($screen->whileItRuns(...))->toThrow(NotAJobItFollows::class)
+        ->and(static fn(): SaysWhereTheWorkStands => $unfollowed($screen))->toThrow(NotAJobItFollows::class);
+})->with(['signed in' => [true], 'signed out' => [false]]);

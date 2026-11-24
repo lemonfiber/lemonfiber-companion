@@ -7,6 +7,7 @@
     />
 @elseif ($going->stands->isWorking())
     <x-design::standing :said="__('plugins.settings.working')" tone="working" />
+    <x-operator::following-a-job :said="$said" />
 @elseif ($going->stands->hasEnded())
     <x-operator::why-it-ended :stands="$going->stands" />
     <x-design::notice tone="unknown">

@@ -50,7 +50,7 @@ use Modules\Kernel\Api\Granting;
 use Modules\Kernel\Api\Guarding;
 use Modules\Kernel\Api\HandingOverADevice;
 use Modules\Kernel\Api\Hearing;
-use Modules\Kernel\Api\HearingAJob;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HearingTheStart;
 use Modules\Kernel\Api\HearingTheWalk;
 use Modules\Kernel\Api\History;
@@ -312,7 +312,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // Holding the same stream for the lines one job says, which the screen
         // following that job draws. Bound for the same reason: each screen
         // holds its own.
-        $this->app->bind(HearingAJob::class, JobLines::class);
+        $this->app->bind(HearingTheJobs::class, JobLines::class);
 
         // What the household has asked its stack for, which the requests screen
         // reads. Beside `Asking` and built the same way: both go through

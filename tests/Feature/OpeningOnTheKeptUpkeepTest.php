@@ -16,8 +16,10 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\TakingAnUpdate;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
+use Modules\Operator\Internal\TheOnlyJob;
 use Modules\Updates\Api\KeepingTheLastUpkeep;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatKeepsCurrent;
@@ -87,6 +89,7 @@ function theCellarsUpdates(AStackThatKeepsCurrent $stack, KeepingTheLastUpkeep $
         AroundThePhone::listening(clock: FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_UPDATES_WERE_OPENED))),
         $kept,
         AStackThatSaysWhatIsComingDown::nothing(),
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $cellar->id()->stored()]);
 
@@ -224,7 +227,7 @@ function theCellarsUpdatesAfterARefusedTake(AStackThatKeepsCurrent $reading): Ho
     $taken->agree();
 
     $screen = theCellarsUpdates($reading, whatTheCellarKept());
-    $screen->lastUpdated = $taken->lastUpdate();
+    $screen->became = [TheOnlyJob::Followed->name => $taken->lastUpdate()];
 
     return $screen;
 }

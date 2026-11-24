@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARun;
@@ -14,8 +12,8 @@ use Modules\Kernel\Api\ARunPutBack;
 use Modules\Kernel\Api\ARunToPutBack;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\History;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\PuttingARunBack;
@@ -28,6 +26,7 @@ use Modules\Kernel\Api\UndoSaysNothing;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowARunBackReads;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
@@ -37,7 +36,6 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
@@ -49,8 +47,8 @@ use Native\Mobile\Edge\NativeComponent;
  * and how many changes go with it. Where a row says it cannot be put back, the
  * stack would put none of the run back, and nothing is offered.
  *
- * **Putting it back answers a handle,** followed on a declared cadence while it
- * runs, as putting a copy back is. The report leads with what was left and why,
+ * **Putting it back answers a job,** followed by {@see FollowsOneJobAtATime}, as
+ * putting a copy back is: while it runs the screen shows what the job says. The report leads with what was left and why,
  * because a run believed undone with part of it still standing is the machine
  * nobody has been told about. A rehearsal is labelled as one.
  *
@@ -69,7 +67,10 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
+    /** @use FollowsOneJobAtATime<HowPuttingARunBackWent> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use DrawsItsTemplate;
 
     public const string TEMPLATE = 'operator::putting-that-run-back';
@@ -92,12 +93,6 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
     /** Whether the operator has agreed, which is which of the two readings a frame draws. */
     public bool $agreed = false;
 
-    /** The handle agreeing answered. Not shown and never kept past this screen. */
-    public ?string $handle = null;
-
-    /** What became of the yes, once this frame has asked. */
-    public ?HowPuttingARunBackWent $carriedOut = null;
-
     public function __construct(
         private readonly History $history,
         private readonly PuttingARunBack $puttingBack,
@@ -106,13 +101,8 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
         private readonly Clock $clock,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
-
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->isWorking();
-    }
 
     /** The stamp of the run this screen is about, as the route carries it. */
     public function stampNamed(): string
@@ -135,7 +125,7 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
     /** What became of the yes, asked once per frame. */
     public function done(): HowPuttingARunBackWent
     {
-        return $this->carriedOut ??= $this->followed();
+        return $this->whatBecameOfTheJob();
     }
 
     /**
@@ -155,33 +145,33 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
 
         $stack = $this->stack();
         $this->agreed = true;
-        $this->handle = null;
+        $this->forget();
 
-        $this->carriedOut = $this->storage->resume($stack->id())->either(
+        $this->reported($this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowPuttingARunBackWent => $this->puttingBack->putBack($stack, $session, ARunAgreedTo::by($shown))->either(
                 started: function (Job $job): HowPuttingARunBackWent {
-                    $this->handle = $job->shown();
+                    $this->follow($job);
 
                     return new HowARunBackReads()->running();
                 },
                 met: $this->lettingGoIfRefused($stack, new HowARunBackReads()->met(...)),
             ),
             notHeld: static fn(): HowPuttingARunBackWent => new HowARunBackReads()->signedOut(),
-        );
+        ));
     }
 
     /**
      * Ask again, because the operator said so.
      *
-     * After a yes the stack took on, it asks after the same handle. Otherwise
+     * After a yes the stack took on, it asks after the same job. Otherwise
      * — before a yes, or after one the stack did not take on — it reads the record
      * afresh, since the record can move on and a refused yes put nothing back.
      */
     public function again(): void
     {
-        $this->carriedOut = null;
+        $this->askAfterAgain();
 
-        if ($this->agreed && is_string($this->handle)) {
+        if ($this->agreed && $this->follows()) {
             return;
         }
 
@@ -190,25 +180,32 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
         $this->answered = null;
     }
 
-    /**
-     * Ask after the run being put back while the stack is doing it.
-     *
-     * It does nothing unless that is running, so the record and a finished
-     * report are not read over and over. The interval is {@see HowOftenAScreenLooks}'s
-     * constant.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
-    {
-        if ($this->isWorking()) {
-            $this->carriedOut = null;
-        }
-    }
-
     /** Whether the stack is putting the run back right now. */
     public function isWorking(): bool
     {
         return $this->agreed && $this->done()->stands->isWorking();
+    }
+
+    /** What became of the yes. */
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): HowPuttingARunBackWent
+    {
+        return $this->puttingBack->whatBecameOf($stack, $session, $job)->either(
+            stillRunning: static fn(): HowPuttingARunBackWent => new HowARunBackReads()->running(),
+            done: static fn(ARunPutBack $report): HowPuttingARunBackWent => new HowARunBackReads()->done($report),
+            refused: static fn(ARefusalInItsWords $why): HowPuttingARunBackWent => new HowARunBackReads()->refused($why),
+            ended: static fn(?WhyTheWorkEnded $why): HowPuttingARunBackWent => new HowARunBackReads()->ended($why),
+            met: $this->lettingGoIfRefused($stack, new HowARunBackReads()->met(...)),
+        );
+    }
+
+    protected function whileNoJobIsFollowed(): HowPuttingARunBackWent
+    {
+        return new HowARunBackReads()->ended(null);
+    }
+
+    protected function withNoSessionHeld(): HowPuttingARunBackWent
+    {
+        return new HowARunBackReads()->signedOut();
     }
 
     /** Resume the session and read what the record says of the run. */
@@ -240,28 +237,4 @@ final class PuttingThatRunBack extends NativeComponent implements AwaitsAnOutcom
             met: $this->lettingGoIfRefused($stack, new HowARunBackReads()->notShown(...)),
         );
     }
-
-    /** Ask the stack what became of the yes. */
-    private function followed(): HowPuttingARunBackWent
-    {
-        $held = $this->handle;
-
-        if (! is_string($held)) {
-            return new HowARunBackReads()->ended(null);
-        }
-
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): HowPuttingARunBackWent => $this->puttingBack->whatBecameOf($stack, $session, Job::named($held))->either(
-                stillRunning: static fn(): HowPuttingARunBackWent => new HowARunBackReads()->running(),
-                done: static fn(ARunPutBack $report): HowPuttingARunBackWent => new HowARunBackReads()->done($report),
-                refused: static fn(ARefusalInItsWords $why): HowPuttingARunBackWent => new HowARunBackReads()->refused($why),
-                ended: static fn(?WhyTheWorkEnded $why): HowPuttingARunBackWent => new HowARunBackReads()->ended($why),
-                met: $this->lettingGoIfRefused($stack, new HowARunBackReads()->met(...)),
-            ),
-            notHeld: static fn(): HowPuttingARunBackWent => new HowARunBackReads()->signedOut(),
-        );
-    }
-
 }

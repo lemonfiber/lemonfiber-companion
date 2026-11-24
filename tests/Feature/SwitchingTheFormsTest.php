@@ -19,6 +19,7 @@ use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatSupervises;
@@ -63,6 +64,7 @@ function theScreenThatSwitches(AStackThatSwitches $switching, ?AStackThatSupervi
         AroundThePhone::listening(),
         WhatThePhoneKeeps::noListingYet(),
         $switching,
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
     WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
@@ -81,7 +83,7 @@ function aRehearsedSwitchToTheLibrary(AStackThatSwitches $switching): WhatThisSt
     $screen = theScreenThatSwitches($switching);
     $screen->toggleForm('library');
     $screen->rehearseTheSwitch();
-    $screen->whileItSwitches();
+    $screen->whileItRuns();
     $screen->howTheSwitchIsGoing();
 
     return $screen;
@@ -127,7 +129,7 @@ it('rehearses, follows the work, and draws what would stop, start and keep label
 
     expect($screen->awaitsAnOutcome())->toBeTrue();
 
-    $screen->whileItSwitches();
+    $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($screen->awaitsAnOutcome())->toBeFalse()
@@ -142,7 +144,7 @@ it('makes the switch the rehearsal was asked with, not what is chosen when the y
     $screen = aRehearsedSwitchToTheLibrary($switching);
     $screen->toggleForm('full');
     $screen->makeTheSwitch();
-    $screen->whileItSwitches();
+    $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect(array_map(theFormsSentToSwitch(...), $switching->carriedOut()))->toBe([['library']])
@@ -169,7 +171,7 @@ it('says the session ended where it went while the switch was rehearsed', functi
     $screen->toggleForm('library');
     $screen->rehearseTheSwitch();
     $keychain->forget(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id());
-    $screen->whileItSwitches();
+    $screen->whileItRuns();
 
     expect($screen->howTheSwitchIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->awaitsAnOutcome())->toBeFalse();
@@ -203,12 +205,12 @@ it('reads what the stack runs again once a switch is made, and not after a rehea
     $screen = theScreenThatSwitches(aStackThatSwitchesItsForms(), $supervising);
     $screen->toggleForm('library');
     $screen->rehearseTheSwitch();
-    $screen->whileItSwitches();
+    $screen->whileItRuns();
     $screen->howTheSwitchIsGoing();
     WhatTheDeviceWouldDraw::by($screen);
     $readAfterTheRehearsal = $supervising->askings();
     $screen->makeTheSwitch();
-    $screen->whileItSwitches();
+    $screen->whileItRuns();
     $screen->howTheSwitchIsGoing();
     WhatTheDeviceWouldDraw::by($screen);
 

@@ -8,9 +8,7 @@
 
 @if ($this->answer()->stands->isWorking())
     <x-operator::emphasis>{{ __($this->answer()->words->working) }}</x-operator::emphasis>
-
-    {{-- The stack says nothing of a job until it finishes, so the screen
-         asks again on its cadence rather than drawing progress. --}}
+    <x-operator::following-a-job :said="$this->whatItSays()" />
 @elseif ($this->answer()->stands->hasEnded())
     <x-operator::why-it-ended :stands="$this->answer()->stands" />
     {{-- Not a failure. After a yes the files may well have gone back, and

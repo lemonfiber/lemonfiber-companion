@@ -13,7 +13,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * any service left unapproved to take its shape, or the work ended with no
  * outcome.
  */
-final readonly class WhatExtendsItTurnedOutToBe
+final readonly class WhatExtendsItTurnedOutToBe implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands         $stands    where the work stands, not asked while a source is typed, and whether the stack could be asked at all
