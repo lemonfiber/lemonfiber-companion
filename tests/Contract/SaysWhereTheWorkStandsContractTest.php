@@ -18,6 +18,8 @@ use Modules\Operator\Internal\Presenters\HowASettingChangeReads;
 use Modules\Operator\Internal\Presenters\HowExtendingItReads;
 use Modules\Operator\Internal\Presenters\HowForgettingReads;
 use Modules\Operator\Internal\Presenters\HowGivingRoomBackReads;
+use Modules\Operator\Internal\Presenters\HowLettingItGoReads;
+use Modules\Operator\Internal\Presenters\HowPausingReads;
 use Modules\Operator\Internal\Presenters\HowPuttingItBackReads;
 use Modules\Operator\Internal\Presenters\HowTheAcceptanceReads;
 use Modules\Operator\Internal\Presenters\HowTheAllowanceChangeReads;
@@ -30,6 +32,8 @@ use Modules\Operator\Internal\Presenters\HowTheRemovalReads;
 use Modules\Operator\Internal\Presenters\HowTheSwitchReads;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
 use Modules\Operator\Internal\ViewModels\HowGivingItBackWent;
+use Modules\Operator\Internal\ViewModels\HowLettingItGoWent;
+use Modules\Operator\Internal\ViewModels\HowPausingWent;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
 use Modules\Operator\Internal\ViewModels\HowPuttingItBackWent;
 use Modules\Operator\Internal\ViewModels\HowTheCopyWent;
@@ -49,6 +53,8 @@ use Modules\Operator\Internal\ViewModels\TheReplacementTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheSwitchTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatExtendsItTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\WhatLettingItGoWouldShow;
+use Modules\Operator\Internal\ViewModels\WhatPausingWouldShow;
 use Modules\Operator\Internal\ViewModels\WhatTheStackWouldPutRight;
 use Modules\Operator\Internal\ViewModels\WhatThisStackPutRight;
 
@@ -179,6 +185,26 @@ function everyReportOnWork(): array
             'running' => new HowGivingRoomBackReads()->running(),
             'ended' => new HowGivingRoomBackReads()->ended(null),
             'met' => new HowGivingRoomBackReads()->met($stood),
+        ],
+        WhatLettingItGoWouldShow::class => [
+            'running' => new HowLettingItGoReads()->stillWorkingItOut(),
+            'ended' => new HowLettingItGoReads()->offerEnded(null),
+            'met' => new HowLettingItGoReads()->notOffered($stood),
+        ],
+        HowLettingItGoWent::class => [
+            'running' => new HowLettingItGoReads()->running(),
+            'ended' => new HowLettingItGoReads()->ended(null),
+            'met' => new HowLettingItGoReads()->met($stood),
+        ],
+        WhatPausingWouldShow::class => [
+            'running' => new HowPausingReads()->stillWorkingItOut(),
+            'ended' => new HowPausingReads()->offerEnded(null),
+            'met' => new HowPausingReads()->notOffered($stood),
+        ],
+        HowPausingWent::class => [
+            'running' => new HowPausingReads()->running(),
+            'ended' => new HowPausingReads()->ended(null),
+            'met' => new HowPausingReads()->met($stood),
         ],
     ];
 }

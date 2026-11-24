@@ -10,7 +10,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * An offer throughout: nothing here describes something that has happened,
  * and every field is empty where the stack has not offered yet.
  */
-final readonly class WhatLettingItGoWouldShow
+final readonly class WhatLettingItGoWouldShow implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands $stands           where the work stands, and whether the stack could be asked at all

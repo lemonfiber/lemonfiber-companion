@@ -10,7 +10,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * Each client's line is drawn from what it read back after it was asked, never
  * from the rehearsal above it.
  */
-final readonly class HowPausingWent
+final readonly class HowPausingWent implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands            $stands         where the work stands, and whether the stack could be asked at all

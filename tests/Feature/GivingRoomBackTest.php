@@ -184,8 +184,7 @@ it('gives back that category of that offer alone, and follows it', function (): 
 
 it('says the session has ended when it is lost while the room is given back, and follows it no further', function (): void {
     $keychain = AKeychainInMemory::working();
-    $underway = WhatBecameOfTheWork::underway(Job::named(AStackThatGivesBackRoom::THE_GIVING_BACK));
-    $givingBack = AStackThatGivesBackRoom::answering($underway, $underway);
+    $givingBack = AStackThatGivesBackRoom::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatGivesBackRoom::THE_GIVING_BACK)));
     $screen = theGivingBackScreen(AStackThatMeasuresItsRoom::with(aRoomOffering(theOrphansOnOffer())), $givingBack, $keychain);
     $screen->answer();
     $screen->agree();

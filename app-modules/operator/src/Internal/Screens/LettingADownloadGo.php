@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\ADownloadHeld;
 use Modules\Kernel\Api\ADownloadLetGo;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\SecureStorage;
@@ -22,8 +20,10 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatLettingItGoCosts;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsAJob;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowLettingItGoReads;
+use Modules\Operator\Internal\TheOfferAndItsYes;
 use Modules\Operator\Internal\ViewModels\HowLettingItGoWent;
 use Modules\Operator\Internal\ViewModels\WhatLettingItGoWouldShow;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
@@ -31,10 +31,11 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
+
+use UnitEnum;
 
 /**
  * Stopping seeding one completed download, its cost stated first and carried out only on a yes.
@@ -67,20 +68,14 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
+    /** @use FollowsAJob<WhatLettingItGoWouldShow|HowLettingItGoWent> */
+    use FollowsAJob, FindsItsWayAround {
+        FollowsAJob::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use DrawsItsTemplate;
 
     public const string TEMPLATE = 'operator::letting-a-download-go';
 
-    /**
-     * What the offer came to, once the frame has asked.
-     *
-     * `public` for {@see HowCurrentThisStackIs::$answered}'s reason.
-     */
-    public ?WhatLettingItGoWouldShow $answered = null;
-
-    /** The handle asking what it would cost answered. Not shown and never kept past this screen. */
-    public ?string $asking = null;
 
     /**
      * The offer, while there is one to agree to.
@@ -93,11 +88,6 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
     /** Whether the operator has agreed, which is which of the two readings a frame draws. */
     public bool $agreed = false;
 
-    /** The handle agreeing answered. Not shown and never kept past this screen. */
-    public ?string $handle = null;
-
-    /** What became of the yes, once this frame has asked. */
-    public ?HowLettingItGoWent $carriedOut = null;
 
     public function __construct(
         private readonly StoppingSeeding $stopping,
@@ -105,13 +95,9 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->isWorking();
-    }
 
     /** The download this screen is about, by the name the route carries. */
     public function downloadNamed(): string
@@ -122,7 +108,9 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
     /** What stopping seeding would cost, asked once per frame. */
     public function answer(): WhatLettingItGoWouldShow
     {
-        return $this->answered ??= $this->ask();
+        $report = $this->whatBecameOfTheJob(TheOfferAndItsYes::TheOffer);
+
+        return $report instanceof WhatLettingItGoWouldShow ? $report : new HowLettingItGoReads()->notAsked();
     }
 
     /** Whether the operator has agreed to the offer. */
@@ -134,7 +122,9 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
     /** What became of the yes, asked once per frame. */
     public function done(): HowLettingItGoWent
     {
-        return $this->carriedOut ??= $this->followed();
+        $report = $this->whatBecameOfTheJob(TheOfferAndItsYes::TheYes);
+
+        return $report instanceof HowLettingItGoWent ? $report : new HowLettingItGoReads()->ended(null);
     }
 
     /**
@@ -153,19 +143,18 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
 
         $stack = $this->stack();
         $this->agreed = true;
-        $this->handle = null;
-
-        $this->carriedOut = $this->storage->resume($stack->id())->either(
+        $this->forget(TheOfferAndItsYes::TheYes);
+        $this->reported($this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowLettingItGoWent => $this->stopping->stop($stack, $session, $offer)->either(
                 started: function (Job $job): HowLettingItGoWent {
-                    $this->handle = $job->shown();
+                    $this->follow($job, TheOfferAndItsYes::TheYes);
 
                     return new HowLettingItGoReads()->running();
                 },
                 met: $this->lettingGoIfRefused($stack, new HowLettingItGoReads()->met(...)),
             ),
             notHeld: static fn(): HowLettingItGoWent => new HowLettingItGoReads()->signedOut(),
-        );
+        ), TheOfferAndItsYes::TheYes);
     }
 
     /**
@@ -178,49 +167,45 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
      */
     public function again(): void
     {
-        $this->carriedOut = null;
+        if ($this->agreed && $this->follows(TheOfferAndItsYes::TheYes)) {
+            $this->askAfterAgain(TheOfferAndItsYes::TheYes);
 
-        if ($this->agreed && is_string($this->handle)) {
             return;
         }
 
-        if ($this->answered?->stands->isWorking() !== true) {
-            $this->asking = null;
+        if (! $this->awaitsAnOutcome(TheOfferAndItsYes::TheOffer)) {
+            $this->forget(TheOfferAndItsYes::TheOffer);
         }
 
+        $this->askAfterAgain(TheOfferAndItsYes::TheOffer);
+
+        $this->forget(TheOfferAndItsYes::TheYes);
         $this->agreed = false;
         $this->offered = null;
-        $this->answered = null;
     }
 
-    /**
-     * Read again while the stack is working something out or carrying it out.
-     *
-     * It does nothing unless one of those is running, so an offer on the
-     * screen and a finished report are not read over and over, and it only
-     * ever reads: the yes is sent by {@see agree()} and nothing else. The
-     * interval is {@see HowOftenAScreenLooks}'s constant.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
+    protected function whatBecameOfIt(Stack $stack, Session $session, Job $job, UnitEnum $for): WhatLettingItGoWouldShow|HowLettingItGoWent
     {
-        if (! $this->isWorking()) {
-            return;
-        }
-
-        if ($this->agreed) {
-            $this->carriedOut = null;
-
-            return;
-        }
-
-        $this->answered = null;
+        return match (TheOfferAndItsYes::asked($for)) {
+            TheOfferAndItsYes::TheOffer => $this->offer($stack, $session, $job),
+            TheOfferAndItsYes::TheYes => $this->yesCameTo($stack, $session, $job),
+        };
     }
 
-    /** Whether the stack is working out the offer, or stopping the seeding, right now. */
-    public function isWorking(): bool
+    protected function whileNothingIsFollowed(UnitEnum $for): WhatLettingItGoWouldShow|HowLettingItGoWent
     {
-        return $this->agreed ? $this->done()->stands->isWorking() : $this->answer()->stands->isWorking();
+        return match (TheOfferAndItsYes::asked($for)) {
+            TheOfferAndItsYes::TheOffer => $this->ask(),
+            TheOfferAndItsYes::TheYes => new HowLettingItGoReads()->ended(null),
+        };
+    }
+
+    protected function withoutASession(UnitEnum $for): WhatLettingItGoWouldShow|HowLettingItGoWent
+    {
+        return match (TheOfferAndItsYes::asked($for)) {
+            TheOfferAndItsYes::TheOffer => new HowLettingItGoReads()->notAsked(),
+            TheOfferAndItsYes::TheYes => new HowLettingItGoReads()->signedOut(),
+        };
     }
 
     /** Resume the session and ask what stopping seeding the download would cost. */
@@ -240,24 +225,14 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
         );
     }
 
-    /**
-     * Read the asking's handle, asking first where there is none.
-     *
-     * A handle already in hand is read, and only the absence of one asks the
-     * stack anything, so reading again is never a second piece of work on
-     * somebody's machine.
-     */
+    /** Ask what letting it go would cost, and follow the asking it starts. */
     private function read(Stack $stack, Session $session, ADownloadHeld $download): WhatLettingItGoWouldShow
     {
-        $held = $this->asking;
-
-        if (is_string($held)) {
-            return $this->offer($stack, $session, Job::named($held));
-        }
 
         return $this->stopping->whatItWouldCost($stack, $session, $download)->either(
             started: function (Job $job) use ($stack, $session): WhatLettingItGoWouldShow {
-                $this->asking = $job->shown();
+                $this->follow($job, TheOfferAndItsYes::TheOffer);
+
 
                 return $this->offer($stack, $session, $job);
             },
@@ -281,25 +256,13 @@ final class LettingADownloadGo extends NativeComponent implements AwaitsAnOutcom
     }
 
     /** Ask the stack what became of the yes. */
-    private function followed(): HowLettingItGoWent
+    private function yesCameTo(Stack $stack, Session $session, Job $job): HowLettingItGoWent
     {
-        $held = $this->handle;
-
-        if (! is_string($held)) {
-            return new HowLettingItGoReads()->ended(null);
-        }
-
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): HowLettingItGoWent => $this->stopping->whatBecameOf($stack, $session, Job::named($held))->either(
-                stillRunning: static fn(): HowLettingItGoWent => new HowLettingItGoReads()->running(),
-                done: static fn(ADownloadLetGo $report): HowLettingItGoWent => new HowLettingItGoReads()->done($report),
-                ended: static fn(?WhyTheWorkEnded $why): HowLettingItGoWent => new HowLettingItGoReads()->ended($why),
-                met: $this->lettingGoIfRefused($stack, new HowLettingItGoReads()->met(...)),
-            ),
-            notHeld: static fn(): HowLettingItGoWent => new HowLettingItGoReads()->signedOut(),
+        return $this->stopping->whatBecameOf($stack, $session, $job)->either(
+            stillRunning: static fn(): HowLettingItGoWent => new HowLettingItGoReads()->running(),
+            done: static fn(ADownloadLetGo $report): HowLettingItGoWent => new HowLettingItGoReads()->done($report),
+            ended: static fn(?WhyTheWorkEnded $why): HowLettingItGoWent => new HowLettingItGoReads()->ended($why),
+            met: $this->lettingGoIfRefused($stack, new HowLettingItGoReads()->met(...)),
         );
     }
-
 }

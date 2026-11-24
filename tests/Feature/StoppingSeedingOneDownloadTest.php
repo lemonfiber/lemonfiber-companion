@@ -31,6 +31,7 @@ use Modules\Operator\Internal\ViewModels\WhatLettingItGoWouldShow;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatStopsSeeding;
@@ -89,7 +90,7 @@ function theLettingGoScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new LettingADownloadGo($stopping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new LettingADownloadGo($stopping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $download]);
 
     return $screen;
@@ -239,7 +240,7 @@ it('says the stack is still working out the cost, on the cadence it reads again 
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect(everythingTheOfferToLetGoShows($screen->answer()))->toBe(nothingOfferedToLetGo(['isWorking' => true]))
-        ->and($screen->isWorking())->toBeTrue()
+        ->and($screen->awaitsAnOutcome())->toBeTrue()
         ->and($drawn->said())->toContain(__('stacks.let_go.working_it_out', ['download' => 'Some.Film.2024']))
         ->and($drawn->offers())->toBe([__('health.ask_again')]);
 
@@ -325,7 +326,7 @@ it('stops seeding exactly the offer it showed, and says it is doing so on its ca
 
     expect(array_map(static fn(WhatLettingItGoCosts $offer): string => $offer->agreement(), $stopping->agreed()))->toBe(['stop-seeding-some-film-2024'])
         ->and($screen->wasAgreedTo())->toBeTrue()
-        ->and($screen->isWorking())->toBeTrue()
+        ->and($screen->awaitsAnOutcome())->toBeTrue()
         ->and(everythingLettingGoShows($screen->done()))->toBe(nothingReportedOfLettingGo(['isWorking' => true]))
         ->and($drawn)->toContain(__('stacks.let_go.letting_go', ['download' => 'Some.Film.2024']))
         ->and($drawn)->not->toContain(__('stacks.let_go.what_it_costs'))
@@ -337,6 +338,37 @@ it('stops seeding exactly the offer it showed, and says it is doing so on its ca
     expect($stopping->followed())->toHaveCount(1)
         ->and($stopping->followed()[0]->shown())->toBe(AStackThatStopsSeeding::THE_JOB)
         ->and($stopping->agreed())->toHaveCount(1);
+});
+
+it('asks for a session when it is lost while the cost is worked out, and follows the asking no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $stopping = AStackThatStopsSeeding::offering(HowTheOfferToLetGoIsGoing::stillRunning(), HowLettingItGoIsGoing::stillRunning());
+    $screen = theLettingGoScreen($stopping, $keychain);
+    $screen->answer();
+    $screen->whileItRuns();
+    $keychain->forget(theStackADownloadIsLetGoOn()->id());
+    $screen->whileItRuns();
+
+    expect(everythingTheOfferToLetGoShows($screen->answer()))->toBe(nothingOfferedToLetGo(['cameBack' => false, 'isSignedIn' => false]))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.sign_in'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($stopping->read())->toHaveCount(2);
+});
+
+it('says the session has ended when it is lost while the download is let go, and follows it no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $stopping = aStackOfferingToLetTheFilmGo(HowLettingItGoIsGoing::stillRunning());
+    $screen = theLettingGoScreen($stopping, $keychain);
+    $screen->answer();
+    $screen->agree();
+    $screen->whileItRuns();
+    $keychain->forget(theStackADownloadIsLetGoOn()->id());
+    $screen->whileItRuns();
+
+    expect($screen->done()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($stopping->followed())->toHaveCount(1);
 });
 
 it('sends no yes before an offer has been read, and never on its cadence', function (): void {
@@ -416,7 +448,7 @@ it('says what stood in the way of a yes the stack refused, and asks for the offe
     $screen->agree();
 
     expect(everythingLettingGoShows($screen->done()))->toBe(nothingReportedOfLettingGo(['cameBack' => false, 'met' => KindOfObstacle::StackDidNotAnswer->said()]))
-        ->and($screen->isWorking())->toBeFalse()
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 
     $screen->again();
