@@ -50,9 +50,6 @@ final readonly class Because
      */
     public function either(Closure $alone, Closure $explained): object
     {
-        // Read off the arm that carries something, as `WhatTheCheckSaid` does:
-        // the arm with a cause is the one this type is written around, and a
-        // fall-through is how a branch becomes the one nobody tested.
         return $this->check instanceof Check
             ? $explained($this->check)
             : $alone();

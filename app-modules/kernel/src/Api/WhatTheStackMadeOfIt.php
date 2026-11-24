@@ -62,7 +62,6 @@ final readonly class WhatTheStackMadeOfIt
      */
     public function either(Closure $said, Closure $refused): object
     {
-        // Read off the refusal, as the rest of these do.
         return $this->answered instanceof Obstacle
             ? $refused($this->answered)
             : $said($this->answered);

@@ -48,10 +48,6 @@ final readonly class TheStandIns
      */
     public static function all(): array
     {
-        // One store for the four ports that sit on one. The device's keychain
-        // is a single place, and stand-ins that each held their own would
-        // disagree with each other about what this device knows — a session
-        // kept under a stack the session store had never heard of.
         $store = new TheStoreThisRunKeeps();
 
         return [

@@ -441,22 +441,12 @@ enum KindOfObstacle: string
     public function severity(): Severity
     {
         return match ($this) {
-            // Nothing is broken here either, and this is the sharper case:
-            // the refusal is correct. A member who may not ask for a thing
-            // is not looking at a fault, and an app that demanded attention
-            // for it would be raising an alarm about the rules working.
             self::DeviceHasNoNetwork,
             self::TooManyAttempts,
             self::NotForThisAccount,
-            // A media server that is restarting clears itself, and nothing about
-            // the account is wrong; an alarm here would send a member looking
-            // for a fault in the one place there is none.
             self::MediaServerDidNotAnswer,
             self::HouseholdCouldNotBeRead,
-            // Other work holding the stack is the stack working; the refusal
-            // clears itself once that work is done.
             self::StackIsBusy,
-            // Nothing is broken: the stack works, and is older than this.
             self::NotOnThisStack,
             self::InvitationNotOpen,
             self::ChosenPasswordTooShort => Severity::Warning,
@@ -488,36 +478,20 @@ enum KindOfObstacle: string
         return match ($this) {
             self::DeviceHasNoNetwork,
             self::StackDidNotAnswer,
-            // Starting lemonfiber happens on the machine, where this app
-            // cannot reach.
             self::ConnectionWasTurnedAway,
-            // Waiting is the whole remedy, and it is not a thing the app can
-            // offer to do: a button here would either do nothing or make the
-            // wait longer, which is the one outcome worse than no button.
             self::TooManyAttempts,
-            // Entitlement is the household operator's to give, somewhere
-            // this application cannot reach. A button would either do
-            // nothing or promise a member something the app cannot deliver.
             self::NotForThisAccount,
-            // The media server is the household's, on a machine this app does not
-            // reach; the remedy is waiting for it, not a button.
             self::MediaServerDidNotAnswer,
             self::HouseholdCouldNotBeRead,
-            // Updating the app or the machine, and waiting for other work,
-            // both happen where this app cannot act.
             self::VersionsDisagree,
             self::AnswerCouldNotBeRead,
             self::StackIsBusy => Standing::Guided,
             self::LocalNetworkIsNotPermitted,
             self::CredentialWasRefused,
             self::AddressIsNotTheStacks,
-            // Pairing again gives the phone the address, or the name, the
-            // machine answers at now, and pairing is a thing this app does.
             self::NameWasNotFound,
             self::NothingAtThePairedAddress,
             self::StackIsNotTheOnePaired,
-            // Updating the machine is a thing the app offers, on its updates
-            // screen, so the remedy is a road there.
             self::NotOnThisStack,
             self::InvitationNotOpen,
             self::ChosenPasswordTooShort => Standing::Actionable,

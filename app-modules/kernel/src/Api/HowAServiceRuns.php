@@ -175,27 +175,14 @@ enum HowAServiceRuns: string
     private function whatMayBeDoneToIt(): array
     {
         return match ($this) {
-            // The host's, so none of them: this stack does not start or stop
-            // what it does not run.
             self::HostManaged => [],
 
-            // Down, for a fault or by decision. Starting is the only one of the
-            // three that means anything, and stopping something that is already
-            // stopped is the shape of a control that does nothing.
             self::Failed, self::Absent, self::Stopped => [WhatToDoWithIt::Start],
 
-            // On its way up. Stopping is a real thing to want — it is how
-            // somebody changes their mind — and restarting something that has
-            // not finished starting is a start queued behind a start.
             self::Starting => [WhatToDoWithIt::Stop],
 
-            // Already being started over and over, which
-            // {@see isAlreadyBeingRestarted()} is what a screen says out loud.
-            // Stopping it is the way out of the loop.
             self::CrashLooping => [WhatToDoWithIt::Stop],
 
-            // Up. Both of the two that act on something running, and no start,
-            // which is the one that would be refused.
             self::Unhealthy, self::Running, self::Healthy => [
                 WhatToDoWithIt::Stop,
                 WhatToDoWithIt::Restart,

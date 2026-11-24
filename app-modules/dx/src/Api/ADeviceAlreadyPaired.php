@@ -40,15 +40,6 @@ final readonly class ADeviceAlreadyPaired implements StandsIn
     {
         $stacks = new PlatformStacks($this->store);
 
-        // Written through the adapter rather than into the store directly, so
-        // the shape the store holds is the shape the adapter reads — a seeded
-        // value assembled here would be this class's idea of that shape, which
-        // is the fixture-written-by-its-reader problem one layer down.
-        //
-        // Every machine rather than one. A device holds more than one stack,
-        // and `AStandInStack` says why three: a build where only the working
-        // one can be reached is a build where the obstacle screens — the ones an
-        // operator meets on a bad evening — are never looked at.
         foreach (AStandInStack::cases() as $standIn) {
             $stacks->remember($standIn->asAStack());
         }

@@ -54,7 +54,6 @@ final readonly class HowItIsSet
      */
     public function either(Closure $told, Closure $refused): object
     {
-        // Read off the refusal, as the rest of these do.
         return $this->beside instanceof Obstacle ? $refused($this->beside) : $told($this->set, $this->beside);
     }
 }

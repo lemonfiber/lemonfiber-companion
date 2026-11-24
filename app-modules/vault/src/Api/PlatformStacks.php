@@ -111,19 +111,6 @@ final readonly class PlatformStacks implements RemovalsUnderWay, Stacks
                     ? WhetherAnythingIsHeld::itIsNot()
                     : WhetherAnythingIsHeld::itIs(),
             nothing: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIsNot(),
-            // A store that cannot be read is not a store that is empty. The two
-            // arrive here as the same absence and they are opposite answers to
-            // the question this method is actually asked: `Opening` uses it to
-            // decide whether there is anything worth locking, so reading an
-            // unreadable store as *nothing* is the lock letting itself off on
-            // exactly the device where something is already wrong — the
-            // pairings are still in the store, the app simply cannot see them
-            // this launch.
-            //
-            // Unknown is answered as *there may be*, and for both refusals
-            // rather than one. Being wrong in that direction costs a prompt in
-            // front of somebody who has paired nothing; being wrong the other
-            // way costs them an unlocked application.
             refused: static fn(): WhetherAnythingIsHeld => WhetherAnythingIsHeld::itIs(),
         )->held;
     }
@@ -132,26 +119,12 @@ final readonly class PlatformStacks implements RemovalsUnderWay, Stacks
     {
         $pairings = $this->pairings();
 
-        // A record held back is never written over. The screens offer no
-        // pairing while one is, so this is the store refusing on its own
-        // account, and the refusal says the store would not take the stack.
         if ($pairings->isHeldBack()) {
             return Remembered::refused(WhyAStackCannotBeRemembered::StoreWouldNotOpen);
         }
 
-        // Folded into what is already there rather than written on its own, so
-        // that re-pairing replaces a machine instead of adding a second row —
-        // the rule lives in `Configured::with()` and this does not restate it.
-        // Pairing a stack again is the operator taking it back, so a removal
-        // of it that had not finished is over with it.
         $written = ThePairingsAsWritten::written($pairings->pairing($stack));
 
-        // Every part of the record is a string this build validated on its way
-        // into a value type, so there is no input an operator can supply that
-        // reaches this branch. It is still answered rather than asserted, and
-        // `StoreWouldNotOpen` is the honest word: nothing was written down, and
-        // the remedy offered — try again — is the right one for a condition
-        // this application cannot describe any better than that.
         if ($written === false) {
             return Remembered::refused(WhyAStackCannotBeRemembered::StoreWouldNotOpen);
         }

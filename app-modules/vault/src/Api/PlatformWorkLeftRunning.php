@@ -60,10 +60,6 @@ final readonly class PlatformWorkLeftRunning implements WorkLeftRunning
         return $this->store->read($this->keyFor($stack, $work))->either(
             found: fn(string $written): WhatAReturnFinds => $this->read($written),
             nothing: static fn(): WhatAReturnFinds => WhatAReturnFinds::nothing(),
-            // A store that cannot be asked has nothing to pick up as far as
-            // this question goes. The work is on the stack rather than in the
-            // store, so the cost is a screen that offers to start it rather
-            // than follow it — and both refusals cost that, so they are one arm.
             refused: static fn(): WhatAReturnFinds => WhatAReturnFinds::nothing(),
         );
     }
@@ -72,9 +68,6 @@ final readonly class PlatformWorkLeftRunning implements WorkLeftRunning
     {
         $written = json_encode(KeptInAShape::written(self::SHAPE, [self::JOB_UNDER => $job->shown()]));
 
-        // A handle is the stack's text and `Job` asks only that it not be
-        // blank, so a name that is not valid text reaches `json_encode`, which
-        // answers false. Nothing is kept, and that is what a return will find.
         if ($written === false) {
             return WhatAReturnFinds::nothing();
         }
@@ -87,8 +80,6 @@ final readonly class PlatformWorkLeftRunning implements WorkLeftRunning
 
     public function forget(StackId $stack, KindOfWork $work): WhatAReturnFinds
     {
-        // The store's answer is deliberately not read, for the reason the port
-        // gives: while a store refuses to forget, it reads nothing back either.
         $this->store->forget($this->keyFor($stack, $work));
 
         return WhatAReturnFinds::nothing();
@@ -167,9 +158,6 @@ final readonly class PlatformWorkLeftRunning implements WorkLeftRunning
             return WhatAReturnFinds::nothing();
         }
 
-        // `Job` refuses a blank name, and that refusal is the one rule about a
-        // handle — asked of the type rather than written a second time here,
-        // where the two could come to disagree.
         try {
             return WhatAReturnFinds::theJob(Job::named($named));
         } catch (JobHasNoName) {

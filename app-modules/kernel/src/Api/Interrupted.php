@@ -114,9 +114,6 @@ final readonly class Interrupted
      */
     public function either(Closure $ended, Closure $refused): object
     {
-        // Read off the refusal, the way `Kept` does: the arm with something to
-        // explain is the one the type is written around, and a fall-through is
-        // how a branch becomes the one nobody tested.
         return $this->refused instanceof Obstacle
             ? $refused($this->refused, $this->was)
             : $ended($this->was);

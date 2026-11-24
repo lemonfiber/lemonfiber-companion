@@ -52,9 +52,6 @@ final readonly class Handed
      */
     public function either(Closure $over, Closure $refused): object
     {
-        // Read off the refusal, the way `Kept` does: the arm with something to
-        // explain is the one the type is written around, and a fall-through is
-        // how a branch becomes the one nobody tested.
         return $this->why instanceof WhyNothingWasShared ? $refused($this->why) : $over();
     }
 }

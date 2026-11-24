@@ -106,8 +106,6 @@ final readonly class PlatformPlayer implements Playing
                 WhyPlaybackStopped::PinMismatch => PlaybackIs::StoppedByThePin,
                 WhyPlaybackStopped::UnsupportedFormat => PlaybackIs::StoppedOnTheFormat,
                 WhyPlaybackStopped::Refused => PlaybackIs::StoppedAtTheDoor,
-                // A stop the device gave no reason for reads as the door out of
-                // reach, which is the one whose remedy is to try again.
                 WhyPlaybackStopped::Unreachable, null => PlaybackIs::StoppedOutOfReach,
             },
         };

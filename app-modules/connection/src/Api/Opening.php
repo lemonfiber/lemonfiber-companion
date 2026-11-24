@@ -98,9 +98,6 @@ final readonly class Opening
                 : Launch::blockedBy(Obstacle::of(KindOfObstacle::DeviceHasNoNetwork));
         }
 
-        // No stack paired, which is a first run rather than a fault.
-        // Reached by falling out of the loop, so it is the ordinary answer for
-        // an empty record rather than a guard against one.
         return Launch::unpaired();
     }
 }

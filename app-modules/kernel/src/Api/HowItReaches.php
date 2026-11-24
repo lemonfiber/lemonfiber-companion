@@ -37,10 +37,6 @@ final readonly class HowItReaches
         private ?WhatSettledIt $settled,
         private TheClaimants $claimants,
         private ?ServiceId $named,
-        // Absent as `null`, like every other field only one arm carries. A
-        // blank reason is not the absent one: `byName()` refuses it, so `''` is
-        // a value no reach of either arm holds — and a placeholder spelled that
-        // way is indistinguishable from a reason nobody checked.
         private ?string $why,
     ) {}
 
@@ -99,11 +95,6 @@ final readonly class HowItReaches
      */
     public function whichever(Closure $asked, Closure $byName): object
     {
-        // Told apart by the word, which is `WhoPutItThere`'s shape.
-        // The by-name arm is read first deliberately: it is the one an operator
-        // created by hand, and making it the fall-through is how it becomes the
-        // case nobody tested — the argument `Reach::either()` makes about its
-        // own blocked arm.
         if ($this->arm === HowItWasReached::ByName) {
             // A service by construction: `byName()` requires one and is the
             // only way to reach this arm.

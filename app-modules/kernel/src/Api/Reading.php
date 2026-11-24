@@ -88,10 +88,6 @@ final readonly class Reading
      */
     public function either(Closure $live, Closure $retained): object
     {
-        // Read off the timestamp rather than off a flag, and take the retained
-        // branch first: that is the case this type exists for, and the other
-        // way up makes a remembered value the fall-through — which is how it
-        // becomes the one nobody tested.
         if ($this->readAt instanceof Instant) {
             return $retained($this->value, $this->readAt);
         }

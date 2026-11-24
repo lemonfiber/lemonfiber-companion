@@ -60,8 +60,6 @@ final readonly class WhatItHoldsNow
      */
     public function either(Closure $shown, Closure $nothingYet): object
     {
-        // Read off the absence, as the rest of these do: the arm with
-        // something to explain is the one the type is written around.
         return $this->said === null ? $nothingYet() : $shown($this->said);
     }
 }

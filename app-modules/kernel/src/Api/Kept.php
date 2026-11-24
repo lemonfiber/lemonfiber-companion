@@ -63,10 +63,6 @@ final readonly class Kept
      */
     public function either(Closure $kept, Closure $refused): object
     {
-        // Read off the refusal rather than off success, so the failing branch
-        // is the one the type is written around. The other way up makes a
-        // refusal the fall-through, which is how it becomes the case nobody
-        // tested.
         return $this->why instanceof WhySessionCannotBeKept
             ? $refused($this->why)
             : $kept();

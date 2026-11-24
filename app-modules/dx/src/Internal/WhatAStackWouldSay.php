@@ -126,9 +126,6 @@ final readonly class WhatAStackWouldSay
     {
         $said = [];
 
-        // The first of the pair is whether the contract allows the field to be
-        // absent, and this builds it either way — the docblock above says why —
-        // so it is skipped rather than bound to a name nothing reads.
         foreach (WhatTheContractDeclares::fieldsOf($type) as $field => [, $declared]) {
             $said[$field] = self::forThe($declared, $field, $at);
         }
@@ -197,10 +194,6 @@ final readonly class WhatAStackWouldSay
                 continue;
             }
 
-            // Back through the front door, because an arm may be a shape, a
-            // list or a leaf and only the caller of `forThe()` knows which.
-            // Recursion terminates because an arm of a union is never itself a
-            // union — `split` has already taken it apart.
             return $arm === $type ? self::aLeaf($arm, $called, $at) : self::forThe($arm, $called, $at);
         }
 
@@ -217,9 +210,6 @@ final readonly class WhatAStackWouldSay
      */
     private static function aLeaf(string $type, string $called, int $at = 0): mixed
     {
-        // A quoted alternative is a literal the contract permits, and the
-        // literal itself is the only correct value — a made-up string in its
-        // place is the one thing a reader is guaranteed to refuse.
         if (str_starts_with($type, "'") && str_ends_with($type, "'")) {
             return trim($type, "'");
         }
@@ -266,13 +256,6 @@ final readonly class WhatAStackWouldSay
 
         return match (true) {
             str_contains($type, 'int'), str_contains($type, 'float') => self::A_NUMBER,
-            // Anything else is a string, and it says which field it is, so a
-            // screen full of these reads as a screen full of stand-ins. It also
-            // says which row of a list it is on, because a list whose entries
-            // are identical cannot show what a list is for — four services all
-            // called `Name` is a screen nobody can look at and see whether the
-            // rows are telling them apart. The first carries no number, so a
-            // field that is not in a list reads as it always did.
             default => self::named($called, $at),
         };
     }

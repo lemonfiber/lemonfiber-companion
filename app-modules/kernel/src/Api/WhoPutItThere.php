@@ -184,10 +184,6 @@ final readonly class WhoPutItThere
         Closure $overridden,
         Closure $orphaned,
     ): object {
-        // Read off what is held before which arm holds it, because that is
-        // the question with more than one answer: an arm that names nothing
-        // holds nothing, and the arm that replaced something holds that too.
-        // Every branch is reached by one of the cases above.
         $said = $this->said;
 
         if (! is_string($said)) {
