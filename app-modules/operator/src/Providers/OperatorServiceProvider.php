@@ -157,42 +157,18 @@ final class OperatorServiceProvider extends ServiceProvider
         // it fails.
         $this->app->booted(static function (): void {
             Router::native(AScreenWithoutAStack::TheList->value, YourStacks::class);
-            // The two roads required, each its own URI rather than a
-            // mode of the entry screen: the navigation stack is what lets an
-            // operator back out of one, and a screen that pairs is one
-            // #[Concealed] has to be able to name — which it cannot do for half
-            // of another screen.
-            //
-            // Two screens rather than one with a switch, because they are not
-            // the same flow with a different input widget. The pairing design puts a
-            // software comparison on the scanned road and a person
-            // on the typed one, so one of them has a confirmation step and the
-            // other must not be able to reach one.
             Router::native(AScreenWithoutAStack::PairByScanning->value, PairByScanning::class);
             Router::native(AScreenWithoutAStack::PairByTyping->value, PairByTyping::class);
             Router::native(AScreenWithoutAStack::JoiningAHouse->value, JoiningAHouse::class);
 
-            // What is new on every stack this phone holds, from the menu.
             Router::native(AScreenWithoutAStack::WhatsNew->value, WhatIsNewOnEveryStack::class);
 
-            // The lock, which the navigation stack builds in place of any
-            // screen while the device's lock stands, and puts over the screen
-            // on view when the device stands it again.
             Router::native(AScreenWithoutAStack::Locked->value, Locked::class);
 
-            // The phone's own settings, reached from the foot of the menu.
             Router::native(AScreenWithoutAStack::Settings->value, HowThisPhoneIsSet::class);
 
-            // The notification page, reached from the phone's own settings.
             Router::native(AScreenWithoutAStack::Notifications->value, WhatEachStackMayTellThisPhone::class);
 
-            // The stack in the URI rather than in the screen, because a device
-            // keeps each stack's session separate and a screen that chose its
-            // own stack is the place two of them come to share one. It is also
-            // what makes the navigation stack correct: an operator backing out
-            // of this screen returns to the list they picked from, and a second
-            // stack signed into later is a second entry rather than the same
-            // screen re-pointed.
             Router::native(AStacksScreen::SignInByCode->value, SigningInByACode::class);
             Router::native(AStacksScreen::SignIn->value, SignIntoAStack::class);
 
@@ -203,36 +179,15 @@ final class OperatorServiceProvider extends ServiceProvider
             // first would swallow every path under it.
             Router::native(AStacksScreen::Requests->value, WhatTheHouseholdAsked::class);
 
-            // What the household may ask for, read with the operator's session
-            // and drawn with the operator's menu.
             Router::native(AStacksScreen::Allowance->value, WhatTheHouseholdIsAllowed::class);
 
-            // What the machine would put right, stated before anybody is asked
-            // to agree. A screen rather than a dialog behind a
-            // button: a sentence an operator has to tap to reveal is one they
-            // will agree without reading.
             Router::native(AStacksScreen::Repairs->value, WhatWouldBePutRight::class);
 
-            // What has stopped coming in, which is the first of four.
-            // A screen of its own rather than a section of the health one: a
-            // stack passing every check and a household getting nothing are not
-            // a contradiction, and folding this into health would put the two
-            // under one verdict that has to be about one of them.
             Router::native(AStacksScreen::Stuck->value, WhatStoppedComingIn::class);
             Router::native(AStacksScreen::Updates->value, HowCurrentThisStackIs::class);
 
-            // What this machine is running, and the three verbs about it
-            // A screen of its own rather than a section of health:
-            // health answers *is anything wrong*, and this answers *what is on
-            // and what do I want on*, which an operator opens the app for even
-            // when every check passes.
             Router::native(AStacksScreen::Services->value, WhatThisStackRuns::class);
 
-            // What the machine keeps running with nobody signed in. Beside the
-            // services listing rather than inside it, because the two answer
-            // different questions about the same machine: that one says what is
-            // running now, and this says what would still be running after a
-            // reboot nobody was there for.
             Router::native(AStacksScreen::Hosting->value, WhatKeepsRunningHere::class);
             Router::native(AStacksScreen::WhileNobodyWasLooking->value, WhileNobodyWasLooking::class);
             Router::native(AStacksScreen::Watcher->value, TheOutsideWatcher::class);
@@ -242,204 +197,92 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Decided->value, WhatSetupDecided::class);
             Router::native(AStacksScreen::Served->value, HowThisStackIsServed::class);
 
-            // A guard on the data location, held while its screen asks. A
-            // screen of its own rather than a row of the one above, because
-            // what that one keeps outlives everybody's screens and this one
-            // does not, and drawing the two side by side would invite reading
-            // one as the other.
             Router::native(AStacksScreen::Guard->value, GuardingWhileYouWatch::class);
 
-            // Everything the stack is set to. Beside the services listing
-            // rather than under one of them, because a setting is the
-            // machine's and not a service's — and an operator looking for one
-            // does not know, and should not have to guess, which service owns
-            // it.
             Router::native(AStacksScreen::Settings->value, WhatThisStackIsSetTo::class);
             Router::native(AStacksScreen::OwnSettings->value, WhatTheStackItselfReads::class);
             Router::native(AStacksScreen::LeftAlone->value, WhatIsLeftAloneHere::class);
 
-            // What this phone keeps of the machine, and taking it off the
-            // phone: the menu's Stack settings.
             Router::native(AStacksScreen::OnThisPhone->value, ThisStackOnThisPhone::class);
 
-            // One of the things it runs, and the verbs about that one
-            // Split out of the listing above rather than drawn on
-            // it: a stack running four services put fifteen controls on one
-            // frame, four of them named *Start it*, and which one a control
-            // acted on was carried by where it sat. A list is read, and a verb
-            // is chosen — two acts, and the frame each wants is not the same
-            // frame.
-            //
-            // It serves a form as well, under the same path. What the operator
-            // is choosing between is identical and what the stack is told
-            // differs only in which name it carries, so a second screen would
-            // be the same screen with one word changed.
             Router::native(AStacksScreen::Doing->value, WhatToDoWithThis::class);
 
-            // What is running here that this machine never declared.
-            // Separate from the listing above rather than a section of it,
-            // because that screen offers a verb against every row and the
-            // requirement forbids offering one against these — two screens is
-            // the version of that refusal which survives somebody adding a row.
             Router::native(AStacksScreen::Elsewhere->value, WhatElseIsRunningHere::class);
 
-            // What one service has been saying. Two placeholders,
-            // which no other route here has: the service is in the path rather
-            // than held by the screen, so a frame whose URI names one service
-            // cannot be showing another's lines under its heading.
             Router::native(AStacksScreen::Logs->value, WhatThisServiceSaid::class);
 
             Router::native(AStacksScreen::Waiting->value, WhatThisServiceWaitsFor::class);
 
-            // What the machine has changed about itself. Its own screen rather
-            // than a section of the settings, because a setting is how the
-            // machine stands now and this is how it came to stand there.
             Router::native(AStacksScreen::Record->value, WhatWasChangedHere::class);
 
-            // Putting back one run the record shows. Its own screen, reached
-            // from the record, because what goes with the run is said before
-            // anything is agreed to.
             Router::native(AStacksScreen::RunBack->value, PuttingThatRunBack::class);
 
-            // Where every service comes from. Its own screen rather than a
-            // section of the record, because the record is what was done and
-            // this is what it was done with — two questions asked at different
-            // moments.
             Router::native(AStacksScreen::Origins->value, WhereThisComesFrom::class);
 
-            // What each service is for. Its own screen beside the origins,
-            // because that one is what a service is made of and this is what
-            // the house goes without while it is down.
             Router::native(AStacksScreen::Catalogue->value, WhatEachServiceIsFor::class);
 
-            // Everything that leaves the machine. Its own screen, because what
-            // it answers is a privacy question asked apart from the others,
-            // and it keeps lemonfiber's connections, those it makes for a
-            // plugin, and the services' in three lists that no other screen
-            // would have room to keep apart.
             Router::native(AStacksScreen::Leaving->value, WhatLeavesHere::class);
 
-            // What the operator will be told about. Its own screen, because
-            // *will this wake me* is asked before a night away and not while
-            // reading what the machine sends.
             Router::native(AStacksScreen::Told->value, WhatYouAreToldAbout::class);
             Router::native(AStacksScreen::Alerts->value, WhereAlertsGoHere::class);
             Router::native(AStacksScreen::AlertBackEnd->value, OneWayAlertsGo::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
             Router::native(AStacksScreen::Playing->value, WhatIsPlayingNow::class);
 
-            // How the line is shared, and changing it. Its own screen, because
-            // *why is the internet slow* is asked by the household at the moment
-            // it is slow.
             Router::native(AStacksScreen::Line->value, HowTheLineIsSharedHere::class);
 
-            // What it keeps on the machine and the copies it holds: two
-            // readings on one screen.
             Router::native(AStacksScreen::Keeps->value, WhatThisMachineKeepsHere::class);
 
-            // Taking a copy, and putting one back. Screens of their own, each
-            // reached from the copies above, because each states what it would
-            // do before anything is agreed to. A copy's name can hold anything
-            // the stack wrote, so it is encoded and takes the rest of the path.
             Router::native(AStacksScreen::Copy->value, TakingACopyHere::class);
             Router::native(AStacksScreen::PutBack->value, PuttingACopyBack::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
 
-            // Asking for help. A screen of its own, because a bundle is
-            // described before it is written and read before it is handed on.
             Router::native(AStacksScreen::Help->value, AskingForHelpHere::class);
 
-            // How full it is. Its own screen, because a warning that the disk
-            // is filling arrives on its own.
             Router::native(AStacksScreen::Room->value, HowFullThisMachineIs::class);
 
-            // Stopping seeding one download. A screen of its own, reached from
-            // that download's row above, because it states what stopping would
-            // cost before anything is agreed to. A download's name is whatever
-            // the torrent was called, so it is encoded and takes the rest of
-            // the path.
             Router::native(AStacksScreen::LetGo->value, LettingADownloadGo::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
             Router::native(AStacksScreen::GiveBack->value, GivingRoomBack::class);
             Router::native(AStacksScreen::Downloads->value, PausingTheDownloads::class);
 
-            // Which version of lemonfiber runs, apart from the services' updates,
-            // and the versions under it, reached from there.
             Router::native(AStacksScreen::Itself->value, WhatIsRunningHere::class);
             Router::native(AStacksScreen::Versions->value, WhichVersionsRunHere::class);
 
-            // Who gets in: what it holds to let services in, which app the
-            // household watches on, where they come in, and asking somebody
-            // in. Four screens, because each is its own question.
             Router::native(AStacksScreen::Credentials->value, WhatItHoldsToLetThemIn::class);
             Router::native(AStacksScreen::Keys->value, TheKeysAppsHold::class);
             Router::native(AStacksScreen::Clients->value, WhichAppToWatchOn::class);
             Router::native(AStacksScreen::Pair->value, PairingAPhone::class);
             Router::native(AStacksScreen::FrontDoor->value, WhereTheHouseholdComesIn::class);
             Router::native(AStacksScreen::Invite->value, AskingSomebodyIn::class);
-            // Asking somebody in by a name another screen found no account
-            // for. A name can hold anything the media server allows, for the
-            // reason taking one out gives below.
             Router::native(AStacksScreen::InviteNamed->value, AskingSomebodyIn::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
 
-            // Taking one member out. A screen of its own, reached from who is
-            // in, because what taking them out would cost is read and drawn
-            // before anything is agreed to. A name can hold anything the media
-            // server allows, so it is encoded and takes the rest of the path.
             Router::native(AStacksScreen::TakeOut->value, TakingSomebodyOut::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
 
-            // Connecting one member's device, reached from who is in. Nothing
-            // is asked on the way in; the code is shown when it is asked for.
             Router::native(AStacksScreen::Device->value, ConnectingADeviceForThem::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
 
-            // What is already on the machine, before anything is moved in. Its
-            // own screen, because the survey is read before any mode is chosen.
             Router::native(AStacksScreen::AlreadyHere->value, WhatIsAlreadyOnThisMachine::class);
 
-            // How good the media should be. Its own screen, because choosing
-            // is asked about what comes next and upgrading about what is
-            // already here, and both are decided in front of what each costs.
             Router::native(AStacksScreen::Quality->value, ChoosingHowGood::class);
 
-            // Wiring the services to each other. Its own screen, because a run
-            // is an act with a report of its own, one connection at a time.
             Router::native(AStacksScreen::Wiring->value, HowTheServicesAreWired::class);
 
-            // The plugins that extend the machine. Its own screen, because an
-            // install is rehearsed, agreed to in two parts and followed.
             Router::native(AStacksScreen::Plugins->value, WhatExtendsThisStack::class);
             Router::native(AStacksScreen::PluginSettings->value, HowThisPluginIsSet::class);
 
-            // Taking lemonfiber off the machine. Its own screen, because each
-            // removal is read and agreed to on its own, and the last of them
-            // takes what nothing can fetch again.
             Router::native(AStacksScreen::Uninstall->value, TakingItOffThisMachine::class);
 
-            // Putting the configuration back. Its own screen, reached from the
-            // settings, because what it would revert is read file by file
-            // before anything is agreed to.
             Router::native(AStacksScreen::Reset->value, PuttingTheConfigurationBack::class);
 
-            // What its words mean, which every other screen uses.
             Router::native(AStacksScreen::Words->value, WhatTheWordsMean::class);
             // A word can hold a slash, which the builder encodes and the
             // router decodes before matching, so the segment takes the rest.
             Router::native(AStacksScreen::WordAbout->value, WhatTheWordsMean::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
 
-            // Where one item got to, from whatever named it. A title can hold
-            // a slash, so the segment takes the rest, as a word's does.
             Router::native(AStacksScreen::Trace->value, WhereThisGotTo::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
             Router::native(AStacksScreen::Accept->value, WhatAcceptingItCosts::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
             Router::native(AStacksScreen::Run->value, WhatRunningACheckDisturbs::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
             Router::native(AStacksScreen::RunChecks->value, WhatRunningChecksDisturbs::class);
 
-            // Watching one thing arrive, and the record of what was said about
-            // it. Its own screen, because a walkthrough is started and then
-            // followed, and the record is read after the fact.
             Router::native(AStacksScreen::Walkthrough->value, WatchingOneArrive::class);
 
-            // What the whole application is for: one stack, and whether it is
-            // doing what it should. A screen of its own rather than a section
-            // of the list, because the app reads a machine once
-            // per frame — a list that reported on every stack would ask every
-            // machine on the network to draw one frame.
             Router::native(AStacksScreen::Health->value, HowThisStackIs::class);
         });
     }

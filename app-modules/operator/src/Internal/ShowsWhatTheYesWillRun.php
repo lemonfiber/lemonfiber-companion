@@ -85,8 +85,6 @@ trait ShowsWhatTheYesWillRun
             notHeld: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::noOutcome(),
         );
 
-        // Held only while the stack is still working it out: a rehearsal that
-        // finished, ended or could not be asked after has nothing left to read.
         $this->rehearsalOfTheYes = null;
         $said = $became->either(
             stillRunning: function () use ($asked): AsText {
@@ -94,9 +92,6 @@ trait ShowsWhatTheYesWillRun
 
                 return AsText::nothing();
             },
-            // A report that was not a rehearsal is not a line the yes will run:
-            // whatever it ran has already run, and saying it before the yes would
-            // be saying it about the wrong thing.
             done: fn(WhatTheVerbCameTo $report): AsText|TheLineTheYesRuns => $report->was() === WhetherItWasRehearsed::Rehearsed
                 ? $this->rehearsed($report)->whetherItRan(
                     ran: static fn(TheCommandLine $command): TheLineTheYesRuns => TheLineTheYesRuns::command($command->asTyped()),
@@ -109,8 +104,6 @@ trait ShowsWhatTheYesWillRun
 
                 return TheLineTheYesRuns::unread();
             },
-            // A rehearsal answers no yes, so nothing it was given for can move;
-            // a stack saying otherwise has said nothing readable.
             moved: static fn(): TheLineTheYesRuns => TheLineTheYesRuns::unread(),
         );
         $this->willRun = $said instanceof TheLineTheYesRuns ? $said : null;

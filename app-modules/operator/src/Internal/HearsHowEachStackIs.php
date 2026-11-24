@@ -44,8 +44,6 @@ trait HearsHowEachStackIs
     #[Poll(HowOftenAScreenLooks::WHILE_LISTENING_MS)]
     public function listen(): void
     {
-        // Only a launch that found a stack to open on reaches one. A locked
-        // launch, an unpaired one and one with no network did not.
         if ($this->howItOpened()->opensOn === '') {
             return;
         }

@@ -47,15 +47,8 @@ final readonly class HowAVerbReads
                 said: 'health.for_at_most',
                 seconds: $seconds,
             ),
-            // The awaiting's own line is the whole sentence rather than a word
-            // dropped into one, so a language that puts *until* somewhere else
-            // is not fighting a phrase this side assembled.
             openEnded: static fn(Awaiting $awaiting): WhatAVerbTakesAwaySays => new WhatAVerbTakesAwaySays(
                 said: $awaiting->saidOnTheScreen(),
-                // No number, rather than a nought. The line this names carries
-                // no `:seconds`, so a number here would be one nothing reads —
-                // and a nought that reached a line that did read it would say
-                // *nought seconds*, which is the worst answer of all.
                 seconds: null,
             ),
         );

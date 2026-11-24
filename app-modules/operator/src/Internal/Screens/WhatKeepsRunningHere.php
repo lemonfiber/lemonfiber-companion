@@ -166,8 +166,6 @@ final class WhatKeepsRunningHere extends NativeComponent
             notHeld: static fn(): WhatTheHandoverShows => new HowAHandoverReads()->signedOut($agreed->named()),
         );
 
-        // What was read is about the machine before the act, so the next
-        // accessor asks again rather than drawing a listing the act changed.
         $this->answered = null;
     }
 

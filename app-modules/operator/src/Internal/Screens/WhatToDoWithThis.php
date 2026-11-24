@@ -166,8 +166,6 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
         $named = trim($this->around->aboutOn($this));
         $reads = new HowOneThingReads();
 
-        // The forms are asked only where the name is not a service's, and on
-        // the frame after the listing.
         return $reads->service($this->answer(), $named)
             ?? $reads->form($named, $this->formsOf($this->stack(), $this->storage, $this->supervising, $this->kept));
     }

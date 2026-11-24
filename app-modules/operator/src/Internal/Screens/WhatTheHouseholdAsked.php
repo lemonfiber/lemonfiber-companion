@@ -331,9 +331,6 @@ final class WhatTheHouseholdAsked extends NativeComponent
         return $this->wanting->decided($stack, $session, $decided)->either(
             started: static fn(Job $job): AsText => AsText::of($job->shown()),
             met: function (Obstacle $why) use ($stack): AsText {
-                // A credential refused the moment somebody taps approve is the
-                // same signed-out device as one refused on a read, and this is
-                // the call that happens on the tap.
                 $this->letGoOfTheSession($why, $stack);
 
                 return AsText::of($why->said());

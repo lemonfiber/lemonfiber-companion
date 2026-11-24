@@ -48,8 +48,6 @@ final readonly class HowThisCopyReads
             standsSaid: $copy->stands()->saidOnTheScreen(),
             tone: $this->toneOf($copy->stands()),
             offered: $copy->released()->version(),
-            // The newest release said as what it is, where it is newer than
-            // this one: the heading names it rather than that one exists.
             out: $copy->stands() === WhereThisCopyStands::UpdateAvailable ? $copy->released()->version() : '',
             untold: $copy->untold(),
             command: $command->said,

@@ -125,8 +125,6 @@ final readonly class HowTheLineReads
     private static function measured(WhatTheLineCarries $carries, Instant $now): TheLineAsMeasured
     {
         $ago = HowLongAgo::since($carries->taken(), $now);
-        // In bits a second, which is what a line is sold in and what the
-        // stack's own sentences beside these figures say.
         $down = HowFast::of($carries->down());
         $up = HowFast::of($carries->up());
 

@@ -79,9 +79,6 @@ trait WaitsAFrameForWhatTheStackServes
             return parent::fromView($view);
         } catch (TheReadingWaitsAFrame) {
 
-            // A component the template was inside when the reading waited
-            // left its output buffer open; the frame that waits is drawn
-            // with none of them.
             while (ob_get_level() > $buffers) {
                 ob_end_clean();
             }

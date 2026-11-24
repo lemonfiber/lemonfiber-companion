@@ -59,8 +59,6 @@ final readonly class HowTheChoiceReads
             HowTheReadingWent::itCameBack(),
             reading: $stillShown instanceof AFill ? $this->reading($stillShown) : null,
             said: new ALineToSay($this->saying($why), []),
-            // Already filling it is said whole by this app's words; every
-            // other refusal keeps the stack's account of it beside them.
             meaning: $why === WhyTheFillWasTurnedDown::AlreadyFills ? null : $down->said()->meaning(),
         );
     }

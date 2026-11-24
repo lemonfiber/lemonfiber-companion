@@ -182,11 +182,6 @@ final class HowThisStackIs extends NativeComponent
             new WorstFirst()->over($this->narrowed($this->answer()->findings)),
         );
 
-        // The whole run, not just the row: a finding the engine attributed to
-        // another is shown by that other one's title, and the title is only
-        // findable across the run. Built once and asked per row, so every row
-        // resolves its cause against the listing this screen is showing —
-        // grouped, so a symptom resolves against the cause it now sits under.
         $reads = new HowAFindingReads($run, $this->exits());
         $rows = [];
 
@@ -347,8 +342,6 @@ final class HowThisStackIs extends NativeComponent
     {
         return $this->heardSoFar()->summary(
             none: fn(): Element|View => parent::placeholder(),
-            // A summary held on opening is never current, since nothing has
-            // been heard yet; both arms draw what is held, with its age.
             current: static fn(): View => view('operator::how-this-stack-was'),
             asOf: static fn(): View => view('operator::how-this-stack-was'),
         );

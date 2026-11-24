@@ -137,11 +137,6 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
             return false;
         }
 
-        // The outcome read can meet a refused credential after the
-        // offer read succeeded, and one frame of a screen showing what it
-        // loaded a moment ago under a session the stack has stopped
-        // recognising is exactly what the requirement forbids. Both folds are
-        // asked, so whichever one met it is the one that answers.
         return ! $this->agreed || $this->done()->stands->went->isSignedIn;
     }
 
@@ -364,9 +359,6 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
                 => new HowAMendingReads()->these($mended),
             ended: static fn(?WhyTheWorkEnded $why): WhatThisStackPutRight => new HowAMendingReads()->ended($why),
             met: $this->lettingGoIfRefused($stack, new HowAMendingReads()->met(...)),
-            // Refused and re-offered: the yes was given for an offer
-            // that has moved, so everything held for it is let go and
-            // the offer is asked for again, under what the stack said.
             moved: function (ARefusalInItsWords $why): WhatThisStackPutRight {
                 $this->lookAgain();
                 $this->movedOn = new HowARefusalReads()->inItsWords($why);
@@ -383,8 +375,6 @@ final class WhatWouldBePutRight extends NativeComponent implements AwaitsAnOutco
             stillRunning: static fn(): WhatTheStackWouldPutRight
                 => new HowAnOfferOfRepairsReads()->stillWorkingItOut(),
             offering: function (Offer $offer): WhatTheStackWouldPutRight {
-                // Kept as the value, not only as the fold: `Confirmed` can
-                // be made against nothing else.
                 $this->offered = $offer;
 
                 return new HowAnOfferOfRepairsReads()->offering($offer);

@@ -291,8 +291,6 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
             is_string($declining) ? $declining : self::DECLINING,
         ))->either(
             over: static fn(): WhatTheSheetSaid => new WhatTheSheetSaid('stacks.invitation.passed_on'),
-            // One sentence for both refusals: whichever it was, nothing was
-            // sent and the address is on the screen to hand over another way.
             refused: static fn(): WhatTheSheetSaid => new WhatTheSheetSaid('stacks.invitation.not_passed_on'),
         )->said;
     }
@@ -360,8 +358,6 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
             answered: function (AnInvitation $invitation): TheInvitationTurnedOutToBe {
                 $this->invitation = $invitation;
 
-                // Who is in is the stack's to say again once it has made or
-                // changed an account, rather than this screen's to patch.
                 if (! $invitation->wasRehearsed()) {
                     $this->answered = null;
                 }

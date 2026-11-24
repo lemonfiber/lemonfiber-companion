@@ -81,9 +81,6 @@ final readonly class TheSummaryAsKept
                 Shape::One => self::inShapeOne(WhatWasWritten::in(json_decode($value->inTheClear(), associative: true))),
             };
         } catch (InvalidArgumentException) {
-            // A field missing or of the wrong type, and a kernel value
-            // refusing what it was handed — a blank check, a count below
-            // nothing — are the same answer: a summary that does not read.
             return null;
         }
     }

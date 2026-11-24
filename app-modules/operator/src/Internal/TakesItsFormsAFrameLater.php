@@ -88,8 +88,6 @@ trait TakesItsFormsAFrameLater
 
         $this->formsFound = $this->askWhatFormsItHas($stack, $storage, $supervising);
 
-        // Forms that could not be read are said on the next frame, as the
-        // obstacle the whole screen met.
         $this->waitsThisFrame = ! $this->formsFound->went->cameBack();
 
         return $this->formsFound;

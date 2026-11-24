@@ -40,11 +40,6 @@ final readonly class HowARequestReads
      */
     public function in(Wanted $wanted): WhatOneRequestSays
     {
-        // A standing the stack never put into words gets a word of its own
-        // rather than the nearest one. It is a row an operator can see and
-        // cannot act on, which is what it is — and `wantsADecision()` answers
-        // false for it, so nothing here offers to approve a status lemonfiber
-        // declined to name.
         return $wanted->standing()->either(
             said: fn(Waiting $said): WhatOneRequestSays
                 => $this->told($wanted, $said->saidOnTheScreen()),
@@ -136,11 +131,6 @@ final readonly class HowARequestReads
                 standing: $standing,
                 wantsADecision: $wantsADecision,
                 sizeSaid: 'household.size_unknown',
-                // Nothing to render the sentence with, and *we do not know* is
-                // a sentence that needs nothing. The figure is unread on this
-                // arm — its key names no placeholder — which is why zero here
-                // cannot become "0 bytes" beside a request for a whole season,
-                // the outcome that is worse than saying nothing.
                 sizeFigure: 0,
                 sizeUnit: '',
                 refusedReason: $reason,

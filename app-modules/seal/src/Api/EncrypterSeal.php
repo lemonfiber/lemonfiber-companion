@@ -72,8 +72,6 @@ final readonly class EncrypterSeal implements Sealed
     {
         return $this->keys->readOrKeep(SealKey::TheDataKey, $this->entropy->aKey())->either(
             held: static fn(KeyMaterial $key): Unsealing => self::openedUnder($key, $payload),
-            // A key made just now has sealed nothing yet, so nothing it is
-            // handed can open under it.
             madeAfresh: static fn(): Unsealing => Unsealing::unreadable(),
             refused: static fn(): Unsealing => Unsealing::unreadable(),
         );
@@ -86,8 +84,6 @@ final readonly class EncrypterSeal implements Sealed
         return $this->keys->readOrKeep(SealKey::TheStackKey, $fresh)->either(
             held: static fn(KeyMaterial $key): SealedStack => self::hashedUnder($key, $stack),
             madeAfresh: static fn(KeyMaterial $key): SealedStack => self::hashedUnder($key, $stack),
-            // Under the key that was offered and not kept, so the hash is
-            // kept nowhere either and matches no row.
             refused: static fn(): SealedStack => self::hashedUnder($fresh, $stack),
         );
     }

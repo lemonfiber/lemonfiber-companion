@@ -83,17 +83,10 @@ final readonly class HowUpkeepReads
             pinsSaid: $upkeep->againstThePins()->saidOnTheScreen(),
             running: $on->version,
             runningWasWithdrawn: $upkeep->runningAWithdrawnRelease(),
-            // The notes are what the release changed only where the record
-            // describes the running build; otherwise the screen says why not,
-            // as the versions screen does.
             inUse: $upkeep->notes() === HowTheNotesStand::Current ? $on->notes : null,
             notesWithheld: new HowWithheldNotesRead()->of($upkeep->notes()),
             editsKept: new HowAStackEditReads()->these($upkeep->editsKept()),
             history: $history,
-            // Asked of the reading rather than worked out from the history.
-            // Releases are listed whether or not a service would move, so a
-            // screen counting them would offer an update to a stack that is
-            // on every pin.
             offer: $upkeep->hasSomethingToOffer() ? TakingAnUpdate::offeredBy($upkeep) : null,
             askedNow: $askedNow,
             keptAgo: $keptAgo,
