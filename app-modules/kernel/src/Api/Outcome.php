@@ -65,11 +65,6 @@ final readonly class Outcome
      */
     public function either(Closure $done, Closure $refused): object
     {
-        // The two nullable properties are private and the two constructors are
-        // the only way in, so exactly one of them is set. The check is on the
-        // refusal rather than the result because that is the branch this type
-        // exists for: reading it the other way round would make a refusal the
-        // fall-through case, which is how it comes to be the one nobody tested.
         if ($this->refusal instanceof Problem) {
             return $refused($this->refusal);
         }

@@ -77,8 +77,6 @@ final readonly class KeepsTheMembersPlace
             return;
         }
 
-        // A closed player that stands at nothing says nothing of the member's
-        // place: it is also how a device with no player answers.
         if ($is !== PlaybackIs::Closed || ! $at->isTheStart()) {
             $this->tell($playback, ThePlace::in($playback->played(), $at));
         }

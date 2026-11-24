@@ -96,11 +96,6 @@ final readonly class WhatTheCheckSaid
      */
     public function either(Closure $nothingWrong, Closure $wentWrong, Closure $couldNotSay): object
     {
-        // Read off the arms that carry something, the way `Kept` does. The
-        // fall-through is the one arm holding nothing, so a situation this type
-        // gains later cannot silently land on it — that would be a check with
-        // no answer rendered as a check that found nothing wrong, which is the
-        // one mistake `Conclusion` splits its cases to prevent.
         return match (true) {
             $this->said instanceof WentWrong => $wentWrong(
                 $this->said->code(),

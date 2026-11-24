@@ -119,10 +119,6 @@ final readonly class HowAShelfReads
     /** One holding, as the poster it is drawn as. */
     private function posterFor(Holding $holding, ?StackId $opensOn): WhatOnePosterSays
     {
-        // Folded rather than tested, so the undated arm is one the type
-        // insists on: a holding the core could not date is shown undated,
-        // and a year invented here would be a fact about somebody's
-        // library that nobody claimed.
         return $holding->year()->either(
             dated: fn(int $year): WhatOnePosterSays => $this->dated($holding, (string) $year, $opensOn),
             unstated: fn(): WhatOnePosterSays => $this->dated($holding, null, $opensOn),

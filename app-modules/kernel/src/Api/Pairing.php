@@ -87,13 +87,6 @@ final readonly class Pairing
         }
 
         foreach (array_keys($found) as $key) {
-            // `WhatPairingMaterialSays` is the only place the keys are
-            // spelled. A `tryFrom` answering null is read here and nowhere
-            // else, which is what keeps the spelling from being written twice.
-            //
-            // Cast because a JSON array decodes to integer keys, and `[1, 2]`
-            // is a payload somebody can send. Refused like any other key the
-            // format does not define, and named in the refusal.
             $name = (string) $key;
 
             if (WhatPairingMaterialSays::tryFrom($name) === null) {
@@ -101,32 +94,10 @@ final readonly class Pairing
             }
         }
 
-        // Read before the address and the fingerprint, because material that
-        // is too old should not be reported as material that is malformed. A
-        // stale code with a typo in its address is stale first — telling
-        // somebody to check what they scanned, when what they need is a new
-        // code, is the screen expiry is about.
         self::stillGood($found, $how, $clock);
 
-        // `Address::of()` and `Fingerprint::of()` do their own refusing, and
-        // this deliberately does not catch them. A malformed address inside
-        // well-formed material is that type's refusal to explain, not this
-        // one's — and wrapping it would replace a message naming the problem
-        // with one naming the envelope.
         $at = Address::of(self::halfOf($found, WhatPairingMaterialSays::Address, $how));
 
-        // Material that promises a certificate for an address presenting none.
-        // The fingerprint is "the certificate that address will
-        // present", and an unencrypted address presents nothing — so the digest
-        // would be pinned against a connection with nothing to compare, and
-        // the pin could never be kept for this stack.
-        //
-        // Here rather than at the first connection, which is where it landed:
-        // pairing succeeded, the stack was written down, and `BaseUrl::pinned()`
-        // raised a configuration problem from inside the transport, on a device,
-        // after the operator had been told they were paired. This is the one
-        // moment the material is in front of somebody who can go and get
-        // better material.
         if (! $at->isEncrypted()) {
             throw PairingIsNotReadable::withAnAddressThatPresentsNothing($how);
         }
@@ -214,16 +185,6 @@ final readonly class Pairing
 
         $said = $found[$when->value];
 
-        // An integer, and not a string holding one. A format that takes both
-        // has two spellings of the same fact, and the day a producer switches
-        // spelling is the day every app that only handled the other reports
-        // material it was handed correctly as malformed.
-        //
-        // Nothing checks the sign here. `Instant::atEpochSeconds()` refuses a
-        // moment before the epoch and says so, and a second check would be the
-        // same rule written twice — with the copy answering a worse sentence.
-        // That is the reasoning `read()` already gives for letting `Address`
-        // and `Fingerprint` do their own refusing.
         if (! is_int($said)) {
             throw PairingIsNotReadable::withoutIts($when, $how);
         }

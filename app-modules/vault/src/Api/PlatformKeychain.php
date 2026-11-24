@@ -51,11 +51,6 @@ final readonly class PlatformKeychain implements SecureStorage
 
     public function isAvailable(): bool
     {
-        // Asked of the store itself rather than worked out here. Whether a
-        // device has somewhere a session may go is a fact about the store, and
-        // the answer already exists where the store's words are read — an
-        // adapter reconstructing it would be a second reading of the same three
-        // outcomes, and the second reading is the one that drifts.
         return $this->store->canBeAsked();
     }
 
@@ -72,29 +67,16 @@ final readonly class PlatformKeychain implements SecureStorage
     public function resume(StackId $stack): Resumed
     {
         return $this->store->read($this->keyFor($stack))->either(
-            // A store that answered with an empty string is a store that lost
-            // the value rather than one holding a session, and `Session::of()`
-            // refuses a blank — so it is read as no session rather than allowed
-            // to raise on a launch screen.
             found: static fn(string $written): Resumed => $written === ''
                 ? Resumed::notHeld()
                 : self::read($written),
             nothing: static fn(): Resumed => Resumed::notHeld(),
-            // A store that will not open is a store with no session in it, as
-            // far as this question goes: the operator is asked for the password,
-            // which is both the honest outcome and the only useful one. The two
-            // refusals are told apart where a session is being *kept*, because
-            // the remedies differ there; here there is one remedy.
             refused: static fn(): Resumed => Resumed::notHeld(),
         );
     }
 
     public function forget(StackId $stack): Kept
     {
-        // The answer is deliberately not read. Forgetting a session that was
-        // never kept is the ordinary case after a refusal, which leaves the app
-        // holding a session it could not store — and the one thing that must
-        // always work is getting rid of it.
         $this->store->forget($this->keyFor($stack));
 
         return Kept::safely();
@@ -163,9 +145,6 @@ final readonly class PlatformKeychain implements SecureStorage
 
         $token = mb_substr($written, $at + 1);
 
-        // A store holding a subject and no token has lost the half that matters, and
-        // `Session::of()` refuses a blank — so it is read as no session rather than
-        // allowed to raise on a launch screen, which is what an empty value already is.
         if ($token === '') {
             return Resumed::notHeld();
         }

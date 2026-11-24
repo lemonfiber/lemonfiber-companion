@@ -55,9 +55,6 @@ final readonly class Carried
      */
     public function either(Closure $out, Closure $refused): object
     {
-        // Read off the refusal, the way `Kept` does: the arm with something to
-        // explain is the one the type is written around, and a fall-through is
-        // how a branch becomes the one nobody tested.
         return $this->moved instanceof Reading
             ? $refused($this->repair, $this->moved)
             : $out($this->repair);

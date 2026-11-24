@@ -50,11 +50,6 @@ final readonly class PlatformNotifier implements Notifier
 
     public function standing(): Asked
     {
-        // Reads the answer **without prompting**, which is the whole of it: a
-        // declined permission must not be requested again automatically, and a
-        // method that asks in order to report cannot keep that promise. The
-        // bridge answers this as a separate function from the one that raises
-        // the dialog, which is what makes the promise keepable.
         return $this->means($this->centre->standing());
     }
 
@@ -71,19 +66,11 @@ final readonly class PlatformNotifier implements Notifier
             return $standing;
         }
 
-        // The bridge waits for the operator, so what comes back is what they
-        // said rather than what was standing while the dialog was up. Reading
-        // it back separately would report a refusal about somebody still
-        // looking at the question, because both native halves record that the
-        // prompt was raised before raising it.
         return $this->means($this->centre->ask());
     }
 
     public function show(Notification $notification): Shown
     {
-        // Reads, never asks. A notification arriving is not the point of first
-        // use — the operator is not looking at the app, and both the prompt and
-        // the explanation before it belong somewhere they are.
         if (! $this->standing()->mayProceed()) {
             return Shown::withheld(WhyNothingIsShown::NotificationsAreNotPermitted);
         }
@@ -95,9 +82,6 @@ final readonly class PlatformNotifier implements Notifier
                 $this->words->for(sprintf('notifications.plain.%s_body', $notification->worded()->value), ['code' => $says->shown()]),
                 $notification->leadsTo()->asALink(),
             ),
-            // No stack reaches this arm, so nothing here can name one. The
-            // wording is the guarded pair for the same reason — while the app
-            // is locked it must hold on a screen anybody walking past can read.
             guarded: fn(): Told => $this->centre->show(
                 $this->idFor($notification),
                 $this->words->for(sprintf('notifications.guarded.%s_title', $notification->worded()->value)),
@@ -154,11 +138,6 @@ final readonly class PlatformNotifier implements Notifier
         return match ($why) {
             WhyNothingWasTold::NotPermitted,
             WhyNothingWasTold::NoSuchChannel => WhyNothingIsShown::NotificationsAreNotPermitted,
-            // The last two reach a caller from scheduling alone and cannot
-            // arrive here, and they are answered rather than left out: an arm
-            // this `match` does not name is a fatal on a handset, and an arm
-            // that reads *the device would not* is the honest reading of a
-            // notification this application asked for and did not get.
             WhyNothingWasTold::TheTimeHasPassed,
             WhyNothingWasTold::NoSuchRepeat,
             WhyNothingWasTold::TheDeviceRefused => WhyNothingIsShown::TheDeviceWouldNotShowIt,

@@ -63,8 +63,6 @@ final readonly class Noted
      */
     public function either(Closure $down, Closure $notKept): object
     {
-        // The arm that carries something is read first, as every fold here
-        // does: a fall-through is how a branch becomes the one nobody tested.
         return $this->writtenAt instanceof Instant
             ? $down($this->writtenAt)
             : $notKept();

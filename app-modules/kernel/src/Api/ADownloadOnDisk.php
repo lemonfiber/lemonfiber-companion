@@ -100,7 +100,6 @@ final readonly class ADownloadOnDisk
             throw RoomSaysNothing::negative('bytes', $bytes);
         }
 
-        // Empty is the stack saying nothing; blank is a sentence with nothing in it.
         if ($consequence !== '' && trim($consequence) === '') {
             throw RoomSaysNothing::about('consequence');
         }

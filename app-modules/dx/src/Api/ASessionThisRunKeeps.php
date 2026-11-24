@@ -72,8 +72,6 @@ final readonly class ASessionThisRunKeeps implements StandsIn
         $keychain = new PlatformKeychain($this->store);
 
         foreach (AStandInStack::cases() as $standIn) {
-            // The operator, because a stand-in run is somebody looking at the whole
-            // of this application rather than a member looking at their half of it.
             $keychain->keep(
                 $standIn->asAStack()->id(),
                 Session::of(self::NOT_A_CREDENTIAL),

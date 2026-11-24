@@ -35,10 +35,6 @@ final readonly class Settings implements Countable, IteratorAggregate
 
     public static function of(Setting ...$set): self
     {
-        // `array_values` for the reason `Sentences::of()` gives: a variadic
-        // collected from named arguments has string keys, and a collection
-        // built that way is not a list — so `count()` and an iteration that
-        // assumes position would disagree about the same object.
         return new self(array_values($set));
     }
 

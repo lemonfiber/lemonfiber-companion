@@ -128,12 +128,6 @@ final readonly class WhatSettledIt
     ): object {
         $whose = $this->whose;
 
-        // Chosen is told apart by its payload rather than by its word, so the
-        // one arm that holds who is the one arm that can hand it out — nothing
-        // here can pass a reader a `null` where a `WhoSettledIt` belongs, and
-        // that is what keeps a stack's choice from being read as somebody's. Which
-        // of the other five it is turns on
-        // the word alone, which is a different question and so a second method.
         return $whose instanceof WhoSettledIt
             ? $chosen($this->services, $whose, $this->why)
             : $this->nobodyChose($outright, $each, $contested, $unfilled, $declined);

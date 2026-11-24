@@ -34,8 +34,6 @@ final readonly class Zone
         try {
             return new self(new DateTimeZone($name));
         } catch (DateInvalidTimeZoneException) {
-            // The one thing a name can be wrong about, and the answer to it is
-            // the zone every clock is counted from rather than no clock at all.
             return self::utc();
         }
     }

@@ -260,9 +260,6 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
                 told: fn(Requested $wanted): WhatTheirOwnTitlesTurnedOutToBe
                     => new HowTheirOwnTitlesRead()->these($wanted, $this->goes(), fn(RequestId $ask): ?string => $this->pictures->ofAKeptAsk($stack, $session, $ask)),
                 refused: function (Obstacle $why) use ($stack): WhatTheirOwnTitlesTurnedOutToBe {
-                    // Told here as well as on the shelf's read: whichever read
-                    // met the refusal is the one holding the obstacle when the
-                    // store has to hear about it. Letting go twice is letting go.
                     $this->letGoOfTheSession($why, $stack);
 
                     return new HowTheirOwnTitlesRead()->met($why);
@@ -305,10 +302,6 @@ final class WhatYouCanWatch extends NativeComponent implements HearsThePlayer
             outOfReach: static fn(): WhatAMemberTurnedOutToBeAbleToWatch
                 => new HowAShelfReads()->outOfReach(),
             refused: function (Obstacle $why) use ($stack): WhatAMemberTurnedOutToBeAbleToWatch {
-                // A credential refused on this read is the same signed-out
-                // device as one refused on any other, and a fold cannot forget
-                // anything — so the store is told here, where the obstacle is
-                // still in hand.
                 $this->letGoOfTheSession($why, $stack);
 
                 return new HowAShelfReads()->met($why);

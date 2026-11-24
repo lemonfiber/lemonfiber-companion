@@ -84,9 +84,6 @@ final readonly class Lock
      */
     public function either(Closure $held, Closure $open): object
     {
-        // Read off the proof rather than off a flag, which is the same rule one
-        // level down: a boolean can be set by anything, and the thing that sets
-        // it wrongly is a prompt that came back false.
         return $this->by instanceof Authenticated ? $open() : $held();
     }
 }

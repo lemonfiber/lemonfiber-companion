@@ -154,11 +154,6 @@ final readonly class AtAGlance
         $wanted = self::PER_GROUP * self::GROUPS;
         $shown = '';
 
-        // The whole digest goes in, so a certificate differing anywhere lands
-        // on different bytes here. Sixteen of the hash's thirty-two are read,
-        // which is not the truncation this class refuses — that one cut the
-        // *input* short and left the rest of the certificate unable to change
-        // the answer. Every byte of the digest moves every byte of this hash.
         $bytes = mb_str_split(hash(self::MIXED_BY, $digest), self::PER_BYTE);
 
         foreach (array_slice($bytes, 0, $wanted) as $byte) {

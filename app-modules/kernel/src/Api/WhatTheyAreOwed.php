@@ -71,9 +71,6 @@ final readonly class WhatTheyAreOwed
      */
     public function either(Closure $told, Closure $refused): object
     {
-        // Read off the refusal, the way `Handed` and `Shown` do: the arm with
-        // something to explain is the one the type is written around, and a
-        // fall-through is how a branch becomes the one nobody tested.
         return $this->why instanceof Obstacle ? $refused($this->why) : $told($this->said);
     }
 }

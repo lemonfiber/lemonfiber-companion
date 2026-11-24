@@ -51,10 +51,6 @@ final class DxServiceProvider extends ServiceProvider
             try {
                 $settings = $app->make('config');
             } catch (BindingResolutionException) {
-                // An application with no configuration is one nobody has asked
-                // anything of, and the only safe reading of *nobody said* is
-                // *nobody asked*: this module takes over the ports the rest of
-                // the app runs on.
                 return;
             }
 

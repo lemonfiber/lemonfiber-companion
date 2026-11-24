@@ -375,10 +375,6 @@ final readonly class WhatTheContractDeclares
      */
     private static function pathsUnder(string $type, string $under): array
     {
-        // Split where the question changes. Above: *is this a collection*, and
-        // both answers to that are a walk into whatever it holds under the same
-        // `[]`. Below: *which fields*, which is a different reading of a
-        // different notation.
         if (str_starts_with($type, 'list<') || str_starts_with($type, 'array<')) {
             return self::everyPathIn(self::whatItHolds($type), sprintf('%s%s', $under, self::EACH));
         }

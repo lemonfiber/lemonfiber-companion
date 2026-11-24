@@ -86,10 +86,6 @@ final readonly class Size
      */
     public function either(Closure $measured, Closure $guessed, Closure $unknown): object
     {
-        // The arms that carry a figure are read first, as every fold here does:
-        // a fall-through is how a branch becomes the one nobody tested, and the
-        // one that would become it here is *nobody knows* — which would render
-        // a request nobody has sized as one somebody measured.
         return match (true) {
             $this->bytes === null => $unknown(),
             $this->measured === true => $measured($this->bytes),

@@ -75,11 +75,6 @@ final readonly class WhatAReleaseDelivers
      */
     public function either(Closure $said, Closure $saidNothing): object
     {
-        // Read off what is held rather than a flag beside it. A release the
-        // stack described holds its words; one it said nothing about holds
-        // nothing, and `null` says that where an empty string would claim
-        // there is a sentence and it happens to be blank — a slot nothing can
-        // reach, which is a slot nothing can hold right.
         $prose = $this->said;
 
         return is_string($prose) ? $said($prose) : $saidNothing();

@@ -255,10 +255,6 @@ final class WhatYouAreOwed extends NativeComponent
             told: static fn(Sentences $said): WhatAMemberTurnedOutToBeOwed
                 => new HowWhatAMemberIsOwedReads()->these($said),
             refused: function (Obstacle $why) use ($stack): WhatAMemberTurnedOutToBeOwed {
-                // A credential refused on this read is the same signed-out
-                // device as one refused on any other, and a fold cannot forget
-                // anything, so the store is told here, where the obstacle is
-                // still in hand.
                 $this->letGoOfTheSession($why, $stack);
 
                 return new HowWhatAMemberIsOwedReads()->met($why);
@@ -273,9 +269,6 @@ final class WhatYouAreOwed extends NativeComponent
             told: fn(Requested $wanted): WhatAMemberTurnedOutToHaveAsked
                 => new HowWhatAMemberAskedForReads($this->clock->now())->these($wanted),
             refused: function (Obstacle $why) use ($stack): WhatAMemberTurnedOutToHaveAsked {
-                // Told here as well as on the half beside it: whichever half met
-                // the refusal is the one holding the obstacle when the store has
-                // to hear about it. Letting go twice is letting go.
                 $this->letGoOfTheSession($why, $stack);
 
                 return new HowWhatAMemberAskedForReads($this->clock->now())->met($why);

@@ -103,10 +103,6 @@ final readonly class HowWhatAMemberAskedForReads
      */
     private function row(Wanted $wanted): WhatOneOfTheirRequestsSays
     {
-        // The word a member is owed where the stack never named the standing.
-        // It is a request of theirs and they can see it; what nobody can say is
-        // where it has got to, and saying the nearest thing would be this app
-        // telling them something lemonfiber declined to.
         return $wanted->standing()->either(
             said: fn(Waiting $said): WhatOneOfTheirRequestsSays
                 => $this->told($wanted, $said->saidToTheMember()),

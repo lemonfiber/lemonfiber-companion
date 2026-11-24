@@ -389,10 +389,6 @@ final readonly class WhatTheWireWouldAnswer
      */
     private static function whatThatPathSends(string $endpoint, string ...$asked): array|string
     {
-        // The paths whose body is not one envelope built from the
-        // contract's declaration, the two answers work redeems into, what a
-        // member was part-way through, the player's three actions, which answer
-        // at once, and then everything else.
         return match (true) {
             $endpoint === Api::LOGS_ENDPOINT => self::aDocumentALine(),
             $endpoint === Admission::ENDPOINT => self::aDoorThatOpened(),
@@ -562,7 +558,6 @@ final readonly class WhatTheWireWouldAnswer
      */
     private static function aChangeThatReads(mixed $change): array
     {
-        // A change's fields are named, so only its named keys are carried.
         return [
             ...array_filter(is_array($change) ? $change : [], is_string(...), ARRAY_FILTER_USE_KEY),
             'at' => self::WHEN_A_CHANGE_WAS_MADE,
@@ -607,7 +602,6 @@ final readonly class WhatTheWireWouldAnswer
      */
     private static function anEditThatReads(mixed $edit): array
     {
-        // An edit's fields are named, so only its named keys are carried.
         $named = array_filter(is_array($edit) ? $edit : [], is_string(...), ARRAY_FILTER_USE_KEY);
         $diff = is_string($named['diff']) ? $named['diff'] : '';
 

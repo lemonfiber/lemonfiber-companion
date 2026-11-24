@@ -68,10 +68,6 @@ final readonly class Reach
      */
     public function either(Closure $made, Closure $blocked): object
     {
-        // Read off the obstacle rather than off the result, so the failing
-        // branch is the one the type is written around. The other way up makes
-        // a blocked reach the fall-through — which is how it becomes the case
-        // nobody tested.
         if ($this->obstacle instanceof Obstacle) {
             return $blocked($this->obstacle);
         }
