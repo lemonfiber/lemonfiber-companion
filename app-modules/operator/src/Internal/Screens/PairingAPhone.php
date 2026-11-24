@@ -9,7 +9,7 @@ use Modules\Kernel\Api\APairingCode;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Encoding;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\LocalZone;
@@ -22,6 +22,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatBecameOfThePairingCode;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowThePairingCodeReads;
 use Modules\Operator\Internal\ViewModels\HowThePairingCodeWent;
@@ -29,7 +30,6 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
@@ -39,8 +39,8 @@ use Native\Mobile\Edge\NativeComponent;
  * because each is fresh material that stops being good minutes later, and one
  * made unasked would be pairing material on the glass that nobody wanted.
  *
- * **Making one answers a handle**, held and asked after on a declared cadence
- * while the stack makes it, the way {@see TakingACopyHere} follows a copy.
+ * **Making one answers a job**, followed through {@see FollowsOneJobAtATime}
+ * while the stack makes it: the screen shows what the job says.
  *
  * **The code is held here and nowhere else.** It is pairing material: never
  * kept, never cached, never passed on by the device's sharing, and gone when
@@ -62,22 +62,13 @@ final class PairingAPhone extends NativeComponent implements AwaitsAnOutcome
 {
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
     use DrawsItsTemplate;
+    /** @use FollowsOneJobAtATime<HowThePairingCodeWent> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     public const string TEMPLATE = 'operator::pairing-a-phone';
-
-    /** The handle of the code being made, while there is one. Never kept past this screen. */
-    public ?string $following = null;
-
-    /** Where it has got to, once this frame has asked. Public for {@see WhatIsRunningHere::$answered}'s reason. */
-    public ?HowThePairingCodeWent $going = null;
-
-    /** Whether the code last shown here stopped being good, until another is asked for. */
-    public bool $lapsed = false;
-
-    /** Whether the code the stack made carried a check code a phone works out differently, until another is asked for. */
-    public bool $checkedDifferently = false;
 
     /** The code the stack made, while this screen shows it. */
     private ?APairingCode $code = null;
@@ -94,12 +85,15 @@ final class PairingAPhone extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
-    /** Where making a code has got to, or that none was asked for. */
+    /** Where making a code has got to, or that none was asked for: a code held is read against the clock on every look. */
     public function going(): HowThePairingCodeWent
     {
-        return $this->going ??= $this->followed();
+        $code = $this->code;
+
+        return $code instanceof APairingCode ? $this->shown($code) : $this->whatBecameOfTheJob();
     }
 
     /** Ask the stack for a fresh code, letting go of any shown before it. */
@@ -108,75 +102,40 @@ final class PairingAPhone extends NativeComponent implements AwaitsAnOutcome
         $stack = $this->stack();
         $this->code = null;
         $this->drawn = null;
-        $this->following = null;
-        $this->lapsed = false;
-        $this->checkedDifferently = false;
+        $this->forget();
 
-        $this->going = $this->storage->resume($stack->id())->either(
+        $this->reported($this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowThePairingCodeWent => $this->answered($this->pairing->make($stack, $session), $stack),
             notHeld: static fn(): HowThePairingCodeWent => new HowThePairingCodeReads()->signedOut(),
-        );
+        ));
     }
 
-    /**
-     * Look again while the stack makes the code, and while one is shown.
-     *
-     * While it is made this asks the stack after it; while one is shown it asks
-     * nothing and only lets the clock take it off the glass once its time is up.
-     * The interval is {@see HowOftenAScreenLooks}'s constant.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): HowThePairingCodeWent
     {
-        $this->going = null;
+        return $this->answered($this->pairing->whatBecameOf($stack, $session, $job), $stack);
     }
 
-    /** Whether the stack still held a handle for the work when it last answered. */
-    public function awaitsAnOutcome(): bool
+    protected function whileNoJobIsFollowed(): HowThePairingCodeWent
     {
-        return $this->following !== null;
+        return new HowThePairingCodeReads()->notAsked();
     }
 
-    /** Read the code held against the clock, or ask after the one being made. */
-    private function followed(): HowThePairingCodeWent
+    protected function withNoSessionHeld(): HowThePairingCodeWent
     {
-        $code = $this->code;
-
-        return match (true) {
-            $code instanceof APairingCode => $this->shown($code),
-            $this->lapsed => new HowThePairingCodeReads()->expired(),
-            $this->checkedDifferently => new HowThePairingCodeReads()->checkedDifferently(),
-            $this->following === null => new HowThePairingCodeReads()->notAsked(),
-            default => $this->askedAfter($this->following),
-        };
+        return new HowThePairingCodeReads()->signedOut();
     }
 
-    /** Ask the stack what became of the code being made. */
-    private function askedAfter(string $following): HowThePairingCodeWent
-    {
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): HowThePairingCodeWent => $this->answered($this->pairing->whatBecameOf($stack, $session, Job::named($following)), $stack),
-            notHeld: static fn(): HowThePairingCodeWent => new HowThePairingCodeReads()->signedOut(),
-        );
-    }
-
-    /** What the stack answered, as the screen draws it, holding the handle or the code. */
+    /** What the stack answered, as the screen draws it, following the job it names or holding the code. */
     private function answered(WhatBecameOfThePairingCode $became, Stack $stack): HowThePairingCodeWent
     {
         return $became->either(
             underway: function (Job $job): HowThePairingCodeWent {
-                $this->following = $job->shown();
+                $this->follow($job);
 
                 return new HowThePairingCodeReads()->working();
             },
             made: function (APairingCode $code): HowThePairingCodeWent {
-                $this->following = null;
-
                 if (! $code->agreesOnTheCheckCode()) {
-                    $this->checkedDifferently = true;
-
                     return new HowThePairingCodeReads()->checkedDifferently();
                 }
 
@@ -184,18 +143,9 @@ final class PairingAPhone extends NativeComponent implements AwaitsAnOutcome
 
                 return $this->shown($code);
             },
-            ended: function (): HowThePairingCodeWent {
-                $this->following = null;
-
-                return new HowThePairingCodeReads()->notAsked();
-            },
-            refused: function (string $because): HowThePairingCodeWent {
-                $this->following = null;
-
-                return new HowThePairingCodeReads()->refused($because);
-            },
+            ended: static fn(): HowThePairingCodeWent => new HowThePairingCodeReads()->notAsked(),
+            refused: static fn(string $because): HowThePairingCodeWent => new HowThePairingCodeReads()->refused($because),
             met: function (Obstacle $why) use ($stack): HowThePairingCodeWent {
-                $this->following = null;
                 $this->letGoOfTheSession($why, $stack);
 
                 return new HowThePairingCodeReads()->met($why);
@@ -209,9 +159,8 @@ final class PairingAPhone extends NativeComponent implements AwaitsAnOutcome
         if ($code->hasExpiredBy($this->clock->now())) {
             $this->code = null;
             $this->drawn = null;
-            $this->lapsed = true;
 
-            return new HowThePairingCodeReads()->expired();
+            return $this->reported(new HowThePairingCodeReads()->expired());
         }
 
         return $this->drawn ??= new HowThePairingCodeReads()->made($code, $this->encoding->codeFor($code->line()), $this->here->zone());

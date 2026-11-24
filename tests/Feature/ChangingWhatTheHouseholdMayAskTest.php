@@ -24,12 +24,14 @@ use Modules\Kernel\Api\TheAllowanceAsChanged;
 use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
+use Modules\Kernel\Api\WhatWasHeardFromAJob;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatTheHouseholdIsAllowed;
 use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
 use Tests\Support\AnObstacleOnTheWire;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -73,10 +75,10 @@ function aStackThatChangesWhatIsAllowed(?WhatBecameOfTheWork $rehearsal = null, 
     );
 }
 
-function theAllowanceChangeScreen(AStackThatChoosesWhatIsAllowed $choosing, ?AStackThatInvites $inviting = null, ?AMemberWhoIsOwed $owing = null, bool $signedIn = true): WhatTheHouseholdIsAllowed
+function theAllowanceChangeScreen(AStackThatChoosesWhatIsAllowed $choosing, ?AStackThatInvites $inviting = null, ?AMemberWhoIsOwed $owing = null, bool $signedIn = true, ?AJobThatSays $hearing = null, ?AKeychainInMemory $keychain = null): WhatTheHouseholdIsAllowed
 {
     $stack = theStackWhoseAllowanceChanges();
-    $keychain = AKeychainInMemory::working();
+    $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
@@ -90,6 +92,7 @@ function theAllowanceChangeScreen(AStackThatChoosesWhatIsAllowed $choosing, ?ASt
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        $hearing ?? AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -378,4 +381,32 @@ it('asks nothing and offers signing in where no session is held', function (): v
     expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->whoMayBeChosen()->membersRead)->toBeFalse()
         ->and($choosing->rehearsed())->toBe([]);
+});
+
+it('draws what the change says while it runs', function (): void {
+    $choosing = aStackThatChangesWhatIsAllowed(rehearsal: WhatBecameOfTheWork::underway(Job::named(AStackThatChoosesWhatIsAllowed::THE_REHEARSAL)));
+    $screen = theAllowanceChangeScreen($choosing, hearing: AJobThatSays::saying(WhatWasHeardFromAJob::said('Weighing what alex asks')));
+    $screen->forSomebody('alex');
+    $screen->policyIs(HowTheHouseholdAsks::EverythingWaits->value);
+    $screen->rehearse();
+    $screen->whileItRuns();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Weighing what alex asks', __('stacks.allowance_change.working'))
+        ->and($screen->awaitsAnOutcome())->toBeTrue();
+});
+
+it('says the session has ended when it is lost while the change runs, and follows it no further', function (): void {
+    $choosing = aStackThatChangesWhatIsAllowed(rehearsal: WhatBecameOfTheWork::underway(Job::named(AStackThatChoosesWhatIsAllowed::THE_REHEARSAL)));
+    $keychain = AKeychainInMemory::working();
+    $screen = theAllowanceChangeScreen($choosing, keychain: $keychain);
+    $screen->forSomebody('alex');
+    $screen->policyIs(HowTheHouseholdAsks::EverythingWaits->value);
+    $screen->rehearse();
+    $screen->whileItRuns();
+    $keychain->forget(theStackWhoseAllowanceChanges()->id());
+    $screen->whileItRuns();
+
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
 });

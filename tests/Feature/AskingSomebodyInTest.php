@@ -37,6 +37,7 @@ use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -120,6 +121,7 @@ function theInvitationScreen(
         app(Translator::class),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -191,6 +193,21 @@ it('asks for the rehearsal with what was typed, and says it is working while it 
             unsaid: static fn(): TheWordCarriedOut => new TheWordCarriedOut('unsaid'),
         )->said)->toBe(WhatBecomesOfUnrated::HeldBack->value)
         ->and($drawn)->toContain(__('stacks.invitation.working'));
+});
+
+it('says the session has ended when it is lost while the invitation runs, and follows it no further', function (): void {
+    $inviting = AStackThatInvites::answering(WhatBecameOfTheInvitation::underway(Job::named('j-1')), WhatBecameOfTheInvitation::underway(Job::named('j-1')));
+    $keychain = AKeychainInMemory::working();
+    $screen = annaTypedInto(theInvitationScreen($inviting, keychain: $keychain));
+    $screen->offer();
+    $screen->whileItRuns();
+    $keychain->forget(theStackSomebodyIsAskedIn()->id());
+    $screen->whileItRuns();
+
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
+        ->and($screen->howItIsGoing()->askedFor)->toBe('anna')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
 });
 
 it('reads no age and leaves unrated material to the stack where nothing was said of either', function (): void {

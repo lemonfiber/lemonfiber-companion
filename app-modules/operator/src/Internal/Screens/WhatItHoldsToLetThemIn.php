@@ -15,7 +15,7 @@ use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\EndingACredentialGrant;
 use Modules\Kernel\Api\FollowingWhatIsPlaying;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
@@ -31,19 +31,23 @@ use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\CredentialsFollowed;
+use Modules\Operator\Internal\FollowsAJob;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowACredentialRevokeReads;
+use Modules\Operator\Internal\Presenters\HowAReplacementReads;
 use Modules\Operator\Internal\Presenters\HowTheCredentialsRead;
 use Modules\Operator\Internal\ReplacesTheInternalCertificate;
 use Modules\Operator\Internal\ViewModels\TheCredentialRevokeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheCredentialsTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\TheReplacementTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
+use UnitEnum;
 
 /**
  * The credentials a stack holds to let services in, each with the grants of it to third-party plugins, ending a grant, and replacing the media server's internal certificate.
@@ -73,8 +77,11 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
     use DrawsItsTemplate;
+    /** @use FollowsAJob<TheCredentialRevokeTurnedOutToBe|TheReplacementTurnedOutToBe> */
+    use FollowsAJob, FindsItsWayAround {
+        FollowsAJob::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     public const string TEMPLATE = 'operator::what-it-holds-to-let-them-in';
 
@@ -87,12 +94,6 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
     /** What the stack read of ending it, which is what a yes agrees to. */
     public ?ACredentialRevoke $reading = null;
 
-    /** The handle of the work being followed, while there is one. */
-    public ?string $following = null;
-
-    /** Where ending a grant has got to, once this frame has asked. Public for the same reason. */
-    public ?TheCredentialRevokeTurnedOutToBe $going = null;
-
     public function __construct(
         private readonly Safekeeping $safekeeping,
         private readonly EndingACredentialGrant $ending,
@@ -103,6 +104,7 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /** What came back, after where ending a grant or replacing the certificate has got to; the machine is asked only where nothing it said is held. */
@@ -119,13 +121,13 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
     {
         $grant = $this->theGrantAt($which);
 
-        if ($this->workRuns() || ! $grant instanceof ACredentialGrant) {
+        if ($this->awaitsAnOutcome() || ! $grant instanceof ACredentialGrant) {
             return;
         }
 
         $this->backToTheCredentials();
         $this->revoking = $grant;
-        $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->ending->read($stack, $session, $grant));
+        $this->reported($this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->ending->read($stack, $session, $grant)), CredentialsFollowed::TheRevoke);
     }
 
     /** End the grant the reading on the screen described; anywhere else, nothing is sent. */
@@ -140,7 +142,8 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
 
         $agreed = ACredentialRevokeAgreed::after($reading, $grant);
         $this->reading = null;
-        $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->ending->end($stack, $session, $agreed));
+        $this->forget(CredentialsFollowed::TheRevoke);
+        $this->reported($this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->ending->end($stack, $session, $agreed)), CredentialsFollowed::TheRevoke);
     }
 
     /** Read the credentials and grants again, because the operator said so. */
@@ -154,38 +157,40 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
     {
         $this->revoking = null;
         $this->reading = null;
-        $this->following = null;
-        $this->going = null;
+        $this->forget(CredentialsFollowed::TheRevoke);
         $this->leaveTheReplacement();
-    }
-
-    /** Ask after the work again while the stack is at it, at {@see HowOftenAScreenLooks}'s interval. */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
-    {
-        if ($this->howItIsGoing()->stands->isWorking()) {
-            $this->going = null;
-        }
-
-        if ($this->howTheReplacementGoes()->stands->isWorking()) {
-            $this->replacementGoing = null;
-        }
-    }
-
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->howItIsGoing()->stands->isWorking() || $this->howTheReplacementGoes()->stands->isWorking();
     }
 
     /** Where ending a grant has got to, asked once per frame. */
     public function howItIsGoing(): TheCredentialRevokeTurnedOutToBe
     {
-        $following = $this->following;
+        $report = $this->whatBecameOfTheJob(CredentialsFollowed::TheRevoke);
 
-        return $this->going ??= $following === null
-            ? new HowACredentialRevokeReads()->notAsked()
-            : $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->ending->whatBecameOf($stack, $session, Job::named($following)));
+        return $report instanceof TheCredentialRevokeTurnedOutToBe ? $report : new HowACredentialRevokeReads()->notAsked();
+    }
+
+    protected function whatBecameOfIt(Stack $stack, Session $session, Job $job, UnitEnum $for): TheCredentialRevokeTurnedOutToBe|TheReplacementTurnedOutToBe
+    {
+        return match (CredentialsFollowed::asked($for)) {
+            CredentialsFollowed::TheRevoke => $this->shown($this->ending->whatBecameOf($stack, $session, $job), $stack),
+            CredentialsFollowed::TheReplacement => $this->whatTheReplacementCameTo($stack, $session, $job),
+        };
+    }
+
+    protected function whileNothingIsFollowed(UnitEnum $for): TheCredentialRevokeTurnedOutToBe|TheReplacementTurnedOutToBe
+    {
+        return match (CredentialsFollowed::asked($for)) {
+            CredentialsFollowed::TheRevoke => new HowACredentialRevokeReads()->notAsked(),
+            CredentialsFollowed::TheReplacement => new HowAReplacementReads()->notAsked(),
+        };
+    }
+
+    protected function withoutASession(UnitEnum $for): TheCredentialRevokeTurnedOutToBe|TheReplacementTurnedOutToBe
+    {
+        return match (CredentialsFollowed::asked($for)) {
+            CredentialsFollowed::TheRevoke => new HowACredentialRevokeReads()->signedOut(),
+            CredentialsFollowed::TheReplacement => new HowAReplacementReads()->signedOut(),
+        };
     }
 
     /** The grant at that place among those last read, or none. */
@@ -258,24 +263,18 @@ final class WhatItHoldsToLetThemIn extends NativeComponent implements AwaitsAnOu
     {
         return $became->either(
             underway: function (Job $job): TheCredentialRevokeTurnedOutToBe {
-                $this->following = $job->shown();
+                $this->follow($job, CredentialsFollowed::TheRevoke);
 
                 return new HowACredentialRevokeReads()->running();
             },
             answered: function (WhatARevokeCameTo $came): TheCredentialRevokeTurnedOutToBe {
-                $this->following = null;
                 $this->held = $came->held();
                 $this->reading = $came->revoke();
 
                 return new HowACredentialRevokeReads()->answered($came, $this->clock->now());
             },
-            ended: function (?WhyTheWorkEnded $why): TheCredentialRevokeTurnedOutToBe {
-                $this->following = null;
-
-                return new HowACredentialRevokeReads()->ended($why);
-            },
+            ended: static fn(?WhyTheWorkEnded $why): TheCredentialRevokeTurnedOutToBe => new HowACredentialRevokeReads()->ended($why),
             refused: function (ARefusalInItsWords $why): TheCredentialRevokeTurnedOutToBe {
-                $this->following = null;
                 $this->held = null;
 
                 return new HowACredentialRevokeReads()->refused($why);

@@ -34,14 +34,17 @@ use Modules\Kernel\Api\WhatTheHouseholdIsPlaying;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatTheStoreProtects;
 use Modules\Kernel\Api\WhatUsesIt;
+use Modules\Kernel\Api\WhatWasHeardFromAJob;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhereAReplacementSettled;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\Whose;
+use Modules\Operator\Internal\CredentialsFollowed;
 use Modules\Operator\Internal\Screens\WhatItHoldsToLetThemIn;
 use Modules\Operator\Internal\ViewModels\ACredentialAsShown;
 use Tests\Support\AnObstacleOnTheWire;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatEndsGrants;
@@ -124,10 +127,10 @@ function sanneWatching(): AStackThatPlays
     return AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these(ASessionPlaying::of('Sanne', 'Low Tide', 'Living room TV', paused: false))));
 }
 
-function theReplacingScreen(AStackThatReplacesItsCertificate $replacing, ?AStackThatPlays $playing = null, ?Whose $whose = null, bool $signedIn = true): WhatItHoldsToLetThemIn
+function theReplacingScreen(AStackThatReplacesItsCertificate $replacing, ?AStackThatPlays $playing = null, ?Whose $whose = null, bool $signedIn = true, ?AJobThatSays $hearing = null, ?AKeychainInMemory $keychain = null): WhatItHoldsToLetThemIn
 {
     $stack = theMachineWhoseCertificateIsReplaced();
-    $keychain = AKeychainInMemory::working();
+    $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), $whose ?? Whose::theOperator());
@@ -143,6 +146,7 @@ function theReplacingScreen(AStackThatReplacesItsCertificate $replacing, ?AStack
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        $hearing ?? AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
     $screen->answer();
@@ -306,6 +310,20 @@ it('sends no yes without a reading, and asks nothing new while the stack is stil
         ->and($screen->awaitsAnOutcome())->toBeTrue();
 });
 
+it('says the session has ended when it is lost while the replacement runs, and follows it no further', function (): void {
+    $replacing = AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatReplacesItsCertificate::THE_READING)), WhatBecameOfTheWork::noOutcome());
+    $keychain = AKeychainInMemory::working();
+    $screen = theReplacingScreen($replacing, keychain: $keychain);
+    $screen->replaceTheCertificate();
+    $screen->whileItRuns();
+    $keychain->forget(theMachineWhoseCertificateIsReplaced()->id());
+    $screen->whileItRuns();
+
+    expect($screen->howTheReplacementGoes()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
+});
+
 it('draws a refusal in the stack\'s words, a lost outcome, and what stood in the way', function (): void {
     $refusal = ARefusalInItsWords::said('The media server could not be reached', '', WhatTheRefusalNamed::nothing());
     $refused = theReplacingScreen(AStackThatReplacesItsCertificate::sayingAtOnce(WhatBecameOfTheWork::refused($refusal)));
@@ -336,7 +354,7 @@ it('leaves the replacement for the list, keeping nothing it read', function (): 
     $screen = theReplacementReadOn($replacing);
     $screen->backToTheCredentials();
 
-    expect([$screen->replacing, $screen->replacement, $screen->watching, $screen->movedOn, $screen->followingTheReplacement])->toBe([false, null, null, null, null])
+    expect([$screen->replacing, $screen->replacement, $screen->watching, $screen->movedOn, $screen->followed])->toBe([false, null, null, null, []])
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(aLineAboutTheCertificate('stacks.credentials.certificate.replace'));
 });
 
@@ -363,4 +381,16 @@ it('reads the list after where the replacement got to, so a certificate replaced
     $screen->whileItRuns();
 
     expect(array_map(static fn(ACredentialAsShown $held): string => $held->inForce, $screen->answer()->held))->toBe([theCertificateAtAGlance(theDigestAfter()), '']);
+});
+
+it('draws what replacing it says while it runs, apart from ending a grant', function (): void {
+    $replacing = AStackThatReplacesItsCertificate::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatReplacesItsCertificate::THE_READING)), WhatBecameOfTheWork::noOutcome());
+    $screen = theReplacingScreen($replacing, hearing: AJobThatSays::saying(WhatWasHeardFromAJob::said('Making the certificate')));
+    $screen->replaceTheCertificate();
+    $screen->whileItRuns();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Making the certificate', aLineAboutTheCertificate('stacks.credentials.replace.working'))
+        ->and($screen->whatItSays(CredentialsFollowed::TheReplacement)->newest)->toBe('Making the certificate')
+        ->and($screen->whatItSays(CredentialsFollowed::TheRevoke)->newest)->toBeNull()
+        ->and($screen->awaitsAnOutcome(CredentialsFollowed::TheRevoke))->toBeFalse();
 });

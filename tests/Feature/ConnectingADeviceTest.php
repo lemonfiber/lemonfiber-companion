@@ -32,11 +32,13 @@ use Modules\Kernel\Api\WhereTheHandoffStands;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\AskingSomebodyIn;
 use Modules\Operator\Internal\Screens\ConnectingADeviceForThem;
+use Modules\Operator\Internal\TheOnlyJob;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -115,6 +117,7 @@ function theConnectingScreen(
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $named]);
 
@@ -147,13 +150,28 @@ it('says the stack is working on it, follows it by its handle, and asks for the 
     $screen->show();
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.invitation.working'))
-        ->and($screen->following)->toBe(AStackThatHandsDevicesOver::THE_JOB)
+        ->and($screen->followed[TheOnlyJob::Followed->name]->job->shown())->toBe(AStackThatHandsDevicesOver::THE_JOB)
         ->and($handing->asked())->toBe(['Sam']);
 
     $screen->whileItRuns();
     WhatTheDeviceWouldDraw::by($screen);
 
     expect($handing->followed())->toHaveCount(1);
+});
+
+it('says the session has ended when it is lost while the handoff runs, and follows it no further', function (): void {
+    $handing = AStackThatHandsDevicesOver::whichTookItOn(WhatBecameOfTheHandoff::underway(Job::named(AStackThatHandsDevicesOver::THE_JOB)));
+    $keychain = AKeychainInMemory::working();
+    $screen = theConnectingScreen($handing, keychain: $keychain);
+    $screen->show();
+    $screen->whileItRuns();
+    $keychain->forget(theStackADeviceConnectsTo()->id());
+    $screen->whileItRuns();
+
+    expect($screen->going()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($handing->followed())->toHaveCount(1);
 });
 
 it('shows the address as a code and as text, the steps, the apps and when the code was first given', function (): void {
@@ -288,7 +306,7 @@ it('goes back to offering the code where the stack has no outcome for the one as
     $screen->whileItRuns();
 
     expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('stacks.handoff.show'))
-        ->and($screen->following)->toBeNull();
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
 });
 
 it('says what stood in the way, and lets go of a session the stack refused', function (): void {
@@ -344,6 +362,7 @@ it('is offered on each member\'s card, told apart by their name', function (): v
         app(Translator::class),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        AJobThatSays::nothing(),
     );
     $household->setParams(['stack' => theStackADeviceConnectsTo()->id()->stored()]);
     $offers = WhatTheDeviceWouldDraw::by($household)->offers();
@@ -362,6 +381,7 @@ it('opens asking somebody in with the name it was sent with already typed', func
         app(Translator::class),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        AJobThatSays::nothing(),
     );
     $household->mount('Sam');
     $blank = clone $household;

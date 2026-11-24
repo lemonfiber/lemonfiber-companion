@@ -30,6 +30,7 @@ use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -69,7 +70,7 @@ function theRemovalScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new TakingSomebodyOut($removing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new TakingSomebodyOut($removing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $member]);
 
     return $screen;
@@ -186,6 +187,22 @@ it('asks what taking them out would cost as it opens, and says it is asking', fu
         ->and($drawn->offers())->not->toContain(__('stacks.removal.take_them_out', ['name' => 'anna']));
 });
 
+it('says the session has ended when it is lost while the cost is read, and follows it no further', function (): void {
+    $removing = AStackThatTakesThemOut::answering(WhatBecameOfTheRemoval::underway(Job::named('j-1')), WhatBecameOfTheRemoval::underway(Job::named('j-1')));
+    $keychain = AKeychainInMemory::working();
+    $screen = theRemovalScreen($removing, keychain: $keychain);
+    $screen->answer();
+    $screen->whileItRuns();
+    $keychain->forget(theStackSomebodyLeaves()->id());
+    $screen->whileItRuns();
+
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
+        ->and($screen->answer()->name)->toBe('anna')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($removing->asked())->toBe(['would:anna', 'after:j-1']);
+});
+
 it('draws what taking them out would cost, said to be only that, and offers the yes beneath it', function (): void {
     $removing = AStackThatTakesThemOut::answering(...theRemovalWorkThenIts(whatTakingAnnaOutCosts(3, 'The request service answered slowly')));
     $screen = annasCostReadOn($removing);
@@ -271,7 +288,7 @@ it('draws a refusal with the stack\'s reason and the name, and offers no way to 
         ->and($drawn->offers())->toContain(__('stacks.removal.back_to_who_is_in'))
         ->and($drawn->offers())->not->toContain(__('health.ask_again'))
         ->and($drawn->offers())->not->toContain(__('stacks.removal.take_them_out', ['name' => 'anna']))
-        ->and($screen->following)->toBeNull();
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
 });
 
 it('tells work the stack has no outcome for apart before the yes and after it', function (): void {
@@ -287,7 +304,7 @@ it('tells work the stack has no outcome for apart before the yes and after it', 
     expect(WhatTheDeviceWouldDraw::by($before)->said())->toContain(__('stacks.removal.no_outcome', ['name' => 'anna']))
         ->and(WhatTheDeviceWouldDraw::by($after)->said())->toContain(__('stacks.removal.no_outcome_after_yes', ['name' => 'anna']))
         ->and(WhatTheDeviceWouldDraw::by($after)->offers())->toContain(__('stacks.removal.read_again', ['name' => 'anna']))
-        ->and($after->following)->toBeNull();
+        ->and($after->awaitsAnOutcome())->toBeFalse();
 });
 
 it('says whether they were taken out could not be read where the yes met something, and never sends it again on its own', function (): void {
@@ -468,6 +485,7 @@ it('is offered for each member of the household, where who is in is read', funct
         app(Translator::class),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        AJobThatSays::nothing(),
     );
     $household->setParams(['stack' => theStackSomebodyLeaves()->id()->stored()]);
     $offers = WhatTheDeviceWouldDraw::by($household)->offers();

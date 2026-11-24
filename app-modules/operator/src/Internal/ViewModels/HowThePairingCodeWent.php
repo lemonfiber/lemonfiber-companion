@@ -12,7 +12,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * refusal, or what stood in the way. None of them is nothing asked yet,
  * which is the screen's opening.
  */
-final readonly class HowThePairingCodeWent
+final readonly class HowThePairingCodeWent implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands    $stands                 where the work stands, and whether the stack could be asked at all

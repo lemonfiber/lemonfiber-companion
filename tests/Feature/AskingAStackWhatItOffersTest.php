@@ -22,6 +22,7 @@ use Modules\Operator\Internal\Screens\PairingAPhone;
 use Modules\Operator\Internal\Screens\WhatIsRunningHere;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -80,6 +81,7 @@ function thePairingScreenAsking(KnowingWhatAStackOffers $offering, ?Stack $stack
         AroundThePhone::holding(StacksInMemory::holding($stack), storage: $keychain, offering: $offering),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        hearingTheJobs: AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

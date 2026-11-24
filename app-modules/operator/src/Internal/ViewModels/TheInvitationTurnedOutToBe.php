@@ -12,7 +12,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * stack refusing with its reason, the work ended with no outcome, or what was
  * typed not being something to ask with.
  */
-final readonly class TheInvitationTurnedOutToBe
+final readonly class TheInvitationTurnedOutToBe implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands        $stands       where the work stands, and whether the stack could be asked at all

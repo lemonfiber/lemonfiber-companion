@@ -7,25 +7,41 @@ use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ScopeOfACopy;
 use Modules\Operator\Internal\Presenters\HowACopyReads;
+use Modules\Operator\Internal\Presenters\HowACredentialRevokeReads;
 use Modules\Operator\Internal\Presenters\HowALandingReads;
 use Modules\Operator\Internal\Presenters\HowAMendingReads;
 use Modules\Operator\Internal\Presenters\HowAnOfferOfRepairsReads;
+use Modules\Operator\Internal\Presenters\HowAReplacementReads;
 use Modules\Operator\Internal\Presenters\HowAResetReads;
 use Modules\Operator\Internal\Presenters\HowARunBackReads;
 use Modules\Operator\Internal\Presenters\HowASettingChangeReads;
 use Modules\Operator\Internal\Presenters\HowExtendingItReads;
 use Modules\Operator\Internal\Presenters\HowForgettingReads;
 use Modules\Operator\Internal\Presenters\HowPuttingItBackReads;
+use Modules\Operator\Internal\Presenters\HowTheAcceptanceReads;
+use Modules\Operator\Internal\Presenters\HowTheAllowanceChangeReads;
+use Modules\Operator\Internal\Presenters\HowTheHandoffReads;
+use Modules\Operator\Internal\Presenters\HowTheInvitationReads;
 use Modules\Operator\Internal\Presenters\HowTheLastUpdateReads;
+use Modules\Operator\Internal\Presenters\HowThePairingCodeReads;
+use Modules\Operator\Internal\Presenters\HowTheRemovalReads;
 use Modules\Operator\Internal\Presenters\HowTheSwitchReads;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
 use Modules\Operator\Internal\ViewModels\HowPuttingItBackWent;
 use Modules\Operator\Internal\ViewModels\HowTheCopyWent;
+use Modules\Operator\Internal\ViewModels\HowTheHandoffWent;
 use Modules\Operator\Internal\ViewModels\HowTheLandingWent;
 use Modules\Operator\Internal\ViewModels\HowTheLastUpdateWent;
+use Modules\Operator\Internal\ViewModels\HowThePairingCodeWent;
 use Modules\Operator\Internal\ViewModels\SaysWhereTheWorkStands;
+use Modules\Operator\Internal\ViewModels\TheAcceptanceTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\TheAllowanceChangeTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\TheCredentialRevokeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheForgettingTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\TheInvitationTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\TheRemovalTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\TheReplacementTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheSwitchTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatExtendsItTurnedOutToBe;
@@ -43,7 +59,9 @@ use Modules\Operator\Internal\ViewModels\WhatThisStackPutRight;
 /**
  * Each report, as running work, ended work and work something stood in the way of.
  *
- * @return array<class-string<SaysWhereTheWorkStands>, array{running: SaysWhereTheWorkStands, ended: SaysWhereTheWorkStands, met: SaysWhereTheWorkStands}>
+ * A report with no word of its own for ended work draws the screen as before it asked, so it has no `ended`.
+ *
+ * @return array<class-string<SaysWhereTheWorkStands>, array{running: SaysWhereTheWorkStands, ended?: SaysWhereTheWorkStands, met: SaysWhereTheWorkStands}>
  */
 function everyReportOnWork(): array
 {
@@ -90,6 +108,29 @@ function everyReportOnWork(): array
             'ended' => new HowForgettingReads()->ended(null),
             'met' => new HowForgettingReads()->met($stood, agreed: false),
         ],
+        TheAcceptanceTurnedOutToBe::class => [
+            'running' => new HowTheAcceptanceReads()->running(),
+            'ended' => new HowTheAcceptanceReads()->ended(null),
+            'met' => new HowTheAcceptanceReads()->met($stood),
+        ],
+        HowTheHandoffWent::class => [
+            'running' => new HowTheHandoffReads()->working(),
+            'met' => new HowTheHandoffReads()->met($stood),
+        ],
+        HowThePairingCodeWent::class => [
+            'running' => new HowThePairingCodeReads()->working(),
+            'met' => new HowThePairingCodeReads()->met($stood),
+        ],
+        TheInvitationTurnedOutToBe::class => [
+            'running' => new HowTheInvitationReads()->running('Sam'),
+            'ended' => new HowTheInvitationReads()->ended(null, 'Sam'),
+            'met' => new HowTheInvitationReads()->met($stood, 'Sam'),
+        ],
+        TheRemovalTurnedOutToBe::class => [
+            'running' => new HowTheRemovalReads()->running('anna', agreed: true),
+            'ended' => new HowTheRemovalReads()->ended(null, 'anna', agreed: true),
+            'met' => new HowTheRemovalReads()->met($stood, 'anna', agreed: true),
+        ],
         TheSwitchTurnedOutToBe::class => [
             'running' => new HowTheSwitchReads()->running(),
             'ended' => new HowTheSwitchReads()->ended(null),
@@ -110,6 +151,21 @@ function everyReportOnWork(): array
             'ended' => new HowExtendingItReads()->ended(null),
             'met' => new HowExtendingItReads()->met($stood),
         ],
+        TheAllowanceChangeTurnedOutToBe::class => [
+            'running' => new HowTheAllowanceChangeReads()->running(),
+            'ended' => new HowTheAllowanceChangeReads()->ended(null),
+            'met' => new HowTheAllowanceChangeReads()->met($stood),
+        ],
+        TheCredentialRevokeTurnedOutToBe::class => [
+            'running' => new HowACredentialRevokeReads()->running(),
+            'ended' => new HowACredentialRevokeReads()->ended(null),
+            'met' => new HowACredentialRevokeReads()->met($stood),
+        ],
+        TheReplacementTurnedOutToBe::class => [
+            'running' => new HowAReplacementReads()->running(),
+            'ended' => new HowAReplacementReads()->ended(null),
+            'met' => new HowAReplacementReads()->met($stood),
+        ],
     ];
 }
 
@@ -122,8 +178,10 @@ it('says running work is running, and so is asked after again', function (): voi
 
 it('says work that ended has ended, and is no longer running', function (): void {
     foreach (everyReportOnWork() as $which => $reports) {
-        expect($reports['ended']->stands->isWorking())->toBeFalse($which)
-            ->and($reports['ended']->stands->hasEnded())->toBeTrue($which);
+        if (array_key_exists('ended', $reports)) {
+            expect($reports['ended']->stands->isWorking())->toBeFalse($which)
+                ->and($reports['ended']->stands->hasEnded())->toBeTrue($which);
+        }
     }
 });
 

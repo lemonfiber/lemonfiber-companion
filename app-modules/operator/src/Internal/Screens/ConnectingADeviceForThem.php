@@ -9,7 +9,7 @@ use Modules\Kernel\Api\AHandoff;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Encoding;
 use Modules\Kernel\Api\HandingOverADevice;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
@@ -21,6 +21,7 @@ use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatBecameOfTheHandoff;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheHandoffReads;
 use Modules\Operator\Internal\TheCodesDrawn;
@@ -29,7 +30,6 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
@@ -41,8 +41,8 @@ use function trim;
  * given and which devices were signed in then, so it is the operator's tap
  * that starts the hand-off, never the screen appearing.
  *
- * **Asking answers a handle**, held and asked after on a declared cadence
- * while the stack works it out, the way {@see PairingAPhone} follows a code.
+ * **Asking answers a job**, followed through {@see FollowsOneJobAtATime}
+ * while the stack works it out: the screen shows what the job says.
  * Once the stack has said, nothing is asked again until the operator taps:
  * whether their device has signed in is read when they say it has.
  *
@@ -55,22 +55,13 @@ final class ConnectingADeviceForThem extends NativeComponent implements AwaitsAn
 {
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
     use DrawsItsTemplate;
+    /** @use FollowsOneJobAtATime<HowTheHandoffWent> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     public const string TEMPLATE = 'operator::connecting-a-device';
-
-    /** The handle of the hand-off being worked out, while there is one. */
-    public ?string $following = null;
-
-    /** Where it has got to, once this frame has asked. Public for {@see WhatIsRunningHere::$answered}'s reason. */
-    public ?HowTheHandoffWent $going = null;
-
-    /** Where the stack last said it stands, until it is asked again. */
-    private ?AHandoff $handoff = null;
-
-    /** That answer as the screen draws it, drawn once rather than on every look. */
-    private ?HowTheHandoffWent $drawn = null;
 
     public function __construct(
         private readonly HandingOverADevice $handing,
@@ -80,6 +71,7 @@ final class ConnectingADeviceForThem extends NativeComponent implements AwaitsAn
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /** The member this screen is about, by the name the route carries. */
@@ -91,18 +83,16 @@ final class ConnectingADeviceForThem extends NativeComponent implements AwaitsAn
     /** Where the hand-off has got to, or that nothing was asked yet. */
     public function going(): HowTheHandoffWent
     {
-        return $this->going ??= $this->followed();
+        return $this->whatBecameOfTheJob();
     }
 
     /** Ask the stack where handing their device over stands, letting go of what it said before. */
     public function show(): void
     {
-        $this->handoff = null;
-        $this->drawn = null;
-        $this->following = null;
+        $this->forget();
 
         if (trim($this->named()) === '') {
-            $this->going = new HowTheHandoffReads()->notAsked();
+            $this->reported(new HowTheHandoffReads()->notAsked());
 
             return;
         }
@@ -110,94 +100,48 @@ final class ConnectingADeviceForThem extends NativeComponent implements AwaitsAn
         $stack = $this->stack();
         $who = SomebodyInTheHousehold::called($this->named());
 
-        $this->going = $this->storage->resume($stack->id())->either(
+        $this->reported($this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowTheHandoffWent => $this->answered($this->handing->handOver($stack, $session, $who), $stack),
             notHeld: static fn(): HowTheHandoffWent => new HowTheHandoffReads()->signedOut(),
-        );
+        ));
     }
 
-    /**
-     * Look again while the stack works the hand-off out.
-     *
-     * While it does, this asks the stack after it; once it has said, this asks
-     * nothing. The interval is {@see HowOftenAScreenLooks}'s constant.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): HowTheHandoffWent
     {
-        $this->going = null;
+        return $this->answered($this->handing->whatBecameOf($stack, $session, $job), $stack);
     }
 
-    /** Whether the stack still held a handle for the work when it last answered. */
-    public function awaitsAnOutcome(): bool
+    protected function whileNoJobIsFollowed(): HowTheHandoffWent
     {
-        return $this->following !== null;
+        return new HowTheHandoffReads()->notAsked();
     }
 
-    /** Draw the answer held, or ask after the hand-off being worked out. */
-    private function followed(): HowTheHandoffWent
+    protected function withNoSessionHeld(): HowTheHandoffWent
     {
-        $handoff = $this->handoff;
-
-        return match (true) {
-            $handoff instanceof AHandoff => $this->shown($handoff),
-            $this->following === null => new HowTheHandoffReads()->notAsked(),
-            default => $this->askedAfter($this->following),
-        };
+        return new HowTheHandoffReads()->signedOut();
     }
 
-    /** Ask the stack what became of the hand-off being worked out. */
-    private function askedAfter(string $following): HowTheHandoffWent
-    {
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): HowTheHandoffWent => $this->answered($this->handing->whatBecameOf($stack, $session, Job::named($following)), $stack),
-            notHeld: static fn(): HowTheHandoffWent => new HowTheHandoffReads()->signedOut(),
-        );
-    }
-
-    /** What the stack answered, as the screen draws it, holding the handle or the answer. */
+    /** What the stack answered, as the screen draws it, following the job it names. */
     private function answered(WhatBecameOfTheHandoff $became, Stack $stack): HowTheHandoffWent
     {
         return $became->either(
             underway: function (Job $job): HowTheHandoffWent {
-                $this->following = $job->shown();
+                $this->follow($job);
 
                 return new HowTheHandoffReads()->working();
             },
-            answered: function (AHandoff $handoff): HowTheHandoffWent {
-                $this->following = null;
-                $this->handoff = $handoff;
-
-                return $this->shown($handoff);
-            },
-            ended: function (): HowTheHandoffWent {
-                $this->following = null;
-
-                return new HowTheHandoffReads()->notAsked();
-            },
-            refused: function (string $because): HowTheHandoffWent {
-                $this->following = null;
-
-                return new HowTheHandoffReads()->refused($because);
-            },
+            answered: fn(AHandoff $handoff): HowTheHandoffWent => new HowTheHandoffReads()->answered(
+                $handoff,
+                $this->codesOf($handoff),
+                $this->clock->now(),
+            ),
+            ended: static fn(): HowTheHandoffWent => new HowTheHandoffReads()->notAsked(),
+            refused: static fn(string $because): HowTheHandoffWent => new HowTheHandoffReads()->refused($because),
             met: function (Obstacle $why) use ($stack): HowTheHandoffWent {
-                $this->following = null;
                 $this->letGoOfTheSession($why, $stack);
 
                 return new HowTheHandoffReads()->met($why);
             },
-        );
-    }
-
-    /** The answer held, drawn once. */
-    private function shown(AHandoff $handoff): HowTheHandoffWent
-    {
-        return $this->drawn ??= new HowTheHandoffReads()->answered(
-            $handoff,
-            $this->codesOf($handoff),
-            $this->clock->now(),
         );
     }
 

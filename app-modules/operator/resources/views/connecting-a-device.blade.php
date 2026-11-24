@@ -15,6 +15,7 @@
         />
     @elseif ($this->going()->stands->isWorking())
         <x-design::standing :said="__('stacks.invitation.working')" tone="working" />
+        <x-operator::following-a-job :said="$this->whatItSays()" />
     @elseif ($this->going()->handoff !== null)
         @if ($this->going()->handoff->heading !== null)
             <x-design::heading>{{ __($this->going()->handoff->heading) }}</x-design::heading>

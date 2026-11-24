@@ -29,6 +29,7 @@ use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatEndsGrants;
@@ -91,7 +92,7 @@ function theCredentialsScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatItHoldsToLetThemIn($safekeeping, $ending ?? AStackThatEndsGrants::untouched(), AStackThatReplacesItsCertificate::untouched(), AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these())), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_CREDENTIALS_ARE_READ)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatItHoldsToLetThemIn($safekeeping, $ending ?? AStackThatEndsGrants::untouched(), AStackThatReplacesItsCertificate::untouched(), AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these())), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_CREDENTIALS_ARE_READ)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

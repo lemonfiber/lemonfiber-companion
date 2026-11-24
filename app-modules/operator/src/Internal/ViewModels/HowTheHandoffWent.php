@@ -10,7 +10,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * One arm at a time: working, the stack's answer, its refusal, or what stood
  * in the way. None of them is nothing asked yet, which is the screen's opening.
  */
-final readonly class HowTheHandoffWent
+final readonly class HowTheHandoffWent implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands $stands      where the work stands, and whether the stack could be asked at all

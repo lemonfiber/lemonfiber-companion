@@ -20,6 +20,7 @@ use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AMemberWhoIsOwed;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -57,6 +58,7 @@ function theAllowanceScreen(AMemberWhoIsOwed $owing, ?AKeychainInMemory $keychai
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

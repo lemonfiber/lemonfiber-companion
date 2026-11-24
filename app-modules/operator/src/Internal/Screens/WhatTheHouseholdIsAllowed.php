@@ -11,7 +11,7 @@ use Modules\Kernel\Api\AnAllowanceChange;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ChoosingWhatTheHouseholdMayAsk;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
@@ -30,6 +30,7 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesWhatIsAllowed;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheAllowanceChangeReads;
@@ -44,7 +45,6 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
@@ -64,8 +64,11 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
     use OffersTheAppsSettings;
     use ChoosesWhatIsAllowed;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
     use DrawsItsTemplate;
+    /** @use FollowsOneJobAtATime<TheAllowanceChangeTurnedOutToBe> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     public const string TEMPLATE = 'operator::what-the-household-is-allowed';
 
@@ -81,11 +84,6 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
     /** The change a rehearsal on the screen came back for, which is the one a yes sends. */
     public ?AnAllowanceChange $rehearsed = null;
 
-    /** The handle of the work being followed, where there is one. */
-    public ?string $following = null;
-
-    public ?TheAllowanceChangeTurnedOutToBe $going = null;
-
     public function __construct(
         private readonly Owing $owing,
         private readonly ChoosingWhatTheHouseholdMayAsk $choosing,
@@ -94,6 +92,7 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     public function again(): void
@@ -112,22 +111,21 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
     {
         $this->asked = null;
         $this->rehearsed = null;
-        $this->following = null;
-        $this->going = null;
+        $this->forget();
     }
 
     public function rehearse(): void
     {
         $this->startAgain();
 
-        $this->going = WhatTheAllowanceChangeIsAskedWith::from($this->who, $this->policy, $this->requests, $this->days)->either(
+        $this->reported(WhatTheAllowanceChangeIsAskedWith::from($this->who, $this->policy, $this->requests, $this->days)->either(
             asked: fn(AnAllowanceChange $change): TheAllowanceChangeTurnedOutToBe => $this->put(function (Stack $stack, Session $session) use ($change): WhatBecameOfTheWork {
                 $this->asked = $change;
 
                 return $this->choosing->rehearse($stack, $session, $change);
             }),
             notAskable: static fn(string $why): TheAllowanceChangeTurnedOutToBe => new HowTheAllowanceChangeReads()->notAskable($why),
-        );
+        ));
     }
 
     public function apply(): void
@@ -139,20 +137,8 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
         }
 
         $this->rehearsed = null;
-        $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->choosing->carryOut($stack, $session, $change));
-    }
-
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
-    {
-        if ($this->howItIsGoing()->stands->isWorking()) {
-            $this->going = null;
-        }
-    }
-
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->howItIsGoing()->stands->isWorking();
+        $this->forget();
+        $this->reported($this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->choosing->carryOut($stack, $session, $change)));
     }
 
     /** What the stack said, asked once per frame. */
@@ -190,11 +176,22 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
 
     public function howItIsGoing(): TheAllowanceChangeTurnedOutToBe
     {
-        $following = $this->following;
+        return $this->whatBecameOfTheJob();
+    }
 
-        return $this->going ??= $following === null
-            ? new HowTheAllowanceChangeReads()->notAsked()
-            : $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->choosing->whatBecameOf($stack, $session, Job::named($following)));
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): TheAllowanceChangeTurnedOutToBe
+    {
+        return $this->shown($this->choosing->whatBecameOf($stack, $session, $job), $stack);
+    }
+
+    protected function whileNoJobIsFollowed(): TheAllowanceChangeTurnedOutToBe
+    {
+        return new HowTheAllowanceChangeReads()->notAsked();
+    }
+
+    protected function withNoSessionHeld(): TheAllowanceChangeTurnedOutToBe
+    {
+        return new HowTheAllowanceChangeReads()->signedOut();
     }
 
     /** @param Closure(Stack, Session): WhatBecameOfTheWork<TheAllowanceAsChanged> $asking */
@@ -215,12 +212,11 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
     {
         return $became->either(
             underway: function (Job $job): TheAllowanceChangeTurnedOutToBe {
-                $this->following = $job->shown();
+                $this->follow($job);
 
                 return new HowTheAllowanceChangeReads()->running();
             },
             answered: function (TheAllowanceAsChanged $report): TheAllowanceChangeTurnedOutToBe {
-                $this->following = null;
                 $this->rehearsed = $report->did() === WhetherItWasRehearsed::Rehearsed ? $this->asked : null;
 
                 if (!$this->rehearsed instanceof AnAllowanceChange) {
@@ -229,16 +225,8 @@ final class WhatTheHouseholdIsAllowed extends NativeComponent implements AwaitsA
 
                 return new HowTheAllowanceChangeReads()->answered($report);
             },
-            ended: function (?WhyTheWorkEnded $why): TheAllowanceChangeTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTheAllowanceChangeReads()->ended($why);
-            },
-            refused: function (ARefusalInItsWords $why): TheAllowanceChangeTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTheAllowanceChangeReads()->refused($why);
-            },
+            ended: static fn(?WhyTheWorkEnded $why): TheAllowanceChangeTurnedOutToBe => new HowTheAllowanceChangeReads()->ended($why),
+            refused: static fn(ARefusalInItsWords $why): TheAllowanceChangeTurnedOutToBe => new HowTheAllowanceChangeReads()->refused($why),
             met: function (Obstacle $why) use ($stack): TheAllowanceChangeTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 

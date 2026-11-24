@@ -1,6 +1,7 @@
 @use('Modules\Stacks\Api\AStacksScreen')
 @use('Modules\Kernel\Api\RevokingAGrant')
 @use('Modules\Kernel\Api\ReplacingACertificate')
+@use('Modules\Operator\Internal\CredentialsFollowed')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->went->cameBack())
@@ -17,6 +18,7 @@
             />
         @elseif ($this->howItIsGoing()->stands->isWorking())
             <x-design::standing :said="__('stacks.credentials.revoke.working')" tone="working" />
+            <x-operator::following-a-job :said="$this->whatItSays(CredentialsFollowed::TheRevoke)" />
         @elseif ($this->howItIsGoing()->stands->hasEnded())
             <x-operator::why-it-ended :stands="$this->howItIsGoing()->stands" />
             <x-design::notice tone="unknown">
@@ -41,6 +43,7 @@
             />
         @elseif ($this->howTheReplacementGoes()->stands->isWorking())
             <x-design::standing :said="__('stacks.credentials.replace.working')" tone="working" />
+            <x-operator::following-a-job :said="$this->whatItSays(CredentialsFollowed::TheReplacement)" />
         @elseif ($this->howTheReplacementGoes()->stands->hasEnded())
             <x-operator::why-it-ended :stands="$this->howTheReplacementGoes()->stands" />
             <x-design::notice tone="unknown">

@@ -23,6 +23,7 @@ use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatItSaysUnderneath;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
+use Modules\Kernel\Api\WhatWasHeardFromAJob;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\WhatAcceptingItCosts;
@@ -30,6 +31,7 @@ use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatAccepts;
@@ -59,13 +61,13 @@ function aReportWith(Finding ...$findings): Report
     return Report::of(Overall::Degraded, Findings::of(...$findings));
 }
 
-function theAcceptingScreen(AStackThatWasAsked $asking, AStackThatAccepts $accepting, string $check = THE_CHOICE): WhatAcceptingItCosts
+function theAcceptingScreen(AStackThatWasAsked $asking, AStackThatAccepts $accepting, string $check = THE_CHOICE, ?AJobThatSays $hearing = null, ?AKeychainInMemory $keychain = null): WhatAcceptingItCosts
 {
     $stack = TheHealthScreenOfTheLoft::theStackBeingLookedAt();
-    $keychain = AKeychainInMemory::working();
+    $keychain ??= AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
-    $screen = new WhatAcceptingItCosts($asking, $accepting, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatAcceptingItCosts($asking, $accepting, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), $hearing ?? AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $check]);
 
     return $screen;
@@ -75,6 +77,22 @@ function anAcceptanceThatTakes(): AStackThatAccepts
 {
     return AStackThatAccepts::answering(WhatBecameOfTheWork::answered(aReportWith(aWarningAbout(THE_CHOICE, Standing::Suppressed))));
 }
+
+it('draws what the acceptance says while it runs, and that the session went where it went mid-way', function (): void {
+    $running = AStackThatAccepts::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatAccepts::THE_ACCEPTANCE)));
+    $keychain = AKeychainInMemory::working();
+    $screen = theAcceptingScreen(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), $running, hearing: AJobThatSays::saying(WhatWasHeardFromAJob::said('Writing the acceptance')), keychain: $keychain);
+    $screen->accept();
+    $screen->whileItRuns();
+    $saying = WhatTheDeviceWouldDraw::by($screen)->said();
+    $keychain->forget(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id());
+    $screen->whileItRuns();
+
+    expect($saying)->toContain('Writing the acceptance')
+        ->and($saying)->toContain(__('health.choice.working'))
+        ->and($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
+});
 
 it('offers accepting a warning on Health and leads to what it costs, and offers nothing for a failure', function (): void {
     $report = aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided), aWarningAbout('vpn.egress', Standing::Remediable, Conclusion::Failed));
@@ -191,7 +209,7 @@ it('says the session ended where it went while the acceptance was followed', fun
     $stack = TheHealthScreenOfTheLoft::theStackBeingLookedAt();
     $keychain = AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
-    $screen = new WhatAcceptingItCosts(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), anAcceptanceThatTakes(), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatAcceptingItCosts(AStackThatWasAsked::saying(aReportWith(aWarningAbout(THE_CHOICE, Standing::Guided))), anAcceptanceThatTakes(), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => THE_CHOICE]);
     $screen->accept();
     $keychain->forget($stack->id());
