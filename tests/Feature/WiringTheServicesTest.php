@@ -34,6 +34,7 @@ use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatSettledIt;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWasHeard;
+use Modules\Kernel\Api\WhatWasHeardFromAJob;
 use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\WhoPutItThere;
 use Modules\Kernel\Api\Whose;
@@ -85,6 +86,7 @@ function theWiringScreen(
     ?AStackThatSupervises $supervising = null,
     ?AStackThatSaysWhatAnswersWhat $linking = null,
     ?AStackThatSpeaksUp $hearing = null,
+    ?AJobThatSays $jobs = null,
 ): HowTheServicesAreWired {
     $stack = theStackWhoseServicesAreWired();
     $keychain ??= AKeychainInMemory::working();
@@ -93,7 +95,7 @@ function theWiringScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowTheServicesAreWired($wiring, $linking ?? AStackThatSaysWhatAnswersWhat::with(TheLinks::of(WhatNothingFills::none())), AStackThatChoosesFillers::answering(WhatBecameOfTheFill::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))), $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening($hearing), AJobThatSays::nothing());
+    $screen = new HowTheServicesAreWired($wiring, $linking ?? AStackThatSaysWhatAnswersWhat::with(TheLinks::of(WhatNothingFills::none())), AStackThatChoosesFillers::answering(WhatBecameOfTheFill::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))), $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening($hearing), $jobs ?? AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -368,9 +370,12 @@ it('starts a second run afresh, letting go of the one it followed', function ():
         ->and($screen->followed)->toBe([]);
 });
 
-it('a run the stack could not be reached for is an obstacle that can be asked again', function (): void {
-    $wiring = AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), WhatBecameOfTheWiring::underway(Job::named('j-1')));
-    $screen = theScreenAfterWiring($wiring);
+it('a run the stack could not be reached for is an obstacle that can be asked again, and what the run says after is drawn', function (): void {
+    $wiring = AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::underway(Job::named('j-1')));
+    $jobs = AJobThatSays::eachSaying(['j-1' => [WhatWasHeardFromAJob::said('Reading the services'), WhatWasHeardFromAJob::said('Still reading'), WhatWasHeardFromAJob::said('Wiring Sonarr to qBittorrent')]]);
+    $screen = theWiringScreen($wiring, jobs: $jobs);
+    $screen->wire();
+    $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($screen->howItIsGoing()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
@@ -385,7 +390,8 @@ it('a run the stack could not be reached for is an obstacle that can be asked ag
 
     $screen->whileItRuns();
 
-    expect($wiring->asked())->toBe(['wire', 'after:j-1', 'after:j-1', 'after:j-1']);
+    expect($wiring->asked())->toBe(['wire', 'after:j-1', 'after:j-1', 'after:j-1'])
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Wiring Sonarr to qBittorrent');
 });
 
 it('asking again reads the services afresh and keeps the report a run came to', function (): void {
