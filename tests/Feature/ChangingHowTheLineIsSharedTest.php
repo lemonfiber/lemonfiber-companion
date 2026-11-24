@@ -424,6 +424,23 @@ it('a session that has ended asks nothing of the stack', function (): void {
         ->and($sharing->rehearsed())->toBe([]);
 });
 
+it('says the session has ended when it is lost while a change is followed, and follows it no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $sharing = aStackThatChangesItsLine(WhatBecameOfTheWork::underway(Job::named(AStackThatSharesItsLine::THE_REHEARSAL)));
+    $screen = theLineChangeScreen($sharing, keychain: $keychain);
+    $screen->answer();
+    $screen->down = '50%';
+    $screen->rehearse();
+    $screen->whileItRuns();
+    $keychain->forget(theStackWhoseLineIsChanged()->id());
+    $screen->whileItRuns();
+
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and(array_map(everyPartSentOfTheLine(...), $sharing->rehearsed()))->toBe(['down=50% lift=none']);
+});
+
 it('draws what stood in the way of reading the line as it stands', function (): void {
     $screen = theLineChangeScreen(aStackThatChangesItsLine(), AStackThatRationsItsLine::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
 
