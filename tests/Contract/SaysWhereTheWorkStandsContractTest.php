@@ -20,6 +20,8 @@ use Modules\Operator\Internal\Presenters\HowAReplacementReads;
 use Modules\Operator\Internal\Presenters\HowAResetReads;
 use Modules\Operator\Internal\Presenters\HowARunBackReads;
 use Modules\Operator\Internal\Presenters\HowASettingChangeReads;
+use Modules\Operator\Internal\Presenters\HowAVerbEndedReads;
+use Modules\Operator\Internal\Presenters\HowAWalkthroughReads;
 use Modules\Operator\Internal\Presenters\HowExtendingItReads;
 use Modules\Operator\Internal\Presenters\HowForgettingReads;
 use Modules\Operator\Internal\Presenters\HowGivingRoomBackReads;
@@ -51,6 +53,7 @@ use Modules\Operator\Internal\ViewModels\HowTheHandoffWent;
 use Modules\Operator\Internal\ViewModels\HowTheLandingWent;
 use Modules\Operator\Internal\ViewModels\HowTheLastUpdateWent;
 use Modules\Operator\Internal\ViewModels\HowThePairingCodeWent;
+use Modules\Operator\Internal\ViewModels\HowTheVerbWent;
 use Modules\Operator\Internal\ViewModels\SaysWhereTheWorkStands;
 use Modules\Operator\Internal\ViewModels\TakingItOffTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheAcceptanceTurnedOutToBe;
@@ -70,6 +73,7 @@ use Modules\Operator\Internal\ViewModels\WhatExtendsItTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatLettingItGoWouldShow;
 use Modules\Operator\Internal\ViewModels\WhatPausingWouldShow;
 use Modules\Operator\Internal\ViewModels\WhatTheStackWouldPutRight;
+use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatThisStackPutRight;
 
 // The SaysWhereTheWorkStands contract, run against every report a screen
@@ -248,6 +252,15 @@ function everyReportOnWork(): array
             'running' => new HowTheRunReads()->running(),
             'ended' => new HowTheRunReads()->ended(null),
             'met' => new HowTheRunReads()->met($stood),
+        ],        WhatTheWalkthroughTurnedOutToBe::class => [
+            'running' => new HowAWalkthroughReads()->running(),
+            'ended' => new HowAWalkthroughReads()->ended(null),
+            'met' => new HowAWalkthroughReads()->met($stood),
+        ],
+        HowTheVerbWent::class => [
+            'running' => new HowAVerbEndedReads()->running(),
+            'ended' => new HowAVerbEndedReads()->ended(null),
+            'met' => new HowAVerbEndedReads()->met($stood),
         ],
     ];
 }

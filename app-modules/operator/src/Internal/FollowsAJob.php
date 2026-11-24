@@ -199,6 +199,69 @@ trait FollowsAJob
     abstract protected function withoutASession(UnitEnum $for): SaysWhereTheWorkStands;
 
     /**
+     * Take what every running job said since the last wake, in one reading.
+     *
+     * A stream that could not be heard keeps what was said, because each
+     * job's own report says whether anything stood in its way; a session the
+     * stream refused is let go of. A screen whose own stream is its only
+     * progress answers this and {@see letGoUnlessAnotherRuns()} itself, and
+     * hears no job lines.
+     */
+    protected function hearWhatTheySaid(): void
+    {
+        $running = $this->running();
+
+        if ($running === []) {
+            return;
+        }
+
+        $stack = $this->stack();
+        $jobs = array_values(array_map(static fn(AJobFollowed $followed): Job => $followed->job, $running));
+        $heard = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): WhatTheJobsSaid => $this->hearingTheJobs->whatTheySaid($stack, $session, ...$jobs),
+            notHeld: static fn(): WhatTheJobsSaid => WhatTheJobsSaid::nothingNew(),
+        );
+
+        $heard->either(
+            heard: function (WhatTheJobsSaid $said) use ($running): WhatTheJobsSaid {
+                foreach ($running as $for => $followed) {
+                    $this->followed[$for] = $followed->heard($said->from($followed->job));
+                }
+
+                return $said;
+            },
+            met: function (Obstacle $why) use ($stack, $heard): WhatTheJobsSaid {
+                $this->letGoOfTheSession($why, $stack);
+
+                return $heard;
+            },
+        );
+    }
+
+    /**
+     * Let go of the jobs' subscription where no job is left running.
+     *
+     * Where it left off is kept while a job is still followed, because one that
+     * met an obstacle can be found running again, and what the stack still
+     * holds of what it said meanwhile is heard from there. It is forgotten once
+     * no job is followed.
+     */
+    protected function letGoUnlessAnotherRuns(): void
+    {
+        if ($this->running() !== []) {
+            return;
+        }
+
+        if ($this->followed === []) {
+            $this->hearingTheJobs->letGo();
+
+            return;
+        }
+
+        $this->hearingTheJobs->letGoKeepingThePlace();
+    }
+
+    /**
      * Ask the stack what became of the job followed for this, and keep whether it still runs.
      *
      * A job found running again after an obstacle is asked after again on the
@@ -240,67 +303,6 @@ trait FollowsAJob
         $this->letGoUnlessAnotherRuns();
 
         return $this->became[$for->name] = $report;
-    }
-
-    /**
-     * Take what every running job said since the last wake, in one reading.
-     *
-     * A stream that could not be heard keeps what was said, because each
-     * job's own report says whether anything stood in its way; a session the
-     * stream refused is let go of.
-     */
-    private function hearWhatTheySaid(): void
-    {
-        $running = $this->running();
-
-        if ($running === []) {
-            return;
-        }
-
-        $stack = $this->stack();
-        $jobs = array_values(array_map(static fn(AJobFollowed $followed): Job => $followed->job, $running));
-        $heard = $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): WhatTheJobsSaid => $this->hearingTheJobs->whatTheySaid($stack, $session, ...$jobs),
-            notHeld: static fn(): WhatTheJobsSaid => WhatTheJobsSaid::nothingNew(),
-        );
-
-        $heard->either(
-            heard: function (WhatTheJobsSaid $said) use ($running): WhatTheJobsSaid {
-                foreach ($running as $for => $followed) {
-                    $this->followed[$for] = $followed->heard($said->from($followed->job));
-                }
-
-                return $said;
-            },
-            met: function (Obstacle $why) use ($stack, $heard): WhatTheJobsSaid {
-                $this->letGoOfTheSession($why, $stack);
-
-                return $heard;
-            },
-        );
-    }
-
-    /**
-     * Let go of the jobs' subscription where no job is left running.
-     *
-     * Where it left off is kept while a job is still followed, because one that
-     * met an obstacle can be found running again, and what the stack still
-     * holds of what it said meanwhile is heard from there. It is forgotten once
-     * no job is followed.
-     */
-    private function letGoUnlessAnotherRuns(): void
-    {
-        if ($this->running() !== []) {
-            return;
-        }
-
-        if ($this->followed === []) {
-            $this->hearingTheJobs->letGo();
-
-            return;
-        }
-
-        $this->hearingTheJobs->letGoKeepingThePlace();
     }
 
     /** @return array<string, AJobFollowed> */

@@ -27,7 +27,6 @@ use Modules\Kernel\Api\WhatToDoWithIt;
 use Modules\Kernel\Api\WhetherToWait;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsWhatTheVerbCameTo;
-use Modules\Operator\Internal\HearsWhatAStartWaitsOn;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowARehearsalReads;
 use Modules\Operator\Internal\Presenters\HowAVerbReads;
@@ -112,12 +111,10 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use TakesItsFormsAFrameLater;
-    use FollowsWhatTheVerbCameTo;
-    use ShowsWhatTheYesWillRun;
-    use HearsWhatAStartWaitsOn {
-        HearsWhatAStartWaitsOn::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    use FollowsWhatTheVerbCameTo, FindsItsWayAround {
+        FollowsWhatTheVerbCameTo::letGoOfWhatElseItHears insteadof FindsItsWayAround;
     }
-    use FindsItsWayAround;
+    use ShowsWhatTheYesWillRun;
     use SaysWhatAStopWouldInterrupt;
 
     /** What the operator has been asked about, where a verb is waiting on a yes. */
@@ -368,19 +365,17 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      * that is refused: a finished report and a stack whose services are all
      * in standing states answer the same thing however often they are read.
      *
-     * It decides from what it last heard and reads nothing itself, so the
-     * frame it leads to reads the stack once: while a verb runs, the frame
-     * asks after the verb alone, and once the verb has ended, the next frame
-     * reads what is running again.
+     * It decides from what it last heard and reads nothing itself, so each
+     * wake reads the stack once: while a verb runs, the wake asks after the
+     * verb alone, and once the verb has ended, the next frame reads what is
+     * running again.
      */
     #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
     public function whileItSettles(): void
     {
-        $this->listenWhileItStarts();
         $this->followTheRehearsal();
 
         if ($this->awaitsAnOutcome()) {
-            $this->cameTo = null;
             $this->listingTrailsTheVerb = true;
 
             return;
@@ -397,18 +392,23 @@ final class WhatToDoWithThis extends NativeComponent implements AwaitsAnOutcome
      *
      * Both, because a verb that finished changed what the listing says, and a
      * report that could not be asked after is one the operator can ask for
-     * again rather than one they leave the screen to retry.
+     * again rather than one they leave the screen to retry. A verb still
+     * running is asked after on the next wake, which keeps its last report
+     * until then.
      */
     public function again(): void
     {
         $this->answered = null;
-        $this->cameTo = null;
         $this->formsAgain();
+
+        if (! $this->awaitsAnOutcome()) {
+            $this->askAfterAgain();
+        }
     }
 
     public function render(): View
     {
-        $this->aFrameBegins();
+        $this->aFrameBeginsAfterItsWake();
 
         return view('operator::what-to-do-with-this');
     }

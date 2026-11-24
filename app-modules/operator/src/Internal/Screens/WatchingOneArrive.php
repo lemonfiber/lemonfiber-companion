@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
+use function array_key_exists;
+
 use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
@@ -13,7 +15,6 @@ use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\HearingTheWalk;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfWork;
@@ -33,17 +34,16 @@ use Modules\Operator\Internal\HearsWhereTheWalkIs;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAWalkthroughReads;
 use Modules\Operator\Internal\ShowsWhatItsWordsMean;
+use Modules\Operator\Internal\TheOnlyJob;
 use Modules\Operator\Internal\ViewModels\TheWalkthroughAsRecorded;
 use Modules\Operator\Internal\ViewModels\WhatTheWalkthroughTurnedOutToBe;
 use Modules\Operator\Internal\WhatTheWalkIsFollowedWith;
 use Modules\Operator\Internal\WhetherItIsHeld;
-use Modules\Wayfinding\Api\Screens\AsksAgain;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
 use Modules\Wayfinding\Api\Screens\ReadsAStackOnceAFrame;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function view;
@@ -53,9 +53,10 @@ use function view;
  *
  * Before one is started it shows the road a walk takes, each step in the
  * glossary's words. Started from here with a title, or with nothing so the
- * stack picks something likely to work. While it runs the handle is asked after at a declared cadence,
- * and the stage it is at is taken on the same wakes from the stack's event
- * stream, {@see HearsWhereTheWalkIs}; once it finishes, what it said is drawn
+ * stack picks something likely to work. While it runs the job is followed
+ * through {@see \Modules\Operator\Internal\FollowsAJob}, hearing none of its lines: the stage it is at is
+ * taken on the same wakes from the walk's own stream, {@see HearsWhereTheWalkIs};
+ * once it finishes, what it said is drawn
  * whole, as the record of it, with where it stopped and why, what the import
  * did, and what to do next.
  *
@@ -86,23 +87,15 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
     use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
-    use HearsWhereTheWalkIs {
+    use HearsWhereTheWalkIs, FindsItsWayAround {
         HearsWhereTheWalkIs::letGoOfWhatElseItHears insteadof FindsItsWayAround;
     }
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
     use ReadsAStackOnceAFrame;
-    use FindsItsWayAround;
-    use AsksAgain;
 
     /** What is typed into the box, walked only when asked to. Public for {@see WhatThisServiceSaid::$looking}'s reason. */
     public string $looking = '';
-
-    /** The handle starting the walkthrough answered. Public for {@see HowCurrentThisStackIs::$answered}'s reason. */
-    public ?string $took = null;
-
-    /** What became of it, once this frame has asked. */
-    public ?WhatTheWalkthroughTurnedOutToBe $answered = null;
 
     /**
      * Whether coming back to this screen will find the walk started here.
@@ -136,14 +129,14 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
      */
     public function mount(): void
     {
-        // A handle is never blank, so an empty one can only be the arm that
-        // found nothing.
-        $left = $this->leftRunning->whatWasLeft($this->stack()->id(), KindOfWork::Walkthrough)->either(
-            job: static fn(Job $job): AsText => AsText::of($job->shown()),
-            nothing: static fn(): AsText => AsText::nothing(),
-        )->said;
+        $this->leftRunning->whatWasLeft($this->stack()->id(), KindOfWork::Walkthrough)->either(
+            job: function (Job $job): AsText {
+                $this->follow($job);
 
-        $this->took = $left === '' ? null : $left;
+                return AsText::of($job->shown());
+            },
+            nothing: static fn(): AsText => AsText::nothing(),
+        );
     }
 
     /** Walk through what was typed, or, with nothing typed, something the stack picks. */
@@ -181,37 +174,15 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
         }
     }
 
-    /**
-     * Ask after the walkthrough again while the stack is walking it, and take the stage it said.
-     *
-     * It asks nothing unless the walk is running, which is what keeps this
-     * from being polling: a finished record answers the same however often it
-     * is read, and the stream is let go of once the walk is over. Taking the
-     * stage sends nothing to the stack. The interval is {@see HowOftenAScreenLooks}'s
-     * constant.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
+    /** Ask after the walk again, keeping it. */
+    public function again(): void
     {
-        if (! $this->answer()->stands->isWorking()) {
-            $this->letGoOfAWalkThatIsOver();
-
-            return;
-        }
-
-        $this->answered = null;
-        $this->listenToTheWalk();
-    }
-
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->answer()->stands->isWorking();
+        $this->askAfterAgain();
     }
 
     public function render(): View
     {
-        $this->aFrameBegins();
+        $this->aFrameBeginsAfterItsWake();
 
         return view('operator::watching-one-arrive');
     }
@@ -219,12 +190,11 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
     /** What became of the walkthrough started here, asked once per frame. */
     public function answer(): WhatTheWalkthroughTurnedOutToBe
     {
-        if (! $this->answered instanceof WhatTheWalkthroughTurnedOutToBe) {
+        if (! array_key_exists(TheOnlyJob::Followed->name, $this->became)) {
             $this->readsItsStack();
-            $this->answered = $this->followed();
         }
 
-        return $this->answered;
+        return $this->whatBecameOfTheJob();
     }
 
     /** Where this screen's words are explained from. */
@@ -236,6 +206,26 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
     protected function followsTheWalkWith(): WhatTheWalkIsFollowedWith
     {
         return new WhatTheWalkIsFollowedWith($this->hearingTheWalk, $this->clock, $this->capture);
+    }
+
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): WhatTheWalkthroughTurnedOutToBe
+    {
+        return $this->walking->whatBecameOf($stack, $session, $job)->either(
+            stillRunning: static fn(): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->running(),
+            done: static fn(AWalkthrough $report): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->done($report),
+            ended: fn(?WhyTheWorkEnded $why): WhatTheWalkthroughTurnedOutToBe => $this->endedWithNoOutcome($stack, $why),
+            met: $this->lettingGoIfRefused($stack, new HowAWalkthroughReads()->met(...)),
+        );
+    }
+
+    protected function whileNoJobIsFollowed(): WhatTheWalkthroughTurnedOutToBe
+    {
+        return $this->beforeAnyWalk();
+    }
+
+    protected function withNoSessionHeld(): WhatTheWalkthroughTurnedOutToBe
+    {
+        return new HowAWalkthroughReads()->signedOut();
     }
 
     /**
@@ -254,14 +244,14 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
     private function start(WhatToWalk $asked): void
     {
         $stack = $this->stack();
-        $this->took = null;
+        $this->forget();
         $this->leftRunning->forget($stack->id(), KindOfWork::Walkthrough);
         $this->listenToANewWalk();
 
-        $this->answered = $this->storage->resume($stack->id())->either(
+        $this->reported($this->storage->resume($stack->id())->either(
             held: fn(Session $session): WhatTheWalkthroughTurnedOutToBe => $this->walking->walk($stack, $session, $asked)->either(
                 started: function (Job $job) use ($stack): WhatTheWalkthroughTurnedOutToBe {
-                    $this->took = $job->shown();
+                    $this->follow($job);
                     $this->willBeFoundAgain = $this->leftRunning->remember($stack->id(), KindOfWork::Walkthrough, $job)->either(
                         job: static fn(): WhetherItIsHeld => WhetherItIsHeld::itIs(),
                         nothing: static fn(): WhetherItIsHeld => WhetherItIsHeld::itIsNot(),
@@ -272,29 +262,11 @@ final class WatchingOneArrive extends NativeComponent implements AwaitsAnOutcome
                 met: $this->lettingGoIfRefused($stack, new HowAWalkthroughReads()->met(...)),
             ),
             notHeld: static fn(): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->signedOut(),
-        );
-    }
+        ));
 
-    /** Ask the stack what became of the walkthrough started, or say that none was. */
-    private function followed(): WhatTheWalkthroughTurnedOutToBe
-    {
-        $took = $this->took;
-
-        if ($took === null) {
-            return $this->beforeAnyWalk();
+        if (! $this->follows()) {
+            $this->letGoOfAWalkThatIsOver();
         }
-
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): WhatTheWalkthroughTurnedOutToBe => $this->walking->whatBecameOf($stack, $session, Job::named($took))->either(
-                stillRunning: static fn(): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->running(),
-                done: static fn(AWalkthrough $report): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->done($report),
-                ended: fn(?WhyTheWorkEnded $why): WhatTheWalkthroughTurnedOutToBe => $this->endedWithNoOutcome($stack, $why),
-                met: $this->lettingGoIfRefused($stack, new HowAWalkthroughReads()->met(...)),
-            ),
-            notHeld: static fn(): WhatTheWalkthroughTurnedOutToBe => new HowAWalkthroughReads()->signedOut(),
-        );
     }
 
     /**

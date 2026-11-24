@@ -182,9 +182,9 @@ it('asks again what a stop would interrupt where the stop agreed to was refused 
     $screen = aStopAskedAbout($comingDown, supervising: $supervising);
 
     $screen->agree('go_ahead_now');
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
-    $screen->whileItSettles();
+    TheThingScreenOfTheShed::aWakeOf($screen);
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect($drawn)->toContain(WhatAMovedOfferSays::SUMMARY)
