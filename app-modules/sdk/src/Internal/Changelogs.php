@@ -150,8 +150,6 @@ final readonly class Changelogs
 
         $version = $said[WireField::Version->value];
 
-        // Blank as well as absent, because {@see Release::called()} refuses a
-        // blank one with its own kind, which no adapter catches.
         if (! Required::isText($version)) {
             throw $unreadable;
         }

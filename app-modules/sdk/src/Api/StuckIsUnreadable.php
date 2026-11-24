@@ -57,10 +57,6 @@ final class StuckIsUnreadable extends InvalidArgumentException
 
     public static function stage(string $said, int $position): self
     {
-        // The accepted list comes from the enum rather than from a sentence
-        // written here, so a case added to the contract cannot leave this
-        // message describing the old vocabulary — the argument
-        // {@see HouseholdIsUnreadable::standing()} makes.
         return new self(sprintf(
             'Item %d in the stuck envelope says it is at `%s`, and this app reads %s. Guessing which was meant is how a title nothing is watching for gets shown as one that is on its way.',
             $position,

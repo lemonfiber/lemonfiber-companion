@@ -55,9 +55,6 @@ final class HistoryIsUnreadable extends InvalidArgumentException
 
     public static function reversal(string $said, int $position): self
     {
-        // The accepted list comes from the enum rather than from a sentence
-        // written here, so a case added cannot leave this message describing
-        // the old vocabulary.
         return new self(sprintf(
             'Change %d in the history envelope says it goes back `%s`, and this app reads %s. Guessing which was meant is how a change that cannot be undone gets shown as one that can.',
             $position,

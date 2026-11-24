@@ -80,14 +80,6 @@ final readonly class Tellings
             $said[] = self::owedIn($member);
         }
 
-        // Exactly one row is one member's reading. Anything else is an answer
-        // about a house rather than about a person — the operator's read of the
-        // same endpoint — and there is nobody in it to be owed anything.
-        //
-        // Read before it is counted, deliberately. A house whose fourth member
-        // carries something this app cannot show is a stack this app cannot
-        // read, and discarding the rows before looking at them would let that
-        // through as an ordinary answer about somebody else.
         return count($said) === 1 ? $said[0] : Sentences::none();
     }
 

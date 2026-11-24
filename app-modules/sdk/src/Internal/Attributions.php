@@ -77,14 +77,8 @@ final readonly class Attributions
     {
         $word = self::text($attributed, WireField::Origin);
 
-        // Converted at the boundary and once, which is what every adapter here
-        // does with a closed set.
         $who = WhoSetIt::tryFrom($word) ?? throw OriginIsUnreadable::nobodyHere($word);
 
-        // A name or a reason that is there and blank is refused by the kernel,
-        // and turned into this reader's refusal here, so an envelope's own
-        // refusal covers it without each adapter learning a kernel type — the
-        // one that did not would let a stack's blank plugin name end a screen.
         try {
             return match ($who) {
                 WhoSetIt::Bundled => WhoPutItThere::bundled(),

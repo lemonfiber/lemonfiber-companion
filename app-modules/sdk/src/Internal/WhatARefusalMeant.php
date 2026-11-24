@@ -98,9 +98,6 @@ final readonly class WhatARefusalMeant
      * @var list<RefusalCode>
      */
     public const array ANSWERED_IN_ITS_WORDS = [
-        // The door's own refusals, which `Admissions` reads where the
-        // password is offered. One reaching here is about what was offered
-        // at the door, and it ends no session.
         RefusalCode::NotThePassword,
         RefusalCode::TooManyAttempts,
         RefusalCode::NotAPassword,
@@ -109,18 +106,9 @@ final readonly class WhatARefusalMeant
         RefusalCode::SignsInByPassword,
         RefusalCode::NotACodeRequest,
         RefusalCode::NoSession,
-        // A key's own refusals. This app sends a session and no key, so one
-        // reaching it ends no session, and its words are the answer.
         RefusalCode::KeyInTheClear,
         RefusalCode::NotForAKey,
-        // The stack refusing what was asked rather than who asked. Its own
-        // words are the answer, and every code is written out so that one the
-        // contract adds is decided here rather than swept in unread.
         RefusalCode::NoSuchAction,
-        // A member's search, an ask and a found title's poster refused:
-        // the words searched for, the title, their allowance, the house's
-        // room or its request service. Every one carries a household
-        // sentence, and that sentence is what the member is shown.
         RefusalCode::NotASearch,
         RefusalCode::NotAPlace,
         RefusalCode::NotAskable,
@@ -212,9 +200,6 @@ final readonly class WhatARefusalMeant
         RefusalCode::OfflineInstallUnread,
         RefusalCode::MovedForGood,
         RefusalCode::ServiceUnfenced,
-        // Minting, collecting and revoking a key for an app, refused for
-        // what was asked: a claim that collects nothing is one of them, and
-        // ends no session whatever status it came with.
         RefusalCode::BadName,
         RefusalCode::NotAScope,
         RefusalCode::NotAPurpose,
@@ -225,8 +210,6 @@ final readonly class WhatARefusalMeant
         RefusalCode::MembersMayNotMint,
         RefusalCode::ClaimNotOpen,
         RefusalCode::Unlinkable,
-        // Registering, challenging and revoking a phone key, refused for
-        // what was asked: each is said in the stack's words.
         RefusalCode::NotADeviceName,
         RefusalCode::DeviceNameTaken,
         RefusalCode::PublicHalfTaken,
@@ -240,9 +223,6 @@ final readonly class WhatARefusalMeant
         RefusalCode::SignatureWrong,
         RefusalCode::NoChallenge,
         RefusalCode::AttestationRevoked,
-        // Registering and removing a push endpoint, refused for what was
-        // asked: each is said in the stack's words, and an endpoint the
-        // stack holds no longer is read as removed where it is removed.
         RefusalCode::NotAPushName,
         RefusalCode::PushNameTaken,
         RefusalCode::PushNotHttps,
@@ -258,7 +238,6 @@ final readonly class WhatARefusalMeant
         RefusalCode::NotOffered,
         RefusalCode::NoSuchWake,
         RefusalCode::EventsRefused,
-        // A core setting refused for what was asked of it.
         RefusalCode::NoSuchSetting,
         RefusalCode::ASecret,
         RefusalCode::TakenElsewhere,
@@ -267,9 +246,6 @@ final readonly class WhatARefusalMeant
         RefusalCode::AlreadyHolds,
         RefusalCode::OutsideItsChoices,
         RefusalCode::OwnerSetUp,
-        // An answer given for an offer or a listing that has since moved.
-        // The stack's words say what moved, and the adapter following the
-        // work it ended decides whether there is a fresh offer to read.
         RefusalCode::Stale,
         RefusalCode::MovedOn,
         RefusalCode::OfferMoved,
@@ -294,11 +270,6 @@ final readonly class WhatARefusalMeant
      * @var list<RefusalCode>
      */
     public const array READ_BY_ITS_FAMILY = [
-        // The stack unable to read what it holds — its own description, or
-        // the record of what is installed — and refusing a choice of what
-        // fills a capability, which `Fillers` also reads by its code. Its
-        // words say what stood in the way, and turned away it is an
-        // account that may not ask: a known code ends no session.
         RefusalCode::StackUnreadable,
         RefusalCode::StackUnusable,
         RefusalCode::StackNotSetUp,
@@ -365,7 +336,6 @@ final readonly class WhatARefusalMeant
         RefusalCode::NothingToPlayFrom,
         RefusalCode::NotInTheHousehold,
         RefusalCode::SignsNoDeviceIn,
-        // Another run already working on the stack, which its family reads as the stack being busy.
         RefusalCode::AlreadyWorking,
     ];
     /**
@@ -540,9 +510,6 @@ final readonly class WhatARefusalMeant
             $why instanceof Misasked,
             $why instanceof Missing,
             $why instanceof Failed => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
-            // The base is abstract and every family it has is named above, so
-            // nothing reaches this; `WhatARefusalMeantTest` refuses a family
-            // the SDK adds that is not named here.
             default => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
         };
     }

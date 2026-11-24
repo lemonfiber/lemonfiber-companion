@@ -73,8 +73,6 @@ final readonly class Walkthroughs
      */
     public static function said(Envelope $envelope): ALineItSaid
     {
-        // The generated envelope declares `data` a table and does not check
-        // that it is one, so `table()` refuses a `data` that is not.
         $data = StepEnvelope::in(Wire::checked($envelope))->data;
 
         try {

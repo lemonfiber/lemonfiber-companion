@@ -40,9 +40,6 @@ final class LineIsUnreadable extends InvalidArgumentException
 
     public static function stream(string $said, int $position): self
     {
-        // The accepted list comes from the enum rather than a sentence written
-        // here, so a case added to the contract cannot leave this message
-        // describing the old vocabulary.
         return new self(sprintf(
             'Line %d of the log window came out of `%s`, and this app reads %s. Guessing which was meant is how a complaint gets shown as ordinary progress.',
             $position,

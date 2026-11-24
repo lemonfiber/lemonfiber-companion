@@ -60,8 +60,6 @@ final readonly class Dials
      */
     public static function in(Envelope $envelope): Settings
     {
-        // The generated envelope declares `data` a table and does not check
-        // that it is one, so `listing()` refuses a `data` that is not.
         $data = ConfigEnvelope::in(Wire::checked($envelope))->data;
 
         return Settings::of(...self::each(self::listing($data)));
@@ -89,10 +87,6 @@ final readonly class Dials
 
         $comesTo = WhatTheReviewFound::in($data, $review);
 
-        // Read off the stance rather than off the presence of a refusal. A
-        // stack that sent a sentence beside `applied` has contradicted itself,
-        // and taking the sentence would show an operator a reason a change did
-        // not happen underneath the word saying it did.
         return $stance === Stance::Blocked
             ? WhereTheChangeStands::blocked($change, self::text($review, WireField::Refusal), $comesTo)
             : WhereTheChangeStands::at($change, $stance, $comesTo);

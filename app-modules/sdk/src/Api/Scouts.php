@@ -183,7 +183,6 @@ final readonly class Scouts implements MovingIn
      */
     private function refusal(CertificateWasRefused|RequestFailed $why): WhatBecameOfTheMove
     {
-        // A machine that is not the one paired never answered in words.
         $said = $why instanceof RequestFailed ? WhatARefusalMeant::inItsOwnWords($why) : null;
 
         return $said === null

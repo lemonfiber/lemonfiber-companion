@@ -121,7 +121,6 @@ final readonly class Wirers implements WiringTheServices
      */
     private function refusal(CertificateWasRefused|RequestFailed $why): WhatBecameOfTheWiring
     {
-        // A machine that is not the one paired never answered in words.
         $said = $why instanceof RequestFailed ? WhatARefusalMeant::inItsOwnWords($why) : null;
 
         return $said === null

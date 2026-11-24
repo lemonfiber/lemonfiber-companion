@@ -51,13 +51,6 @@ final readonly class Arrangements implements Arranging, AskingWhatIsLeftAlone, A
         } catch (CertificateWasRefused|RequestFailed $why) {
             return HowItIsSet::refused(WhatARefusalMeant::obstacle($why));
         } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|SettingIsUnreadable|SettingIsUnnamed $why) {
-            // {@see SettingIsUnnamed} is here rather than guarded against
-            // above, so the kernel type keeps deciding what a nameless setting
-            // means and this decides what an unreadable answer looks like to
-            // whoever is at the screen. A stack that sent a row this app
-            // cannot show sent a listing this app cannot claim is complete,
-            // and an incomplete listing is the one thing this screen must
-            // never present as a whole one.
             return HowItIsSet::refused($this->clients->whatStoodInTheWay($stack, $why));
         }
     }

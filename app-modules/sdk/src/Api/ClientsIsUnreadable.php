@@ -65,8 +65,6 @@ final class ClientsIsUnreadable extends InvalidArgumentException
     /** A device's rating is not one this app has a case for. */
     public static function support(string $said, int $position): self
     {
-        // The accepted list comes from the enum, so a rating added cannot
-        // leave this message describing the old set.
         return new self(sprintf(
             'Entry %d of `devices` in the clients envelope is rated `%s`, and this app reads %s. Drawing it as the nearest one would be a guess about how well somebody\'s device is served.',
             $position,
