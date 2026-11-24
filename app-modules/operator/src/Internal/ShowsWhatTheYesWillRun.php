@@ -35,8 +35,8 @@ use Native\Mobile\Edge\NativeComponent;
  */
 trait ShowsWhatTheYesWillRun
 {
-    /** The handle of the rehearsal asked for the question on the screen, while it is still being worked out. */
-    public ?string $rehearsalOfTheYes = null;
+    /** The job the stack named for the rehearsal of the question on the screen, while it is still being worked out. */
+    public ?Job $rehearsalOfTheYes = null;
 
     /** What the stack's rehearsal said of the command the verb being asked about will run, once it said anything. */
     public ?TheLineTheYesRuns $willRun = null;
@@ -53,9 +53,9 @@ trait ShowsWhatTheYesWillRun
         $this->forgetTheRehearsal();
         $stack = $this->stack();
 
-        $handle = $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): AsText => $this->supervising->rehearsed($stack, $session, $agreed)->either(
-                started: static fn(Job $job): AsText => AsText::of($job->shown()),
+        $rehearsing = $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): AsText|Job => $this->supervising->rehearsed($stack, $session, $agreed)->either(
+                started: static fn(Job $job): Job => $job,
                 met: function (Obstacle $why) use ($stack): AsText {
                     $this->letGoOfTheSession($why, $stack);
                     $this->willRun = TheLineTheYesRuns::unread();
@@ -64,8 +64,8 @@ trait ShowsWhatTheYesWillRun
                 },
             ),
             notHeld: static fn(): AsText => AsText::nothing(),
-        )->said;
-        $this->rehearsalOfTheYes = $handle === '' ? null : $handle;
+        );
+        $this->rehearsalOfTheYes = $rehearsing instanceof Job ? $rehearsing : null;
 
         $this->followTheRehearsal();
     }
@@ -75,13 +75,13 @@ trait ShowsWhatTheYesWillRun
     {
         $asked = $this->rehearsalOfTheYes;
 
-        if ($asked === null) {
+        if (! $asked instanceof Job) {
             return;
         }
 
         $stack = $this->stack();
         $became = $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): HowAgreedWorkIsGoing => $this->supervising->whatBecameOf($stack, $session, Job::named($asked)),
+            held: fn(Session $session): HowAgreedWorkIsGoing => $this->supervising->whatBecameOf($stack, $session, $asked),
             notHeld: static fn(): HowAgreedWorkIsGoing => HowAgreedWorkIsGoing::noOutcome(),
         );
 

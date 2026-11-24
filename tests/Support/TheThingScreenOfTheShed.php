@@ -127,4 +127,49 @@ final readonly class TheThingScreenOfTheShed
         // and the frame after that asks what the verb came to.
         return WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
     }
+
+    /** What the stack's rehearsal of restarting Sonarr reported. */
+    public static function aRehearsedRestartOfSonarr(): WhatTheVerbCameTo
+    {
+        return WhatTheVerbCameTo::reported(
+            WhetherItWasRehearsed::Rehearsed,
+            WhereTheServicesEndedUp::of(WhereAServiceEndedUp::as('Sonarr', HowAServiceRuns::Stopped)),
+            TheServicesLeftOut::of(),
+            ThePortsHeld::of(),
+            TheStackEdits::none(),
+            TheCommandLine::of('docker', 'compose', 'restart', 'sonarr'),
+        );
+    }
+
+    /**
+     * Ask to restart Sonarr, which needs a yes, and draw the question.
+     *
+     * @return list<string>
+     */
+    public static function whatAskingToRestartSonarrDrew(WhatToDoWithThis $screen): array
+    {
+        $screen->wouldYouLike(WhatToDoWithIt::Restart->value);
+
+        return WhatTheDeviceWouldDraw::by($screen)->said();
+    }
+
+    /**
+     * The line a frame draws straight after another, or empty where it draws none.
+     *
+     * @param list<string> $drawn
+     */
+    public static function drawnAfter(string $line, array $drawn): string
+    {
+        $seen = false;
+
+        foreach ($drawn as $said) {
+            if ($seen) {
+                return $said;
+            }
+
+            $seen = $said === $line;
+        }
+
+        return '';
+    }
 }

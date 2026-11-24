@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use function __;
 use function app;
 use function array_map;
 use function array_search;
@@ -43,6 +44,18 @@ use function str_replace;
  */
 final readonly class Catalogue
 {
+    /**
+     * A line of the catalogue, with what fills it.
+     *
+     * @param array<string, string> $with
+     */
+    public static function line(string $key, array $with = []): string
+    {
+        $said = __($key, $with);
+
+        return is_string($said) ? $said : $key;
+    }
+
     /**
      * Every locale the application ships, by the directory it lives in.
      *

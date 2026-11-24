@@ -8,6 +8,8 @@ use Modules\Operator\Internal\FollowsAJob;
 use Modules\Operator\Internal\LooksAgainWhileItMoves;
 use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
+use Modules\Operator\Internal\Screens\WhatToDoWithThis;
+use Modules\Operator\Internal\ShowsWhatTheYesWillRun;
 use Native\Mobile\Attributes\Poll;
 use Tests\Support\Screens;
 
@@ -107,6 +109,19 @@ function followsItsJobApart(string $screen, string $source): bool
 }
 
 /**
+ * The source of a screen and of every trait it takes, since a job a trait names is one the screen names.
+ *
+ * @param ReflectionClass<covariant object> $screen
+ */
+function whatItIsWrittenIn(ReflectionClass $screen): string
+{
+    return implode("\n", array_map(
+        static fn(ReflectionClass $written): string => (string) file_get_contents((string) $written->getFileName()),
+        [$screen, ...Screens::traitsOf($screen)],
+    ));
+}
+
+/**
  * Every screen awaiting an outcome, and those of them that follow their job some other way, or name a job themselves.
  *
  * @return array{awaiting: list<string>, apart: list<string>}
@@ -123,7 +138,7 @@ function whoFollowsTheirJobApart(): array
 
         $awaiting[] = $screen->getName();
 
-        if (followsItsJobApart($screen->getName(), (string) file_get_contents((string) $screen->getFileName()))) {
+        if (followsItsJobApart($screen->getName(), whatItIsWrittenIn($screen))) {
             $apart[] = $screen->getShortName();
         }
     }
@@ -149,4 +164,13 @@ it('would catch a screen that follows its job through FollowsAJob and holds a jo
     expect($holding)->not->toBe($source)
         ->and(followsItsJobApart(WatchingOneArrive::class, $source))->toBeFalse()
         ->and(followsItsJobApart(WatchingOneArrive::class, $holding))->toBeTrue();
+});
+
+it('reads the source of every trait a screen takes, beside its own', function (): void {
+    $screen = new ReflectionClass(WhatToDoWithThis::class);
+    $written = whatItIsWrittenIn($screen);
+
+    expect($written)->toContain((string) file_get_contents((string) $screen->getFileName()))
+        ->and($written)->toContain((string) file_get_contents((string) new ReflectionClass(ShowsWhatTheYesWillRun::class)->getFileName()))
+        ->and(followsItsJobApart(WhatToDoWithThis::class, $written))->toBeFalse();
 });
