@@ -225,8 +225,6 @@ final readonly class PluginInstalls
             WhereItsSourceStands::Reachable => HowItsSourceStands::reachable(),
             WhereItsSourceStands::Unreachable => HowItsSourceStands::unreachable(self::text($standing, PluginsField::Sources, WireField::Why, $position)),
             WhereItsSourceStands::Unasked => HowItsSourceStands::unasked(self::text($standing, PluginsField::Sources, WireField::Why, $position)),
-            // The stack says a plugin it said nothing of by leaving it out,
-            // so the word for that is never one a reader takes from the wire.
             WhereItsSourceStands::NotSaid, null => throw PluginsAreUnreadable::said(WireField::Standing, $said),
         };
     }

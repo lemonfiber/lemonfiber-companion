@@ -59,7 +59,6 @@ final readonly class Fillers implements ChoosingAFiller
 
     public function choose(Stack $stack, Session $session, AFillAgreed $agreed): WhatBecameOfTheFill
     {
-        // A blank reason is none, and the stack is not handed an empty one.
         return $this->asking($stack, $session, new WiringFillAction(
             service: $agreed->service()->named(),
             offer: $agreed->offer(),
@@ -110,8 +109,6 @@ final readonly class Fillers implements ChoosingAFiller
         return match ($why->code()) {
             RefusalCode::NoSuchFiller => WhyTheFillWasTurnedDown::NoSuchService,
             RefusalCode::AlreadyFills => WhyTheFillWasTurnedDown::AlreadyFills,
-            // A stack older than the code of its own says *already fills* as
-            // an advisory `CannotFill`.
             RefusalCode::CannotFill => Severity::tryFrom((string) $why->refusal()?->severity()) === Severity::Advisory
                 ? WhyTheFillWasTurnedDown::AlreadyFills
                 : WhyTheFillWasTurnedDown::CannotFill,

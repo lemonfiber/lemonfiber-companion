@@ -65,8 +65,6 @@ final readonly class Ushers implements Inviting
     public function whoIsIn(Stack $stack, Session $session): WhatWasFoundOfTheMembers
     {
         try {
-            // The household is read where the operator's requests are, and
-            // for its people: the same answer, and one way of asking for it.
             $envelope = GatedClient::of($this->clients, $stack, $session)->read(Api::REQUESTS_ENDPOINT);
 
             // Inside the same `try` as the request, for the argument

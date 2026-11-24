@@ -92,11 +92,6 @@ final readonly class Menders implements Mending
         $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
-            // The listing's name and the repair's check, which is exactly what
-            // `Confirmed` publishes and nothing else. A yes must quote
-            // the listing it was given, and the SDK's signature is that
-            // requirement in a parameter list: there is no way to name a repair
-            // without naming the listing it came from.
             $asked = Asking::agreedTo($confirmed->quoting(), $confirmed->repair()->answers()->shown());
 
             // The key is built inline, as {@see Supervisors::told()} builds

@@ -43,9 +43,6 @@ final readonly class Guides implements WalkingThrough
         $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
-            // The item where one was named and nothing where none was: the
-            // stack reads a missing item as *suggest something likely to
-            // work*, and says what it chose in the report.
             $envelope = $client->act(
                 $asked->either(
                     named: static fn(string $item): WalkthroughAction => new WalkthroughAction(item: $item),

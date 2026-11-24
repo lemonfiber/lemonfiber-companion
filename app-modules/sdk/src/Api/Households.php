@@ -112,10 +112,6 @@ final readonly class Households
             throw HouseholdIsUnreadable::missing(WireField::Data);
         }
 
-        // **A household the stack could not read is not an empty household**, and
-        // this reading is where that would hurt most: a member would be told they
-        // have asked for nothing. The guard is the same one the operator's entry
-        // point above keeps, because the payload is the same payload.
         if (self::couldNotBeRead($data)) {
             throw HouseholdWentUnread::atTheMediaServer();
         }
@@ -144,8 +140,6 @@ final readonly class Households
             throw HouseholdIsUnreadable::missing(WireField::Data);
         }
 
-        // Nobody listed is not nobody in, where the stack could not read the
-        // media server: the same guard the requests are read behind.
         if (self::couldNotBeRead($data)) {
             throw HouseholdWentUnread::atTheMediaServer();
         }

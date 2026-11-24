@@ -126,10 +126,6 @@ final class ReportIsUnreadable extends InvalidArgumentException
     /** @param list<string> $read the words this app does know, so the gap is visible */
     private static function word(string $field, string $said, array $read): self
     {
-        // The accepted list comes from the enum rather than from a sentence
-        // written here, so a case added to the contract cannot leave this
-        // message describing the old vocabulary. The field's own name comes
-        // from `WireField` for the same reason, one level up.
         return new self(sprintf(
             'The doctor envelope says its %s is `%s`, and this app reads %s. Guessing which of them was meant is how a check that could not run gets shown as one that passed.',
             $field,

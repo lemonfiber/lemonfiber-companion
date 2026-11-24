@@ -58,9 +58,6 @@ final class HostingIsUnreadable extends InvalidArgumentException
 
     public static function standing(string $said, int $position): self
     {
-        // The accepted list comes from the enum rather than from a sentence
-        // written here, so a case added to the contract cannot leave this
-        // message describing the old vocabulary.
         return new self(sprintf(
             'Command %d in the hosting envelope says it stands at `%s`, and this app reads %s. Guessing which was meant is how a command that is not running gets shown as one that is.',
             $position,

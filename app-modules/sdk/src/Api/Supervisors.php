@@ -149,8 +149,6 @@ final readonly class Supervisors implements Supervising
         $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
-            // Under a key of its own, as every action is: a rehearsal changes
-            // nothing, and a key still names this asking apart from the yes.
             $envelope = $client->act(
                 $this->action($agreed)->rehearsed(),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),

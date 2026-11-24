@@ -51,10 +51,6 @@ final readonly class Upkeepers implements KeepingCurrent
         $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
-            // Naming what this is about, because the endpoint serves two things
-            // and a request that says neither is answered in prose rather than
-            // with an envelope. This asks about the services; where the running
-            // copy of lemonfiber stands is {@see Inspectors}' reading.
             $envelope = $client->read(
                 Api::UPDATE_ENDPOINT,
                 [WireField::What->value => WhichUpdate::TheStack->value],
@@ -77,14 +73,6 @@ final readonly class Upkeepers implements KeepingCurrent
         $client = GatedClient::of($this->clients, $stack, $session);
 
         try {
-            // `confirm`, and the offer the reading named. Unconfirmed, the
-            // stack's `update` action only says what would change; confirmed,
-            // it moves every service it listed and did not refuse, which is
-            // the list `TakingAnUpdate::changing()` holds and the confirmation
-            // named. The offer is carried back so the stack refuses the yes
-            // where what it would apply has moved since. The action narrows
-            // to one `service` and takes no list, so none is named: one would
-            // narrow the run.
             $envelope = $client->act(
                 new UpdateAction(wait: $agreed->waiting()->waits(), offer: Quoted::offer($agreed->offer()), confirm: true),
                 IdempotencyKey::from($this->entropy->nonce())->sent(),

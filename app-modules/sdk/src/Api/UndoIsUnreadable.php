@@ -44,8 +44,6 @@ final class UndoIsUnreadable extends InvalidArgumentException
     /** A reversal said it does something this app has no word for. */
     public static function does(string $said, int $position): self
     {
-        // The accepted list comes from the enum, so a case added cannot leave
-        // this message describing the old vocabulary.
         return new self(sprintf(
             'Row %d of `reversed` in the undo envelope says it does `%s`, and this app reads %s.',
             $position,

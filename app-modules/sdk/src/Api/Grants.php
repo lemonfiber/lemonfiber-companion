@@ -85,7 +85,6 @@ final readonly class Grants
             throw GrantIsUnreadable::missing(GrantField::LastsUntil);
         }
 
-        // The arm that cannot read the day names the field that held it.
         $starts = AMomentAsWritten::of(sprintf(self::AT_ITS_START, $lastDay))->read(
             read: static fn(Instant $starts): Instant => $starts,
             unreadable: static fn(): GrantField => GrantField::LastsUntil,

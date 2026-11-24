@@ -74,8 +74,6 @@ final class OutboundIsUnreadable extends InvalidArgumentException
 
     public static function reach(string $said, int $position): self
     {
-        // The accepted list comes from the enum, so a request added cannot
-        // leave this message describing the old set.
         return new self(sprintf(
             'Entry %d of `ours` in the outbound envelope is `%s`, and this app reads %s. Drawing it under the nearest name would be a claim about where somebody\'s data goes.',
             $position,
