@@ -11,6 +11,7 @@ use Modules\Kernel\Api\ALineChange;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\HowTheLineIsShared;
 use Modules\Kernel\Api\ItsContent;
@@ -29,6 +30,7 @@ use Modules\Kernel\Api\WhatTheLineRunDid;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesHowTheLineIsShared;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\LooksAgainWhileItMoves;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheLineChangeReads;
@@ -41,7 +43,6 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
@@ -80,8 +81,11 @@ final class HowTheLineIsSharedHere extends NativeComponent implements AwaitsAnOu
     use OffersTheAppsSettings;
     use ChoosesHowTheLineIsShared;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
     use DrawsItsTemplate;
+    /** @use FollowsOneJobAtATime<TheLineChangeTurnedOutToBe> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     public const string TEMPLATE = 'operator::how-the-line-is-shared-here';
 
@@ -90,12 +94,6 @@ final class HowTheLineIsSharedHere extends NativeComponent implements AwaitsAnOu
 
     /** What the stack last reported, rehearsed or applied. */
     public ?TheLineAsChanged $report = null;
-
-    /** The handle of the work being followed, while there is one. */
-    public ?string $following = null;
-
-    /** Where changing it has got to, once this frame has asked. Public for {@see WhatIsRunningHere::$answered}'s reason. */
-    public ?TheLineChangeTurnedOutToBe $going = null;
 
     /** The line as it stands, once this frame has asked. Public for the same reason. */
     public ?HowTheLineTurnedOutToBe $answered = null;
@@ -108,6 +106,7 @@ final class HowTheLineIsSharedHere extends NativeComponent implements AwaitsAnOu
         private readonly Clock $clock,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /**
@@ -126,8 +125,7 @@ final class HowTheLineIsSharedHere extends NativeComponent implements AwaitsAnOu
     {
         $this->asked = null;
         $this->report = null;
-        $this->following = null;
-        $this->going = null;
+        $this->forget();
     }
 
     /**
@@ -140,14 +138,14 @@ final class HowTheLineIsSharedHere extends NativeComponent implements AwaitsAnOu
     {
         $this->startAgain();
 
-        $this->going = WhatTheLineChangeIsAskedWith::from($this->down, $this->up, $this->active, $this->line, $this->cap, $this->exceeded, $this->lift)->either(
+        $this->reported(WhatTheLineChangeIsAskedWith::from($this->down, $this->up, $this->active, $this->line, $this->cap, $this->exceeded, $this->lift)->either(
             asked: fn(ALineChange $change): TheLineChangeTurnedOutToBe => $this->put(function (Stack $stack, Session $session) use ($change): WhatBecameOfTheWork {
                 $this->asked = $change;
 
                 return $this->sharing->rehearse($stack, $session, $change);
             }),
             notAskable: static fn(string $why): TheLineChangeTurnedOutToBe => new HowTheLineChangeReads()->notAskable($why),
-        );
+        ));
     }
 
     /**
@@ -165,26 +163,8 @@ final class HowTheLineIsSharedHere extends NativeComponent implements AwaitsAnOu
         }
 
         $this->report = null;
-        $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->sharing->carryOut($stack, $session, $change));
-    }
-
-    /**
-     * Ask after the work again while the stack is carrying it out.
-     *
-     * Nothing happens unless it is running. The interval is {@see HowOftenAScreenLooks}'s.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
-    {
-        if ($this->howItIsGoing()->stands->isWorking()) {
-            $this->going = null;
-        }
-    }
-
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->howItIsGoing()->stands->isWorking();
+        $this->forget();
+        $this->reported($this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->sharing->carryOut($stack, $session, $change)));
     }
 
     /**
@@ -210,11 +190,22 @@ final class HowTheLineIsSharedHere extends NativeComponent implements AwaitsAnOu
     /** Where changing it has got to, asked once per frame. */
     public function howItIsGoing(): TheLineChangeTurnedOutToBe
     {
-        $following = $this->following;
+        return $this->whatBecameOfTheJob();
+    }
 
-        return $this->going ??= $following === null
-            ? new HowTheLineChangeReads()->notAsked()
-            : $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->sharing->whatBecameOf($stack, $session, Job::named($following)));
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): TheLineChangeTurnedOutToBe
+    {
+        return $this->shown($this->sharing->whatBecameOf($stack, $session, $job), $stack);
+    }
+
+    protected function whileNoJobIsFollowed(): TheLineChangeTurnedOutToBe
+    {
+        return new HowTheLineChangeReads()->notAsked();
+    }
+
+    protected function withNoSessionHeld(): TheLineChangeTurnedOutToBe
+    {
+        return new HowTheLineChangeReads()->signedOut();
     }
 
     /**
@@ -241,12 +232,11 @@ final class HowTheLineIsSharedHere extends NativeComponent implements AwaitsAnOu
     {
         return $became->either(
             underway: function (Job $job): TheLineChangeTurnedOutToBe {
-                $this->following = $job->shown();
+                $this->follow($job);
 
                 return new HowTheLineChangeReads()->running();
             },
             answered: function (TheLineAsChanged $report): TheLineChangeTurnedOutToBe {
-                $this->following = null;
                 $this->report = $report;
 
                 if ($report->did() !== WhatTheLineRunDid::Rehearsed) {
@@ -255,16 +245,8 @@ final class HowTheLineIsSharedHere extends NativeComponent implements AwaitsAnOu
 
                 return new HowTheLineChangeReads()->answered($report, $this->clock->now());
             },
-            ended: function (?WhyTheWorkEnded $why): TheLineChangeTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTheLineChangeReads()->ended($why);
-            },
-            refused: function (ARefusalInItsWords $why): TheLineChangeTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTheLineChangeReads()->refused($why);
-            },
+            ended: static fn(?WhyTheWorkEnded $why): TheLineChangeTurnedOutToBe => new HowTheLineChangeReads()->ended($why),
+            refused: static fn(ARefusalInItsWords $why): TheLineChangeTurnedOutToBe => new HowTheLineChangeReads()->refused($why),
             met: function (Obstacle $why) use ($stack): TheLineChangeTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 

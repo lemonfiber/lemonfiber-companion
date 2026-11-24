@@ -40,6 +40,7 @@ use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
 use Modules\Operator\Internal\ViewModels\AClientHoldingAsShown;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatRationsItsLine;
@@ -166,6 +167,7 @@ function theLineChangeScreen(
         FrozenClock::at(Instant::atEpochSeconds(THE_LINE_CHANGES_AT)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 

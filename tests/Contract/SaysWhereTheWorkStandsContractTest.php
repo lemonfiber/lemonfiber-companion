@@ -23,6 +23,7 @@ use Modules\Operator\Internal\Presenters\HowTheAllowanceChangeReads;
 use Modules\Operator\Internal\Presenters\HowTheHandoffReads;
 use Modules\Operator\Internal\Presenters\HowTheInvitationReads;
 use Modules\Operator\Internal\Presenters\HowTheLastUpdateReads;
+use Modules\Operator\Internal\Presenters\HowTheLineChangeReads;
 use Modules\Operator\Internal\Presenters\HowThePairingCodeReads;
 use Modules\Operator\Internal\Presenters\HowTheRemovalReads;
 use Modules\Operator\Internal\Presenters\HowTheSwitchReads;
@@ -40,6 +41,7 @@ use Modules\Operator\Internal\ViewModels\TheAllowanceChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheCredentialRevokeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheForgettingTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheInvitationTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\TheLineChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheRemovalTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheReplacementTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
@@ -165,6 +167,11 @@ function everyReportOnWork(): array
             'running' => new HowAReplacementReads()->running(),
             'ended' => new HowAReplacementReads()->ended(null),
             'met' => new HowAReplacementReads()->met($stood),
+        ],
+        TheLineChangeTurnedOutToBe::class => [
+            'running' => new HowTheLineChangeReads()->running(),
+            'ended' => new HowTheLineChangeReads()->ended(null),
+            'met' => new HowTheLineChangeReads()->met($stood),
         ],
     ];
 }
