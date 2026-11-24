@@ -37,6 +37,7 @@ use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatRunsChecks;
@@ -93,16 +94,16 @@ function theVpnFamilyAsSaid(): string
 }
 
 /** The screen, for every check or for the family a case names. Named for this file (`G10`). */
-function theScreenRunningChecks(AStackThatWasAsked $asking, AStackThatRunsChecks $running, ?Category $family = null, ?AStackThatSpeaksUp $stream = null, ?FrozenClock $clock = null, bool $signedIn = true): WhatRunningChecksDisturbs
+function theScreenRunningChecks(AStackThatWasAsked $asking, AStackThatRunsChecks $running, ?Category $family = null, ?AStackThatSpeaksUp $stream = null, ?FrozenClock $clock = null, bool $signedIn = true, ?AKeychainInMemory $keychain = null): WhatRunningChecksDisturbs
 {
     $stack = TheHealthScreenOfTheLoft::theStackBeingLookedAt();
-    $keychain = AKeychainInMemory::working();
+    $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatRunningChecksDisturbs($asking, $running, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening($stream, $clock));
+    $screen = new WhatRunningChecksDisturbs($asking, $running, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening($stream, $clock), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $family instanceof Category ? $family->value : WhatARunCovers::EVERY]);
 
     return $screen;
@@ -280,3 +281,19 @@ function whatTheRunWouldDisturb(WhatRunningChecksDisturbs $screen): ?array
 
     return $run instanceof ARunAsShown ? array_map(static fn(ADisturbanceAsShown $one): string => $one->title, $run->disturbing) : null;
 }
+
+it('says the session has ended when it is lost while a run of checks is followed, and follows it no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatRunsChecks::THE_RUN)));
+    $screen = theScreenRunningChecks(AStackThatWasAsked::saying(aReportBeforeTheRun()), $running, keychain: $keychain);
+    $screen->answer();
+    $screen->run();
+    $screen->whileItRuns();
+    $keychain->forget(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id());
+    $screen->whileItRuns();
+
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and(array_map(static fn(Job $job): string => $job->shown(), $running->followed()))->toBe([AStackThatRunsChecks::THE_RUN]);
+});

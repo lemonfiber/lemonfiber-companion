@@ -25,6 +25,7 @@ use Modules\Kernel\Api\WhereAConnectionStands;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatChoosesFillers;
@@ -47,7 +48,7 @@ function theScreenThatAdopts(AStackThatWires $wiring): HowTheServicesAreWired
     $keychain = AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
-    $screen = new HowTheServicesAreWired($wiring, AStackThatSaysWhatAnswersWhat::with(TheLinks::of(WhatNothingFills::none())), AStackThatChoosesFillers::answering(WhatBecameOfTheFill::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))), AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new HowTheServicesAreWired($wiring, AStackThatSaysWhatAnswersWhat::with(TheLinks::of(WhatNothingFills::none())), AStackThatChoosesFillers::answering(WhatBecameOfTheFill::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))), AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;

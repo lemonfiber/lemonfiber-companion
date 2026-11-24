@@ -24,11 +24,11 @@ trait AdoptsTheEdits
     /** Ask what adopting the operator's own edits would keep and wire, writing nothing. */
     public function rehearseAdopting(): void
     {
-        $this->following = null;
+        $this->forget();
         $this->adopting = WhereAdoptingStands::Rehearsing;
-        $this->going = $this->put(
+        $this->reported($this->put(
             fn(Stack $stack, Session $session): WhatBecameOfTheWiring => $this->wiring->rehearseAdopting($stack, $session),
-        );
+        ));
     }
 
     /** Adopt them, only against the rehearsal on the screen. */
@@ -38,10 +38,10 @@ trait AdoptsTheEdits
             return;
         }
 
-        $this->following = null;
+        $this->forget();
         $this->adopting = null;
-        $this->going = $this->put(
+        $this->reported($this->put(
             fn(Stack $stack, Session $session): WhatBecameOfTheWiring => $this->wiring->adopt($stack, $session),
-        );
+        ));
     }
 }

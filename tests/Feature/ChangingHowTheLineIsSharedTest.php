@@ -40,6 +40,7 @@ use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
 use Modules\Operator\Internal\ViewModels\AChoiceOfASettingAsShown;
 use Modules\Operator\Internal\ViewModels\AClientHoldingAsShown;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatRationsItsLine;
@@ -166,6 +167,7 @@ function theLineChangeScreen(
         FrozenClock::at(Instant::atEpochSeconds(THE_LINE_CHANGES_AT)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -420,6 +422,23 @@ it('a session that has ended asks nothing of the stack', function (): void {
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($sharing->rehearsed())->toBe([]);
+});
+
+it('says the session has ended when it is lost while a change is followed, and follows it no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $sharing = aStackThatChangesItsLine(WhatBecameOfTheWork::underway(Job::named(AStackThatSharesItsLine::THE_REHEARSAL)));
+    $screen = theLineChangeScreen($sharing, keychain: $keychain);
+    $screen->answer();
+    $screen->down = '50%';
+    $screen->rehearse();
+    $screen->whileItRuns();
+    $keychain->forget(theStackWhoseLineIsChanged()->id());
+    $screen->whileItRuns();
+
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and(array_map(everyPartSentOfTheLine(...), $sharing->rehearsed()))->toBe(['down=50% lift=none']);
 });
 
 it('draws what stood in the way of reading the line as it stands', function (): void {

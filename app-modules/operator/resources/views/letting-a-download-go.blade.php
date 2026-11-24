@@ -1,3 +1,4 @@
+@use('Modules\Operator\Internal\TheOfferAndItsYes')
 @use('Modules\Kernel\Api\WhatToDoWithADownload')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
@@ -20,6 +21,7 @@
         />
     @elseif ($this->done()->stands->isWorking())
         <x-operator::emphasis>{{ __('stacks.let_go.letting_go', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
+        <x-operator::following-a-job :said="$this->whatItSays(TheOfferAndItsYes::TheYes)" />
     @elseif ($this->done()->stands->hasEnded())
         <x-operator::why-it-ended :stands="$this->done()->stands" />
         {{-- Not a failure: the client may well have let it go, and how full
@@ -46,6 +48,7 @@
     {{-- The stack answers the question as work, so the offer may not be
          in yet. Said as that, and read again on the screen's cadence. --}}
     <x-operator::emphasis>{{ __('stacks.let_go.working_it_out', ['download' => $this->downloadNamed()]) }}</x-operator::emphasis>
+    <x-operator::following-a-job :said="$this->whatItSays(TheOfferAndItsYes::TheOffer)" />
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @elseif ($this->answer()->stands->hasEnded())
     <x-operator::why-it-ended :stands="$this->answer()->stands" />

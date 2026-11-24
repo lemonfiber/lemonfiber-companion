@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARoomGivenBackAgreed;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\GivingBackRoom;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Measuring;
@@ -28,6 +26,7 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhereTheRoomWent;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowARefusalReads;
 use Modules\Operator\Internal\Presenters\HowGivingRoomBackReads;
@@ -39,7 +38,6 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
@@ -72,7 +70,10 @@ final class GivingRoomBack extends NativeComponent implements AwaitsAnOutcome
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
+    /** @use FollowsOneJobAtATime<HowGivingItBackWent> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use DrawsItsTemplate;
 
     public const string TEMPLATE = 'operator::giving-room-back';
@@ -95,12 +96,6 @@ final class GivingRoomBack extends NativeComponent implements AwaitsAnOutcome
     /** Whether the operator has agreed, which is which of the two readings a frame draws. */
     public bool $agreed = false;
 
-    /** The handle agreeing answered. Not shown and never kept past this screen. */
-    public ?string $handle = null;
-
-    /** What became of the yes, once this frame has asked. */
-    public ?HowGivingItBackWent $carriedOut = null;
-
     /** What the stack said where the offer a yes was given for had moved, until the next yes. */
     public ?ARefusalAsShown $movedOn = null;
 
@@ -111,13 +106,9 @@ final class GivingRoomBack extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->isWorking();
-    }
 
     /** The category this screen is about, as the route carries it. */
     public function categoryNamed(): string
@@ -140,7 +131,7 @@ final class GivingRoomBack extends NativeComponent implements AwaitsAnOutcome
     /** What became of the yes, asked once per frame. */
     public function done(): HowGivingItBackWent
     {
-        return $this->carriedOut ??= $this->followed();
+        return $this->whatBecameOfTheJob();
     }
 
     /**
@@ -161,13 +152,12 @@ final class GivingRoomBack extends NativeComponent implements AwaitsAnOutcome
         $stack = $this->stack();
         $agreed = ARoomGivenBackAgreed::to($offer, $category);
         $this->agreed = true;
-        $this->handle = null;
         $this->movedOn = null;
-
-        $this->carriedOut = $this->storage->resume($stack->id())->either(
+        $this->forget();
+        $this->reported($this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowGivingItBackWent => $this->shown($this->givingBack->giveBack($stack, $session, $agreed), $stack),
-            notHeld: static fn(): HowGivingItBackWent => new HowGivingRoomBackReads()->signedOut(),
-        );
+            notHeld: $this->withNoSessionHeld(...),
+        ));
     }
 
     /**
@@ -179,36 +169,31 @@ final class GivingRoomBack extends NativeComponent implements AwaitsAnOutcome
      */
     public function again(): void
     {
-        $this->carriedOut = null;
+        if ($this->agreed && $this->follows()) {
+            $this->askAfterAgain();
 
-        if ($this->agreed && is_string($this->handle)) {
             return;
         }
 
+        $this->forget();
         $this->agreed = false;
         $this->offered = null;
         $this->answered = null;
     }
 
-    /**
-     * Read again while the stack is giving the room back.
-     *
-     * It does nothing unless that is running, and it only ever reads: the yes
-     * is sent by {@see agree()} and nothing else. The interval is
-     * {@see HowOftenAScreenLooks}'s constant.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): HowGivingItBackWent
     {
-        if ($this->isWorking()) {
-            $this->carriedOut = null;
-        }
+        return $this->shown($this->givingBack->whatBecameOf($stack, $session, $job), $stack);
     }
 
-    /** Whether the stack is giving the room back right now. */
-    public function isWorking(): bool
+    protected function whileNoJobIsFollowed(): HowGivingItBackWent
     {
-        return $this->agreed && $this->done()->stands->isWorking();
+        return new HowGivingRoomBackReads()->ended(null);
+    }
+
+    protected function withNoSessionHeld(): HowGivingItBackWent
+    {
+        return new HowGivingRoomBackReads()->signedOut();
     }
 
     /** Resume the session and read the machine's room, for the category's place in the offer. */
@@ -245,23 +230,6 @@ final class GivingRoomBack extends NativeComponent implements AwaitsAnOutcome
         return new HowGivingRoomBackReads()->notOnOffer();
     }
 
-    /** Ask the stack what became of the yes. */
-    private function followed(): HowGivingItBackWent
-    {
-        $held = $this->handle;
-
-        if (! is_string($held)) {
-            return new HowGivingRoomBackReads()->ended(null);
-        }
-
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): HowGivingItBackWent => $this->shown($this->givingBack->whatBecameOf($stack, $session, Job::named($held)), $stack),
-            notHeld: static fn(): HowGivingItBackWent => new HowGivingRoomBackReads()->signedOut(),
-        );
-    }
-
     /**
      * What the stack said, as the screen draws it, holding what to follow.
      *
@@ -274,7 +242,7 @@ final class GivingRoomBack extends NativeComponent implements AwaitsAnOutcome
     {
         return $became->eitherOrMoved(
             underway: function (Job $job): HowGivingItBackWent {
-                $this->handle = $job->shown();
+                $this->follow($job);
 
                 return new HowGivingRoomBackReads()->running();
             },
@@ -285,7 +253,7 @@ final class GivingRoomBack extends NativeComponent implements AwaitsAnOutcome
             moved: function (ARefusalInItsWords $why): HowGivingItBackWent {
                 $this->movedOn = new HowARefusalReads()->inItsWords($why);
                 $this->agreed = false;
-                $this->handle = null;
+                $this->forget();
                 $this->offered = null;
                 $this->answered = null;
 

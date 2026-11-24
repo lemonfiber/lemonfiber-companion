@@ -26,6 +26,7 @@
     @if ($this->lastGuard()->stands->went->cameBack())
         @if ($this->lastGuard()->guarding !== null)
             <x-operator::emphasis>{{ __('stacks.guard.guarding', ['forms' => $this->lastGuard()->guarding]) }}</x-operator::emphasis>
+            <x-operator::following-a-job :said="$this->whatItSays()" />
         @endif
 
         @if ($this->lastGuard()->ended !== null)

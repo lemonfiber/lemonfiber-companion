@@ -201,7 +201,8 @@ trait FollowsAJob
     /**
      * Ask the stack what became of the job followed for this, and keep whether it still runs.
      *
-     * A job that stopped running has its last lines taken, and the
+     * A job found running again after an obstacle is asked after again on the
+     * cadence. A job that stopped running has its last lines taken, and the
      * subscription is let go of once no job runs. A report after which the
      * screen follows another job for this, or none, is not kept: it was about
      * work the screen has let go of.
@@ -233,9 +234,10 @@ trait FollowsAJob
 
         if (! $report->stands->isWorking()) {
             $this->hearWhatTheySaid();
-            $this->followed[$for->name] = $this->followed[$for->name]->finished();
-            $this->letGoUnlessAnotherRuns();
         }
+
+        $this->followed[$for->name] = $this->followed[$for->name]->runningWhenAsked($report->stands->isWorking());
+        $this->letGoUnlessAnotherRuns();
 
         return $this->became[$for->name] = $report;
     }

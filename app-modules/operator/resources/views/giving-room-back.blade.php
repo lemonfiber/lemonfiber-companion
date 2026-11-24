@@ -19,6 +19,7 @@
         />
     @elseif ($this->done()->stands->isWorking())
         <x-operator::emphasis>{{ __('stacks.give_back.giving_back') }}</x-operator::emphasis>
+        <x-operator::following-a-job :said="$this->whatItSays()" />
     @elseif ($this->done()->stands->hasEnded())
         <x-operator::why-it-ended :stands="$this->done()->stands" />
         <x-operator::emphasis>{{ __('stacks.give_back.no_outcome') }}</x-operator::emphasis>

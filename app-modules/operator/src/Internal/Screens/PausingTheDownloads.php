@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\PausingDownloads;
@@ -21,9 +19,10 @@ use Modules\Kernel\Api\WhatPausingComesTo;
 use Modules\Kernel\Api\WhatToDoWithTheDownloads;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsAJob;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowPausingReads;
-use Modules\Operator\Internal\TheYesGiven;
+use Modules\Operator\Internal\TheOfferAndItsYes;
 use Modules\Operator\Internal\ViewModels\HowPausingWent;
 use Modules\Operator\Internal\ViewModels\WhatPausingSays;
 use Modules\Operator\Internal\ViewModels\WhatPausingWouldShow;
@@ -32,8 +31,8 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
+use UnitEnum;
 
 /**
  * Pausing every download client, or letting them fetch again, rehearsed first and carried out only on a yes.
@@ -62,29 +61,20 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
+    /** @use FollowsAJob<WhatPausingWouldShow|HowPausingWent> */
+    use FollowsAJob, FindsItsWayAround {
+        FollowsAJob::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use DrawsItsTemplate;
 
     public const string TEMPLATE = 'operator::pausing-the-downloads';
 
-    /**
-     * What the rehearsal came to, once the frame has asked.
-     *
-     * `public` for {@see HowCurrentThisStackIs::$answered}'s reason.
-     */
-    public ?WhatPausingWouldShow $answered = null;
-
-    /** The handle the rehearsal answered. Not shown and never kept past this screen. */
-    public ?string $asking = null;
 
     /** The rehearsal's report, while there is one to agree to, held as the value because a yes can only quote the offer itself. */
     public ?WhatPausingComesTo $offered = null;
 
-    /** The yes the operator gave, once one was, which is which of the two readings a frame draws. */
-    public ?TheYesGiven $yes = null;
-
-    /** What became of the yes, once this frame has asked. */
-    public ?HowPausingWent $carriedOut = null;
+    /** Whether the operator has agreed, which is which of the two readings a frame draws. */
+    public bool $agreed = false;
 
     public function __construct(
         private readonly PausingDownloads $pausing,
@@ -92,13 +82,9 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->isWorking();
-    }
 
     /** Which of pausing and resuming this screen is about, by the word the route carries, or none. */
     public function whatWasAsked(): ?WhatToDoWithTheDownloads
@@ -115,19 +101,23 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
     /** What the rehearsal came to, asked once per frame. */
     public function answer(): WhatPausingWouldShow
     {
-        return $this->answered ??= $this->ask();
+        $report = $this->whatBecameOfTheJob(TheOfferAndItsYes::TheOffer);
+
+        return $report instanceof WhatPausingWouldShow ? $report : new HowPausingReads()->notAsked();
     }
 
     /** Whether the operator has agreed to the rehearsal. */
     public function wasAgreedTo(): bool
     {
-        return $this->yes instanceof TheYesGiven;
+        return $this->agreed;
     }
 
     /** What became of the yes, asked once per frame. */
     public function done(): HowPausingWent
     {
-        return $this->carriedOut ??= $this->followed();
+        $report = $this->whatBecameOfTheJob(TheOfferAndItsYes::TheYes);
+
+        return $report instanceof HowPausingWent ? $report : new HowPausingReads()->ended(null);
     }
 
     /**
@@ -145,19 +135,19 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
         }
 
         $stack = $this->stack();
-        $this->yes = TheYesGiven::notTakenOn();
-
-        $this->carriedOut = $this->storage->resume($stack->id())->either(
+        $this->agreed = true;
+        $this->forget(TheOfferAndItsYes::TheYes);
+        $this->reported($this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowPausingWent => $this->pausing->carryOut($stack, $session, $offer)->either(
                 started: function (Job $job): HowPausingWent {
-                    $this->yes = TheYesGiven::takenOnAs($job->shown());
+                    $this->follow($job, TheOfferAndItsYes::TheYes);
 
                     return new HowPausingReads()->running();
                 },
                 met: $this->lettingGoIfRefused($stack, new HowPausingReads()->met(...)),
             ),
             notHeld: static fn(): HowPausingWent => new HowPausingReads()->signedOut(),
-        );
+        ), TheOfferAndItsYes::TheYes);
     }
 
     /**
@@ -170,48 +160,45 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
      */
     public function again(): void
     {
-        $this->carriedOut = null;
+        if ($this->agreed && $this->follows(TheOfferAndItsYes::TheYes)) {
+            $this->askAfterAgain(TheOfferAndItsYes::TheYes);
 
-        if ($this->yes?->handle !== null) {
             return;
         }
 
-        if ($this->answered?->stands->isWorking() !== true) {
-            $this->asking = null;
+        if (! $this->awaitsAnOutcome(TheOfferAndItsYes::TheOffer)) {
+            $this->forget(TheOfferAndItsYes::TheOffer);
         }
 
-        $this->yes = null;
+        $this->askAfterAgain(TheOfferAndItsYes::TheOffer);
+
+        $this->forget(TheOfferAndItsYes::TheYes);
+        $this->agreed = false;
         $this->offered = null;
-        $this->answered = null;
     }
 
-    /**
-     * Read again while the stack is rehearsing or carrying it out.
-     *
-     * It does nothing unless one of those is running, and it only ever reads:
-     * the yes is sent by {@see agree()} and nothing else. The interval is
-     * {@see HowOftenAScreenLooks}'s constant.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
+    protected function whatBecameOfIt(Stack $stack, Session $session, Job $job, UnitEnum $for): WhatPausingWouldShow|HowPausingWent
     {
-        if (! $this->isWorking()) {
-            return;
-        }
-
-        if ($this->yes instanceof TheYesGiven) {
-            $this->carriedOut = null;
-
-            return;
-        }
-
-        $this->answered = null;
+        return match (TheOfferAndItsYes::asked($for)) {
+            TheOfferAndItsYes::TheOffer => $this->offer($stack, $session, $job),
+            TheOfferAndItsYes::TheYes => $this->yesCameTo($stack, $session, $job),
+        };
     }
 
-    /** Whether the stack is rehearsing, or carrying it out, right now. */
-    public function isWorking(): bool
+    protected function whileNothingIsFollowed(UnitEnum $for): WhatPausingWouldShow|HowPausingWent
     {
-        return $this->yes instanceof TheYesGiven ? $this->done()->stands->isWorking() : $this->answer()->stands->isWorking();
+        return match (TheOfferAndItsYes::asked($for)) {
+            TheOfferAndItsYes::TheOffer => $this->ask(),
+            TheOfferAndItsYes::TheYes => new HowPausingReads()->ended(null),
+        };
+    }
+
+    protected function withoutASession(UnitEnum $for): WhatPausingWouldShow|HowPausingWent
+    {
+        return match (TheOfferAndItsYes::asked($for)) {
+            TheOfferAndItsYes::TheOffer => new HowPausingReads()->notAsked(),
+            TheOfferAndItsYes::TheYes => new HowPausingReads()->signedOut(),
+        };
     }
 
     /** Resume the session and rehearse what was asked. */
@@ -231,24 +218,14 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
         );
     }
 
-    /**
-     * Read the rehearsal's handle, rehearsing first where there is none.
-     *
-     * A handle already in hand is read, and only the absence of one asks the
-     * stack anything, so reading again is never a second piece of work on
-     * somebody's machine.
-     */
+    /** Rehearse what was asked, and follow the rehearsal it starts. */
     private function read(Stack $stack, Session $session, WhatToDoWithTheDownloads $asked): WhatPausingWouldShow
     {
-        $held = $this->asking;
-
-        if (is_string($held)) {
-            return $this->offer($stack, $session, Job::named($held));
-        }
 
         return $this->pausing->rehearse($stack, $session, $asked)->either(
             started: function (Job $job) use ($stack, $session): WhatPausingWouldShow {
-                $this->asking = $job->shown();
+                $this->follow($job, TheOfferAndItsYes::TheOffer);
+
 
                 return $this->offer($stack, $session, $job);
             },
@@ -272,24 +249,13 @@ final class PausingTheDownloads extends NativeComponent implements AwaitsAnOutco
     }
 
     /** Ask the stack what became of the yes. */
-    private function followed(): HowPausingWent
+    private function yesCameTo(Stack $stack, Session $session, Job $job): HowPausingWent
     {
-        $held = $this->yes?->handle;
-
-        if ($held === null) {
-            return new HowPausingReads()->ended(null);
-        }
-
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): HowPausingWent => $this->pausing->whatBecameOf($stack, $session, Job::named($held))->either(
-                stillRunning: static fn(): HowPausingWent => new HowPausingReads()->running(),
-                answered: static fn(WhatPausingComesTo $report): HowPausingWent => new HowPausingReads()->done($report),
-                ended: static fn(?WhyTheWorkEnded $why): HowPausingWent => new HowPausingReads()->ended($why),
-                met: $this->lettingGoIfRefused($stack, new HowPausingReads()->met(...)),
-            ),
-            notHeld: static fn(): HowPausingWent => new HowPausingReads()->signedOut(),
+        return $this->pausing->whatBecameOf($stack, $session, $job)->either(
+            stillRunning: static fn(): HowPausingWent => new HowPausingReads()->running(),
+            answered: static fn(WhatPausingComesTo $report): HowPausingWent => new HowPausingReads()->done($report),
+            ended: static fn(?WhyTheWorkEnded $why): HowPausingWent => new HowPausingReads()->ended($why),
+            met: $this->lettingGoIfRefused($stack, new HowPausingReads()->met(...)),
         );
     }
 }

@@ -13,7 +13,7 @@ use Modules\Kernel\Api\AskingTheIndexers;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Explaining;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
@@ -28,6 +28,7 @@ use Modules\Kernel\Api\WhatToFollow;
 use Modules\Kernel\Api\WhereItGotTo;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\LooksAgainWhileItMoves;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowATraceReads;
@@ -42,7 +43,6 @@ use Modules\Wayfinding\Api\Screens\ReadsAStackOnceAFrame;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
@@ -74,7 +74,10 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
     use LetsGoOfARefusedSession;
     use ShowsWhatItsWordsMean;
     use ReadsAStackOnceAFrame;
-    use FindsItsWayAround;
+    /** @use FollowsOneJobAtATime<TheRunTurnedOutToBe> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use AsksAgain;
 
     /** What was typed and followed instead of what the route names, or empty. */
@@ -89,10 +92,6 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
     /** The season the trace is narrowed to, or nothing for every season. */
     public ?int $season = null;
 
-    /** The handle of the search being followed, where there is one. */
-    public ?string $searching = null;
-
-    public ?TheRunTurnedOutToBe $going = null;
 
     public function __construct(
         private readonly Tracing $tracing,
@@ -103,10 +102,11 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
         private readonly Clock $clock,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /** Follow what was typed instead; nothing typed follows nothing new. */
-    public function follow(): void
+    public function followWhatWasTyped(): void
     {
         if (trim($this->looking) === '') {
             return;
@@ -147,29 +147,14 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
         }
 
         $following = $this->following($this->term());
-        $this->going = $this->searched(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->indexers->search($stack, $session, $following));
+        $this->forget();
+        $this->reported($this->searched(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->indexers->search($stack, $session, $following)));
     }
 
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
-    {
-        if ($this->howTheSearchIsGoing()->stands->isWorking()) {
-            $this->going = null;
-        }
-    }
-
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->howTheSearchIsGoing()->stands->isWorking();
-    }
-
+    /** Where the search has got to, asked once per frame. */
     public function howTheSearchIsGoing(): TheRunTurnedOutToBe
     {
-        $searching = $this->searching;
-
-        return $this->going ??= $searching === null
-            ? new HowTheRunReads()->notAsked()
-            : $this->searched(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->indexers->whatBecameOf($stack, $session, Job::named($searching)));
+        return $this->whatBecameOfTheJob();
     }
 
     public function render(): View
@@ -196,6 +181,21 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
     protected function explaining(): Explaining
     {
         return $this->explaining;
+    }
+
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): TheRunTurnedOutToBe
+    {
+        return $this->shown($this->indexers->whatBecameOf($stack, $session, $job), $stack);
+    }
+
+    protected function whileNoJobIsFollowed(): TheRunTurnedOutToBe
+    {
+        return new HowTheRunReads()->notAsked();
+    }
+
+    protected function withNoSessionHeld(): TheRunTurnedOutToBe
+    {
+        return new HowTheRunReads()->signedOut();
     }
 
     /** Resume the session, follow the item, and flatten what came back. */
@@ -242,7 +242,7 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): TheRunTurnedOutToBe => $this->shown($asking($stack, $session), $stack),
-            notHeld: static fn(): TheRunTurnedOutToBe => new HowTheRunReads()->signedOut(),
+            notHeld: $this->withNoSessionHeld(...),
         );
     }
 
@@ -255,26 +255,17 @@ final class WhereThisGotTo extends NativeComponent implements AwaitsAnOutcome
     {
         return $became->either(
             underway: function (Job $job): TheRunTurnedOutToBe {
-                $this->searching = $job->shown();
+                $this->follow($job);
 
                 return new HowTheRunReads()->running();
             },
             answered: function (WhereItGotTo $trace): TheRunTurnedOutToBe {
-                $this->searching = null;
                 $this->answered = new HowATraceReads()->this($trace, $this->clock->now());
 
                 return new HowTheRunReads()->answered();
             },
-            ended: function (?WhyTheWorkEnded $why): TheRunTurnedOutToBe {
-                $this->searching = null;
-
-                return new HowTheRunReads()->ended($why);
-            },
-            refused: function (ARefusalInItsWords $why): TheRunTurnedOutToBe {
-                $this->searching = null;
-
-                return new HowTheRunReads()->refused($why);
-            },
+            ended: static fn(?WhyTheWorkEnded $why): TheRunTurnedOutToBe => new HowTheRunReads()->ended($why),
+            refused: static fn(ARefusalInItsWords $why): TheRunTurnedOutToBe => new HowTheRunReads()->refused($why),
             met: function (Obstacle $why) use ($stack): TheRunTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 

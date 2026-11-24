@@ -11,7 +11,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * is nothing unless the stack refused, so a template cannot draw either off a
  * bundle still being gathered.
  */
-final readonly class HowTheBundleWent
+final readonly class HowTheBundleWent implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands $stands      where the work stands, and whether the stack could be asked at all

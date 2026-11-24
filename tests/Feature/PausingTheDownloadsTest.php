@@ -24,6 +24,7 @@ use Modules\Operator\Internal\ViewModels\ADownloadClientAsShown;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatPausesDownloads;
@@ -63,7 +64,7 @@ function thePausingScreen(AStackThatPausesDownloads $pausing, ?AKeychainInMemory
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new PausingTheDownloads($pausing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new PausingTheDownloads($pausing, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $asked]);
 
     return $screen;
@@ -161,7 +162,7 @@ it('carries out exactly the rehearsal it showed, and says it is doing so on its 
     $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
 
     expect(array_map(static fn(WhatPausingComesTo $offer): string => $offer->agreement(), $pausing->agreed()))->toBe(['pause-qbittorrent-fetching'])
-        ->and($screen->isWorking())->toBeTrue()
+        ->and($screen->awaitsAnOutcome())->toBeTrue()
         ->and($drawn)->toContain(__('stacks.pausing.working.pause'))
         ->and($drawn)->not->toContain(__('stacks.pausing.what_it_does.pause'));
 
@@ -170,6 +171,37 @@ it('carries out exactly the rehearsal it showed, and says it is doing so on its 
 
     expect(array_map(static fn(Job $job): string => $job->shown(), $pausing->followed()))->toBe([AStackThatPausesDownloads::THE_REHEARSAL, AStackThatPausesDownloads::THE_JOB])
         ->and($pausing->agreed())->toHaveCount(1);
+});
+
+it('asks for a session when it is lost while the stack rehearses, and follows the rehearsal no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $pausing = AStackThatPausesDownloads::rehearsing(HowPausingIsGoing::stillRunning(), HowPausingIsGoing::stillRunning());
+    $screen = thePausingScreen($pausing, $keychain);
+    $screen->answer();
+    $screen->whileItRuns();
+    $keychain->forget(theStackWhoseDownloadsPause()->id());
+    $screen->whileItRuns();
+
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.sign_in'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($pausing->followed())->toHaveCount(2);
+});
+
+it('says the session has ended when it is lost while the yes is carried out, and follows it no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $pausing = aStackRehearsingAPause(HowPausingIsGoing::stillRunning());
+    $screen = thePausingScreen($pausing, $keychain);
+    $screen->answer();
+    $screen->agree();
+    $screen->whileItRuns();
+    $keychain->forget(theStackWhoseDownloadsPause()->id());
+    $screen->whileItRuns();
+
+    expect($screen->done()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($pausing->followed())->toHaveCount(2);
 });
 
 it('reports each client before and after, and names the one it could not reach', function (): void {

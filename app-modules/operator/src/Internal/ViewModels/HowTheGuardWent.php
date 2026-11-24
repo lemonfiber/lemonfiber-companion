@@ -11,7 +11,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * and only one that saw the data location go says whether it stopped the
  * forms — each in words that cannot be mistaken for the other.
  */
-final readonly class HowTheGuardWent
+final readonly class HowTheGuardWent implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands  $stands   where the guard stands: not asked before one was started here, running while it guards, answered once it ended

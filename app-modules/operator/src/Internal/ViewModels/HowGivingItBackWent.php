@@ -10,7 +10,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * `$returned` is null wherever there is no report. `$left` holds the stack's
  * reason for each item left behind, and never where the item is.
  */
-final readonly class HowGivingItBackWent
+final readonly class HowGivingItBackWent implements SaysWhereTheWorkStands
 {
     /**
      * @param int<0, max>  $went how many items went

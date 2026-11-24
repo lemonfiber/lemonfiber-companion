@@ -1,3 +1,4 @@
+@use('Modules\Operator\Internal\TheOfferAndItsYes')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
 @if ($this->answer()->stands->went->cameBack())
@@ -18,6 +19,7 @@
         />
     @elseif ($this->done()->stands->isWorking())
         <x-operator::emphasis>{{ __($this->says()->working) }}</x-operator::emphasis>
+        <x-operator::following-a-job :said="$this->whatItSays(TheOfferAndItsYes::TheYes)" />
     @elseif ($this->done()->stands->hasEnded())
         <x-operator::why-it-ended :stands="$this->done()->stands" />
         <x-operator::emphasis>{{ __('stacks.pausing.no_outcome') }}</x-operator::emphasis>
@@ -54,6 +56,7 @@
     {{-- The stack answers the rehearsal as work, so it may not be in yet.
          Said as that, and read again on the screen's cadence. --}}
     <x-operator::emphasis>{{ __('stacks.pausing.working_it_out') }}</x-operator::emphasis>
+    <x-operator::following-a-job :said="$this->whatItSays(TheOfferAndItsYes::TheOffer)" />
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
 @elseif ($this->answer()->stands->hasEnded())
     <x-operator::why-it-ended :stands="$this->answer()->stands" />

@@ -34,6 +34,18 @@ trait FollowsOneJobAtATime
     /** @return TReport */
     abstract protected function withNoSessionHeld(): SaysWhereTheWorkStands;
 
+    /** The one job while it runs, for an act on it by its name; none once it has ended. */
+    protected function theRunningJob(): ?Job
+    {
+        foreach ($this->running() as $for => $followed) {
+            if ($for === $this->theJobItFollows()->name) {
+                return $followed->job;
+            }
+        }
+
+        return null;
+    }
+
     /** What the one job is followed for. */
     protected function theJobItFollows(): UnitEnum
     {

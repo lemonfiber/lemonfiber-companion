@@ -14,19 +14,21 @@ use Modules\Kernel\Api\AskingForHelp;
 use Modules\Kernel\Api\AWrittenBundle;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\SecureStorage;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Sharing;
+use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesWhatABundleHolds;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowABundleReads;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
@@ -37,7 +39,6 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
@@ -56,8 +57,8 @@ use Native\Mobile\Edge\NativeComponent;
  * only then is writing offered. What is written is what was described: the
  * choices are held with the description and sent again as they were.
  *
- * **Both answer a handle,** followed on a declared cadence while the stack
- * gathers. A bundle the stack refused is its answer, drawn as a refusal in its
+ * **Both answer a job,** followed through {@see FollowsOneJobAtATime} while
+ * the stack gathers. A bundle the stack refused is its answer, drawn as a refusal in its
  * own words and never as a fault to try again.
  *
  * **Handing it over is a third tap, and it is the operator's.** A written
@@ -78,7 +79,10 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
     use OffersTheAppsSettings;
     use ChoosesWhatABundleHolds;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
+    /** @use FollowsOneJobAtATime<HowTheBundleWent> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use DrawsItsTemplate;
 
     public const string TEMPLATE = 'operator::asking-for-help-here';
@@ -91,11 +95,6 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
      */
     public ?ABundleAsked $asked = null;
 
-    /** The handle asking answered. Not shown and never kept past this screen. */
-    public ?string $handle = null;
-
-    /** What became of it, once this frame has asked. */
-    public ?HowTheBundleWent $went = null;
 
     /** Whether the operator is changing what goes in, which asks the stack nothing until they describe it. */
     public bool $choosing = false;
@@ -114,19 +113,15 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
         private readonly Clock $clock,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->answer()->stands->isWorking();
-    }
 
     /** Ask the stack to describe the bundle chosen, which writes nothing. */
     public function describe(): void
     {
         $this->choosing = false;
-        $this->went = $this->send($this->chosen());
+        $this->reported($this->send($this->chosen()));
     }
 
     /**
@@ -143,7 +138,7 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
             return;
         }
 
-        $this->went = $this->send($asked->written());
+        $this->reported($this->send($asked->written()));
     }
 
     /**
@@ -175,7 +170,7 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
                 },
             ),
             notHeld: function (): WhatHandingOverCameTo {
-                $this->went = new HowABundleReads()->signedOut();
+                $this->reported($this->withNoSessionHeld());
 
                 return WhatHandingOverCameTo::nothing();
             },
@@ -190,8 +185,7 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
     {
         $this->choosing = true;
         $this->asked = null;
-        $this->handle = null;
-        $this->went = null;
+        $this->forget();
         $this->handing = '';
         $this->handingLeaves = '';
     }
@@ -199,27 +193,42 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
     /** Ask the stack again what became of the bundle. */
     public function again(): void
     {
-        $this->went = null;
+        $this->askAfterAgain();
     }
 
     /** What became of the bundle asked for here, asked once per frame. */
     public function answer(): HowTheBundleWent
     {
-        return $this->went ??= $this->followed();
+        return $this->whatBecameOfTheJob();
+    }
+
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): HowTheBundleWent
+    {
+        return $this->helping->whatBecameOf($stack, $session, $job)->either(
+            stillRunning: static fn(): HowTheBundleWent => new HowABundleReads()->running(),
+            done: fn(ABundle $bundle): HowTheBundleWent => new HowABundleReads()->done($bundle, $this->clock->now()),
+            refused: static fn(ARefusalInItsWords $why): HowTheBundleWent => new HowABundleReads()->refused($why),
+            ended: static fn(?WhyTheWorkEnded $why): HowTheBundleWent => new HowABundleReads()->ended($why),
+            met: $this->lettingGoIfRefused($stack, new HowABundleReads()->met(...)),
+        );
     }
 
     /**
-     * Ask after the bundle again while the stack is gathering it.
+     * What is said while no bundle is followed: nothing while the operator chooses, and otherwise the choices described.
      *
-     * It does nothing unless that is running, so a finished bundle is not read
-     * over and over. The interval is {@see HowOftenAScreenLooks}'s constant.
+     * The screen has just opened, or asking met an obstacle. Describing
+     * writes nothing; a write that met an obstacle is never sent again from
+     * here: the operator reads the description and agrees again when they
+     * choose to.
      */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
+    protected function whileNoJobIsFollowed(): HowTheBundleWent
     {
-        if ($this->answer()->stands->isWorking()) {
-            $this->went = null;
-        }
+        return $this->choosing ? new HowABundleReads()->notAsked() : $this->send($this->chosen());
+    }
+
+    protected function withNoSessionHeld(): HowTheBundleWent
+    {
+        return new HowABundleReads()->signedOut();
     }
 
     /**
@@ -241,7 +250,7 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
     }
 
     /**
-     * Send the bundle asked for, and hold what to follow it by.
+     * Send the bundle asked for, and follow the work it names.
      *
      * An obstacle is what became of it, so the screen says what stood in the
      * way rather than carrying on as though a bundle were being gathered.
@@ -250,54 +259,20 @@ final class AskingForHelpHere extends NativeComponent implements AwaitsAnOutcome
     {
         $stack = $this->stack();
         $this->asked = $asked;
-        $this->handle = null;
+        $this->forget();
         $this->handing = '';
         $this->handingLeaves = '';
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowTheBundleWent => $this->helping->ask($stack, $session, $asked)->either(
                 started: function (Job $job): HowTheBundleWent {
-                    $this->handle = $job->shown();
+                    $this->follow($job);
 
                     return new HowABundleReads()->running();
                 },
                 met: $this->lettingGoIfRefused($stack, new HowABundleReads()->met(...)),
             ),
-            notHeld: static fn(): HowTheBundleWent => new HowABundleReads()->signedOut(),
-        );
-    }
-
-    /**
-     * Ask the stack what became of the bundle asked for.
-     *
-     * Where nothing is being followed — the screen has just opened, or asking
-     * met an obstacle — the choices as they stand are described, which writes
-     * nothing. A write that met an obstacle is never sent again from here: the
-     * operator reads the description and agrees again when they choose to.
-     */
-    private function followed(): HowTheBundleWent
-    {
-        if ($this->choosing) {
-            return new HowABundleReads()->notAsked();
-        }
-
-        $handle = $this->handle;
-
-        if ($handle === null) {
-            return $this->send($this->chosen());
-        }
-
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): HowTheBundleWent => $this->helping->whatBecameOf($stack, $session, Job::named($handle))->either(
-                stillRunning: static fn(): HowTheBundleWent => new HowABundleReads()->running(),
-                done: fn(ABundle $bundle): HowTheBundleWent => new HowABundleReads()->done($bundle, $this->clock->now()),
-                refused: static fn(ARefusalInItsWords $why): HowTheBundleWent => new HowABundleReads()->refused($why),
-                ended: static fn(?WhyTheWorkEnded $why): HowTheBundleWent => new HowABundleReads()->ended($why),
-                met: $this->lettingGoIfRefused($stack, new HowABundleReads()->met(...)),
-            ),
-            notHeld: static fn(): HowTheBundleWent => new HowABundleReads()->signedOut(),
+            notHeld: $this->withNoSessionHeld(...),
         );
     }
 

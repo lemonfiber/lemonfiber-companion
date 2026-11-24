@@ -29,6 +29,7 @@ use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Catalogue;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatSaysWhatRunsOnASchedule;
@@ -62,10 +63,10 @@ function aRunThatEnded(int $took, ?int $exit, string ...$lines): ItsLastRun
 }
 
 /** The screen, signed in unless said. */
-function theScheduleScreen(AStackThatSaysWhatRunsOnASchedule $asking, bool $signedIn = true): TheScheduledRuns
+function theScheduleScreen(AStackThatSaysWhatRunsOnASchedule $asking, bool $signedIn = true, ?AKeychainInMemory $keychain = null): TheScheduledRuns
 {
     $stack = theScheduledStack();
-    $keychain = AKeychainInMemory::working();
+    $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
@@ -78,6 +79,7 @@ function theScheduleScreen(AStackThatSaysWhatRunsOnASchedule $asking, bool $sign
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -220,7 +222,7 @@ function unpackerrRunNow(AStackThatSaysWhatRunsOnASchedule $asking): TheSchedule
     $screen = theScheduleScreen($asking);
     $screen->askToRun('unpackerr');
     $screen->runItNow();
-    $screen->whileItRunsNow();
+    $screen->whileItRuns();
 
     return $screen;
 }
@@ -307,7 +309,6 @@ it('follows the run by its handle, and shows a failed one with its exit code and
 
     expect($asking->followed())->toBe([AStackThatSaysWhatRunsOnASchedule::THE_RUN])
         ->and($screen->awaitsAnOutcome())->toBeFalse()
-        ->and($screen->runFollowed)->toBeNull()
         ->and($drawn->said())->toContain(aScheduleLine('scheduled.now.ran', ['service' => 'Unpackerr']))
         ->and($drawn->said())->toContain(aScheduleLine('scheduled.exit.code', ['code' => '4']))
         ->and($drawn->said())->toContain('reading the queue')
@@ -359,7 +360,7 @@ it('says what the stack refused, where the run was no outcome, and lets the answ
 
     expect(WhatTheDeviceWouldDraw::by($refused)->said())->toContain(aScheduleLine('scheduled.now.refused', ['service' => 'Unpackerr']))
         ->and(WhatTheDeviceWouldDraw::by($refused)->said())->toContain('unpackerr is no run-and-exit service')
-        ->and($refused->runFollowed)->toBeNull()
+        ->and($refused->awaitsAnOutcome())->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($ended)->said())->toContain(aScheduleLine('scheduled.now.no_outcome', ['service' => 'Unpackerr']));
 
     $ended->leaveTheRun();
@@ -378,19 +379,19 @@ it('says what stood in the way where the run could not be sent', function (): vo
 it('looks again while the run goes, and lets the reading stand once it has ended', function (): void {
     $asking = AStackThatSaysWhatRunsOnASchedule::with(twoScheduledServices())->running(WhatBecameOfTheWork::underway(Job::named(AStackThatSaysWhatRunsOnASchedule::THE_RUN)));
     $screen = unpackerrRunNow($asking);
-    $screen->whileItRunsNow();
-    $screen->whileItRunsNow();
+    $screen->whileItRuns();
+    $screen->whileItRuns();
 
-    expect($asking->followed())->toBe([AStackThatSaysWhatRunsOnASchedule::THE_RUN, AStackThatSaysWhatRunsOnASchedule::THE_RUN])
+    expect($asking->followed())->toBe([AStackThatSaysWhatRunsOnASchedule::THE_RUN, AStackThatSaysWhatRunsOnASchedule::THE_RUN, AStackThatSaysWhatRunsOnASchedule::THE_RUN])
         ->and($screen->awaitsAnOutcome())->toBeTrue()
-        ->and($screen->runFollowed)->toBe(AStackThatSaysWhatRunsOnASchedule::THE_RUN);
+        ->and($screen->awaitsAnOutcome())->toBeTrue();
 
     $screen->askToRun('configarr');
     $screen->leaveTheRun();
 
     expect($screen->toRun)->toBeNull()
         ->and($screen->runNamed)->toBe('Unpackerr')
-        ->and($screen->runFollowed)->toBe(AStackThatSaysWhatRunsOnASchedule::THE_RUN);
+        ->and($screen->awaitsAnOutcome())->toBeTrue();
 });
 
 it('lets go of a run it can no longer follow, saying what stood in the way', function (): void {
@@ -398,6 +399,22 @@ it('lets go of a run it can no longer follow, saying what stood in the way', fun
     $screen = unpackerrRunNow($asking);
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aScheduleLine(KindOfObstacle::StackDidNotAnswer->said()))
-        ->and($screen->runFollowed)->toBeNull()
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($asking->followed())->toBe([AStackThatSaysWhatRunsOnASchedule::THE_RUN]);
+});
+
+it('says the session has ended when it is lost while a run is followed, and follows it no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $asking = AStackThatSaysWhatRunsOnASchedule::with(twoScheduledServices())->running(WhatBecameOfTheWork::underway(Job::named(AStackThatSaysWhatRunsOnASchedule::THE_RUN)));
+    $screen = theScheduleScreen($asking, keychain: $keychain);
+    $screen->askToRun('unpackerr');
+    $screen->runItNow();
+    $screen->whileItRuns();
+    $keychain->forget(theScheduledStack()->id());
+    $screen->whileItRuns();
+
+    expect($screen->howTheRunGoes()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
         ->and($asking->followed())->toBe([AStackThatSaysWhatRunsOnASchedule::THE_RUN]);
 });

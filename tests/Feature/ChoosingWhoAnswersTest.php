@@ -38,6 +38,7 @@ use Modules\Kernel\Api\WhyTheFillWasTurnedDown;
 use Modules\Operator\Internal\Screens\HowTheServicesAreWired;
 use Modules\Operator\Internal\ViewModels\ALinkAsShown;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatChoosesFillers;
@@ -114,7 +115,7 @@ function theScreenChoosingAFiller(AStackThatChoosesFillers $fillers, ?AKeychainI
     $keychain ??= AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
-    $screen = new HowTheServicesAreWired(AStackThatWires::answering(), $linking ?? AStackThatSaysWhatAnswersWhat::with(linksWithAChoiceToMake()), $fillers, AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new HowTheServicesAreWired(AStackThatWires::answering(), $linking ?? AStackThatSaysWhatAnswersWhat::with(linksWithAChoiceToMake()), $fillers, AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
     WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
 

@@ -11,7 +11,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * stack still working, a move answered, the request turned down with the
  * stack's reason, or the work ended with no outcome.
  */
-final readonly class TheMoveTurnedOutToBe
+final readonly class TheMoveTurnedOutToBe implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands $stands      where the work stands, and whether the stack could be asked at all

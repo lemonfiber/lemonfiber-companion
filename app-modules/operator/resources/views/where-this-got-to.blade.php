@@ -48,6 +48,7 @@
         @if ($this->howTheSearchIsGoing()->stands->went->cameBack())
             @if ($this->howTheSearchIsGoing()->stands->isWorking())
                 <x-design::standing :said="__('health.trace.searching')" tone="working" />
+                <x-operator::following-a-job :said="$this->whatItSays()" />
             @elseif ($this->howTheSearchIsGoing()->stands->hasEnded())
                 <x-operator::why-it-ended :stands="$this->howTheSearchIsGoing()->stands" />
                 <x-design::notice tone="unknown">
@@ -139,7 +140,7 @@
             label="{{ __('health.trace.search_label') }}"
             placeholder="{{ __('health.trace.search_placeholder') }}"
         />
-        <x-design::action :label="__('health.trace.follow')" tap="follow()" tone="tonal" />
+        <x-design::action :label="__('health.trace.follow')" tap="followWhatWasTyped()" tone="tonal" />
     </x-design::card>
 
     <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />

@@ -72,6 +72,7 @@
         :said="__('stacks.help.gathering')"
         tone="working"
     />
+    <x-operator::following-a-job :said="$this->whatItSays()" />
     <x-design::action :label="__('health.ask_again')" tap="askAgain()" tone="tonal" />
 @elseif ($this->answer()->stands->hasEnded())
     <x-operator::why-it-ended :stands="$this->answer()->stands" />

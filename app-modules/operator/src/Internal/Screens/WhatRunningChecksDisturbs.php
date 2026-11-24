@@ -8,6 +8,7 @@ use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\Category;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
@@ -52,10 +53,11 @@ final class WhatRunningChecksDisturbs extends NativeComponent implements AwaitsA
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
+    use FollowsARunOfChecks, FindsItsWayAround {
+        FollowsARunOfChecks::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use DrawsItsTemplate;
     use SaysWhatARunInterrupts;
-    use FollowsARunOfChecks;
 
     public const string TEMPLATE = 'operator::what-running-checks-disturbs';
 
@@ -69,6 +71,7 @@ final class WhatRunningChecksDisturbs extends NativeComponent implements AwaitsA
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     public function again(): void
@@ -85,7 +88,7 @@ final class WhatRunningChecksDisturbs extends NativeComponent implements AwaitsA
             return;
         }
 
-        $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->runs->runEvery($stack, $session, $covers));
+        $this->startTheRun(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->runs->runEvery($stack, $session, $covers));
     }
 
     /** What the run would disturb, as the stack last reported it, asked once per frame. */

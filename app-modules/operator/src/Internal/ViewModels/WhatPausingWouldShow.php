@@ -11,7 +11,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * and a report of what happened are drawn from different values and one can
  * never be drawn as the other.
  */
-final readonly class WhatPausingWouldShow
+final readonly class WhatPausingWouldShow implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands            $stands      where the work stands, and whether the stack could be asked at all
