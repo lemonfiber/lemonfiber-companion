@@ -17,6 +17,7 @@ use Modules\Sdk\Api\PinnedClients;
 use Psr\Log\NullLogger;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Tests\Support\AStreamThatStaysOpen;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\NotesKeptInMemory;
 use Tests\Support\Fakes\WhereHearingLeftOffInMemory;
@@ -161,4 +162,71 @@ it('notes nothing for an event whose identifier is empty', function (): void {
 
     expect($alerts)->toHaveCount(1)
         ->and($leftOff->timesNoted())->toBe(0);
+});
+
+/**
+ * The `replay` envelope a stack says first on a stream opened after an event.
+ *
+ * @return array<string, mixed>
+ */
+function aReplayEnvelope(string $alerts): array
+{
+    return ['api_version' => 1, 'kind' => 'replay', 'data' => ['alerts' => $alerts]];
+}
+
+/** The `replay` event as the core frames it: no id, so where the stream got to stays where it was. */
+function aReplayEvent(string $alerts): string
+{
+    return sprintf("event: replay\ndata: %s\n\n", json_encode(aReplayEnvelope($alerts), JSON_THROW_ON_ERROR));
+}
+
+/** What a stream opened after an event says first, heard over the adapter, and then over the two takes that reach what it says next. */
+function whetherAlertsMayBeMissing(?string $resumingAfter, string ...$said): string
+{
+    MockClient::destroyGlobal();
+    $stream = AStreamThatStaysOpen::saying(...$said);
+    MockClient::global([$stream]);
+    $leftOff = WhereHearingLeftOffInMemory::nowhere();
+    $leftOff = $resumingAfter === null ? $leftOff : $leftOff->heardBefore(TheStreamListenedTo::aStack()->id(), AnEventHeard::named($resumingAfter));
+    $listening = new Listeners(new PinnedClients(), new NullLogger(), $leftOff);
+
+    $first = $listening->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession())->mayBeMissingAlerts();
+    $stream->says(aReplayEvent('partial'), anAlertEvent());
+    $next = $listening->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession())->mayBeMissingAlerts();
+    $next = $listening->howItIs(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession())->mayBeMissingAlerts() || $next;
+
+    return sprintf('%s then %s', $first ? 'missing' : 'whole', $next ? 'missing' : 'whole');
+}
+
+it('stands in for a stack with a replay the contract would accept', function (string $alerts): void {
+    expect(WhatTheContractAccepts::complaintsAbout('ReplayEnvelope', aReplayEnvelope($alerts)))->toBe([]);
+})->with(['whole', 'partial']);
+
+it('says some alerts may be missing where a stream opened after an event first says its replay is partial, and only of those first events', function (): void {
+    expect(whetherAlertsMayBeMissing('run-0', aReplayEvent('partial'), anAlertEvent()))->toBe('missing then whole');
+});
+
+it('says some alerts may be missing where a stream opened after an event says nothing of its replay first, as a stack too old to say so does', function (string $first): void {
+    expect(whetherAlertsMayBeMissing('run-0', $first, anAlertEvent()))->toBe('missing then whole');
+})->with([
+    'an alert' => [anAlertEvent()],
+    'something else it says' => [TheStreamListenedTo::anEvent('job', '{}')],
+    'a replay that cannot be read' => ["event: replay\ndata: not an envelope\n\n"],
+    'a replay of another version' => [sprintf("event: replay\ndata: %s\n\n", json_encode([...aReplayEnvelope('whole'), 'api_version' => 99], JSON_THROW_ON_ERROR))],
+    'a replay saying something else' => [aReplayEvent('most')],
+    'a replay with nothing to say' => [sprintf("event: replay\ndata: %s\n\n", json_encode(['api_version' => 1, 'kind' => 'replay', 'data' => []], JSON_THROW_ON_ERROR))],
+    'a replay in another envelope' => [sprintf("event: replay\ndata: %s\n\n", json_encode([...aReplayEnvelope('whole'), 'kind' => 'alert'], JSON_THROW_ON_ERROR))],
+]);
+
+it('adds nothing where a stream opened after an event first says every alert came back', function (): void {
+    expect(whetherAlertsMayBeMissing('run-0', aReplayEvent('whole'), anAlertEvent()))->toBe('whole then whole');
+});
+
+it('makes no claim for a stream opened with no place kept, whatever it says first', function (): void {
+    expect(whetherAlertsMayBeMissing(null, anAlertEvent()))->toBe('whole then whole');
+});
+
+it('waits for the first event of a stream opened after an event before it says anything of its replay', function (): void {
+    expect(whetherAlertsMayBeMissing('run-0', ": still here\n\n"))->toBe('whole then missing')
+        ->and(whetherAlertsMayBeMissing('run-0'))->toBe('whole then missing');
 });

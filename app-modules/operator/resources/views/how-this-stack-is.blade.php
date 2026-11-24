@@ -3,6 +3,12 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
+    @if ($this->someAlertsMayBeMissing)
+        <x-design::notice tone="attention">
+            <x-design::body>{{ __('health.alerts_may_be_missing') }}</x-design::body>
+        </x-design::notice>
+    @endif
+
     @if ($this->newHere() > 0)
         <x-design::action :label="trans_choice('news.new_on_tab', $this->newHere(), ['tab' => __('navigation.menu.whats_new')])" tap="openWhatsNew()" tone="tonal" />
     @endif
@@ -230,6 +236,14 @@
     {{-- Under the findings: somebody who has just fixed something scrolls to
          the end of what was wrong, and that is where they ask whether it took. --}}
     <x-operator::quiet-action :label="__('health.ask_again')" tap="askAgain()" />
+</x-operator::content>
+@elseif ($this->someAlertsMayBeMissing)
+<x-operator::content>
+    <x-design::notice tone="attention">
+        <x-design::body>{{ __('health.alerts_may_be_missing') }}</x-design::body>
+    </x-design::notice>
+
+    <x-operator::what-stood-in-the-way :went="$this->answer()->went" :goes="$this->goes()" :settings-would-not-open="$this->theSettingsWouldNotOpen" />
 </x-operator::content>
 @else
     <x-operator::what-stopped-the-reading

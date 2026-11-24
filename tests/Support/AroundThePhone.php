@@ -8,6 +8,7 @@ use function app;
 
 use Illuminate\Contracts\Translation\Translator;
 use Modules\Connection\Api\WakingThisPhone;
+use Modules\Health\Api\AlertsThatMayBeMissing;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
@@ -27,9 +28,11 @@ use Modules\Wayfinding\Api\WhatItListensWith;
 use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ANotifierInMemory;
+use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\AStackThatOffers;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
+use Tests\Support\Fakes\MissingAlertsInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\Fakes\WhereTheOperatorWasInMemory;
@@ -91,8 +94,9 @@ final readonly class AroundThePhone
      * The ports a screen holding its stack's stream is handed, made as the container makes them.
      *
      * A stream that says nothing, a phone in front that kept nothing, what
-     * notices news on a phone that kept none, and the moment a phone handed no
-     * clock reads, for whatever a test does not hand it.
+     * notices news on a phone that kept none, no stack marked as maybe missing
+     * alerts, and the moment a phone handed no clock reads, for whatever a test
+     * does not hand it.
      */
     public static function listening(
         ?Hearing $hearing = null,
@@ -103,6 +107,7 @@ final readonly class AroundThePhone
         ?Noticing $noticing = null,
         ?Notifier $notifier = null,
         ?WakingThisPhone $waking = null,
+        ?AlertsThatMayBeMissing $missing = null,
     ): WhatItListensWith {
         return new WhatItListensWith(
             $hearing ?? AStackThatSpeaksUp::holdingOpen(),
@@ -113,6 +118,7 @@ final readonly class AroundThePhone
             $noticing ?? NoticingWhatIsNew::fromNothing(),
             $notifier ?? ANotifierInMemory::allowed(),
             $waking ?? AWakingPhone::waking(),
+            $missing ?? new AlertsThatMayBeMissing(ASealInMemory::working(), MissingAlertsInMemory::empty()),
         );
     }
 }

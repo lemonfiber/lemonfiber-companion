@@ -10,6 +10,8 @@ return [
         'resolved_body' => 'Wat er gemeld was is voorbij. Kenmerk :code.',
         'more_title' => ':stack heeft je meer te vertellen',
         'more_body' => 'Open lemonfiber om alles te zien wat hij meldde.',
+        'missing_title' => 'Er kunnen meldingen van :stack ontbreken',
+        'missing_body' => 'Open hem om te zien hoe hij er nu voor staat.',
     ],
     'guarded' => [
         'onset_title' => 'Een stack heeft aandacht nodig',
@@ -18,6 +20,8 @@ return [
         'resolved_body' => 'Ontgrendel om te zien welke.',
         'more_title' => 'Een stack heeft je meer te vertellen',
         'more_body' => 'Ontgrendel om te zien welke.',
+        'missing_title' => 'Er kunnen meldingen van een stack ontbreken',
+        'missing_body' => 'Ontgrendel om te zien welke, en hoe hij er nu voor staat.',
     ],
     'page' => [
         'title' => 'Meldingen',
@@ -29,6 +33,8 @@ return [
         'kept_floor' => 'Problemen worden gemeld vanaf :floor.',
         'problems_from' => 'Vertel me over problemen vanaf',
         'problems_are_off' => 'Problemen staan uit voor deze stack.',
+        'may_be_missing' => 'Ontbrekende meldingen',
+        'may_be_missing_for' => ':stack: ontbrekende meldingen',
         'turn_on_above' => 'Zet meldingen hierboven aan om te kiezen.',
         'no_stacks' => 'Er staan nog geen stacks op deze telefoon.',
     ],

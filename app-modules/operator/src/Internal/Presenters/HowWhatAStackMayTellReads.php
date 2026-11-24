@@ -48,6 +48,7 @@ final readonly class HowWhatAStackMayTellReads
             problemsAreOn: $chosen->isOn(KindOfNotification::Problem),
             keptOff: [],
             floorSaid: $this->severitySaid($chosen->floor()),
+            toldSomeMayBeMissing: $chosen->tellsWhenSomeMayBeMissing(),
         );
     }
 
@@ -70,6 +71,7 @@ final readonly class HowWhatAStackMayTellReads
             problemsAreOn: $chosen->isOn(KindOfNotification::Problem),
             keptOff: $off,
             floorSaid: $this->severitySaid($chosen->floor()),
+            toldSomeMayBeMissing: $chosen->tellsWhenSomeMayBeMissing(),
         );
     }
 

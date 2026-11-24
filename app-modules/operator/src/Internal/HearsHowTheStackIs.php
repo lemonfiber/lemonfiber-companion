@@ -21,12 +21,20 @@ use Native\Mobile\Edge\NativeComponent;
  * of when it was read, rather than from nothing, because the stream keeps every
  * summary it hears for the next opening.
  *
+ * **Opening it sees whether some alerts may be missing.** Where a wake marked
+ * the stack, the screen says so for as long as it is open, and opening it
+ * clears the mark.
+ *
  * @phpstan-require-extends NativeComponent
  */
 trait HearsHowTheStackIs
 {
+    /** Whether a wake marked this stack as maybe missing alerts, as it stood when the screen opened. */
+    public bool $someAlertsMayBeMissing = false;
+
     public function mount(): void
     {
+        $this->someAlertsMayBeMissing = $this->listening->missing->seenOn($this->stack()->id());
         $this->listen();
     }
 

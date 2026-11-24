@@ -87,9 +87,9 @@ final class ANotifierInMemory implements Notifier
         }
 
         $this->told[] = sprintf('%s %s as %s opening %s', $notification->either(
-            plain: fn(WhatTheCoreDecided $says, StackName $called): Code
-                => Code::of(sprintf('plain %s %s', $says->shown(), $called->shown())),
-            guarded: fn(WhatTheCoreDecided $says): Code => Code::of(sprintf('guarded %s', $says->shown())),
+            plain: fn(?WhatTheCoreDecided $says, StackName $called): Code
+                => Code::of($says instanceof WhatTheCoreDecided ? sprintf('plain %s %s', $says->shown(), $called->shown()) : sprintf('plain %s', $called->shown())),
+            guarded: fn(?WhatTheCoreDecided $says): Code => Code::of($says instanceof WhatTheCoreDecided ? sprintf('guarded %s', $says->shown()) : 'guarded'),
         )->shown(), $notification->worded()->value, $notification->filedAs(), $notification->leadsTo()->asALink());
 
         return Shown::delivered();

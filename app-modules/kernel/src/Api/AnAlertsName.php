@@ -17,6 +17,8 @@ use function trim;
  */
 final readonly class AnAlertsName
 {
+    private const string SOME_MAY_BE_MISSING = ' ';
+
     private function __construct(private string $name) {}
 
     /** The name the core gave the alert. */
@@ -35,6 +37,12 @@ final readonly class AnAlertsName
     public static function byItsKind(WhatTheCoreDecided $kind): self
     {
         return new self($kind->shown());
+    }
+
+    /** The name the app's own notification that some alerts may be missing is filed under, which no alert's trimmed name can be. */
+    public static function someMayBeMissing(): self
+    {
+        return new self(self::SOME_MAY_BE_MISSING);
     }
 
     /** What a stack's one notification of having more to tell is filed under: a name no alert can have, since a blank one is refused. */

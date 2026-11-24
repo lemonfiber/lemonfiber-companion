@@ -101,6 +101,7 @@ return [
     'slow_heading' => 'Traag, niet vastgelopen',
     'slow_explained' => 'Deze bewegen nog. Ze hebben tijd nodig, geen oplossing.',
     'no_findings' => 'Er is niets dat aandacht nodig heeft.',
+    'alerts_may_be_missing' => 'Er kunnen meldingen ontbreken van terwijl je weg was.',
     'repair_refused' => 'De stack heeft die reparatie geweigerd: :reason',
     'what_it_says_underneath' => 'Wat de controle meldde',
     'nothing_to_do_with_it' => 'Hier valt er niets mee te doen.',

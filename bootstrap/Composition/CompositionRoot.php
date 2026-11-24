@@ -82,9 +82,12 @@ use Modules\Device\Api\SystemClock;
 use Modules\Device\Api\SystemEntropy;
 use Modules\Device\Internal\WhatWasToldLately;
 use Modules\Device\Internal\Words;
+use Modules\Health\Api\AlertsThatMayBeMissing;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Health\Internal\HealthReadingsKept;
+use Modules\Health\Internal\MissingAlertsKept;
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
+use Modules\Health\Internal\Store\MissingAlertsInTheDatabase;
 use Modules\Household\Internal\Playing\TheChannelOnScreen;
 use Modules\Household\Internal\Playing\WhatIsPlaying;
 use Modules\Kernel\Api\AJoinLink;
@@ -526,6 +529,7 @@ final class CompositionRoot extends ServiceProvider
         // file beside the framework's own key holds nothing that key could
         // open.
         $this->app->bind(HealthReadingsKept::class, HealthReadingsInTheDatabase::class);
+        $this->app->bind(MissingAlertsKept::class, MissingAlertsInTheDatabase::class);
 
         // The newest reading of where each stack stands on being up to date,
         // `updates`'s own port and the store walled inside it, bound as the
@@ -598,7 +602,7 @@ final class CompositionRoot extends ServiceProvider
         // store is added to what is cleared by adding it here, and nothing
         // that clears has to know how many there are.
         $this->app->tag(
-            [HealthReadingsKept::class, UpkeepReadingsKept::class, ListingsKept::class, RequestsKept::class, LanguagesKept::class, SettingsKept::class, NotifyingKept::class, WakingKept::class, WaysInKept::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, WhereHearingLeftOff::class],
+            [HealthReadingsKept::class, MissingAlertsKept::class, UpkeepReadingsKept::class, ListingsKept::class, RequestsKept::class, LanguagesKept::class, SettingsKept::class, NotifyingKept::class, WakingKept::class, WaysInKept::class, Noticing::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, WhereHearingLeftOff::class],
             self::WHAT_THE_PHONE_KEEPS,
         );
         $this->app->when(EveryStoreThePhoneKeeps::class)
@@ -612,7 +616,7 @@ final class CompositionRoot extends ServiceProvider
         // key for it, and whether it wakes the phone. What was begun is recorded in the same secure store as
         // the pairing it removes.
         $this->app->tag(
-            [Stacks::class, SecureStorage::class, KeepingTheGrant::class, KeepingTheLastReading::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, KeepingTheirLanguages::class, Noticing::class, ChoosingWhatReachesThePhone::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, WhereHearingLeftOff::class, Assessors::class, HoldingAPhoneKey::class, KeepingThePhoneKeysName::class, WakingThisPhone::class, RememberingTheWayIn::class],
+            [Stacks::class, SecureStorage::class, KeepingTheGrant::class, KeepingTheLastReading::class, AlertsThatMayBeMissing::class, KeepingTheLastUpkeep::class, KeepingWhatItRuns::class, KeepingWhatWasAsked::class, KeepingTheirLanguages::class, Noticing::class, ChoosingWhatReachesThePhone::class, Standings::class, WorkLeftRunning::class, WhereTheOperatorWas::class, WhereHearingLeftOff::class, Assessors::class, HoldingAPhoneKey::class, KeepingThePhoneKeysName::class, WakingThisPhone::class, RememberingTheWayIn::class],
             self::WHAT_IS_KEPT_OF_A_STACK,
         );
         $this->app->when(EveryKeeperOfAStack::class)

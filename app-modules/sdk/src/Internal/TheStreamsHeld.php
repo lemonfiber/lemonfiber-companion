@@ -30,6 +30,11 @@ use Modules\Sdk\Api\Listeners;
  * the app closing, loses nothing a stack still holds. Without one, where a
  * stream left off lasts until {@see letGoOfEvery()}.
  *
+ * **A stream opened after an event says first whether every alert came
+ * back**, and what arrives first on it is read for that once
+ * ({@see WhatArrivedOnTheStream::asTheFirstAfterAnId()}). A stream opened from
+ * the start is handed no past alerts and is read for nothing of the kind.
+ *
  * **Mutable, because a held connection is**, for {@see Listeners}' reason: it
  * is what keeps the connection between one wake of a screen and the next.
  */
@@ -40,6 +45,9 @@ final class TheStreamsHeld
 
     /** @var array<string, string> the last event noted as heard to, by each stack's stored identifier */
     private array $noted = [];
+
+    /** @var array<string, true> the stacks whose stream opened after an event and has not yet said what came first */
+    private array $resumed = [];
 
     private WhereTheStreamsLeftOff $leftOff;
 
@@ -52,11 +60,18 @@ final class TheStreamsHeld
     /** What has arrived on this stack's stream since it was last asked, opening it where it is not open. */
     public function taken(Stack $stack, Session $session): WhatArrivedOnTheStream
     {
-        $held = $this->held[$stack->id()->stored()] ??= $this->opened($stack, $session);
+        $which = $stack->id()->stored();
+        $held = $this->held[$which] ??= $this->opened($stack, $session);
         $arrived = $held->taken();
         $this->noteWhereItGotTo($stack, $held->leftOffAt());
 
-        return $arrived;
+        if (! array_key_exists($which, $this->resumed) || ! $arrived->heldAnEvent()) {
+            return $arrived;
+        }
+
+        unset($this->resumed[$which]);
+
+        return $arrived->asTheFirstAfterAnId();
     }
 
     /** Let go of one stack's stream, keeping where it left off for the stream opened in its place. */
@@ -92,9 +107,12 @@ final class TheStreamsHeld
     private function opened(Stack $stack, Session $session): AStreamHeldOpen
     {
         $after = $this->resumingAfter($stack);
+        $which = $stack->id()->stored();
+        unset($this->resumed[$which]);
 
         if ($after !== null) {
-            $this->noted[$stack->id()->stored()] = $after;
+            $this->noted[$which] = $after;
+            $this->resumed[$which] = true;
         }
 
         return new AStreamHeldOpen(

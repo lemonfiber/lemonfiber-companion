@@ -13,6 +13,8 @@ return [
         'resolved_body' => 'What it reported has stopped. Reference :code.',
         'more_title' => ':stack has more to tell you',
         'more_body' => 'Open lemonfiber to see everything it reported.',
+        'missing_title' => 'Some alerts from :stack may be missing',
+        'missing_body' => 'Open it to see how it stands now.',
     ],
     'guarded' => [
         'onset_title' => 'A stack needs attention',
@@ -21,6 +23,8 @@ return [
         'resolved_body' => 'Unlock to see which one.',
         'more_title' => 'A stack has more to tell you',
         'more_body' => 'Unlock to see which one.',
+        'missing_title' => 'Some alerts from a stack may be missing',
+        'missing_body' => 'Unlock to see which one, and how it stands now.',
     ],
     'page' => [
         'title' => 'Notifications',
@@ -32,6 +36,8 @@ return [
         'kept_floor' => 'Problems are told from :floor.',
         'problems_from' => 'Tell me about problems from',
         'problems_are_off' => 'Problems are off for this stack.',
+        'may_be_missing' => 'Missing alerts',
+        'may_be_missing_for' => ':stack: missing alerts',
         'turn_on_above' => 'Turn on notifications above to choose.',
         'no_stacks' => 'There are no stacks on this phone yet.',
     ],

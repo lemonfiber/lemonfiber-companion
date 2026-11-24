@@ -328,7 +328,7 @@ it('draws every choice and leaves each unusable while the phone\'s switch is off
         ->and($drawn->offers())->toContain(__('settings.notifications_on'));
 });
 
-it('says why a stack could not be read, and what still applies there, with no switch', function (): void {
+it('says why a stack could not be read, and what still applies there, with no switch for a kind', function (): void {
     $loft = aStackThatMayTell('a', 'The loft');
     $choosing = theChoicesForEachStack();
     $choosing->switchOff($loft->id(), KindOfNotification::Backup);
@@ -398,4 +398,46 @@ it('opens where each stack\'s alerts go from its own section, read or not, named
         ->and($page->whereAlertsGo($page->sections()[1]->stack))->toBe(AStacksScreen::Alerts->forTheStack($shed->id()))
         ->and($drawn->offers())->toContain(__('alerts.where_alerts_go_for', ['stack' => 'The loft']))
         ->and($drawn->offers())->toContain(__('alerts.where_alerts_go_for', ['stack' => 'The shed']));
+});
+
+it('offers a switch on every stack for being told some alerts may be missing, on until turned off, and keeps it for that stack alone', function (): void {
+    $loft = aStackThatMayTell('a', 'The loft');
+    $shed = aStackThatMayTell('b', 'The shed');
+    $choosing = theChoicesForEachStack();
+    $page = theNotificationPage([$loft, $shed], AStackThatSaysWhatItTells::eachAs(static fn(): WhatTheAlertsWere => aStackRaising(KindOfNotification::Backup)), $choosing);
+
+    expect($page->sections()[0]->toldSomeMayBeMissing)->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($page)->offers())->toContain(__('notifications.page.may_be_missing'));
+
+    $page->missingTurned($loft->id()->stored(), on: false);
+
+    expect($page->sections()[0]->toldSomeMayBeMissing)->toBeFalse()
+        ->and($page->sections()[1]->toldSomeMayBeMissing)->toBeTrue()
+        ->and($choosing->forTheStack($loft->id())->tellsWhenSomeMayBeMissing())->toBeFalse()
+        ->and($choosing->forTheStack($shed->id())->tellsWhenSomeMayBeMissing())->toBeTrue()
+        ->and(theSwitchesOf($page, 0))->toBe(['backup' => true]);
+
+    $page->missingTurned($loft->id()->stored(), on: true);
+
+    expect($page->sections()[0]->toldSomeMayBeMissing)->toBeTrue();
+});
+
+it('offers being told some alerts may be missing on a stack that could not be read, since the phone keeps that choice itself', function (): void {
+    $loft = aStackThatMayTell('a', 'The loft');
+    $choosing = theChoicesForEachStack();
+    $page = theNotificationPage([$loft], AStackThatSaysWhatItTells::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), $choosing);
+
+    expect(WhatTheDeviceWouldDraw::by($page)->offers())->toContain(__('notifications.page.may_be_missing'));
+
+    $page->missingTurned($loft->id()->stored(), on: false);
+
+    expect($page->sections()[0]->toldSomeMayBeMissing)->toBeFalse()
+        ->and($choosing->forTheStack($loft->id())->tellsWhenSomeMayBeMissing())->toBeFalse();
+});
+
+it('names the switch for missing alerts for its stack, and leaves it unusable while the phone\'s switch is off', function (): void {
+    $telling = AStackThatSaysWhatItTells::with(WhatTheOperatorIsTold::byPreset('quiet', 'Only', SetApart::of(), KindsOfNotification::these(KindOfNotification::Problem)));
+
+    expect((string) json_encode(WhatTheDeviceWouldDraw::tree(theNotificationPage([aStackThatMayTell('a', 'The loft')], $telling))))->toContain(Catalogue::words()->for('notifications.page.may_be_missing_for', ['stack' => 'The loft']))
+        ->and(WhatTheDeviceWouldDraw::by(theNotificationPage([aStackThatMayTell('a', 'The loft')], $telling, notifying: false))->offersThatWait())->toContain(__('notifications.page.may_be_missing'));
 });

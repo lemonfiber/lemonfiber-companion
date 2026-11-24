@@ -9,6 +9,7 @@ use Modules\Connection\Api\ChoosingWhatReachesThePhone;
 use Modules\Connection\Api\RememberingTheWayIn;
 use Modules\Connection\Api\WakingThisPhone;
 use Modules\Device\Api\PlatformPhoneKeys;
+use Modules\Health\Api\AlertsThatMayBeMissing;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\APhoneKeysName;
 use Modules\Kernel\Api\ForgetsAStack;
@@ -48,6 +49,7 @@ use Tests\Support\Fakes\AStackThatKeepsWakes;
 use Tests\Support\Fakes\DistributorsOnAPhone;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\GrantsKeptInMemory;
+use Tests\Support\Fakes\MissingAlertsInMemory;
 use Tests\Support\Fakes\NewsKeptInMemory;
 use Tests\Support\Fakes\NotifyingKeptInMemory;
 use Tests\Support\Fakes\PhoneKeysNamesKeptInMemory;
@@ -91,6 +93,7 @@ function everyKeeperHoldingTwoStacks(): array
         'the keychain letting go of artwork' => new ArtworkGoesWithTheSession(new PlatformKeychain(APlatformStore::working()), ArtworkHeldInMemory::working()),
         'the readings' => new KeepingTheLastReading(ASealInMemory::working(), ReadingsInMemory::empty()),
         'the upkeep' => new KeepingTheLastUpkeep(ASealInMemory::working(), ReadingsInMemory::empty()),
+        'the alerts that may be missing' => new AlertsThatMayBeMissing(ASealInMemory::working(), MissingAlertsInMemory::empty()),
         'what it runs' => WhatThePhoneKeeps::noListingYet(),
         'what the household asked for' => WhatThePhoneKeeps::noRequestsYet(),
         'the languages members chose' => WhatThePhoneKeeps::noLanguagesYet(),
@@ -246,6 +249,7 @@ it('says it may still keep something where its store cannot be read', function (
         'the platform grants' => new PlatformGrants(APlatformStore::refusing()),
         'the platform phone key names' => new PlatformPhoneKeysNames(APlatformStore::refusing()),
         'readings whose keys cannot be read' => new KeepingTheLastReading(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty()),
+        'the alerts that may be missing, whose keys cannot be read' => new AlertsThatMayBeMissing(ASealInMemory::thatWillNotOpen(), MissingAlertsInMemory::empty()),
         'the upkeep whose keys cannot be read' => new KeepingTheLastUpkeep(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty()),
         'what it runs, whose keys cannot be read' => new KeepingWhatItRuns(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0))),
         'what the household asked for, whose keys cannot be read' => new KeepingWhatWasAsked(ASealInMemory::thatWillNotOpen(), ReadingsInMemory::empty(), FrozenClock::at(Instant::atEpochSeconds(0))),

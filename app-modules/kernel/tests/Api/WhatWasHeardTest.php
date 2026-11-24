@@ -24,6 +24,9 @@ use Modules\Kernel\Api\TheAlerts;
 use Modules\Kernel\Api\TheHealthSummary;
 use Modules\Kernel\Api\TheLinks;
 use Modules\Kernel\Api\TheNewestNamed;
+use Modules\Kernel\Api\TheSecretsRead;
+use Modules\Kernel\Api\TheServicesSettings;
+use Modules\Kernel\Api\TheSettingsRead;
 use Modules\Kernel\Api\Unfilled;
 use Modules\Kernel\Api\WhatNothingFills;
 use Modules\Kernel\Api\WhatStoppedMoving;
@@ -125,4 +128,20 @@ it('carries the alerts of the wake beside whatever else it heard, kept through n
     expect(iterator_to_array($heard->theAlerts(), preserve_keys: false))->toBe([$alert])
         ->and(theWordForWhichArmWasHeard($heard))->toBe('alive')
         ->and(iterator_to_array(WhatWasHeard::aSignOfLife()->theAlerts(), preserve_keys: false))->toBe([]);
+});
+
+it('carries that some alerts may be missing beside whatever else it heard, through every other thing added, and not where nothing said so', function (): void {
+    $newest = new TheNewestNamed(WhatTheStackListed::these(), WhatTheStackListed::these(), WhatTheStackListed::unread());
+    $settings = TheServicesSettings::of(TheSettingsRead::these(), TheSecretsRead::these());
+    $missing = WhatWasHeard::aSignOfLife()->missingSomeAlerts();
+
+    expect($missing->mayBeMissingAlerts())->toBeTrue()
+        ->and(theWordForWhichArmWasHeard($missing))->toBe('alive')
+        ->and($missing->naming($newest)->mayBeMissingAlerts())->toBeTrue()
+        ->and($missing->wiredAs(TheLinks::of(WhatNothingFills::these()))->mayBeMissingAlerts())->toBeTrue()
+        ->and($missing->alerting(TheAlerts::none())->mayBeMissingAlerts())->toBeTrue()
+        ->and($missing->settledAs($settings)->mayBeMissingAlerts())->toBeTrue()
+        ->and(WhatWasHeard::aSignOfLife()->naming($newest)->wiredAs(TheLinks::of(WhatNothingFills::these()))->alerting(TheAlerts::none())->settledAs($settings)->mayBeMissingAlerts())->toBeFalse()
+        ->and(WhatWasHeard::nothing()->mayBeMissingAlerts())->toBeFalse()
+        ->and(WhatWasHeard::closed()->mayBeMissingAlerts())->toBeFalse();
 });

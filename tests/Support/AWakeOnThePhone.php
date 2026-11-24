@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Support;
 
+use Modules\Connection\Api\ChoosingWhatReachesThePhone;
+use Modules\Connection\Api\NotifyingOnlyWhatEachStackLets;
 use Modules\Connection\Api\TurningNotificationsOn;
 use Modules\Connection\Api\WakingThisPhone;
+use Modules\Health\Api\AlertsThatMayBeMissing;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -21,6 +24,8 @@ use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\ConnectionSettingsInMemory;
 use Tests\Support\Fakes\FrozenClock;
+use Tests\Support\Fakes\MissingAlertsInMemory;
+use Tests\Support\Fakes\NotifyingKeptInMemory;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\Fakes\StandingsInMemory;
 use Tests\Support\Fakes\WakesInMemory;
@@ -38,6 +43,10 @@ final readonly class AWakeOnThePhone
 
     public TurningNotificationsOn $switch;
 
+    public AlertsThatMayBeMissing $missing;
+
+    public ChoosingWhatReachesThePhone $choosing;
+
     private StacksInMemory $stacks;
 
     private ACaptureInMemory $capture;
@@ -51,6 +60,8 @@ final readonly class AWakeOnThePhone
         $this->stacks = StacksInMemory::holding(...$stacks);
         $this->capture = ACaptureInMemory::away();
         $this->switch = new TurningNotificationsOn(ASealInMemory::working(), ConnectionSettingsInMemory::empty(), ANotifierInMemory::allowed(), $this->clock, WakesInMemory::thatWake());
+        $this->missing = new AlertsThatMayBeMissing(ASealInMemory::working(), MissingAlertsInMemory::empty());
+        $this->choosing = new ChoosingWhatReachesThePhone(ASealInMemory::working(), NotifyingKeptInMemory::empty(), $this->clock);
     }
 
     /** A phone holding these stacks with notifications on, woken at that moment. */
@@ -86,7 +97,7 @@ final readonly class AWakeOnThePhone
     public function hearing(?WakingThisPhone $waking = null): HearingWhileAway
     {
         return new HearingWhileAway(
-            AroundThePhone::listening($this->hearing, $this->clock, $this->capture, standings: $this->standings, notifier: $this->notifier, waking: $waking),
+            AroundThePhone::listening($this->hearing, $this->clock, $this->capture, standings: $this->standings, notifier: new NotifyingOnlyWhatEachStackLets($this->notifier, $this->choosing), waking: $waking, missing: $this->missing),
             $this->keychain,
             $this->stacks,
             $this->switch,

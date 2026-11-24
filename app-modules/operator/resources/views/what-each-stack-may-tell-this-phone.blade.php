@@ -37,6 +37,14 @@
                 <x-design::body>{{ __('notifications.page.kept_floor', ['floor' => __($section->floorSaid)]) }}</x-design::body>
             @endif
 
+            <x-design::toggle
+                :label="__('notifications.page.may_be_missing')"
+                :answers-to="__('notifications.page.may_be_missing_for', ['stack' => $section->name])"
+                :on="$section->toldSomeMayBeMissing"
+                :disabled="! $this->notificationsAreOn()"
+                :tap="$this->tapping('missingTurned', $section->stack)"
+            />
+
             <x-design::link :label="__('alerts.where_alerts_go')" :answers-to="__('alerts.where_alerts_go_for', ['stack' => $section->name])" :goes="$this->whereAlertsGo($section->stack)" />
         </x-design::section>
 

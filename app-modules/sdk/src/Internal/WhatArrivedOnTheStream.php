@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Modules\Sdk\Internal;
 
+use function array_first;
 use function array_last;
 use function array_map;
 use function in_array;
@@ -20,6 +21,13 @@ use Lemonfiber\Sdk\Generated\Kind;
  * heartbeat is bytes and no event, and it proves the stack is still there. An
  * event of a kind the screen is not holding the stream for proves the same. A
  * stream that ran out is closed, whatever it said before it did.
+ *
+ * **The first events of a stream opened again from an id say whether every
+ * alert came back.** A stack answering that opens with one `replay` event,
+ * and only one that says `whole` vouches for what follows. One that says
+ * `partial`, one that cannot be read, and a stream that opens with anything
+ * else, which is how a stack too old to say so answers, all leave some alerts
+ * that may be missing.
  */
 final readonly class WhatArrivedOnTheStream
 {
@@ -28,7 +36,20 @@ final readonly class WhatArrivedOnTheStream
         private array $events,
         public bool $anything,
         public bool $ended,
+        public bool $someAlertsMayBeMissing = false,
     ) {}
+
+    /** Whether an event arrived, rather than bytes alone or nothing. */
+    public function heldAnEvent(): bool
+    {
+        return $this->events !== [];
+    }
+
+    /** The same, read as the first events of a stream opened again from an id. */
+    public function asTheFirstAfterAnId(): self
+    {
+        return $this->opensWithEveryAlert() ? $this : new self($this->events, $this->anything, $this->ended, someAlertsMayBeMissing: true);
+    }
 
     /** The last event of one kind among everything that arrived, where one did. */
     public function theLast(Kind $kind): ?ServerEvent
@@ -95,5 +116,13 @@ final readonly class WhatArrivedOnTheStream
         }
 
         return $every;
+    }
+
+    /** Whether the first event is a `replay` saying every alert raised since the id follows. */
+    private function opensWithEveryAlert(): bool
+    {
+        $first = array_first($this->events);
+
+        return $first instanceof ServerEvent && WhatTheReplaySaid::everyAlertFollows($first);
     }
 }
