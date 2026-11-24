@@ -32,6 +32,7 @@ use Modules\Operator\Internal\Screens\GivingRoomBack;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatGivesBackRoom;
@@ -118,7 +119,7 @@ function theGivingBackScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new GivingRoomBack($measuring, $givingBack, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new GivingRoomBack($measuring, $givingBack, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $category]);
 
     return $screen;
@@ -172,7 +173,6 @@ it('gives back that category of that offer alone, and follows it', function (): 
 
     expect($givingBack->asked())->toBe([sprintf('give-back:%s:orphaned', THE_OFFER_OF_ROOM)])
         ->and($screen->wasAgreedTo())->toBeTrue()
-        ->and($screen->isWorking())->toBeTrue()
         ->and($screen->awaitsAnOutcome())->toBeTrue()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aLineOfGivingBack('stacks.give_back.giving_back'));
 
@@ -180,6 +180,22 @@ it('gives back that category of that offer alone, and follows it', function (): 
     $screen->done();
 
     expect($givingBack->asked())->toBe([sprintf('give-back:%s:orphaned', THE_OFFER_OF_ROOM), sprintf('after:%s', AStackThatGivesBackRoom::THE_GIVING_BACK)]);
+});
+
+it('says the session has ended when it is lost while the room is given back, and follows it no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $underway = WhatBecameOfTheWork::underway(Job::named(AStackThatGivesBackRoom::THE_GIVING_BACK));
+    $givingBack = AStackThatGivesBackRoom::answering($underway, $underway);
+    $screen = theGivingBackScreen(AStackThatMeasuresItsRoom::with(aRoomOffering(theOrphansOnOffer())), $givingBack, $keychain);
+    $screen->answer();
+    $screen->agree();
+    $screen->whileItRuns();
+    $keychain->forget(theStackRoomIsGivenBackOn()->id());
+    $screen->whileItRuns();
+
+    expect($screen->done()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
 });
 
 it('says what came back from the stack\'s report alone: the room returned, how many went, and why each left one stayed, with no path', function (): void {
@@ -190,7 +206,7 @@ it('says what came back from the stack\'s report alone: the room returned, how m
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($screen->isWorking())->toBeFalse()
+    expect($screen->awaitsAnOutcome())->toBeFalse()
         ->and($screen->done()->went)->toBe(11)
         ->and($screen->done()->left)->toBe(['A service started reading it while it was being removed'])
         ->and($drawn->said())->toContain(aSizeGivenBack('stacks.give_back.returned', 29_000_000_000))
@@ -222,7 +238,7 @@ it('removes nothing where the offer moved, says so in the stack\'s words, and re
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($screen->wasAgreedTo())->toBeFalse()
-        ->and($screen->isWorking())->toBeFalse()
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
         ->and($measuring->askings())->toBe(2)
         ->and($givingBack->asked())->toBe([sprintf('give-back:%s:orphaned', THE_OFFER_OF_ROOM)])
         ->and($drawn->said())->toContain(aLineOfGivingBack('stacks.give_back.moved'))
@@ -375,9 +391,10 @@ it('asking again after a yes asks after the same handle, and before one reads th
     $screen->answer();
     $screen->agree();
     $screen->again();
+    $screen->done();
 
     expect($screen->wasAgreedTo())->toBeTrue()
-        ->and($screen->isWorking())->toBeTrue()
+        ->and($screen->awaitsAnOutcome())->toBeTrue()
         ->and($givingBack->asked())->toBe([sprintf('give-back:%s:orphaned', THE_OFFER_OF_ROOM), sprintf('after:%s', AStackThatGivesBackRoom::THE_GIVING_BACK)]);
 });
 

@@ -17,6 +17,7 @@ use Modules\Operator\Internal\Presenters\HowARunBackReads;
 use Modules\Operator\Internal\Presenters\HowASettingChangeReads;
 use Modules\Operator\Internal\Presenters\HowExtendingItReads;
 use Modules\Operator\Internal\Presenters\HowForgettingReads;
+use Modules\Operator\Internal\Presenters\HowGivingRoomBackReads;
 use Modules\Operator\Internal\Presenters\HowPuttingItBackReads;
 use Modules\Operator\Internal\Presenters\HowTheAcceptanceReads;
 use Modules\Operator\Internal\Presenters\HowTheAllowanceChangeReads;
@@ -28,6 +29,7 @@ use Modules\Operator\Internal\Presenters\HowThePairingCodeReads;
 use Modules\Operator\Internal\Presenters\HowTheRemovalReads;
 use Modules\Operator\Internal\Presenters\HowTheSwitchReads;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
+use Modules\Operator\Internal\ViewModels\HowGivingItBackWent;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
 use Modules\Operator\Internal\ViewModels\HowPuttingItBackWent;
 use Modules\Operator\Internal\ViewModels\HowTheCopyWent;
@@ -172,6 +174,11 @@ function everyReportOnWork(): array
             'running' => new HowTheLineChangeReads()->running(),
             'ended' => new HowTheLineChangeReads()->ended(null),
             'met' => new HowTheLineChangeReads()->met($stood),
+        ],
+        HowGivingItBackWent::class => [
+            'running' => new HowGivingRoomBackReads()->running(),
+            'ended' => new HowGivingRoomBackReads()->ended(null),
+            'met' => new HowGivingRoomBackReads()->met($stood),
         ],
     ];
 }
