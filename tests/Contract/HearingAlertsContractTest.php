@@ -215,6 +215,7 @@ it('says some alerts may be missing where a stream opened after an event says no
     'a replay of another version' => [sprintf("event: replay\ndata: %s\n\n", json_encode([...aReplayEnvelope('whole'), 'api_version' => 99], JSON_THROW_ON_ERROR))],
     'a replay saying something else' => [aReplayEvent('most')],
     'a replay with nothing to say' => [sprintf("event: replay\ndata: %s\n\n", json_encode(['api_version' => 1, 'kind' => 'replay', 'data' => []], JSON_THROW_ON_ERROR))],
+    'a replay whose payload is no object' => [sprintf("event: replay\ndata: %s\n\n", json_encode(['api_version' => 1, 'kind' => 'replay', 'data' => 'whole'], JSON_THROW_ON_ERROR))],
     'a replay in another envelope' => [sprintf("event: replay\ndata: %s\n\n", json_encode([...aReplayEnvelope('whole'), 'kind' => 'alert'], JSON_THROW_ON_ERROR))],
 ]);
 
