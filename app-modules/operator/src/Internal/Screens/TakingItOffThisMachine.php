@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Closure;
-
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\AnUninstall;
 use Modules\Kernel\Api\AnUninstallAgreed;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
@@ -27,6 +24,7 @@ use Modules\Kernel\Api\WhetherToWait;
 use Modules\Kernel\Api\WhichRemoval;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTakingItOffReads;
 use Modules\Operator\Internal\ViewModels\TakingItOffTurnedOutToBe;
@@ -35,7 +33,6 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
@@ -70,7 +67,10 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
+    /** @use FollowsOneJobAtATime<TakingItOffTurnedOutToBe> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use DrawsItsTemplate;
 
     public const string TEMPLATE = 'operator::taking-it-off-this-machine';
@@ -88,14 +88,10 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
      */
     public ?string $volumeAcknowledged = null;
 
-    /** The handle of the removal being followed, while there is one. Not shown and never kept past this screen. */
-    public ?string $following = null;
 
     /** The removal a yes was given to, as its own word, or empty before one was. */
     public string $agreedTo = '';
 
-    /** Where it has got to, once this frame has asked. Public for {@see WhatIsRunningHere::$answered}'s reason. */
-    public ?TakingItOffTurnedOutToBe $going = null;
 
     public function __construct(
         private readonly TakingLemonfiberOff $takingItOff,
@@ -103,13 +99,9 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->answer()->stands->isWorking();
-    }
 
     /**
      * Where taking it off has got to, asked once per frame.
@@ -119,7 +111,7 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
      */
     public function answer(): TakingItOffTurnedOutToBe
     {
-        return $this->going ??= $this->asked();
+        return $this->whatBecameOfTheJob();
     }
 
     /**
@@ -133,7 +125,7 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
     {
         $tier = WhichRemoval::tryFrom($word);
 
-        if (! $tier instanceof WhichRemoval || is_string($this->following)) {
+        if (! $tier instanceof WhichRemoval || $this->followsTheYes()) {
             return;
         }
 
@@ -144,7 +136,7 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
     /** Put the four removals back in front of the operator, letting go of the reading. */
     public function chooseAgain(): void
     {
-        if (is_string($this->following)) {
+        if ($this->followsTheYes()) {
             return;
         }
 
@@ -186,34 +178,54 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
     /**
      * Ask again, because the operator said so.
      *
-     * After a yes the stack took on, it asks after the same handle. Otherwise
+     * After a yes the stack took on, it asks after the same removal. Otherwise
      * it reads the chosen removal afresh, which a yes has to be given to
      * again: a yes that met something on the way is never sent a second time
      * on its own.
      */
     public function again(): void
     {
-        $this->going = null;
+        if ($this->followsTheYes()) {
+            $this->askAfterAgain();
 
-        if (is_string($this->following)) {
             return;
         }
 
         $this->letGoOfTheReading();
     }
 
-    /**
-     * Ask after the removal again while the stack is carrying it out.
-     *
-     * Nothing happens unless it is running. The interval is
-     * {@see HowOftenAScreenLooks}'s.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): TakingItOffTurnedOutToBe
     {
-        if ($this->answer()->stands->isWorking()) {
-            $this->going = null;
+        return $this->shown($this->takingItOff->whatBecameOf($stack, $session, $job), $stack);
+    }
+
+    protected function withNoSessionHeld(): TakingItOffTurnedOutToBe
+    {
+        return new HowTakingItOffReads()->signedOut();
+    }
+
+    /** The removal chosen, read while no yes is followed. */
+    protected function whileNoJobIsFollowed(): TakingItOffTurnedOutToBe
+    {
+        $tier = WhichRemoval::tryFrom($this->tier);
+
+        if (! $tier instanceof WhichRemoval) {
+            return new HowTakingItOffReads()->notChosen();
         }
+
+        $stack = $this->stack();
+
+        return $this->storage->resume($stack->id())->either(
+            held: fn(Session $session): TakingItOffTurnedOutToBe => $this->takingItOff->surveyed($stack, $session, $tier)->either(
+                found: function (AnUninstall $uninstall): TakingItOffTurnedOutToBe {
+                    $this->surveyed = $uninstall->removal()->isAReading() ? $uninstall : null;
+
+                    return new HowTakingItOffReads()->answered($uninstall, agreed: false);
+                },
+                met: $this->lettingGoIfRefused($stack, new HowTakingItOffReads()->met(...)),
+            ),
+            notHeld: $this->withNoSessionHeld(...),
+        );
     }
 
     /**
@@ -238,42 +250,17 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
         $agreed = AnUninstallAgreed::after($surveyed, $waiting, acknowledgedTheVolume: $this->volumeAcknowledged !== null);
         $this->surveyed = null;
         $this->agreedTo = $agreed->tier()->value;
+        $this->forget();
 
-        $this->going = $this->put(
+        $this->reported($this->put(
             fn(Stack $stack, Session $session): WhatBecameOfTheUninstall => $this->takingItOff->takeItOff($stack, $session, $agreed),
-        );
+        ));
     }
 
-    /** What the stack is asked this frame: after the removal being followed, or the removal chosen. */
-    private function asked(): TakingItOffTurnedOutToBe
+    /** Whether a yes is still followed: running, or not heard from since something stood in the way. */
+    private function followsTheYes(): bool
     {
-        $following = $this->following;
-
-        if (is_string($following)) {
-            return $this->put(
-                fn(Stack $stack, Session $session): WhatBecameOfTheUninstall => $this->takingItOff->whatBecameOf($stack, $session, Job::named($following)),
-            );
-        }
-
-        $tier = WhichRemoval::tryFrom($this->tier);
-
-        if (! $tier instanceof WhichRemoval) {
-            return new HowTakingItOffReads()->notChosen();
-        }
-
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): TakingItOffTurnedOutToBe => $this->takingItOff->surveyed($stack, $session, $tier)->either(
-                found: function (AnUninstall $uninstall): TakingItOffTurnedOutToBe {
-                    $this->surveyed = $uninstall->removal()->isAReading() ? $uninstall : null;
-
-                    return new HowTakingItOffReads()->answered($uninstall, agreed: false);
-                },
-                met: $this->lettingGoIfRefused($stack, new HowTakingItOffReads()->met(...)),
-            ),
-            notHeld: static fn(): TakingItOffTurnedOutToBe => new HowTakingItOffReads()->signedOut(),
-        );
+        return $this->awaitsAnOutcome() || ($this->follows() && ! $this->answer()->stands->went->cameBack());
     }
 
     /**
@@ -287,36 +274,24 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): TakingItOffTurnedOutToBe => $this->shown($asking($stack, $session), $stack),
-            notHeld: static fn(): TakingItOffTurnedOutToBe => new HowTakingItOffReads()->signedOut(),
+            notHeld: $this->withNoSessionHeld(...),
         );
     }
 
-    /** What the stack said about the removal, as the screen draws it, holding what to follow. */
+    /** What the stack said about the removal, as the screen draws it, following the removal it names. */
     private function shown(WhatBecameOfTheUninstall $became, Stack $stack): TakingItOffTurnedOutToBe
     {
         $endsThisSession = WhichRemoval::tryFrom($this->agreedTo)?->takesWhatAdmitsThisApp() === true;
 
         return $became->either(
             underway: function (Job $job) use ($endsThisSession): TakingItOffTurnedOutToBe {
-                $this->following = $job->shown();
+                $this->follow($job);
 
                 return new HowTakingItOffReads()->running($endsThisSession);
             },
-            answered: function (AnUninstall $uninstall): TakingItOffTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTakingItOffReads()->answered($uninstall, agreed: true);
-            },
-            ended: function (?WhyTheWorkEnded $why) use ($endsThisSession): TakingItOffTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTakingItOffReads()->ended($why, $endsThisSession);
-            },
-            refused: function (string $because): TakingItOffTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTakingItOffReads()->refused($because);
-            },
+            answered: static fn(AnUninstall $uninstall): TakingItOffTurnedOutToBe => new HowTakingItOffReads()->answered($uninstall, agreed: true),
+            ended: static fn(?WhyTheWorkEnded $why): TakingItOffTurnedOutToBe => new HowTakingItOffReads()->ended($why, $endsThisSession),
+            refused: static fn(string $because): TakingItOffTurnedOutToBe => new HowTakingItOffReads()->refused($because),
             met: function (Obstacle $why) use ($stack, $endsThisSession): TakingItOffTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 
@@ -331,6 +306,6 @@ final class TakingItOffThisMachine extends NativeComponent implements AwaitsAnOu
         $this->surveyed = null;
         $this->volumeAcknowledged = null;
         $this->agreedTo = '';
-        $this->going = null;
+        $this->forget();
     }
 }

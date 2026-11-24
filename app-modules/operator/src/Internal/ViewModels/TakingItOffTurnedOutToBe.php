@@ -12,7 +12,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * removal did, the stack refusing with its reason, or the work ended with no
  * outcome.
  */
-final readonly class TakingItOffTurnedOutToBe
+final readonly class TakingItOffTurnedOutToBe implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands              $stands            where the work stands, and whether the stack could be asked at all

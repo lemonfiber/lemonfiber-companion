@@ -33,6 +33,7 @@ use Modules\Kernel\Api\WhyNothingWasShared;
 use Modules\Operator\Internal\ALogWindow;
 use Modules\Operator\Internal\Presenters\AgoAsShown;
 use Modules\Operator\Internal\Screens\AskingForHelpHere;
+use Modules\Operator\Internal\TheOnlyJob;
 use Modules\Operator\Internal\ViewModels\ABundleAsShown;
 use Modules\Operator\Internal\ViewModels\APieceAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheBundleWent;
@@ -40,6 +41,7 @@ use Modules\Operator\Internal\ViewModels\WhereTheWorkStands;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AShareSheetThatWasOffered;
@@ -83,7 +85,7 @@ function theHelpScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new AskingForHelpHere($helping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $sheet ?? AShareSheetThatWasOffered::working(), new AppsSettingsThatOpen(), AroundThePhone::listening(), FrozenClock::at(Instant::atEpochSeconds(WHEN_HELP_IS_ASKED)));
+    $screen = new AskingForHelpHere($helping, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), $sheet ?? AShareSheetThatWasOffered::working(), new AppsSettingsThatOpen(), AroundThePhone::listening(), FrozenClock::at(Instant::atEpochSeconds(WHEN_HELP_IS_ASKED)), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -289,7 +291,7 @@ it('describes the bundle chosen without writing it, and says it is being gathere
         ->and($screen->answer()->stands->isWorking())->toBeTrue()
         ->and($screen->answer()->isWritten)->toBeFalse()
         ->and($screen->answer()->bundle)->toBeNull()
-        ->and($screen->handle)->toBe(AStackThatBundles::THE_JOB)
+->and($screen->awaitsAnOutcome())->toBeTrue()
         ->and($drawn)->toContain(__('stacks.help.gathering'))
         ->and($helping->followed())->toBe([]);
 });
@@ -402,7 +404,7 @@ it('never sends a write again that met an obstacle: asking again describes', fun
     $screen = aBundleDescribedOnTheScreen($helping);
     $screen->write();
 
-    expect($screen->handle)->toBeNull()
+    expect($screen->followed)->toBe([])
         ->and($screen->answer()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said());
 
     $screen->again();
@@ -443,7 +445,7 @@ it('goes back to the choices, keeping them, and forgets the bundle it was follow
     $screen->startOver();
 
     expect($screen->asked)->toBeNull()
-        ->and($screen->handle)->toBeNull()
+        ->and($screen->followed)->toBe([])
         ->and($screen->answer()->stands->wasAsked())->toBeFalse()
         ->and($screen->window)->toBe(ALogWindow::Fewer)
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.help.what_goes_in'));
@@ -481,7 +483,7 @@ it('draws what stood in the way of describing, and asking again describes again'
     $screen->describe();
 
     expect($screen->answer()->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
-        ->and($screen->handle)->toBeNull()
+        ->and($screen->followed)->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 
     $screen->again();
@@ -537,6 +539,21 @@ it('follows nothing for a stack this device stopped holding a session for', func
         ->and($helping->followed())->toBe([]);
 });
 
+it('says the session has ended when it is lost while a bundle is gathered, and follows it no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $helping = AStackThatBundles::whichGathered(HowTheBundleIsGoing::stillRunning());
+    $screen = theHelpScreen($helping, $keychain);
+    $screen->describe();
+    $screen->whileItRuns();
+    $keychain->forget(theStackHelpIsAskedAbout()->id());
+    $screen->whileItRuns();
+
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($helping->followed())->toHaveCount(1);
+});
+
 it('hands a written bundle over as the stack served it, and leaves where it goes to the operator', function (): void {
     $helping = AStackThatBundles::whichGathered(HowTheBundleIsGoing::done(WhatABundleSays::written()));
     $sheet = AShareSheetThatWasOffered::working();
@@ -575,12 +592,12 @@ it('fetches nothing for a bundle said to be written that the screen holds no bun
     $helping = AStackThatBundles::whichGathered(HowTheBundleIsGoing::done(WhatABundleSays::written()));
     $sheet = AShareSheetThatWasOffered::working();
     $screen = theHelpScreen($helping, sheet: $sheet);
-    $screen->went = new HowTheBundleWent(
+    $screen->became = [TheOnlyJob::Followed->name => new HowTheBundleWent(
         stands: WhereTheWorkStands::answered(),
         refused: null,
         isWritten: true,
         bundle: null,
-    );
+    )];
     $screen->handOver();
 
     expect($helping->fetched())->toBe([])

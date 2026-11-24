@@ -42,6 +42,7 @@ use Modules\Operator\Internal\ViewModels\ALineOfTheSurvey;
 use Modules\Operator\Internal\ViewModels\AModeAsShown;
 use Modules\Operator\Internal\ViewModels\AMoveAsShown;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackWithSomethingAlreadyOnIt;
@@ -97,7 +98,7 @@ function theScreenForMovingIn(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatIsAlreadyOnThisMachine($movingIn, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatIsAlreadyOnThisMachine($movingIn, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -149,7 +150,7 @@ function theScreenAfterAsking(string $mode, AStackWithSomethingAlreadyOnIt $movi
 {
     $screen = theScreenForMovingIn($movingIn);
     $screen->wouldMoveIn($mode);
-    $screen->going = null;
+    $screen->whileItRuns();
 
     return $screen;
 }
@@ -209,7 +210,7 @@ it('asks what a mode would come to, says it is working while it runs, and offers
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($movingIn->acts())->toBe(['would:adopt'])
-        ->and($screen->following)->toBe('j-1')
+        ->and($screen->awaitsAnOutcome())->toBeTrue()
         ->and($screen->about)->toBe('adopt')
         ->and($drawn->said())->toContain(__('stacks.moving_in.about', ['mode' => 'adopt']))
         ->and($drawn->said())->toContain(__('stacks.moving_in.working'))
@@ -250,7 +251,7 @@ it('says what it copies first before the yes, and sends the yes only beneath a p
 
     expect($movingIn->acts())->toBe(['would:adopt', 'after:j-1', 'move:adopt'])
         ->and($screen->staged)->toBeNull()
-        ->and($screen->following)->toBe('j-2');
+        ->and($screen->awaitsAnOutcome())->toBeTrue();
 });
 
 it('says so where nothing wants a copy first', function (): void {
@@ -411,7 +412,7 @@ it('shows a request the stack turned down in its own words, and not as something
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($screen->howTheMoveIsGoing()->refusal)->toBe('Nothing here to import from')
-        ->and($screen->following)->toBeNull()
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
         ->and($drawn->said())->toContain(__('stacks.moving_in.refused'))
         ->and($drawn->said())->toContain('Nothing here to import from')
         ->and($drawn->offers())->not->toContain(__('health.ask_again'))
@@ -424,7 +425,7 @@ it('says the stack has no outcome for work it no longer knows, which is not a re
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($drawn->said())->toContain(__('stacks.moving_in.no_outcome'))
-        ->and($screen->following)->toBeNull()
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
         ->and($screen->howTheMoveIsGoing()->stands->hasEnded())->toBeTrue()
         ->and($drawn->offers())->toContain(__('stacks.moving_in.leave_it'))
         ->and($movingIn->acts())->toBe(['would:adopt', 'after:j-1']);
@@ -456,7 +457,7 @@ it('reads what is on the machine again once a move has done something, and not b
     expect($movingIn->askings())->toBe(1);
 
     $screen->moveIn();
-    $screen->going = null;
+    $screen->whileItRuns();
     $screen->howTheMoveIsGoing();
     $screen->answer();
 
@@ -481,7 +482,7 @@ it('offers the same move again where other work held the stack, and sends it onl
     $screen->tryAgain();
 
     expect($movingIn->acts())->toBe(['would:adopt', 'after:j-1', 'move:adopt', 'move:adopt'])
-        ->and($screen->following)->toBe('j-2');
+        ->and($screen->awaitsAnOutcome())->toBeTrue();
 });
 
 it('does not offer a move again where anything but other work stood in its way', function (): void {
@@ -539,7 +540,7 @@ it('lets go of an answer waiting on a yes once another mode is asked about', fun
 
     expect($screen->staged)->toBeNull()
         ->and($screen->about)->toBe('replace')
-        ->and($screen->following)->toBe('j-2')
+        ->and($screen->awaitsAnOutcome())->toBeTrue()
         ->and($movingIn->acts())->toBe(['would:adopt', 'after:j-1', 'would:replace']);
 });
 
@@ -550,7 +551,7 @@ it('leaves an answer where it is and moves nothing', function (): void {
     $screen->leaveIt();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect([$screen->about, $screen->following, $screen->staged])->toBe([null, null, null])
+    expect([$screen->about, $screen->followed, $screen->staged])->toBe([null, [], null])
         ->and($screen->howTheMoveIsGoing()->move)->toBeNull()
         ->and($drawn->offers())->not->toContain(__('stacks.moving_in.agree.adopt'))
         ->and($movingIn->acts())->toBe(['would:adopt', 'after:j-1']);
@@ -593,4 +594,21 @@ it('a session that has ended asks the stack nothing about moving in', function (
     expect($screen->howTheMoveIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($screen->howTheMoveIsGoing()->mode)->toBe('adopt')
         ->and($movingIn->acts())->toBe([]);
+});
+
+it('says the session has ended when it is lost while a move is followed, and follows it no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $movingIn = aStackAnsweringTheMove(WhatBecameOfTheMove::underway(Job::named('j-1')));
+    $screen = theScreenForMovingIn($movingIn, keychain: $keychain);
+    $screen->answer();
+    $screen->wouldMoveIn('adopt');
+    $screen->whileItRuns();
+    $keychain->forget(theStackBeingMovedInto()->id());
+    $screen->whileItRuns();
+
+    expect($screen->howTheMoveIsGoing()->stands->went->isSignedIn)->toBeFalse()
+        ->and($screen->howTheMoveIsGoing()->mode)->toBe('adopt')
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($movingIn->acts())->toBe(['would:adopt', 'after:j-1']);
 });

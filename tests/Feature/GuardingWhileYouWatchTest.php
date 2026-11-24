@@ -23,11 +23,13 @@ use Modules\Kernel\Api\WhatTheGuardSaw;
 use Modules\Kernel\Api\Whose;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\Screens\GuardingWhileYouWatch;
+use Modules\Operator\Internal\TheOnlyJob;
 use Modules\Operator\Internal\ViewModels\HowTheGuardWent;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatGuards;
@@ -81,7 +83,7 @@ function theGuardScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new GuardingWhileYouWatch($guarding, $supervising ?? AStackThatSupervises::withNothingRunning()->declaring(WhatAMachineRuns::libraryAndFull()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new GuardingWhileYouWatch($guarding, $supervising ?? AStackThatSupervises::withNothingRunning()->declaring(WhatAMachineRuns::libraryAndFull()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -108,7 +110,7 @@ function whatAGuardSaw(bool $stopped): WhatTheGuardSaw
 /** Ask after the guard the way the cadence does, and hand back what the frame then says. */
 function theGuardAskedAfter(GuardingWhileYouWatch $screen): HowTheGuardWent
 {
-    $screen->whileItGuards();
+    $screen->whileItRuns();
 
     return $screen->lastGuard();
 }
@@ -226,7 +228,7 @@ it('starts the guard for the forms named on a yes, and says it guards them while
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect(theFormsEachGuardWasFor($guarding->started()))->toBe([['library', 'full']])
-        ->and($screen->took)->toBe(AStackThatGuards::THE_JOB)
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
         ->and($drawn->said())->toContain(aLineOfTheGuard('stacks.guard.guarding', ['forms' => 'library, full']))
         ->and($drawn->said())->toContain(aLineOfTheGuard('stacks.guard.lives_while_asked'))
         ->and($drawn->said())->toContain(aLineOfTheGuard('stacks.guard.not_hosted'))
@@ -240,7 +242,7 @@ it('asks after the guard on the declared cadence while it guards, by the name it
     theGuardAskedAfter($screen);
     theGuardAskedAfter($screen);
 
-    $poll = new ReflectionMethod(GuardingWhileYouWatch::class, 'whileItGuards')->getAttributes(Poll::class)[0]->getArguments();
+    $poll = new ReflectionMethod(GuardingWhileYouWatch::class, 'whileItRuns')->getAttributes(Poll::class)[0]->getArguments();
 
     expect($guarding->followed())->toHaveCount(2)
         ->and(array_map(static fn(Job $job): string => $job->shown(), $guarding->followed()))->toBe([AStackThatGuards::THE_JOB, AStackThatGuards::THE_JOB])
@@ -351,7 +353,6 @@ it('lets nothing go when the screen is left before a guard started, or after it 
 it('lets the guard go when the screen is left on a frame that has not asked after it yet', function (): void {
     $guarding = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding());
     $screen = aGuardAgreedTo($guarding);
-    $screen->lastGuard = null;
 
     $screen->unmount();
 
@@ -370,13 +371,17 @@ it('leaving the screen runs what the framework tears down on the way out, too', 
     expect($torn)->toBe(['down']);
 });
 
-it('a handle held without the guard it was for asks after nothing, and says none was asked for', function (): void {
+it('a guard followed without the forms it was for asks after nothing, says none was asked for, and follows it no further', function (): void {
     $guarding = AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding());
-    $screen = theGuardScreen($guarding);
-    $screen->took = AStackThatGuards::THE_JOB;
+    $screen = aGuardAgreedTo($guarding);
+    $screen->guarding = null;
 
-    expect($screen->lastGuard()->stands->wasAsked())->toBeFalse()
+    expect(theGuardAskedAfter($screen)->stands->wasAsked())->toBeFalse()
         ->and($guarding->followed())->toBe([]);
+
+    $screen->unmount();
+
+    expect($guarding->letGoOf())->toBe([]);
 });
 
 it('asks for the forms once, however often the screen reads them, and never what is running', function (): void {
@@ -450,14 +455,21 @@ it('a session that ended before starting or while following says so, and asks no
     $following = aGuardAgreedTo(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding()), $keychain = AKeychainInMemory::working());
     $keychain->forget(theStackAGuardWatches()->id());
 
-    expect(theGuardAskedAfter($following)->stands->went->isSignedIn)->toBeFalse();
+    expect(theGuardAskedAfter($following)->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($following)->said())->toContain(__('connection.session_has_ended'));
+
+    $following->whileItRuns();
+    $following->unmount();
+
+    expect($following->followed[TheOnlyJob::Followed->name]->running)->toBeFalse();
 });
 
 it('names forms for another guard once the last has ended, and not while one guards', function (): void {
     $guarding = aGuardAgreedTo(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::stillGuarding()));
     $guarding->startOver();
 
-    expect($guarding->took)->toBe(AStackThatGuards::THE_JOB);
+    expect($guarding->lastGuard()->stands->isWorking())->toBeTrue()
+        ->and($guarding->lastGuard()->guarding)->toBe('library, full');
 
     $ended = aGuardAgreedTo(AStackThatGuards::whichGuarded(HowTheGuardIsGoing::noOutcome()));
     theGuardAskedAfter($ended);
@@ -466,8 +478,7 @@ it('names forms for another guard once the last has ended, and not while one gua
 
     $ended->startOver();
 
-    expect([$ended->took, $ended->guarding, $ended->naming])->toBe([null, null, []])
-        ->and($ended->lastGuard()->stands->wasAsked())->toBeFalse();
+    expect([$ended->followed, $ended->guarding, $ended->naming])->toBe([[], null, []])        ->and($ended->lastGuard()->stands->wasAsked())->toBeFalse();
 });
 
 it('asking again asks for the forms and for where the guard stands', function (): void {

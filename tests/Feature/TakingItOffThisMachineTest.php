@@ -49,6 +49,7 @@ use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatTakesItOff;
@@ -82,7 +83,7 @@ function theTakingItOffScreen(AStackThatTakesItOff $removing, ?AKeychainInMemory
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new TakingItOffThisMachine($removing, $keychain, AroundThePhone::holding($stacks ?? StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new TakingItOffThisMachine($removing, $keychain, AroundThePhone::holding($stacks ?? StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -440,7 +441,7 @@ it('takes it off against the reading on the screen, follows the work, and draws 
         ->and($drawn->said())->not->toContain(__('uninstall.after_configuration'))
         ->and($drawn->offers())->toBe([__('uninstall.choose_again'), ...array_slice($drawn->offers(), 1)])
         ->and($drawn->offers())->not->toContain(__('uninstall.agree.services'))
-        ->and($screen->following)->toBeNull();
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
 });
 
 it('never draws a partial removal as complete, and names each thing left with how to finish it by hand', function (): void {
@@ -602,7 +603,7 @@ it('says the stack has no outcome for a yes it no longer knows, the way in gone 
     expect($drawn->said())->toContain(__('uninstall.no_outcome'))
         ->and($drawn->said())->toContain(__('uninstall.after_configuration'))
         ->and($drawn->offers())->toContain(__('uninstall.read_again'))
-        ->and($screen->following)->toBeNull();
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
 
     $screen->again();
     $screen->answer();
@@ -675,7 +676,7 @@ it('asks after the same work again where following it met something, and changes
         ->and($met->stands->went->met)->toEqual(KindOfObstacle::StackDidNotAnswer->said())
         ->and($screen->tier)->toBe('services')
         ->and($screen->agreedTo)->toBe('services')
-        ->and($screen->following)->toBe('j-1');
+->and($screen->awaitsAnOutcome())->toBeTrue();
 });
 
 it('sends the yes once, however often it is tapped', function (): void {
@@ -729,6 +730,22 @@ it('a session that has ended asks the stack nothing, before the yes and at it', 
 
     expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
         ->and($removing->asked())->toBe([]);
+});
+
+it('says the session has ended when it is lost while a removal is followed, and follows it no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $underway = WhatBecameOfTheUninstall::underway(Job::named('j-1'));
+    $removing = aStackReadingTheRemoval(aReadingOfTakingItOff(), $underway, $underway);
+    $screen = aRemovalChosenAndRead($removing, WhichRemoval::Services, $keychain);
+    $screen->goAhead();
+    $screen->whileItRuns();
+    $keychain->forget(theMachineLemonfiberLeaves()->id());
+    $screen->whileItRuns();
+
+    expect($screen->answer()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($removing->asked())->toBe(['read:services', 'take:services:services-3-lines:go_ahead_now', 'after:j-1']);
 });
 
 it('a credential the stack refused while reading signs this device out and lets the session go', function (): void {
@@ -827,14 +844,4 @@ it('the way here and the way to a copy are routes', function (): void {
 
 it('renders its own view', function (): void {
     expect(theTakingItOffScreen(aStackReadingTheRemoval(aReadingOfTakingItOff()))->render()->name())->toBe('operator::taking-it-off-this-machine');
-});
-
-it('follows a handle the frame holds with no removal agreed to, and ends no session over it', function (): void {
-    $removing = aStackReadingTheRemoval(aReadingOfTakingItOff(), WhatBecameOfTheUninstall::underway(Job::named('j-1')));
-    $screen = theTakingItOffScreen($removing);
-    $screen->following = 'j-1';
-
-    expect($screen->answer()->stands->isWorking())->toBeTrue()
-        ->and($removing->asked())->toBe(['after:j-1'])
-        ->and($screen->agreedTo)->toBe('');
 });

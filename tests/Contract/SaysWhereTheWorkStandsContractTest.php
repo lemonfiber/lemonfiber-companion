@@ -3,13 +3,18 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\ExtendingIt;
+use Modules\Kernel\Api\Form;
+use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ScopeOfACopy;
+use Modules\Operator\Internal\Presenters\HowABundleReads;
 use Modules\Operator\Internal\Presenters\HowACopyReads;
 use Modules\Operator\Internal\Presenters\HowACredentialRevokeReads;
+use Modules\Operator\Internal\Presenters\HowAGuardReads;
 use Modules\Operator\Internal\Presenters\HowALandingReads;
 use Modules\Operator\Internal\Presenters\HowAMendingReads;
+use Modules\Operator\Internal\Presenters\HowAMoveReads;
 use Modules\Operator\Internal\Presenters\HowAnOfferOfRepairsReads;
 use Modules\Operator\Internal\Presenters\HowAReplacementReads;
 use Modules\Operator\Internal\Presenters\HowAResetReads;
@@ -21,6 +26,7 @@ use Modules\Operator\Internal\Presenters\HowGivingRoomBackReads;
 use Modules\Operator\Internal\Presenters\HowLettingItGoReads;
 use Modules\Operator\Internal\Presenters\HowPausingReads;
 use Modules\Operator\Internal\Presenters\HowPuttingItBackReads;
+use Modules\Operator\Internal\Presenters\HowTakingItOffReads;
 use Modules\Operator\Internal\Presenters\HowTheAcceptanceReads;
 use Modules\Operator\Internal\Presenters\HowTheAllowanceChangeReads;
 use Modules\Operator\Internal\Presenters\HowTheHandoffReads;
@@ -29,29 +35,37 @@ use Modules\Operator\Internal\Presenters\HowTheLastUpdateReads;
 use Modules\Operator\Internal\Presenters\HowTheLineChangeReads;
 use Modules\Operator\Internal\Presenters\HowThePairingCodeReads;
 use Modules\Operator\Internal\Presenters\HowTheRemovalReads;
+use Modules\Operator\Internal\Presenters\HowTheRunReads;
 use Modules\Operator\Internal\Presenters\HowTheSwitchReads;
+use Modules\Operator\Internal\Presenters\HowTheWiringReads;
 use Modules\Operator\Internal\ViewModels\AResetAsShown;
 use Modules\Operator\Internal\ViewModels\HowGivingItBackWent;
 use Modules\Operator\Internal\ViewModels\HowLettingItGoWent;
 use Modules\Operator\Internal\ViewModels\HowPausingWent;
 use Modules\Operator\Internal\ViewModels\HowPuttingARunBackWent;
 use Modules\Operator\Internal\ViewModels\HowPuttingItBackWent;
+use Modules\Operator\Internal\ViewModels\HowTheBundleWent;
 use Modules\Operator\Internal\ViewModels\HowTheCopyWent;
+use Modules\Operator\Internal\ViewModels\HowTheGuardWent;
 use Modules\Operator\Internal\ViewModels\HowTheHandoffWent;
 use Modules\Operator\Internal\ViewModels\HowTheLandingWent;
 use Modules\Operator\Internal\ViewModels\HowTheLastUpdateWent;
 use Modules\Operator\Internal\ViewModels\HowThePairingCodeWent;
 use Modules\Operator\Internal\ViewModels\SaysWhereTheWorkStands;
+use Modules\Operator\Internal\ViewModels\TakingItOffTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheAcceptanceTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheAllowanceChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheCredentialRevokeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheForgettingTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheInvitationTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheLineChangeTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\TheMoveTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheRemovalTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheReplacementTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\TheRunTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheSwitchTurnedOutToBe;
+use Modules\Operator\Internal\ViewModels\TheWiringTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatExtendsItTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhatLettingItGoWouldShow;
 use Modules\Operator\Internal\ViewModels\WhatPausingWouldShow;
@@ -205,6 +219,35 @@ function everyReportOnWork(): array
             'running' => new HowPausingReads()->running(),
             'ended' => new HowPausingReads()->ended(null),
             'met' => new HowPausingReads()->met($stood),
+        ],
+        HowTheGuardWent::class => [
+            'running' => new HowAGuardReads()->guarding(Forms::these(Form::called('jellyfin'))),
+            'met' => new HowAGuardReads()->met($stood),
+        ],
+        TheWiringTurnedOutToBe::class => [
+            'running' => new HowTheWiringReads()->running(),
+            'ended' => new HowTheWiringReads()->ended(null),
+            'met' => new HowTheWiringReads()->met($stood),
+        ],
+        TheMoveTurnedOutToBe::class => [
+            'running' => new HowAMoveReads()->running('adopt'),
+            'ended' => new HowAMoveReads()->ended(null, 'adopt'),
+            'met' => new HowAMoveReads()->met($stood, 'adopt'),
+        ],
+        TakingItOffTurnedOutToBe::class => [
+            'running' => new HowTakingItOffReads()->running(endsThisSession: false),
+            'ended' => new HowTakingItOffReads()->ended(null, endsThisSession: false),
+            'met' => new HowTakingItOffReads()->met($stood),
+        ],
+        HowTheBundleWent::class => [
+            'running' => new HowABundleReads()->running(),
+            'ended' => new HowABundleReads()->ended(null),
+            'met' => new HowABundleReads()->met($stood),
+        ],
+        TheRunTurnedOutToBe::class => [
+            'running' => new HowTheRunReads()->running(),
+            'ended' => new HowTheRunReads()->ended(null),
+            'met' => new HowTheRunReads()->met($stood),
         ],
     ];
 }

@@ -18,6 +18,7 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\Capability;
 use Modules\Kernel\Api\ChoosingAFiller;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
@@ -39,6 +40,7 @@ use Modules\Kernel\Api\WiringTheServices;
 use Modules\Operator\Internal\AdoptsTheEdits;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheChoiceReads;
 use Modules\Operator\Internal\Presenters\HowTheLinksRead;
@@ -54,7 +56,6 @@ use Modules\Wayfinding\Api\Screens\ReadsAStackOnceAFrame;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function view;
@@ -87,9 +88,9 @@ use function view;
  * stack's words, and a run that only said what it would do says so first.
  * Nothing here offers to put lemonfiber's value back over the operator's.
  *
- * **The run is work the stack names and this follows**, so the handle is held
- * and asked after at {@see HowOftenAScreenLooks::WhileWorkRuns} while it runs, the way
- * {@see AskingSomebodyIn} follows an invitation.
+ * **The run is work the stack names and this follows** through
+ * {@see FollowsOneJobAtATime}, asked after at
+ * {@see HowOftenAScreenLooks::WhileWorkRuns} while it runs.
  *
  * `Concealed` for the reason every stack-facing screen here is.
  */
@@ -101,17 +102,14 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use AsksWhatTheStackIsRunning;
-    use FindsItsWayAround;
+    /** @use FollowsOneJobAtATime<TheWiringTurnedOutToBe> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use ReadsAStackOnceAFrame;
     use AdoptsTheEdits;
 
-    /** The handle of the run being followed, while there is one. */
-    public ?string $following = null;
-
-    /** Where the run has got to, once this frame has asked. Public for {@see WhatIsRunningHere::$answered}'s reason. */
-    public ?TheWiringTurnedOutToBe $going = null;
-
-    /** What answers what, once this frame has asked. Public for the same reason. */
+    /** What answers what, once this frame has asked. Public for {@see WhatIsRunningHere::$answered}'s reason. */
     public ?TheLinksTurnedOutToBe $linked = null;
 
     /**
@@ -122,7 +120,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
      */
     public ?AFill $shown = null;
 
-    /** What choosing came to, as it is drawn. Public for {@see self::$going}'s reason. */
+    /** What choosing came to, as it is drawn. Public for {@see self::$linked}'s reason. */
     public ?TheChoiceTurnedOutToBe $choice = null;
 
     /**
@@ -142,6 +140,7 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
 
@@ -240,11 +239,11 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     /** Start a wiring run. */
     public function wire(): void
     {
-        $this->following = null;
+        $this->forget();
         $this->adopting = null;
-        $this->going = $this->put(
+        $this->reported($this->put(
             fn(Stack $stack, Session $session): WhatBecameOfTheWiring => $this->wiring->wire($stack, $session),
-        );
+        ));
     }
 
     /**
@@ -261,32 +260,10 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
     {
         $this->answered = null;
         $this->linked = null;
-        $going = $this->going;
 
-        if ($this->following !== null || ! $going instanceof TheWiringTurnedOutToBe || ! $going->stands->went->cameBack()) {
-            $this->going = null;
+        if ($this->awaitsAnOutcome() || ! $this->howItIsGoing()->stands->went->cameBack()) {
+            $this->askAfterAgain();
         }
-    }
-
-    /**
-     * Ask after the run again while the stack is carrying it out.
-     *
-     * Nothing happens unless it is running, so a finished answer is not asked
-     * for again. The interval is {@see HowOftenAScreenLooks}'s.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
-    {
-        if ($this->howItIsGoing()->stands->isWorking()) {
-            $this->going = null;
-        }
-    }
-
-
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->howItIsGoing()->stands->isWorking();
     }
 
     public function render(): View
@@ -296,21 +273,25 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
         return view('operator::how-the-services-are-wired');
     }
 
-    /**
-     * Where the run has got to, asked once per frame.
-     *
-     * Asks the stack after the run being followed where there is one, and
-     * otherwise says nothing has been asked.
-     */
+    /** Where the run has got to, asked once per frame. */
     public function howItIsGoing(): TheWiringTurnedOutToBe
     {
-        $following = $this->following;
+        return $this->whatBecameOfTheJob();
+    }
 
-        return $this->going ??= $following === null
-            ? new HowTheWiringReads()->notAsked()
-            : $this->put(
-                fn(Stack $stack, Session $session): WhatBecameOfTheWiring => $this->wiring->whatBecameOf($stack, $session, Job::named($following)),
-            );
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): TheWiringTurnedOutToBe
+    {
+        return $this->shown($this->wiring->whatBecameOf($stack, $session, $job), $stack);
+    }
+
+    protected function whileNoJobIsFollowed(): TheWiringTurnedOutToBe
+    {
+        return new HowTheWiringReads()->notAsked();
+    }
+
+    protected function withNoSessionHeld(): TheWiringTurnedOutToBe
+    {
+        return new HowTheWiringReads()->signedOut();
     }
 
     /**
@@ -324,35 +305,26 @@ final class HowTheServicesAreWired extends NativeComponent implements AwaitsAnOu
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): TheWiringTurnedOutToBe => $this->shown($asking($stack, $session), $stack),
-            notHeld: static fn(): TheWiringTurnedOutToBe => new HowTheWiringReads()->signedOut(),
+            notHeld: $this->withNoSessionHeld(...),
         );
     }
 
-    /** What the stack said, as the screen draws it, holding what to follow. */
+    /** What the stack said, as the screen draws it, following the run it names. */
     private function shown(WhatBecameOfTheWiring $became, Stack $stack): TheWiringTurnedOutToBe
     {
         return $became->either(
             underway: function (Job $job): TheWiringTurnedOutToBe {
-                $this->following = $job->shown();
+                $this->follow($job);
 
                 return new HowTheWiringReads()->running();
             },
             answered: function (TheWiring $wiring): TheWiringTurnedOutToBe {
-                $this->following = null;
                 $this->adopting = $this->adopting === WhereAdoptingStands::Rehearsing && $wiring->wasRehearsed() ? WhereAdoptingStands::Rehearsed : null;
 
                 return new HowTheWiringReads()->answered($wiring);
             },
-            ended: function (?WhyTheWorkEnded $why): TheWiringTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTheWiringReads()->ended($why);
-            },
-            refused: function (string $because): TheWiringTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTheWiringReads()->refused($because);
-            },
+            ended: static fn(?WhyTheWorkEnded $why): TheWiringTurnedOutToBe => new HowTheWiringReads()->ended($why),
+            refused: static fn(string $because): TheWiringTurnedOutToBe => new HowTheWiringReads()->refused($because),
             met: $this->lettingGoIfRefused($stack, new HowTheWiringReads()->met(...)),
         );
     }

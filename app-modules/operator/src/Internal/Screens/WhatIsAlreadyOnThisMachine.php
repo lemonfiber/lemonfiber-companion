@@ -10,6 +10,7 @@ use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\AMove;
 use Modules\Kernel\Api\AMoveAgreed;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
@@ -26,6 +27,7 @@ use Modules\Kernel\Api\WhatBecameOfTheMove;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAMoveReads;
 use Modules\Operator\Internal\Presenters\HowTheSurveyReads;
@@ -36,7 +38,6 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
@@ -55,9 +56,9 @@ use Native\Mobile\Edge\NativeComponent;
  * anything else is offered. The yes is a second tap, and only beneath an
  * answer that is pending; it sends the act that answer was about.
  *
- * **Every answer is work the stack names and this follows**, so the handle is
- * held and asked after at {@see HowOftenAScreenLooks::WhileWorkRuns} while it runs, the
- * way {@see AskingSomebodyIn} follows an invitation.
+ * **Every answer is work the stack names and this follows** through
+ * {@see FollowsOneJobAtATime}, asked after at
+ * {@see HowOftenAScreenLooks::WhileWorkRuns} while it runs.
  *
  * `Concealed` for the reason every stack-facing screen here is.
  */
@@ -70,7 +71,10 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
+    /** @use FollowsOneJobAtATime<TheMoveTurnedOutToBe> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use DrawsItsTemplate;
 
     public const string TEMPLATE = 'operator::what-is-already-on-this-machine';
@@ -85,14 +89,10 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     /** The word of the mode being asked about, which what comes back is drawn with, once one was. */
     public ?string $about = null;
 
-    /** The handle of the work being followed, while there is one. */
-    public ?string $following = null;
 
     /** The move the stack last answered pending, which is the only one a yes is sent for. */
     public ?AMove $staged = null;
 
-    /** Where moving in has got to, once this frame has asked. Public for {@see self::$answered}'s reason. */
-    public ?TheMoveTurnedOutToBe $going = null;
 
     /** The pending move last agreed to, so a yes other work held can be sent again for it. */
     public ?AMove $agreedOn = null;
@@ -103,18 +103,27 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /**
      * Ask the machine again, which an obstacle must not take away.
      *
-     * Asks after the work being followed where there is some. A request that
-     * never reached the stack is not sent again on its own.
+     * Asks after the work being followed while it runs or where an obstacle
+     * stood in the way of asking; an answer it came to is put away. A request
+     * that never reached the stack is not sent again on its own.
      */
     public function again(): void
     {
         $this->answered = null;
-        $this->going = null;
+
+        if ($this->awaitsAnOutcome() || ! $this->howTheMoveIsGoing()->stands->went->cameBack()) {
+            $this->askAfterAgain();
+
+            return;
+        }
+
+        $this->forget();
     }
 
     /**
@@ -132,10 +141,10 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
         foreach ($this->answer()->modes as $offered) {
             if ($by instanceof MovingInBy && $offered->mode === $mode) {
                 $this->leaveIt();
-                $this->going = $this->put(
+                $this->reported($this->put(
                     $mode,
                     fn(Stack $stack, Session $session): WhatBecameOfTheMove => $this->movingIn->wouldMoveIn($stack, $session, $by),
-                );
+                ));
 
                 return;
             }
@@ -159,11 +168,12 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
         $agreed = AMoveAgreed::after($staged);
         $this->agreedOn = $staged;
         $this->staged = null;
+        $this->forget();
 
-        $this->going = $this->put(
+        $this->reported($this->put(
             $agreed->by()->value,
             fn(Stack $stack, Session $session): WhatBecameOfTheMove => $this->movingIn->moveIn($stack, $session, $agreed),
-        );
+        ));
     }
 
     /** Leave the answer where it is and go back to the modes, moving nothing. */
@@ -171,9 +181,8 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     {
         $this->agreedOn = null;
         $this->about = null;
-        $this->following = null;
         $this->staged = null;
-        $this->going = null;
+        $this->forget();
     }
 
     /**
@@ -188,7 +197,7 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
     {
         $about = $this->about;
 
-        if ($this->going?->stands->went->wasHeldByOtherWork() !== true || $about === null) {
+        if (! $this->howTheMoveIsGoing()->stands->went->wasHeldByOtherWork() || $about === null) {
             return;
         }
 
@@ -204,25 +213,6 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
         $this->moveIn();
     }
 
-    /**
-     * Ask after the work again while the stack is carrying it out.
-     *
-     * Nothing happens unless it is running, so a finished answer is not asked
-     * for again. The interval is {@see HowOftenAScreenLooks}'s.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
-    {
-        if ($this->howTheMoveIsGoing()->stands->isWorking()) {
-            $this->going = null;
-        }
-    }
-
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->howTheMoveIsGoing()->stands->isWorking();
-    }
 
     /** What came back, asked once per frame. */
     public function answer(): TheSurveyTurnedOutToBe
@@ -230,23 +220,25 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
         return $this->answered ??= $this->ask();
     }
 
-    /**
-     * Where moving in has got to, asked once per frame.
-     *
-     * Asks the stack after the work being followed where there is some, and
-     * otherwise says nothing has been asked.
-     */
+    /** Where moving in has got to, asked once per frame. */
     public function howTheMoveIsGoing(): TheMoveTurnedOutToBe
     {
-        $following = $this->following;
-        $about = $this->about;
+        return $this->whatBecameOfTheJob();
+    }
 
-        return $this->going ??= $following === null || $about === null
-            ? new HowAMoveReads()->notAsked()
-            : $this->put(
-                $about,
-                fn(Stack $stack, Session $session): WhatBecameOfTheMove => $this->movingIn->whatBecameOf($stack, $session, Job::named($following)),
-            );
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): TheMoveTurnedOutToBe
+    {
+        return $this->shown($this->movingIn->whatBecameOf($stack, $session, $job), $stack, $this->about ?? '');
+    }
+
+    protected function whileNoJobIsFollowed(): TheMoveTurnedOutToBe
+    {
+        return new HowAMoveReads()->notAsked();
+    }
+
+    protected function withNoSessionHeld(): TheMoveTurnedOutToBe
+    {
+        return new HowAMoveReads()->signedOut($this->about ?? '');
     }
 
     /** Resume the session, ask the machine, and flatten what came back. */
@@ -285,17 +277,16 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
         );
     }
 
-    /** What the stack said, as the screen draws it, holding what to follow or to agree to. */
+    /** What the stack said, as the screen draws it, following the work it names and holding what to agree to. */
     private function shown(WhatBecameOfTheMove $became, Stack $stack, string $mode): TheMoveTurnedOutToBe
     {
         return $became->either(
             underway: function (Job $job) use ($mode): TheMoveTurnedOutToBe {
-                $this->following = $job->shown();
+                $this->follow($job);
 
                 return new HowAMoveReads()->running($mode);
             },
             answered: function (AMove $move): TheMoveTurnedOutToBe {
-                $this->following = null;
                 $this->staged = $move->stance() === Stance::Pending ? $move : null;
 
                 // What is on the machine is the stack's to say again once a
@@ -307,16 +298,8 @@ final class WhatIsAlreadyOnThisMachine extends NativeComponent implements Awaits
 
                 return new HowAMoveReads()->answered($move);
             },
-            ended: function (?WhyTheWorkEnded $why) use ($mode): TheMoveTurnedOutToBe {
-                $this->following = null;
-
-                return new HowAMoveReads()->ended($why, $mode);
-            },
-            refused: function (string $because) use ($mode): TheMoveTurnedOutToBe {
-                $this->following = null;
-
-                return new HowAMoveReads()->refused($because, $mode);
-            },
+            ended: static fn(?WhyTheWorkEnded $why): TheMoveTurnedOutToBe => new HowAMoveReads()->ended($why, $mode),
+            refused: static fn(string $because): TheMoveTurnedOutToBe => new HowAMoveReads()->refused($because, $mode),
             met: function (Obstacle $why) use ($stack, $mode): TheMoveTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 

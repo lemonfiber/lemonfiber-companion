@@ -9,6 +9,7 @@ use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\ACheckThatDisturbs;
 use Modules\Kernel\Api\Asking;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\Report;
@@ -53,10 +54,11 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
+    use FollowsARunOfChecks, FindsItsWayAround {
+        FollowsARunOfChecks::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use DrawsItsTemplate;
     use SaysWhatARunInterrupts;
-    use FollowsARunOfChecks;
 
     public const string TEMPLATE = 'operator::what-running-a-check-disturbs';
 
@@ -70,6 +72,7 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     public function again(): void
@@ -94,7 +97,7 @@ final class WhatRunningACheckDisturbs extends NativeComponent implements AwaitsA
         $check = $shown->seconds === null
             ? ACheckThatDisturbs::unbounded($shown->disturbs, $shown->only)
             : ACheckThatDisturbs::boundedTo($shown->disturbs, $shown->only, $shown->seconds);
-        $this->going = $this->put(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->runs->run($stack, $session, $check));
+        $this->startTheRun(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->runs->run($stack, $session, $check));
     }
 
     /** The finding as the stack last reported it, asked once per frame. */

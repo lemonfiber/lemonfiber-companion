@@ -34,6 +34,7 @@ use Modules\Operator\Internal\Screens\WhereThisGotTo;
 use Modules\Stacks\Api\AStacksScreen;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatExplainsItsWords;
@@ -86,7 +87,7 @@ function theTraceScreen(AStackThatTraces $tracing, ?AKeychainInMemory $keychain 
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhereThisGotTo($tracing, $searching ?? AStackThatSearches::answering(WhatBecameOfTheWork::noOutcome()), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_TRACE_IS_READ)));
+    $screen = new WhereThisGotTo($tracing, $searching ?? AStackThatSearches::answering(WhatBecameOfTheWork::noOutcome()), $explaining ?? AStackThatExplainsItsWords::with(TheGlossary::of()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_TRACE_IS_READ)), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $named]);
 
     return $screen;
@@ -171,7 +172,7 @@ it('follows what was typed with the spaces around it left off, and draws the box
 
     $screen->looking = '  Dune  ';
     expect(WhatTheFieldsHold::on($screen))->toBe(['  Dune  ']);
-    $screen->follow();
+    $screen->followWhatWasTyped();
     $screen->answer();
 
     expect($tracing->followed())->toBe('Dune');
@@ -183,13 +184,13 @@ it('follows what was typed instead, once asked to, and ignores a blank', functio
     $screen->answer();
 
     $screen->looking = ' ';
-    $screen->follow();
+    $screen->followWhatWasTyped();
     $screen->answer();
 
     expect($tracing->followed())->toBe('Severance');
 
     $screen->looking = ' Dune ';
-    $screen->follow();
+    $screen->followWhatWasTyped();
     $screen->answer();
 
     expect($tracing->followed())->toBe('Dune')
@@ -273,7 +274,7 @@ it('is reached by a route carrying the title as it was drawn, and goes back to h
 it('names what was typed without the spaces around it, even where the device holds no session', function (): void {
     $screen = theTraceScreen(AStackThatTraces::with(TracesToFollow::aSeriesStuckDownloading()), signedIn: false);
     $screen->looking = '  Dune  ';
-    $screen->follow();
+    $screen->followWhatWasTyped();
 
     expect($screen->answer()->went->isSignedIn)->toBeFalse()
         ->and($screen->answer()->item)->toBe('Dune');
@@ -420,4 +421,20 @@ it('follows no season below none', function (): void {
 
     expect($screen->season)->toBeNull()
         ->and($tracing->followed())->toBe('Dune');
+});
+
+it('says the session has ended when it is lost while a search is followed, and follows it no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $searching = AStackThatSearches::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatSearches::THE_SEARCH)));
+    $screen = theTraceScreen(AStackThatTraces::with(aFilmASearchWouldSettle()), keychain: $keychain, named: 'Dune', searching: $searching);
+    $screen->answer();
+    $screen->search();
+    $screen->whileItRuns();
+    $keychain->forget(theStackWhoseItemIsFollowed()->id());
+    $screen->whileItRuns();
+
+    expect($screen->howTheSearchIsGoing()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and(array_map(static fn(Job $job): string => $job->shown(), $searching->followed()))->toBe([AStackThatSearches::THE_SEARCH]);
 });

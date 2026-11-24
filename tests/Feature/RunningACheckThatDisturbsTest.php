@@ -31,6 +31,7 @@ use Modules\Operator\Internal\Screens\WhatRunningACheckDisturbs;
 use Modules\Operator\Internal\ViewModels\WhatOneFindingSays;
 use Modules\Stacks\Api\AStacksScreen;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatRunsChecks;
@@ -79,13 +80,13 @@ function aSummaryWithDownloadsMoving(string ...$names): WhatWasHeard
     return WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing())->moving(DownloadsMoving::these(...$names)));
 }
 
-function theRunningScreen(AStackThatWasAsked $asking, AStackThatRunsChecks $running, ?AStackThatSpeaksUp $stream = null, ?FrozenClock $clock = null, string $check = THE_KILLSWITCH): WhatRunningACheckDisturbs
+function theRunningScreen(AStackThatWasAsked $asking, AStackThatRunsChecks $running, ?AStackThatSpeaksUp $stream = null, ?FrozenClock $clock = null, string $check = THE_KILLSWITCH, ?AKeychainInMemory $keychain = null): WhatRunningACheckDisturbs
 {
     $stack = TheHealthScreenOfTheLoft::theStackBeingLookedAt();
-    $keychain = AKeychainInMemory::working();
+    $keychain ??= AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
-    $screen = new WhatRunningACheckDisturbs($asking, $running, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening($stream, $clock));
+    $screen = new WhatRunningACheckDisturbs($asking, $running, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening($stream, $clock), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $check]);
 
     return $screen;
@@ -207,4 +208,20 @@ it('says what stood in the way of a run, and asks the stack again only when told
     $screen->answer();
 
     expect($asking->askings())->toBe(2);
+});
+
+it('says the session has ended when it is lost while a check is followed, and follows it no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $running = AStackThatRunsChecks::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatRunsChecks::THE_RUN)));
+    $screen = theRunningScreen(AStackThatWasAsked::saying(aReportHolding(aKillswitchLeftUnverified())), $running, keychain: $keychain);
+    $screen->answer();
+    $screen->run();
+    $screen->whileItRuns();
+    $keychain->forget(TheHealthScreenOfTheLoft::theStackBeingLookedAt()->id());
+    $screen->whileItRuns();
+
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and(array_map(static fn(Job $job): string => $job->shown(), $running->followed()))->toBe([AStackThatRunsChecks::THE_RUN]);
 });

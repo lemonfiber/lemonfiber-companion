@@ -6,7 +6,6 @@ namespace Modules\Operator\Internal;
 
 use Closure;
 use Modules\Kernel\Api\ARefusalInItsWords;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
@@ -20,7 +19,6 @@ use Modules\Operator\Internal\Presenters\HowTheScheduleReads;
 use Modules\Operator\Internal\ViewModels\TheRunTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\TheScheduleAsShown;
 use Modules\Operator\Internal\ViewModels\WhatRanNowAsShown;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 /**
@@ -32,23 +30,21 @@ use Native\Mobile\Edge\NativeComponent;
  * The screen that uses it takes {@see \Modules\Kernel\Api\RunningOnASchedule}
  * as a private `$scheduling`, {@see \Modules\Kernel\Api\SecureStorage} as a
  * private `$storage` and {@see \Modules\Kernel\Api\Clock} as a private `$clock`,
- * and holds its reading as a public `$answered`.
+ * and holds its reading as a public `$answered`. The run is followed through
+ * {@see FollowsOneJobAtATime}.
  *
  * @phpstan-require-extends NativeComponent
  */
 trait RunsOneNow
 {
+    /** @use FollowsOneJobAtATime<TheRunTurnedOutToBe> */
+    use FollowsOneJobAtATime;
     /** The id of the service waiting for the yes, while one is. */
     public ?string $toRun = null;
 
     /** The name of the service asked about or running, as the reading gave it. */
     public string $runNamed = '';
 
-    /** The handle of the run being followed, while there is one. */
-    public ?string $runFollowed = null;
-
-    /** Where the run has got to, once this frame has asked. */
-    public ?TheRunTurnedOutToBe $runGoing = null;
 
     /** What the stack answered, once it has. */
     public ?WhatRanNowAsShown $ranNow = null;
@@ -78,7 +74,8 @@ trait RunsOneNow
         }
 
         $this->toRun = null;
-        $this->runGoing = $this->runPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->scheduling->runNow($stack, $session, ServiceId::called($service)));
+        $this->forget();
+        $this->reported($this->runPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->scheduling->runNow($stack, $session, ServiceId::called($service))));
     }
 
     /** Leave the yes, or what the stack answered, unsent and unkept. */
@@ -90,35 +87,33 @@ trait RunsOneNow
 
         $this->toRun = null;
         $this->runNamed = '';
-        $this->runGoing = null;
+        $this->forget();
         $this->ranNow = null;
-    }
-
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRunsNow(): void
-    {
-        if ($this->awaitsAnOutcome()) {
-            $this->runGoing = null;
-        }
-    }
-
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->howTheRunGoes()->stands->isWorking();
     }
 
     /** Where the run has got to: not asked, still running, or what it came to. */
     public function howTheRunGoes(): TheRunTurnedOutToBe
     {
-        $following = $this->runFollowed;
-
-        return $this->runGoing ??= $following === null
-            ? new HowTheRunReads()->notAsked()
-            : $this->runPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->scheduling->whatBecameOf($stack, $session, Job::named($following)));
+        return $this->whatBecameOfTheJob();
     }
 
     /** The run-and-exit services, as the screen reads them. */
     abstract public function answer(): TheScheduleAsShown;
+
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): TheRunTurnedOutToBe
+    {
+        return $this->runShown($this->scheduling->whatBecameOf($stack, $session, $job), $stack);
+    }
+
+    protected function whileNoJobIsFollowed(): TheRunTurnedOutToBe
+    {
+        return new HowTheRunReads()->notAsked();
+    }
+
+    protected function withNoSessionHeld(): TheRunTurnedOutToBe
+    {
+        return new HowTheRunReads()->signedOut();
+    }
 
     /** @param Closure(Stack, Session): WhatBecameOfTheWork<WhatRunningItNowCameTo> $asking */
     private function runPut(Closure $asking): TheRunTurnedOutToBe
@@ -127,7 +122,7 @@ trait RunsOneNow
 
         return $this->storage->resume($stack->id())->either(
             held: fn(Session $session): TheRunTurnedOutToBe => $this->runShown($asking($stack, $session), $stack),
-            notHeld: static fn(): TheRunTurnedOutToBe => new HowTheRunReads()->signedOut(),
+            notHeld: $this->withNoSessionHeld(...),
         );
     }
 
@@ -136,29 +131,19 @@ trait RunsOneNow
     {
         return $became->either(
             underway: function (Job $job): TheRunTurnedOutToBe {
-                $this->runFollowed = $job->shown();
+                $this->follow($job);
 
                 return new HowTheRunReads()->running();
             },
             answered: function (WhatRunningItNowCameTo $came): TheRunTurnedOutToBe {
-                $this->runFollowed = null;
                 $this->ranNow = new HowTheScheduleReads()->ranNow($came, $this->runNamed, $this->clock->now());
                 $this->answered = null;
 
                 return new HowTheRunReads()->answered();
             },
-            ended: function (?WhyTheWorkEnded $why): TheRunTurnedOutToBe {
-                $this->runFollowed = null;
-
-                return new HowTheRunReads()->ended($why);
-            },
-            refused: function (ARefusalInItsWords $why): TheRunTurnedOutToBe {
-                $this->runFollowed = null;
-
-                return new HowTheRunReads()->refused($why);
-            },
+            ended: static fn(?WhyTheWorkEnded $why): TheRunTurnedOutToBe => new HowTheRunReads()->ended($why),
+            refused: static fn(ARefusalInItsWords $why): TheRunTurnedOutToBe => new HowTheRunReads()->refused($why),
             met: function (Obstacle $why) use ($stack): TheRunTurnedOutToBe {
-                $this->runFollowed = null;
                 $this->letGoOfTheSession($why, $stack);
 
                 return new HowTheRunReads()->met($why);

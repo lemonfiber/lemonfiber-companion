@@ -20,6 +20,7 @@
     <x-operator::action :label="__('uninstall.read', ['tier' => __('uninstall.tier.media')])" tap="choose('media')" />
 @elseif ($this->answer()->stands->isWorking())
     <x-design::body>{{ __('uninstall.removing') }}</x-design::body>
+    <x-operator::following-a-job :said="$this->whatItSays()" />
 @elseif ($this->answer()->stands->hasEnded())
     <x-operator::why-it-ended :stands="$this->answer()->stands" />
     {{-- Not a failure and not a refusal: the stack has no outcome for the

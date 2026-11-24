@@ -24,6 +24,12 @@ final readonly class AJobFollowed
         return new self($this->job, running: false, said: $this->said);
     }
 
+    /** The job, running or not as it was when last asked after: one that met an obstacle can be found running again. */
+    public function runningWhenAsked(bool $running): self
+    {
+        return new self($this->job, running: $running, said: $this->said);
+    }
+
     public function heard(WhatWasHeardFromAJob $heard): self
     {
         return new self($this->job, running: $this->running, said: $this->said->heard($heard));

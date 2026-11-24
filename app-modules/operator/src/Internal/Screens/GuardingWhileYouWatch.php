@@ -14,7 +14,7 @@ use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Form;
 use Modules\Kernel\Api\Forms;
 use Modules\Kernel\Api\Guarding;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowTheGuardIsGoing;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
@@ -27,6 +27,8 @@ use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatTheGuardSaw;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AsksWhatFormsItHas;
+use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAGuardReads;
 use Modules\Operator\Internal\ViewModels\HowTheGuardWent;
@@ -37,8 +39,8 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
+use UnitEnum;
 
 /**
  * A guard on this machine's data location, for the forms the operator names,
@@ -69,13 +71,16 @@ use Native\Mobile\Edge\NativeComponent;
 #[Lazy]
 #[Concealed]
 #[ItsContent(WhatItShowsDoes::ChangesOnItsOwn)]
-final class GuardingWhileYouWatch extends NativeComponent
+final class GuardingWhileYouWatch extends NativeComponent implements AwaitsAnOutcome
 {
     use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use AsksWhatFormsItHas;
-    use FindsItsWayAround;
+    /** @use FollowsOneJobAtATime<HowTheGuardWent> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
     use DrawsItsTemplate;
 
     public const string TEMPLATE = 'operator::guarding-while-you-watch';
@@ -95,11 +100,6 @@ final class GuardingWhileYouWatch extends NativeComponent
     /** The guard that was started, so what it guards can be said while it runs. */
     public ?AGuardAskedFor $guarding = null;
 
-    /** The name starting it answered. Not shown and never kept past this screen. */
-    public ?string $took = null;
-
-    /** Where the guard stands, once this frame has asked. */
-    public ?HowTheGuardWent $lastGuard = null;
 
     public function __construct(
         private readonly Guarding $guards,
@@ -108,6 +108,7 @@ final class GuardingWhileYouWatch extends NativeComponent
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /** The forms a guard can be asked for, asked once and held while the screen is open. */
@@ -187,32 +188,23 @@ final class GuardingWhileYouWatch extends NativeComponent
         $this->asking = null;
     }
 
+    /** Never: a guard runs until the operator stops it, so there is no outcome to await, and the lock is raised over it as over any screen. */
+    public function awaitsAnOutcome(UnitEnum ...$for): bool
+    {
+        return false;
+    }
+
     /** Where the guard started here stands, or that none was. */
     public function lastGuard(): HowTheGuardWent
     {
-        return $this->lastGuard ??= $this->followed();
-    }
-
-    /**
-     * Ask after the guard again while it guards.
-     *
-     * Asking is what keeps it: the stack holds the guard only while somebody
-     * asks. It does nothing once the guard has ended, so an ending is not read
-     * over and over. The interval is {@see HowOftenAScreenLooks}'s constant.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItGuards(): void
-    {
-        if ($this->lastGuard()->stands->isWorking()) {
-            $this->lastGuard = null;
-        }
+        return $this->whatBecameOfTheJob();
     }
 
     /** Ask the stack again where the guard stands, and the forms where they could not be read. */
     public function again(): void
     {
         $this->formsAgain();
-        $this->lastGuard = null;
+        $this->askAfterAgain();
     }
 
     /** Name forms for another guard, once the last one has ended. */
@@ -222,9 +214,8 @@ final class GuardingWhileYouWatch extends NativeComponent
             return;
         }
 
-        $this->took = null;
+        $this->forget();
         $this->guarding = null;
-        $this->lastGuard = null;
         $this->naming = [];
     }
 
@@ -241,6 +232,23 @@ final class GuardingWhileYouWatch extends NativeComponent
         parent::unmount();
     }
 
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): HowTheGuardWent
+    {
+        return $this->guarding instanceof AGuardAskedFor
+            ? $this->read($this->guards->whatBecameOf($stack, $session, $job), $this->guarding, $stack)
+            : new HowAGuardReads()->notAsked();
+    }
+
+    protected function whileNoJobIsFollowed(): HowTheGuardWent
+    {
+        return new HowAGuardReads()->notAsked();
+    }
+
+    protected function withNoSessionHeld(): HowTheGuardWent
+    {
+        return new HowAGuardReads()->signedOut();
+    }
+
     /**
      * Start the guard agreed to, and hold what to follow it by.
      *
@@ -250,42 +258,20 @@ final class GuardingWhileYouWatch extends NativeComponent
     private function start(AGuardAskedFor $asked): void
     {
         $stack = $this->stack();
-        $this->took = null;
+        $this->forget();
         $this->guarding = $asked;
 
-        $this->lastGuard = $this->storage->resume($stack->id())->either(
+        $this->reported($this->storage->resume($stack->id())->either(
             held: fn(Session $session): HowTheGuardWent => $this->guards->guard($stack, $session, $asked)->either(
                 started: function (Job $job) use ($asked): HowTheGuardWent {
-                    $this->took = $job->shown();
+                    $this->follow($job);
 
                     return new HowAGuardReads()->guarding($asked->forms());
                 },
                 met: $this->lettingGoIfRefused($stack, new HowAGuardReads()->met(...)),
             ),
-            notHeld: static fn(): HowTheGuardWent => new HowAGuardReads()->signedOut(),
-        );
-    }
-
-    /** Ask the stack where the guard stands, or say that none was started. */
-    private function followed(): HowTheGuardWent
-    {
-        $took = $this->took;
-        $asked = $this->guarding;
-
-        if ($took === null || ! $asked instanceof AGuardAskedFor) {
-            return new HowAGuardReads()->notAsked();
-        }
-
-        $stack = $this->stack();
-
-        return $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): HowTheGuardWent => $this->read(
-                $this->guards->whatBecameOf($stack, $session, Job::named($took)),
-                $asked,
-                $stack,
-            ),
-            notHeld: static fn(): HowTheGuardWent => new HowAGuardReads()->signedOut(),
-        );
+            notHeld: $this->withNoSessionHeld(...),
+        ));
     }
 
     /** Where the guard stands, as the template draws it. */
@@ -310,17 +296,16 @@ final class GuardingWhileYouWatch extends NativeComponent
      */
     private function release(): void
     {
-        $took = $this->took;
-        $last = $this->lastGuard;
+        $guard = $this->theRunningJob();
 
-        if ($took === null || ($last instanceof HowTheGuardWent && ! $last->stands->isWorking())) {
+        if (! $guard instanceof Job) {
             return;
         }
 
         $stack = $this->stack();
 
         $this->storage->resume($stack->id())->either(
-            held: fn(Session $session): HowTheGuardIsGoing => $this->guards->letGo($stack, $session, Job::named($took)),
+            held: fn(Session $session): HowTheGuardIsGoing => $this->guards->letGo($stack, $session, $guard),
             notHeld: static fn(): HowTheGuardIsGoing => HowTheGuardIsGoing::noOutcome(),
         );
     }

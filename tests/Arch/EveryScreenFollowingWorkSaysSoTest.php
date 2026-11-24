@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\HowOftenAScreenLooks;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsAJob;
 use Modules\Operator\Internal\LooksAgainWhileItMoves;
-use Modules\Operator\Internal\Screens\GuardingWhileYouWatch;
+use Modules\Operator\Internal\Screens\WatchingOneArrive;
 use Modules\Operator\Internal\Screens\WhatThisStackRuns;
+use Modules\Operator\Internal\Screens\WhatToDoWithThis;
 use Native\Mobile\Attributes\Poll;
 use Tests\Support\Screens;
 
@@ -23,8 +25,6 @@ use Tests\Support\Screens;
  * each with why. A register that may shrink and may not grow.
  */
 const IT_KEEPS_THE_CADENCE_AND_AWAITS_NOTHING = [
-    // A guard runs until the operator stops it, so there is no outcome to await.
-    GuardingWhileYouWatch::class,
     // It sends nothing; its services settle by themselves.
     WhatThisStackRuns::class,
 ];
@@ -94,5 +94,52 @@ it('asks every screen that follows work whether it still awaits the outcome', fu
             "These follow work and cannot be asked whether they still await it:\n  %s\n\n"
             . 'Implement AwaitsAnOutcome, answered from what the screen last heard.',
             implode("\n  ", $silent),
+        ));
+});
+
+/**
+ * Screens awaiting an outcome that follow their job on a stream of their own, each with why. A register that may shrink and may not grow.
+ */
+const IT_FOLLOWS_ITS_JOB_ON_ITS_OWN_STREAM = [
+    // It hears the walk's stages on the walk's own stream.
+    WatchingOneArrive::class,
+    // It hears what a start waits on, the job's lines among them, on the start's own stream.
+    WhatToDoWithThis::class,
+];
+
+/**
+ * Every screen awaiting an outcome, and those of them that follow their job some other way, or name a job themselves.
+ *
+ * @return array{awaiting: list<string>, apart: list<string>}
+ */
+function whoFollowsTheirJobApart(): array
+{
+    $awaiting = [];
+    $apart = [];
+
+    foreach (Screens::byTheViewTheyRender() as $screen) {
+        if (! $screen->implementsInterface(AwaitsAnOutcome::class) || in_array($screen->getName(), IT_FOLLOWS_ITS_JOB_ON_ITS_OWN_STREAM, strict: true)) {
+            continue;
+        }
+
+        $awaiting[] = $screen->getName();
+        $source = (string) file_get_contents((string) $screen->getFileName());
+
+        if (! in_array(FollowsAJob::class, class_uses_recursive($screen->getName()), strict: true) || str_contains($source, 'Job::named(')) {
+            $apart[] = $screen->getShortName();
+        }
+    }
+
+    return ['awaiting' => $awaiting, 'apart' => $apart];
+}
+
+it('follows the job of every screen awaiting an outcome through the shared home', function (): void {
+    ['awaiting' => $awaiting, 'apart' => $apart] = whoFollowsTheirJobApart();
+
+    expect($awaiting)->not->toBe([], 'no screen awaits an outcome, so this rule read nothing')
+        ->and($apart)->toBe([], sprintf(
+            "These await an outcome and follow their job apart from FollowsAJob, or name a job themselves:\n  %s\n\n"
+            . 'Follow it through FollowsOneJobAtATime or FollowsAJob, and take the job from the stack\'s answer.',
+            implode("\n  ", $apart),
         ));
 });

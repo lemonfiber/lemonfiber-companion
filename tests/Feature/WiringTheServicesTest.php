@@ -49,6 +49,7 @@ use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Internal\TheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatChoosesFillers;
@@ -92,7 +93,7 @@ function theWiringScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new HowTheServicesAreWired($wiring, $linking ?? AStackThatSaysWhatAnswersWhat::with(TheLinks::of(WhatNothingFills::none())), AStackThatChoosesFillers::answering(WhatBecameOfTheFill::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))), $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening($hearing));
+    $screen = new HowTheServicesAreWired($wiring, $linking ?? AStackThatSaysWhatAnswersWhat::with(TheLinks::of(WhatNothingFills::none())), AStackThatChoosesFillers::answering(WhatBecameOfTheFill::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer))), $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening($hearing), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -134,7 +135,7 @@ function theScreenAfterWiring(AStackThatWires $wiring): HowTheServicesAreWired
 {
     $screen = theWiringScreen($wiring);
     $screen->wire();
-    $screen->going = null;
+    $screen->whileItRuns();
 
     return $screen;
 }
@@ -210,7 +211,7 @@ it('starts a run, says it is working while it runs, and offers no second run mea
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($wiring->asked())->toBe(['wire'])
-        ->and($screen->following)->toBe('j-1')
+        ->and($screen->awaitsAnOutcome())->toBeTrue()
         ->and($drawn->said())->toContain(__('stacks.wiring.working'))
         ->and($drawn->offers())->not->toContain(__('stacks.wiring.wire'));
 });
@@ -319,7 +320,7 @@ it('shows a request the stack turned down in its own words', function (): void {
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect($screen->howItIsGoing()->refusal)->toBe('Nothing here to wire')
-        ->and($screen->following)->toBeNull()
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
         ->and($drawn->said())->toContain(__('stacks.wiring.refused'))
         ->and($drawn->said())->toContain('Nothing here to wire')
         ->and($drawn->offers())->toBe([__('stacks.wiring.wire'), __('stacks.wiring.rehearse_adopting'), __('health.ask_again')]);
@@ -335,7 +336,7 @@ it('says the stack has no outcome for a run it no longer knows, which is not a r
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.wiring.no_outcome'))
         ->and($screen->howItIsGoing()->stands->hasEnded())->toBeTrue()
-        ->and($screen->following)->toBeNull()
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
         ->and($wiring->asked())->toBe(['wire', 'after:j-1']);
 });
 
@@ -364,7 +365,7 @@ it('starts a second run afresh, letting go of the one it followed', function ():
     $screen->wire();
 
     expect($wiring->asked())->toBe(['wire', 'wire'])
-        ->and($screen->following)->toBeNull();
+        ->and($screen->followed)->toBe([]);
 });
 
 it('a run the stack could not be reached for is an obstacle that can be asked again', function (): void {
@@ -379,7 +380,12 @@ it('a run the stack could not be reached for is an obstacle that can be asked ag
     $screen->again();
     $screen->howItIsGoing();
 
-    expect($wiring->asked())->toBe(['wire', 'after:j-1', 'after:j-1']);
+    expect($wiring->asked())->toBe(['wire', 'after:j-1', 'after:j-1'])
+        ->and($screen->awaitsAnOutcome())->toBeTrue();
+
+    $screen->whileItRuns();
+
+    expect($wiring->asked())->toBe(['wire', 'after:j-1', 'after:j-1', 'after:j-1']);
 });
 
 it('asking again reads the services afresh and keeps the report a run came to', function (): void {
@@ -387,7 +393,7 @@ it('asking again reads the services afresh and keeps the report a run came to', 
     $wiring = AStackThatWires::answering(WhatBecameOfTheWiring::underway(Job::named('j-1')), WhatBecameOfTheWiring::answered(aRunOfEveryConnection()));
     $screen = theWiringScreen($wiring, supervising: $supervising);
     $screen->wire();
-    $screen->going = null;
+    $screen->whileItRuns();
     $screen->answer();
     $screen->howItIsGoing();
     $screen->again();
@@ -404,7 +410,7 @@ it('asking again before anything was drawn reads the services, and starts nothin
     $screen = theWiringScreen($wiring, supervising: $supervising);
     $screen->again();
 
-    expect($screen->going)->toBeNull()
+    expect($screen->followed)->toBe([])
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toBe([__('stacks.wiring.wire'), __('stacks.wiring.rehearse_adopting'), __('health.ask_again')])
         ->and($supervising->askings())->toBe(1)
         ->and($wiring->asked())->toBe([]);
@@ -440,6 +446,23 @@ it('a session that has ended asks the stack nothing', function (): void {
 
     expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
         ->and($wiring->asked())->toBe([]);
+});
+
+it('says the session has ended when it is lost while a run is followed, and follows it no further', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $underway = WhatBecameOfTheWiring::underway(Job::named('j-1'));
+    $wiring = AStackThatWires::answering($underway, $underway);
+    $screen = theWiringScreen($wiring, $keychain);
+    $screen->answer();
+    $screen->wire();
+    $screen->whileItRuns();
+    $keychain->forget(theStackWhoseServicesAreWired()->id());
+    $screen->whileItRuns();
+
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse()
+        ->and($wiring->asked())->toBe(['wire', 'after:j-1']);
 });
 
 it('refuses a route parameter that is not text', function (): void {

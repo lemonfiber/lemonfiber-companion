@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\ViewModels;
 
 /** Where a run the stack was asked for, of a check that disturbs or of a run-and-exit service at once, has got to, flattened for a template. */
-final readonly class TheRunTurnedOutToBe
+final readonly class TheRunTurnedOutToBe implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands    $stands      where the work stands, and whether the stack could be asked at all

@@ -9,6 +9,7 @@ use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\RunningOnASchedule;
 use Modules\Kernel\Api\SecureStorage;
@@ -42,8 +43,9 @@ final class TheScheduledRuns extends NativeComponent implements AwaitsAnOutcome
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
-    use RunsOneNow;
+    use RunsOneNow, FindsItsWayAround {
+        RunsOneNow::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     /** The run-and-exit services, once the frame has asked. */
     public ?TheScheduleAsShown $answered = null;
@@ -55,6 +57,7 @@ final class TheScheduledRuns extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /** Let go of the reading, so the next frame takes it again. */
