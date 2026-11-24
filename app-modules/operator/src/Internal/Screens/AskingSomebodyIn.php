@@ -17,7 +17,7 @@ use Modules\Kernel\Api\AnInvitationAskedFor;
 use Modules\Kernel\Api\AnInvitationToPassOn;
 use Modules\Kernel\Api\Concealed;
 use Modules\Kernel\Api\Encoding;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
@@ -32,9 +32,9 @@ use Modules\Kernel\Api\TheMembers;
 use Modules\Kernel\Api\WhatBecameOfTheInvitation;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyTheWorkEnded;
-use Modules\Operator\Internal\AnInvitationFollowed;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\ChoosesWhatAnInvitationAsks;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheInvitationReads;
 use Modules\Operator\Internal\Presenters\HowWhoIsInReads;
@@ -48,7 +48,6 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
@@ -68,9 +67,8 @@ use function trim;
  * anything else is offered. The yes is a second tap, and it sends the request
  * the rehearsal was asked with rather than whatever is in the fields now.
  *
- * **Every answer is work the stack names and this follows**, so the handle is
- * held and asked after at {@see HowOftenAScreenLooks::WhileWorkRuns} while it runs, the way
- * {@see HowCurrentThisStackIs} follows an update.
+ * **Every answer is work the stack names and this follows** through
+ * {@see FollowsOneJobAtATime}: while it runs the screen shows what the job says.
  *
  * **The address is handed over as it came**: as text, as a code another phone
  * scans off this one's screen, and through the device's own sharing with the
@@ -92,8 +90,11 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
     use OffersTheAppsSettings;
     use ChoosesWhatAnInvitationAsks;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
     use DrawsItsTemplate;
+    /** @use FollowsOneJobAtATime<TheInvitationTurnedOutToBe> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     public const string TEMPLATE = 'operator::asking-somebody-in';
     /** The sentence the text handed over leads to the address that turns the invitation down with. */
@@ -111,16 +112,13 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
     /** The invitation the stack last answered, rehearsed or carried out. */
     public ?AnInvitation $invitation = null;
 
-    /** The work being followed, while there is some. */
-    public ?AnInvitationFollowed $following = null;
+    /** Who the work in hand is about, which every report on it is drawn with. */
+    public string $about = '';
 
     /** The catalogue key for what handing it over came to, where it has been. */
     public ?string $passedOn = null;
 
-    /** Where it has got to, once this frame has asked. Public for {@see WhatIsRunningHere::$answered}'s reason. */
-    public ?TheInvitationTurnedOutToBe $going = null;
-
-    /** Who is in, once this frame has asked. Public for the same reason. */
+    /** Who is in, once this frame has asked. Public for {@see WhatIsRunningHere::$answered}'s reason. */
     public ?WhoIsInTurnedOutToBe $answered = null;
 
     public function __construct(
@@ -132,6 +130,7 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
         private readonly Translator $catalogue,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
     /**
@@ -157,7 +156,7 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
      */
     public function again(): void
     {
-        $this->going = null;
+        $this->askAfterAgain();
         $this->answered = null;
     }
 
@@ -166,10 +165,9 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
     {
         $this->asked = null;
         $this->invitation = null;
-        $this->following = null;
         $this->passedOn = null;
         $this->member = '';
-        $this->going = null;
+        $this->forget();
     }
 
     /**
@@ -182,7 +180,7 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
     {
         $this->startAgain();
 
-        $this->going = WhatTheInvitationIsAskedWith::from($this->name, $this->libraries, $this->age, $this->unrated)->either(
+        $this->reported(WhatTheInvitationIsAskedWith::from($this->name, $this->libraries, $this->age, $this->unrated)->either(
             asked: fn(AnInvitationAskedFor $asked): TheInvitationTurnedOutToBe => $this->put(
                 $asked->name(),
                 function (Stack $stack, Session $session) use ($asked): WhatBecameOfTheInvitation {
@@ -192,7 +190,7 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
                 },
             ),
             notAskable: static fn(string $why): TheInvitationTurnedOutToBe => new HowTheInvitationReads()->notAskable($why),
-        );
+        ));
     }
 
     /**
@@ -213,11 +211,11 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
 
         $agreed = AnInvitationAgreed::after($asked, $offered);
         $this->invitation = null;
-
-        $this->going = $this->put(
+        $this->forget();
+        $this->reported($this->put(
             $asked->name(),
             fn(Stack $stack, Session $session): WhatBecameOfTheInvitation => $this->inviting->invite($stack, $session, $agreed),
-        );
+        ));
     }
 
     /**
@@ -256,11 +254,10 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
 
         $who = SomebodyInTheHousehold::called($this->member);
         $this->startAgain();
-
-        $this->going = $this->put(
+        $this->reported($this->put(
             $who->name(),
             fn(Stack $stack, Session $session): WhatBecameOfTheInvitation => $this->inviting->takeThePasswordOff($stack, $session, $who),
-        );
+        ));
     }
 
     /**
@@ -300,26 +297,6 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
         )->said;
     }
 
-    /**
-     * Ask after the work again while the stack is carrying it out.
-     *
-     * Nothing happens unless it is running, so a finished answer is not asked
-     * for again. The interval is {@see HowOftenAScreenLooks}'s.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
-    {
-        if ($this->howItIsGoing()->stands->isWorking()) {
-            $this->going = null;
-        }
-    }
-
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->howItIsGoing()->stands->isWorking();
-    }
-
     /** Who is in, asked once per frame. */
     public function answer(): WhoIsInTurnedOutToBe
     {
@@ -334,22 +311,25 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
         );
     }
 
-    /**
-     * Where asking has got to, asked once per frame.
-     *
-     * Asks the stack after the work being followed where there is some, and
-     * otherwise says nothing has been asked.
-     */
+    /** Where asking has got to, asked once per frame. */
     public function howItIsGoing(): TheInvitationTurnedOutToBe
     {
-        $following = $this->following;
+        return $this->whatBecameOfTheJob();
+    }
 
-        return $this->going ??= $following instanceof AnInvitationFollowed
-            ? $this->put(
-                $following->name,
-                fn(Stack $stack, Session $session): WhatBecameOfTheInvitation => $this->inviting->whatBecameOf($stack, $session, Job::named($following->job)),
-            )
-            : new HowTheInvitationReads()->notAsked();
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): TheInvitationTurnedOutToBe
+    {
+        return $this->shown($this->inviting->whatBecameOf($stack, $session, $job), $stack, $this->about);
+    }
+
+    protected function whileNoJobIsFollowed(): TheInvitationTurnedOutToBe
+    {
+        return new HowTheInvitationReads()->notAsked();
+    }
+
+    protected function withNoSessionHeld(): TheInvitationTurnedOutToBe
+    {
+        return new HowTheInvitationReads()->signedOut($this->about);
     }
 
     /**
@@ -372,12 +352,12 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
     {
         return $became->either(
             underway: function (Job $job) use ($name): TheInvitationTurnedOutToBe {
-                $this->following = new AnInvitationFollowed($job->shown(), $name);
+                $this->follow($job);
+                $this->about = $name;
 
                 return new HowTheInvitationReads()->running($name);
             },
             answered: function (AnInvitation $invitation): TheInvitationTurnedOutToBe {
-                $this->following = null;
                 $this->invitation = $invitation;
 
                 // Who is in is the stack's to say again once it has made or
@@ -388,16 +368,8 @@ final class AskingSomebodyIn extends NativeComponent implements AwaitsAnOutcome
 
                 return new HowTheInvitationReads()->answered($invitation, TheCodesDrawn::of($this->encoding, $invitation->toHand()->address()->joining(), $invitation->toHand()->address(), $invitation->toHand()->address()->declining()));
             },
-            ended: function (?WhyTheWorkEnded $why) use ($name): TheInvitationTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTheInvitationReads()->ended($why, $name);
-            },
-            refused: function (string $because) use ($name): TheInvitationTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTheInvitationReads()->refused($because, $name);
-            },
+            ended: static fn(?WhyTheWorkEnded $why): TheInvitationTurnedOutToBe => new HowTheInvitationReads()->ended($why, $name),
+            refused: static fn(string $because): TheInvitationTurnedOutToBe => new HowTheInvitationReads()->refused($because, $name),
             met: function (Obstacle $why) use ($stack, $name): TheInvitationTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 

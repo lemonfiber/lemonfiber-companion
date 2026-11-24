@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Screens;
 
 use Closure;
-
-use function is_string;
-
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\ARemoval;
 use Modules\Kernel\Api\ARemovalAgreed;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\HowOftenAScreenLooks;
+use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\Obstacle;
@@ -26,6 +23,7 @@ use Modules\Kernel\Api\WhatBecameOfTheRemoval;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsOneJobAtATime;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowTheRemovalReads;
 use Modules\Operator\Internal\ViewModels\TheRemovalTurnedOutToBe;
@@ -34,7 +32,6 @@ use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
-use Native\Mobile\Attributes\Poll;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
@@ -59,8 +56,8 @@ use function trim;
  * the stack's sentence, drawn as it wrote it before the yes and after it.
  *
  * **How far it reached is the stack's word**, and only *everywhere* is drawn
- * as done. Every act is work the stack names and this follows, at
- * {@see HowOftenAScreenLooks::WhileWorkRuns} while it runs.
+ * as done. Every act is work the stack names and this follows through
+ * {@see FollowsOneJobAtATime}: while it runs the screen shows what it says.
  *
  * `Concealed` for the reason every stack-facing screen here is.
  */
@@ -72,8 +69,11 @@ final class TakingSomebodyOut extends NativeComponent implements AwaitsAnOutcome
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
     use DrawsItsTemplate;
+    /** @use FollowsOneJobAtATime<TheRemovalTurnedOutToBe> */
+    use FollowsOneJobAtATime, FindsItsWayAround {
+        FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
+    }
 
     public const string TEMPLATE = 'operator::taking-somebody-out';
 
@@ -85,14 +85,8 @@ final class TakingSomebodyOut extends NativeComponent implements AwaitsAnOutcome
      */
     public ?ARemoval $described = null;
 
-    /** The handle of the work being followed, while there is one. Not shown and never kept past this screen. */
-    public ?string $following = null;
-
     /** Whether the yes was sent, which is what an answer that cannot be read is about. */
     public bool $agreed = false;
-
-    /** Where it has got to, once this frame has asked. Public for {@see WhatIsRunningHere::$answered}'s reason. */
-    public ?TheRemovalTurnedOutToBe $going = null;
 
     public function __construct(
         private readonly RemovingSomebody $removing,
@@ -100,13 +94,8 @@ final class TakingSomebodyOut extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
+        protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
-
-    /** The same question this screen's cadence asks, answered from what it last heard. */
-    public function awaitsAnOutcome(): bool
-    {
-        return $this->answer()->stands->isWorking();
-    }
 
     /** The member this screen is about, by the name the route carries. */
     public function named(): string
@@ -122,7 +111,7 @@ final class TakingSomebodyOut extends NativeComponent implements AwaitsAnOutcome
      */
     public function answer(): TheRemovalTurnedOutToBe
     {
-        return $this->going ??= $this->asked();
+        return $this->whatBecameOfTheJob();
     }
 
     /**
@@ -142,57 +131,41 @@ final class TakingSomebodyOut extends NativeComponent implements AwaitsAnOutcome
         $agreed = ARemovalAgreed::after($described);
         $this->described = null;
         $this->agreed = true;
-
-        $this->going = $this->put(
+        $this->forget();
+        $this->reported($this->put(
             fn(Stack $stack, Session $session): WhatBecameOfTheRemoval => $this->removing->remove($stack, $session, $agreed),
-        );
+        ));
     }
 
     /**
      * Ask again, because the operator said so.
      *
-     * After work the stack took on, it asks after the same handle. Otherwise
-     * it asks afresh what taking them out would cost, which a yes has to be
-     * given to again: a yes that met something on the way is never sent a
-     * second time on its own.
+     * After work the stack took on and has not answered, it asks after the
+     * same job. Otherwise it asks afresh what taking them out would cost,
+     * which a yes has to be given to again: a yes that met something on the
+     * way is never sent a second time on its own.
      */
     public function again(): void
     {
-        $this->going = null;
+        if ($this->awaitsAnOutcome() || ($this->follows() && ! $this->answer()->stands->went->cameBack())) {
+            $this->askAfterAgain();
 
-        if (is_string($this->following)) {
             return;
         }
 
+        $this->forget();
         $this->described = null;
         $this->agreed = false;
     }
 
-    /**
-     * Ask after the work again while the stack is carrying it out.
-     *
-     * Nothing happens unless it is running, so a finished answer is not asked
-     * for again. The interval is {@see HowOftenAScreenLooks}'s.
-     */
-    #[Poll(HowOftenAScreenLooks::WHILE_WORK_RUNS_MS)]
-    public function whileItRuns(): void
+    protected function whatTheJobCameTo(Stack $stack, Session $session, Job $job): TheRemovalTurnedOutToBe
     {
-        if ($this->answer()->stands->isWorking()) {
-            $this->going = null;
-        }
+        return $this->shown($this->removing->whatBecameOf($stack, $session, $job), $stack);
     }
 
-    /** What the stack is asked this frame: after the work being followed, or what taking them out would cost. */
-    private function asked(): TheRemovalTurnedOutToBe
+    /** What taking them out would cost, asked where no work is followed; it takes nobody out. */
+    protected function whileNoJobIsFollowed(): TheRemovalTurnedOutToBe
     {
-        $following = $this->following;
-
-        if (is_string($following)) {
-            return $this->put(
-                fn(Stack $stack, Session $session): WhatBecameOfTheRemoval => $this->removing->whatBecameOf($stack, $session, Job::named($following)),
-            );
-        }
-
         $named = $this->named();
 
         if (trim($named) === '') {
@@ -205,6 +178,12 @@ final class TakingSomebodyOut extends NativeComponent implements AwaitsAnOutcome
             fn(Stack $stack, Session $session): WhatBecameOfTheRemoval => $this->removing->wouldRemove($stack, $session, $who),
         );
     }
+
+    protected function withNoSessionHeld(): TheRemovalTurnedOutToBe
+    {
+        return new HowTheRemovalReads()->signedOut($this->named());
+    }
+
 
     /**
      * One act put to the stack, with the session this device holds for it.
@@ -229,26 +208,17 @@ final class TakingSomebodyOut extends NativeComponent implements AwaitsAnOutcome
 
         return $became->either(
             underway: function (Job $job) use ($name, $agreed): TheRemovalTurnedOutToBe {
-                $this->following = $job->shown();
+                $this->follow($job);
 
                 return new HowTheRemovalReads()->running($name, $agreed);
             },
             answered: function (ARemoval $removal): TheRemovalTurnedOutToBe {
-                $this->following = null;
                 $this->described = $removal->wasCarriedOut() ? null : $removal;
 
                 return new HowTheRemovalReads()->answered($removal);
             },
-            ended: function (?WhyTheWorkEnded $why) use ($name, $agreed): TheRemovalTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTheRemovalReads()->ended($why, $name, $agreed);
-            },
-            refused: function (string $because) use ($name, $agreed): TheRemovalTurnedOutToBe {
-                $this->following = null;
-
-                return new HowTheRemovalReads()->refused($because, $name, $agreed);
-            },
+            ended: static fn(?WhyTheWorkEnded $why): TheRemovalTurnedOutToBe => new HowTheRemovalReads()->ended($why, $name, $agreed),
+            refused: static fn(string $because): TheRemovalTurnedOutToBe => new HowTheRemovalReads()->refused($because, $name, $agreed),
             met: function (Obstacle $why) use ($stack, $name, $agreed): TheRemovalTurnedOutToBe {
                 $this->letGoOfTheSession($why, $stack);
 

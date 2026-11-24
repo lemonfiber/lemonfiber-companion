@@ -18,6 +18,7 @@
         @else
             <x-design::body>{{ __('stacks.removal.reading', ['name' => $this->answer()->name]) }}</x-design::body>
         @endif
+        <x-operator::following-a-job :said="$this->whatItSays()" />
     @elseif ($this->answer()->stands->hasEnded())
         <x-operator::why-it-ended :stands="$this->answer()->stands" />
         {{-- Not a failure and not a refusal: the stack has no outcome for it

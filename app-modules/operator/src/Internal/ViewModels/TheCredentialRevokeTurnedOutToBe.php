@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\ViewModels;
 
 /** Where ending a grant has got to, flattened for a template. */
-final readonly class TheCredentialRevokeTurnedOutToBe
+final readonly class TheCredentialRevokeTurnedOutToBe implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands             $stands      where the work stands, and whether the stack could be asked at all

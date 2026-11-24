@@ -38,6 +38,7 @@
                 :said="__('stacks.invitation.working')"
                 tone="working"
             />
+            <x-operator::following-a-job :said="$this->whatItSays()" />
         @elseif ($this->howItIsGoing()->stands->hasEnded())
             <x-operator::why-it-ended :stands="$this->howItIsGoing()->stands" />
             {{-- Not a failure and not a refusal: the stack has no outcome for it

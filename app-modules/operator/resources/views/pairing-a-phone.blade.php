@@ -19,6 +19,7 @@
         />
     @elseif ($this->going()->stands->isWorking())
         <x-design::standing :said="__('stacks.invitation.working')" tone="working" />
+        <x-operator::following-a-job :said="$this->whatItSays()" />
     @elseif ($this->going()->code !== null)
         {{-- The line as a code, then the same line to type, then what to
              check and what to know. Nothing here copies it or passes it on:

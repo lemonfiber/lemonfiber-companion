@@ -18,11 +18,13 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatBecameOfThePairingCode;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\PairingAPhone;
+use Modules\Operator\Internal\TheOnlyJob;
 use Modules\Wayfinding\Internal\TheMenu;
 use Modules\Wayfinding\Internal\WhereInTheMenu;
 use Native\Mobile\Edge\NativeRouter;
 use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\ACodeOfWhatItWasGiven;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatMakesPairingCodes;
@@ -97,6 +99,7 @@ function thePairingScreen(
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
@@ -121,7 +124,7 @@ it('says the stack is working on it while it makes the code, and follows it by i
     $screen->make();
 
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('stacks.invitation.working'))
-        ->and($screen->following)->toBe(AStackThatMakesPairingCodes::THE_JOB);
+        ->and($screen->followed[TheOnlyJob::Followed->name]->job->shown())->toBe(AStackThatMakesPairingCodes::THE_JOB);
 
     $screen->whileItRuns();
     WhatTheDeviceWouldDraw::by($screen);
@@ -145,7 +148,7 @@ it('shows the code drawn of the line, the line to type, the compare code, until 
         ->and($drawn)->toContain(__('stacks.pairing.until', ['until' => '02:10:00']))
         ->and($drawn)->toContain(__('stacks.pairing.reaches', ['address' => 'https://den.local:8443']))
         ->and($drawn)->toContain('That address is a number.')
-        ->and($screen->following)->toBeNull();
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
 });
 
 it('says what replacing the certificate costs in the stack\'s words, then that it is replaced at the machine, and offers neither', function (): void {
@@ -246,7 +249,7 @@ it('goes back to offering a code where the stack has no outcome for the one aske
     $screen->whileItRuns();
 
     expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('stacks.pairing.make'))
-        ->and($screen->following)->toBeNull();
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
 });
 
 it('says what stood in the way, and lets go of a session the stack refused', function (): void {

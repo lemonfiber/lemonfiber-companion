@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal;
 
 use Closure;
-
-use function is_string;
-
 use Modules\Kernel\Api\ACertificateReplacement;
 use Modules\Kernel\Api\ACertificateReplacementAgreed;
 use Modules\Kernel\Api\ARefusalInItsWords;
@@ -38,7 +35,9 @@ use Modules\Operator\Internal\ViewModels\WhoIsWatchingAsShown;
  * The screen that uses it takes {@see \Modules\Kernel\Api\ReplacingTheInternalCertificate}
  * as a protected `$replacingIt`, {@see \Modules\Kernel\Api\FollowingWhatIsPlaying}
  * as a protected `$playing` and {@see \Modules\Kernel\Api\SecureStorage} as a
- * private `$storage`, and holds every credential as a public `$held`.
+ * private `$storage`, and holds every credential as a public `$held`. It
+ * follows the replacement through {@see FollowsAJob}, for
+ * {@see CredentialsFollowed::TheReplacement}.
  */
 trait ReplacesTheInternalCertificate
 {
@@ -47,12 +46,6 @@ trait ReplacesTheInternalCertificate
 
     /** What the stack read of replacing it, which is what a yes agrees to. */
     public ?ACertificateReplacement $replacement = null;
-
-    /** The handle of the replacement being followed, while there is one. */
-    public ?string $followingTheReplacement = null;
-
-    /** Where replacing it has got to, once this frame has asked. Public for {@see Screens\WhatIsRunningHere::$answered}'s reason. */
-    public ?TheReplacementTurnedOutToBe $replacementGoing = null;
 
     /** Who is watching on the media server, as it stood when the replacement was read. */
     public ?WhoIsWatchingAsShown $watching = null;
@@ -63,7 +56,7 @@ trait ReplacesTheInternalCertificate
     /** Ask what replacing the internal certificate would do, with who is watching now; while work runs, nothing is asked. */
     public function replaceTheCertificate(): void
     {
-        if ($this->workRuns()) {
+        if ($this->awaitsAnOutcome()) {
             return;
         }
 
@@ -84,17 +77,19 @@ trait ReplacesTheInternalCertificate
         $agreed = ACertificateReplacementAgreed::after($reading);
         $this->replacement = null;
         $this->movedOn = null;
-        $this->replacementGoing = $this->putTheReplacement(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->replacingIt->replace($stack, $session, $agreed));
+        $this->forget(CredentialsFollowed::TheReplacement);
+        $this->reported(
+            $this->putTheReplacement(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->replacingIt->replace($stack, $session, $agreed)),
+            CredentialsFollowed::TheReplacement,
+        );
     }
 
     /** Where replacing it has got to, asked once per frame. */
     public function howTheReplacementGoes(): TheReplacementTurnedOutToBe
     {
-        $following = $this->followingTheReplacement;
+        $report = $this->whatBecameOfTheJob(CredentialsFollowed::TheReplacement);
 
-        return $this->replacementGoing ??= $following === null
-            ? new HowAReplacementReads()->notAsked()
-            : $this->putTheReplacement(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->replacingIt->whatBecameOf($stack, $session, Job::named($following)));
+        return $report instanceof TheReplacementTurnedOutToBe ? $report : new HowAReplacementReads()->notAsked();
     }
 
     /** Leave replacing it, keeping nothing of what was read. */
@@ -102,8 +97,7 @@ trait ReplacesTheInternalCertificate
     {
         $this->replacing = false;
         $this->replacement = null;
-        $this->followingTheReplacement = null;
-        $this->replacementGoing = null;
+        $this->forget(CredentialsFollowed::TheReplacement);
         $this->watching = null;
         $this->movedOn = null;
     }
@@ -111,17 +105,20 @@ trait ReplacesTheInternalCertificate
     /** Leave whatever is open, back to the credentials as last read. */
     abstract public function backToTheCredentials(): void;
 
-    /** Whether work the screen asked of the stack is still being followed. */
-    private function workRuns(): bool
-    {
-        return is_string($this->following) || is_string($this->followingTheReplacement);
-    }
-
     /** Ask who is watching and what replacing it would do. */
     private function readTheReplacement(): void
     {
         $this->watching = $this->whoIsWatching();
-        $this->replacementGoing = $this->putTheReplacement(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->replacingIt->read($stack, $session));
+        $this->reported(
+            $this->putTheReplacement(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->replacingIt->read($stack, $session)),
+            CredentialsFollowed::TheReplacement,
+        );
+    }
+
+    /** What the replacement followed came to, as the screen draws it. */
+    private function whatTheReplacementCameTo(Stack $stack, Session $session, Job $job): TheReplacementTurnedOutToBe
+    {
+        return $this->replacementShown($this->replacingIt->whatBecameOf($stack, $session, $job), $stack);
     }
 
     /** Who is watching on the media server now, asked with the operator's session alone. */
@@ -167,24 +164,18 @@ trait ReplacesTheInternalCertificate
     {
         return $became->eitherOrMoved(
             underway: function (Job $job): TheReplacementTurnedOutToBe {
-                $this->followingTheReplacement = $job->shown();
+                $this->follow($job, CredentialsFollowed::TheReplacement);
 
                 return new HowAReplacementReads()->running();
             },
             answered: function (WhatAReplacementCameTo $came): TheReplacementTurnedOutToBe {
-                $this->followingTheReplacement = null;
                 $this->held = $came->held();
                 $this->replacement = $came->replacement();
 
                 return new HowAReplacementReads()->answered($came);
             },
-            ended: function (?WhyTheWorkEnded $why): TheReplacementTurnedOutToBe {
-                $this->followingTheReplacement = null;
-
-                return new HowAReplacementReads()->ended($why);
-            },
+            ended: static fn(?WhyTheWorkEnded $why): TheReplacementTurnedOutToBe => new HowAReplacementReads()->ended($why),
             refused: function (ARefusalInItsWords $why): TheReplacementTurnedOutToBe {
-                $this->followingTheReplacement = null;
                 $this->held = null;
 
                 return new HowAReplacementReads()->refused($why);
@@ -195,7 +186,7 @@ trait ReplacesTheInternalCertificate
                 return new HowAReplacementReads()->met($why);
             },
             moved: function (ARefusalInItsWords $why): TheReplacementTurnedOutToBe {
-                $this->followingTheReplacement = null;
+                $this->forget(CredentialsFollowed::TheReplacement);
                 $this->movedOn = new HowARefusalReads()->inItsWords($why);
                 $this->readTheReplacement();
 

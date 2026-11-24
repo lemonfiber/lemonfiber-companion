@@ -66,6 +66,7 @@
     @if ($this->howItIsGoing()->stands->went->cameBack())
         @if ($this->howItIsGoing()->stands->isWorking())
             <x-design::standing :said="__('stacks.allowance_change.working')" tone="working" />
+            <x-operator::following-a-job :said="$this->whatItSays()" />
         @elseif ($this->howItIsGoing()->stands->hasEnded())
             <x-operator::why-it-ended :stands="$this->howItIsGoing()->stands" />
             <x-design::notice tone="unknown">

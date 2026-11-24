@@ -12,7 +12,7 @@ namespace Modules\Operator\Internal\ViewModels;
  * stack refusing with its reason, the work ended with no outcome, or a route
  * that names nobody.
  */
-final readonly class TheRemovalTurnedOutToBe
+final readonly class TheRemovalTurnedOutToBe implements SaysWhereTheWorkStands
 {
     /**
      * @param WhereTheWorkStands    $stands         where the work stands, and whether the stack could be asked at all

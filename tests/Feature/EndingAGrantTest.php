@@ -31,13 +31,16 @@ use Modules\Kernel\Api\WhatTheHouseholdIsPlaying;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatTheStoreProtects;
 use Modules\Kernel\Api\WhatUsesIt;
+use Modules\Kernel\Api\WhatWasHeardFromAJob;
 use Modules\Kernel\Api\WhereACredentialStands;
 use Modules\Kernel\Api\WhoMadeACredential;
 use Modules\Kernel\Api\Whose;
+use Modules\Operator\Internal\CredentialsFollowed;
 use Modules\Operator\Internal\Listed;
 use Modules\Operator\Internal\Screens\WhatItHoldsToLetThemIn;
 use Modules\Operator\Internal\ViewModels\ACredentialAsShown;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\AStackThatEndsGrants;
@@ -79,10 +82,10 @@ function thePasswordsWithTheirGrants(ACredentialGrant ...$grants): TheCredential
     );
 }
 
-function theGrantingScreen(AStackThatEndsGrants $ending, ?TheCredentialsHeld $held = null, bool $signedIn = true): WhatItHoldsToLetThemIn
+function theGrantingScreen(AStackThatEndsGrants $ending, ?TheCredentialsHeld $held = null, bool $signedIn = true, ?AJobThatSays $hearing = null, ?AKeychainInMemory $keychain = null): WhatItHoldsToLetThemIn
 {
     $stack = theMachineWhoseGrantIsEnded();
-    $keychain = AKeychainInMemory::working();
+    $keychain ??= AKeychainInMemory::working();
 
     if ($signedIn) {
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
@@ -98,6 +101,7 @@ function theGrantingScreen(AStackThatEndsGrants $ending, ?TheCredentialsHeld $he
         AroundThePhone::holding(StacksInMemory::holding($stack)),
         new AppsSettingsThatOpen(),
         AroundThePhone::listening(),
+        $hearing ?? AJobThatSays::nothing(),
     );
     $screen->setParams(['stack' => $stack->id()->stored()]);
     $screen->answer();
@@ -206,6 +210,20 @@ it('asks nothing new while the stack is still at it', function (): void {
         ->and($screen->awaitsAnOutcome())->toBeTrue();
 });
 
+it('says the session has ended when it is lost while ending a grant runs, and follows it no further', function (): void {
+    $ending = AStackThatEndsGrants::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatEndsGrants::THE_READING)), WhatBecameOfTheWork::noOutcome());
+    $keychain = AKeychainInMemory::working();
+    $screen = theGrantingScreen($ending, keychain: $keychain);
+    $screen->revoke(0);
+    $screen->whileItRuns();
+    $keychain->forget(theMachineWhoseGrantIsEnded()->id());
+    $screen->whileItRuns();
+
+    expect($screen->howItIsGoing()->stands->went->isSignedIn)->toBeFalse()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('connection.session_has_ended'))
+        ->and($screen->awaitsAnOutcome())->toBeFalse();
+});
+
 it('draws a refusal in the stack\'s words, a lost outcome, and what stood in the way', function (): void {
     $refusal = ARefusalInItsWords::said('tdarr holds no grant of plex.token', '', WhatTheRefusalNamed::nothing(), 'Read the passwords again');
     $refused = theGrantingScreen(AStackThatEndsGrants::sayingAtOnce(WhatBecameOfTheWork::refused($refusal)));
@@ -225,7 +243,7 @@ it('asks the stack again for the passwords and grants when the operator asks aga
     $stack = theMachineWhoseGrantIsEnded();
     $keychain = AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
-    $screen = new WhatItHoldsToLetThemIn($safekeeping, AStackThatEndsGrants::untouched(), AStackThatReplacesItsCertificate::untouched(), AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these())), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_GRANT_WAS_APPROVED)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening());
+    $screen = new WhatItHoldsToLetThemIn($safekeeping, AStackThatEndsGrants::untouched(), AStackThatReplacesItsCertificate::untouched(), AStackThatPlays::holdingOpen(HowPlayingWasRead::said(WhatTheHouseholdIsPlaying::these())), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_GRANT_WAS_APPROVED)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
     $screen->answer();
     $screen->answer();
@@ -265,4 +283,15 @@ it('sends no yes on an earlier reading once a grant is read again and the new re
     $screen->agree();
 
     expect($ending->asked())->toBe(['read:tdarr:plex.token', sprintf('after:%s', AStackThatEndsGrants::THE_READING), 'read:tdarr:plex.token']);
+});
+
+it('draws what ending the grant says while it runs', function (): void {
+    $ending = AStackThatEndsGrants::answering(WhatBecameOfTheWork::underway(Job::named(AStackThatEndsGrants::THE_READING)), WhatBecameOfTheWork::noOutcome());
+    $screen = theGrantingScreen($ending, hearing: AJobThatSays::saying(WhatWasHeardFromAJob::said('Reading what tdarr holds')));
+    $screen->revoke(0);
+    $screen->whileItRuns();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain('Reading what tdarr holds', aLineAboutGrants('stacks.credentials.revoke.working'))
+        ->and($screen->awaitsAnOutcome(CredentialsFollowed::TheRevoke))->toBeTrue()
+        ->and($screen->awaitsAnOutcome(CredentialsFollowed::TheReplacement))->toBeFalse();
 });
