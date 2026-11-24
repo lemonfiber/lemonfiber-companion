@@ -14,6 +14,7 @@ use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowAgreedWorkIsGoing;
 use Modules\Kernel\Api\HowAServiceRuns;
 use Modules\Kernel\Api\HowTheStackIsRunning;
+use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Obstacle;
 use Modules\Kernel\Api\ServiceId;
@@ -765,7 +766,7 @@ it('shows the command once the stack has finished working out the rehearsal, and
 
     expect($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.will_run'))
         ->and($drawn)->not->toContain(whatTheCatalogueSays('stacks.command.unread'))
-        ->and($screen->rehearsalOfTheYes)->toBe(AStackThatSupervises::THE_JOB)
+        ->and($screen->rehearsalOfTheYes)->toEqual(Job::named(AStackThatSupervises::THE_JOB))
         ->and($screen->asking())->not->toBeNull();
 });
 
@@ -777,6 +778,7 @@ it('follows a rehearsal still being worked out on the screen\'s cadence, and sho
     TheThingScreenOfTheShed::aWakeOf($screen);
 
     expect($screen->willRun?->command)->toBe('docker compose restart sonarr')
+        ->and($supervising->followed())->toEqual([Job::named(AStackThatSupervises::THE_JOB), Job::named(AStackThatSupervises::THE_JOB)])
         ->and($screen->rehearsalOfTheYes)->toBeNull();
 });
 
