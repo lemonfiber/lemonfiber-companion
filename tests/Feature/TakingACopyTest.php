@@ -786,12 +786,14 @@ it('never asks with a member\'s session, nor without one, and draws nothing of a
     }
 
     $screen = theCopyingScreen(aCopyStillBeingTaken(), keychain: $keychain, signedIn: false, running: $running);
+    $shown = $screen->theCopyRunning();
     $screen->followTheCopy();
-    $drawn = (string) json_encode(WhatTheDeviceWouldDraw::tree($screen));
+    $drawn = (string) json_encode(WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said());
 
     expect($running->read())->toBe(0)
         ->and($running->asked())->toBe(0)
-        ->and($screen->theCopyRunning())->toBeNull()
+        ->and($shown)->toBeNull()
+        ->and($screen->copyIsShown)->toBeFalse()
         ->and($drawn)->not->toContain(aLineOfTheCopy(HowTheCopyRunningReads::CANNOT_TELL), aLineOfTheCopy(HowTheCopyRunningReads::NONE), aLineOfTheCopy('navigation.menu.copies_run'));
 })->with(['a member\'s session' => true, 'no session' => false]);
 
@@ -818,4 +820,16 @@ it('reads what is being copied again when the operator asks again', function ():
     WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
 
     expect($running->read())->toBe(2);
+});
+
+it('lets go of a session the stack refused on the copy\'s stream, and then cannot tell', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep(theStackACopyIsTakenOf()->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
+    $running = AStackThatCopies::holdingOpen(aCopyRunningThatIs(HowTheCopyMoves::working()), WhatAStreamSaid::met(Obstacle::of(KindOfObstacle::CredentialWasRefused)));
+    $screen = theCopyingScreen(aCopyStillBeingTaken(), keychain: $keychain, signedIn: false, running: $running);
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $screen->followTheCopy();
+
+    expect($keychain->isHolding(theStackACopyIsTakenOf()->id()))->toBeFalse()
+        ->and($screen->theCopyRunning()?->said)->toBe(HowTheCopyRunningReads::CANNOT_TELL);
 });
