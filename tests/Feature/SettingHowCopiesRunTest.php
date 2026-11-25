@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Bootstrap\Composition\NativePHP\OutOfTheOperatorsScreens;
+use Modules\Household\Internal\Screens\WhatYouCanWatch;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnOffer;
 use Modules\Kernel\Api\AServiceReadingIt;
@@ -115,7 +117,39 @@ it('draws the two settings for a running copy, one set with its value and one at
         ->and($drawn)->not->toContain('LEMONFIBER_DASHBOARD_SEARCH', 'https://search.example.org/?q=');
 });
 
-it('says the default\'s value only where the stack sends one, and otherwise only that it is the stack\'s default', function (): void {
+it('says the default\'s value where the stack sends one, and only that it is the stack\'s default where it sends none', function (): void {
+    $tuning = AStackThatTunesItsSettings::answering(
+        TheServicesSettings::of(
+            TheSettingsRead::these(
+                aCoreSettingOfTheCopies(TheCopySettings::BackupLimit->value, ASettingValue::nothing()),
+                aCoreSettingOfTheCopies(TheCopySettings::StalledAfter->value, ASettingValue::nothing())->defaultingTo(ASettingValue::value('30')),
+            ),
+            TheSecretsRead::these(),
+        ),
+        WhatBecameOfTheWork::noOutcome(),
+        WhatBecameOfTheWork::noOutcome(),
+    );
+    $drawn = WhatTheDeviceWouldDraw::by(howCopiesRunOpened($tuning))->said();
+
+    expect($drawn)->toContain(__('plugins.settings.default_is', ['default' => '30']), __('plugins.settings.default'));
+});
+
+it('says the operator\'s value, not the default, where the operator set one', function (): void {
+    $tuning = AStackThatTunesItsSettings::answering(
+        TheServicesSettings::of(
+            TheSettingsRead::these(aCoreSettingOfTheCopies(TheCopySettings::StalledAfter->value, ASettingValue::value('12'))->defaultingTo(ASettingValue::value('30'))),
+            TheSecretsRead::these(),
+        ),
+        WhatBecameOfTheWork::noOutcome(),
+        WhatBecameOfTheWork::noOutcome(),
+    );
+    $drawn = WhatTheDeviceWouldDraw::by(howCopiesRunOpened($tuning))->said();
+
+    expect($drawn)->toContain(__('plugins.settings.set_by_you'), '12')
+        ->and($drawn)->not->toContain(__('plugins.settings.default_is', ['default' => '30']), __('plugins.settings.default'));
+});
+
+it('says a default a service declares beside the service that reads it, never as the setting\'s own', function (): void {
     $sent = AStackThatTunesItsSettings::answering(
         TheServicesSettings::of(
             TheSettingsRead::these(ASetting::read(
@@ -129,12 +163,25 @@ it('says the default\'s value only where the stack sends one, and otherwise only
         WhatBecameOfTheWork::noOutcome(),
         WhatBecameOfTheWork::noOutcome(),
     );
-    $withADefault = WhatTheDeviceWouldDraw::by(howCopiesRunOpened($sent))->said();
-    $withNone = WhatTheDeviceWouldDraw::by(howCopiesRunOpened(aStackThatSetsHowCopiesRun()))->said();
+    $drawn = WhatTheDeviceWouldDraw::by(howCopiesRunOpened($sent))->said();
 
-    expect($withADefault)->toContain(__('plugins.settings.default'), __('plugins.settings.read_by_default', ['service' => 'core', 'variable' => 'LEMONFIBER_COPY_STALLED_MINUTES', 'default' => '5']))
-        ->and($withNone)->toContain(__('plugins.settings.default'), __('plugins.settings.read_by_none'))
-        ->and(implode("\n", $withNone))->not->toContain(' by default');
+    expect($drawn)->toContain(__('plugins.settings.default'), __('plugins.settings.read_by_default', ['service' => 'core', 'variable' => 'LEMONFIBER_COPY_STALLED_MINUTES', 'default' => '5']))
+        ->and($drawn)->not->toContain(__('plugins.settings.default_is', ['default' => '5']));
+});
+
+it('keeps a member\'s session from the screen and every default on it, and builds the member\'s Home in its place', function (): void {
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep(theStackWhoseCopiesAreSet()->id(), Session::of('a-session-not-a-secret'), Whose::member('robin'));
+    $built = '';
+    $guard = new OutOfTheOperatorsScreens($keychain, ['stack' => theStackWhoseCopiesAreSet()->id()->stored()], static function (string $class) use (&$built): string {
+        $built = $class;
+
+        return $class;
+    });
+
+    $guard->screen(HowCopiesRun::class);
+
+    expect($built)->toBe(WhatYouCanWatch::class);
 });
 
 it('says a stack that lists neither setting does not have them', function (): void {

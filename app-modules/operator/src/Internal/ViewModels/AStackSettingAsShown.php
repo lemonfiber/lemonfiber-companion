@@ -12,6 +12,8 @@ final readonly class AStackSettingAsShown
      * @param ALineToSay|null $whose whose it is, or null where the screen says that already
      * @param bool                           $isSet     whether the operator recorded a value
      * @param string                         $value     that value, blank where none is recorded
+     * @param bool                           $declaresADefault whether the stack sent the default it declares for it
+     * @param string                         $default   that default, blank where the stack sent none
      * @param list<AServiceReadingItAsShown> $readers   each service that reads it
      * @param list<AChoiceAsShown>           $choices   every value it accepts, or none where it is typed
      */
@@ -20,6 +22,8 @@ final readonly class AStackSettingAsShown
         public ?ALineToSay $whose,
         public bool $isSet,
         public string $value,
+        public bool $declaresADefault,
+        public string $default,
         public array $readers,
         public array $choices,
     ) {}

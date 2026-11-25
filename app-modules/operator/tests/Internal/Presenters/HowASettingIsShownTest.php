@@ -20,10 +20,10 @@ use Modules\Kernel\Api\WhoseASettingIs;
 use Modules\Operator\Internal\Presenters\HowASettingIsShown;
 use Modules\Operator\Internal\ViewModels\ALineToSay;
 
-/** The proxy's domain, the core's, read by the proxy with a default of its own, set to `home.example.org`. */
+/** The proxy's domain, the core's, declaring `home.arpa` as its default, read by the proxy with a default of its own, set to `home.example.org`. */
 function theDomainSetting(): ASetting
 {
-    return ASetting::read('domain', WhoseASettingIs::theCores(), TheServicesReadingIt::these(AServiceReadingIt::of(ServiceId::called('caddy'), 'DOMAIN', ASettingValue::value('localhost'))), ASettingValue::value('home.example.org'));
+    return ASetting::read('domain', WhoseASettingIs::theCores(), TheServicesReadingIt::these(AServiceReadingIt::of(ServiceId::called('caddy'), 'DOMAIN', ASettingValue::value('localhost'))), ASettingValue::value('home.example.org'))->defaultingTo(ASettingValue::value('home.arpa'));
 }
 
 /** The guard's countries, its own, read by nobody and left as it came. */
@@ -40,12 +40,14 @@ it('says whose each setting is, except the owner the screen already names', func
         ->and(new HowASettingIsShown(WhoseASettingIs::theCores())->settings(TheSettingsRead::these(theDomainSetting()))[0]->whose)->toBeNull();
 });
 
-it('draws a setting by its name, whether and to what the operator set it, and each service reading it', function (): void {
+it('draws a setting by its name, whether and to what the operator set it, the default the stack declares for it, and each service reading it', function (): void {
     [$domain, $countries] = new HowASettingIsShown(WhoseASettingIs::theCores())->settings(TheSettingsRead::these(theDomainSetting(), theCountriesSetting()));
 
     expect($domain->name)->toBe('domain')
         ->and($domain->isSet)->toBeTrue()
         ->and($domain->value)->toBe('home.example.org')
+        ->and($domain->declaresADefault)->toBeTrue()
+        ->and($domain->default)->toBe('home.arpa')
         ->and($domain->readers)->toHaveCount(1)
         ->and($domain->readers[0]->service)->toBe('caddy')
         ->and($domain->readers[0]->variable)->toBe('DOMAIN')
@@ -53,6 +55,8 @@ it('draws a setting by its name, whether and to what the operator set it, and ea
         ->and($domain->readers[0]->default)->toBe('localhost')
         ->and($countries->isSet)->toBeFalse()
         ->and($countries->value)->toBe('')
+        ->and($countries->declaresADefault)->toBeFalse()
+        ->and($countries->default)->toBe('')
         ->and($countries->readers)->toBe([]);
 });
 

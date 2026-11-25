@@ -95,6 +95,9 @@ const ELSEWHERE = [
     'Play' => 'N3-R45 — a title plays through the grant the core gave this device, never on the pass in an address the `play` kind carries for a browser',
     'Caller' => 'N1-R80 — who a request proves to be is read by the surface itself to admit it',
     'Standing' => 'N1-R80 — what the surface composes its routes from is read by the surface itself',
+    'NotifyHeard' => 'N1-R80 — an event a service posted is handed on by the surface itself',
+    'Renewed' => 'N1-R80 — the surface itself renews the grant of a member whose client spoke',
+    'Untuned' => 'N1-R80 — the surface itself closes the live streams whose passes lapsed',
     'Password' => 'N1-R80 — the surface\'s password is typed at the machine',
     'WalkthroughOffer' => 'N1-R80 — the walkthrough is offered by setup at the machine',
     'Logs' => 'N1-R80 — the command line\'s account of a read, whose lines the app takes from `GET /api/logs`',
@@ -323,9 +326,9 @@ it('no kind a served read answers waits unread', function (): void {
         ));
 });
 
-it('excuses exactly the nine kinds the core serves no remote caller', function (): void {
+it('excuses exactly the twelve kinds the core serves no remote caller', function (): void {
     expect(everyKindNoRemoteCallerIsServed())->toBe([
-        'Caller', 'Standing', 'Password', 'WalkthroughOffer', 'Logs', 'PluginClaims', 'PluginConformance', 'PluginProvenance', 'PluginRecording',
+        'Caller', 'Standing', 'NotifyHeard', 'Renewed', 'Untuned', 'Password', 'WalkthroughOffer', 'Logs', 'PluginClaims', 'PluginConformance', 'PluginProvenance', 'PluginRecording',
     ]);
 });
 

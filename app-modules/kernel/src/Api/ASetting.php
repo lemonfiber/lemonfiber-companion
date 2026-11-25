@@ -7,7 +7,7 @@ namespace Modules\Kernel\Api;
 use function trim;
 
 /**
- * One setting a stack's services read: its name, whose it is, who reads it, the operator's value where one is recorded, and the values it accepts where it lists them.
+ * One setting a stack's services read: its name, whose it is, who reads it, the operator's value where one is recorded, the default the stack declares for it where it sends one, and the values it accepts where it lists them.
  */
 final readonly class ASetting
 {
@@ -17,6 +17,7 @@ final readonly class ASetting
         private TheServicesReadingIt $readers,
         private ASettingValue $value,
         private TheChoices $choices,
+        private ASettingValue $default,
     ) {}
 
     /** The setting; a blank name is refused. */
@@ -26,13 +27,19 @@ final readonly class ASetting
             throw SettingSaysNothing::about('name');
         }
 
-        return new self(trim($name), $whose, $readers, $value, TheChoices::none());
+        return new self(trim($name), $whose, $readers, $value, TheChoices::none(), ASettingValue::nothing());
     }
 
     /** The same setting, accepting only these values. */
     public function among(TheChoices $choices): self
     {
-        return new self($this->name, $this->whose, $this->readers, $this->value, $choices);
+        return new self($this->name, $this->whose, $this->readers, $this->value, $choices, $this->default);
+    }
+
+    /** The same setting, with the default the stack declares for it, or nothing where it sends none. */
+    public function defaultingTo(ASettingValue $default): self
+    {
+        return new self($this->name, $this->whose, $this->readers, $this->value, $this->choices, $default);
     }
 
     /** Its name, which changing it names. */
@@ -57,6 +64,12 @@ final readonly class ASetting
     public function value(): ASettingValue
     {
         return $this->value;
+    }
+
+    /** The default the stack declares for it, or nothing where it sends none. */
+    public function default(): ASettingValue
+    {
+        return $this->default;
     }
 
     /** The values it accepts, or none where its services take any value. */
