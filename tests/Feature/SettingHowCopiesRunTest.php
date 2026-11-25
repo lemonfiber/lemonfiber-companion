@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnOffer;
+use Modules\Kernel\Api\AServiceReadingIt;
 use Modules\Kernel\Api\ASetting;
 use Modules\Kernel\Api\ASettingChange;
 use Modules\Kernel\Api\ASettingValue;
@@ -11,6 +12,7 @@ use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
@@ -111,6 +113,28 @@ it('draws the two settings for a running copy, one set with its value and one at
 
     expect($drawn)->toContain(TheCopySettings::BackupLimit->value, TheCopySettings::StalledAfter->value, __('plugins.settings.set_by_you'), '12', __('plugins.settings.default'), __('stacks.copy.settings.of'))
         ->and($drawn)->not->toContain('LEMONFIBER_DASHBOARD_SEARCH', 'https://search.example.org/?q=');
+});
+
+it('says the default\'s value only where the stack sends one, and otherwise only that it is the stack\'s default', function (): void {
+    $sent = AStackThatTunesItsSettings::answering(
+        TheServicesSettings::of(
+            TheSettingsRead::these(ASetting::read(
+                TheCopySettings::StalledAfter->value,
+                WhoseASettingIs::theCores(),
+                TheServicesReadingIt::these(AServiceReadingIt::of(ServiceId::called('core'), 'LEMONFIBER_COPY_STALLED_MINUTES', ASettingValue::value('5'))),
+                ASettingValue::nothing(),
+            )),
+            TheSecretsRead::these(),
+        ),
+        WhatBecameOfTheWork::noOutcome(),
+        WhatBecameOfTheWork::noOutcome(),
+    );
+    $withADefault = WhatTheDeviceWouldDraw::by(howCopiesRunOpened($sent))->said();
+    $withNone = WhatTheDeviceWouldDraw::by(howCopiesRunOpened(aStackThatSetsHowCopiesRun()))->said();
+
+    expect($withADefault)->toContain(__('plugins.settings.default'), __('plugins.settings.read_by_default', ['service' => 'core', 'variable' => 'LEMONFIBER_COPY_STALLED_MINUTES', 'default' => '5']))
+        ->and($withNone)->toContain(__('plugins.settings.default'), __('plugins.settings.read_by_none'))
+        ->and(implode("\n", $withNone))->not->toContain(' by default');
 });
 
 it('says a stack that lists neither setting does not have them', function (): void {
