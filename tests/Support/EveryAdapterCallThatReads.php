@@ -219,6 +219,7 @@ use Modules\Sdk\Api\Chroniclers;
 use Modules\Sdk\Api\Connectors;
 use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
+use Modules\Sdk\Api\CopyWatchers;
 use Modules\Sdk\Api\Dismantlers;
 use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Explainers;
@@ -451,6 +452,8 @@ final readonly class EveryAdapterCallThatReads
                 => new Pictures($clients)->coverOfAKeptAsk($stack, $session, RequestId::named('music-3')),
             'Players::now' => static fn(): object => new Players($clients)->now($stack, $session),
             'Players::heard' => static fn(): object => new Players($clients)->heard($stack, $session),
+            'CopyWatchers::now' => static fn(): object => new CopyWatchers($clients)->now($stack, $session),
+            'CopyWatchers::heard' => static fn(): object => new CopyWatchers($clients)->heard($stack, $session),
             'StartLines::whatItWaitsOn' => static fn(): object => new StartLines($clients)->whatItWaitsOn($stack, $session, Job::named('a-job')),
             'JobLines::whatTheySaid' => static fn(): object => new JobLines($clients)->whatTheySaid($stack, $session, Job::named('a-job')),
             'Pairers::make' => static fn(): object => new Pairers($clients, $entropy)->make($stack, $session),

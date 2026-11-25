@@ -101,6 +101,10 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'The member it was read for, by name, echoed back, for `HeldEnvelope.member`\'s reason.',
         ],
         [
+            'path' => 'CopyingEnvelope.running.job',
+            'because' => 'The job an accepting reply named the copy. A screen follows its own job by the name its own reply gave it, and the reading is drawn the same whoever started the copy (`N6-R4`).',
+        ],
+        [
             'path' => 'CredentialsEnvelope.rehearsed',
             'because' => WhatThisAppDoesNotRead::NEVER_ASKED_FOR_A_REHEARSAL,
         ],

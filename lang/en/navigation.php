@@ -62,6 +62,7 @@ return [
         'uninstall' => 'Uninstall',
         'general' => 'General',
         'own_settings' => 'Own settings',
+        'copies_run' => 'How copies run',
         'left_alone' => 'Left alone',
         'quality' => 'Quality',
         'connections' => 'Connections',

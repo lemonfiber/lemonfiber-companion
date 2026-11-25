@@ -12,6 +12,7 @@ use Modules\Operator\Internal\Screens\ChoosingHowGood;
 use Modules\Operator\Internal\Screens\ConnectingADeviceForThem;
 use Modules\Operator\Internal\Screens\GivingRoomBack;
 use Modules\Operator\Internal\Screens\GuardingWhileYouWatch;
+use Modules\Operator\Internal\Screens\HowCopiesRun;
 use Modules\Operator\Internal\Screens\HowCurrentThisStackIs;
 use Modules\Operator\Internal\Screens\HowFullThisMachineIs;
 use Modules\Operator\Internal\Screens\HowTheLineIsSharedHere;
@@ -233,6 +234,7 @@ final class OperatorServiceProvider extends ServiceProvider
             Router::native(AStacksScreen::Keeps->value, WhatThisMachineKeepsHere::class);
 
             Router::native(AStacksScreen::Copy->value, TakingACopyHere::class);
+            Router::native(AStacksScreen::CopiesRun->value, HowCopiesRun::class);
             Router::native(AStacksScreen::PutBack->value, PuttingACopyBack::class)->where(AStacksScreen::aboutIsCalled(), self::ITS_NAME_MAY_HOLD_A_SLASH);
 
             Router::native(AStacksScreen::Help->value, AskingForHelpHere::class);

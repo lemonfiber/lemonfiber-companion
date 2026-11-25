@@ -160,7 +160,7 @@ final readonly class WhatTheReviewFound
             throw SettingIsUnreadable::missing(ConfigField::Edited);
         }
 
-        $wrote = self::held($edit, ConfigField::Wrote);
+        $wrote = self::held($edit, WireField::Wrote);
         $now = self::held($edit, WireField::Found);
 
         return $comesTo->withTheEdit(Required::flag($edit, WireField::Secret, SettingIsUnreadable::missing(ConfigField::Edited))

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Modules\Kernel\Api\ACopyAsked;
+use Modules\Kernel\Api\ACopyRunning;
 use Modules\Kernel\Api\ACopyTaken;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AJobFollowed;
@@ -11,8 +12,12 @@ use Modules\Kernel\Api\Daemons;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\HowACopyPaced;
+use Modules\Kernel\Api\HowBig;
 use Modules\Kernel\Api\HowManyLines;
 use Modules\Kernel\Api\HowTheCopyIsGoing;
+use Modules\Kernel\Api\HowTheCopyMoves;
+use Modules\Kernel\Api\HowTheCopyRunningWasRead;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
@@ -26,12 +31,16 @@ use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\Supervising;
 use Modules\Kernel\Api\TheCopies;
 use Modules\Kernel\Api\WhatACopyHolds;
+use Modules\Kernel\Api\WhatAStreamSaid;
+use Modules\Kernel\Api\WhatIsBeingCopied;
+use Modules\Kernel\Api\WhatIsCopied;
 use Modules\Kernel\Api\WhatWasHeardFromAJob;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\NotAJobItFollows;
 use Modules\Operator\Internal\PluginActFollowed;
+use Modules\Operator\Internal\Presenters\HowTheCopyRunningReads;
 use Modules\Operator\Internal\RepairsFollowed;
 use Modules\Operator\Internal\Screens\TakingACopyHere;
 use Modules\Operator\Internal\TheOnlyJob;
@@ -39,11 +48,14 @@ use Modules\Operator\Internal\ViewModels\APaceAsShown;
 use Modules\Operator\Internal\ViewModels\AScopeAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheCopyWent;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AStackThatCopies;
 use Tests\Support\Fakes\AStackThatSupervises;
 use Tests\Support\Fakes\AStackThatTakesCopies;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatAMachineRuns;
 use Tests\Support\WhatAScopeSays;
@@ -86,6 +98,9 @@ function theCopyingScreen(
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
     ?HearingTheJobs $hearing = null,
+    ?AStackThatCopies $running = null,
+    ?ACaptureInMemory $capture = null,
+    ?FrozenClock $clock = null,
 ): TakingACopyHere {
     $stack = theStackACopyIsTakenOf();
     $keychain ??= AKeychainInMemory::working();
@@ -94,7 +109,7 @@ function theCopyingScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new TakingACopyHere($copying, $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), $hearing ?? AJobThatSays::nothing());
+    $screen = new TakingACopyHere($copying, $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), $hearing ?? AJobThatSays::nothing(), $running ?? AStackThatCopies::copyingNothing(), $clock ?? FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), $capture ?? ACaptureInMemory::inFront());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -242,12 +257,12 @@ it('sends nothing on a yes nobody was asked for', function (): void {
         ->and($screen->lastCopy()->stands->wasAsked())->toBeFalse();
 });
 
-it('takes exactly the copy it named, and says it is being taken without drawing progress nobody measured', function (): void {
+it('takes exactly the copy it named, and says it is being taken with how far it has got as the stack reads it', function (): void {
     $copying = AStackThatTakesCopies::whichTook(HowTheCopyIsGoing::stillRunning());
-    $screen = theCopyingScreen($copying);
+    $screen = theCopyingScreen($copying, running: AStackThatCopies::holdingOpen(aCopyRunningThatIs(HowTheCopyMoves::working())));
     $screen->copyTheService('sonarr');
     $screen->agree();
-    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
 
     expect(array_map(static fn(ACopyAsked $asked): string => WhatAScopeSays::of($asked->scope()), $copying->taken()))->toBe(['service:sonarr'])
         ->and($screen->askingAbout())->toBeNull()
@@ -256,7 +271,7 @@ it('takes exactly the copy it named, and says it is being taken without drawing 
             'scope' => ['stacks.copy.scope.service', ['name' => 'sonarr'], []],
         ]))
         ->and($drawn)->toContain(__('stacks.copy.taking', ['scope' => aLineOfTheCopy('stacks.copy.scope.service', ['name' => 'sonarr'])]))
-        ->and($drawn)->toContain(__('stacks.copy.no_progress_while_running'))
+        ->and($drawn)->toContain(...howFarTheCopyHasGot())
         ->and($copying->followed())->toBe([]);
 });
 
@@ -579,8 +594,7 @@ it('draws nothing of the job and offers nothing more while it has said nothing',
     $screen->whileItRuns();
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
-    expect($drawn->offers())->not->toContain(__('stacks.what_it_said.show_all'))
-        ->and($drawn->said())->toContain(__('stacks.copy.no_progress_while_running'));
+    expect($drawn->offers())->not->toContain(__('stacks.what_it_said.show_all'));
 });
 
 it('draws a line as the text it is, never as markup', function (): void {
@@ -656,4 +670,152 @@ it('lets go of the job\'s stream when the screen stops', function (): void {
     expect($hearing->lettingsGo())->toBe($lettingsGo + 1)
         ->and($hearing->placesKept())->toBe(0)
         ->and($screen->whatItSays()->newest)->toBe('Writing the archive');
+});
+
+/** A reading of a copy running, as a case moves it, taken ten minutes before the screen's moment. */
+function aCopyRunningThatIs(HowTheCopyMoves $moves, WhatIsCopied $what = WhatIsCopied::Backup): HowTheCopyRunningWasRead
+{
+    return HowTheCopyRunningWasRead::said(WhatIsBeingCopied::running(new ACopyRunning($what, aMomentOfTheCopy(-600), 734_003_200, 2_147_483_648, 'sonarr database', $moves)));
+}
+
+function aMomentOfTheCopy(int $seconds): Instant
+{
+    return Instant::atEpochSeconds(1_790_000_000 + $seconds);
+}
+
+/**
+ * How much of how much a copy running has written, and the part it writes now, as drawn.
+ *
+ * @return list<string>
+ */
+function howFarTheCopyHasGot(): array
+{
+    $written = HowBig::of(734_003_200);
+    $whole = HowBig::of(2_147_483_648);
+
+    return [
+        aLineOfTheCopy('stacks.copy.running.written', ['written' => (string) $written->figure, 'written_unit' => aLineOfTheCopy($written->said), 'whole' => (string) $whole->figure, 'whole_unit' => aLineOfTheCopy($whole->said)]),
+        aLineOfTheCopy('stacks.copy.running.part', ['part' => 'sonarr database']),
+    ];
+}
+
+function aCopyStuckFor(int $minutes): string
+{
+    return trans_choice('stacks.copy.running.stalled.minutes', $minutes);
+}
+
+function aCopySlowedTo(int $bytes): string
+{
+    $limit = HowBig::of($bytes);
+
+    return aLineOfTheCopy(HowTheCopyRunningReads::PACED, ['limit' => (string) $limit->figure, 'limit_unit' => aLineOfTheCopy($limit->said)]);
+}
+
+it('reads the copy running once when it opens mid-copy, and draws how much of how much, the part now and that it is writing', function (): void {
+    $running = AStackThatCopies::holdingOpen(aCopyRunningThatIs(HowTheCopyMoves::working()));
+    $screen = theCopyingScreen(aCopyStillBeingTaken(), running: $running);
+    $first = WhatTheDeviceWouldDraw::by($screen)->said();
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
+
+    expect($running->read())->toBe(1)
+        ->and($first)->not->toContain(aLineOfTheCopy('stacks.copy.running.what.backup'))
+        ->and($drawn)->toContain(aLineOfTheCopy('stacks.copy.running.what.backup'), ...howFarTheCopyHasGot())
+        ->and($drawn)->toContain(aLineOfTheCopy(HowTheCopyRunningReads::WORKING))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(aLineOfTheCopy('stacks.copy.how_they_run'))
+        ->and($running->read())->toBe(1);
+});
+
+it('says a paced copy is slowed on purpose to the limit and a stalled one is stuck with how long nothing moved, as the stack says each', function (): void {
+    $paced = WhatTheDeviceWouldDraw::onTheSecondFrame(theCopyingScreen(aCopyStillBeingTaken(), running: AStackThatCopies::holdingOpen(aCopyRunningThatIs(HowTheCopyMoves::paced(52_428_800)))))->said();
+    $stalled = WhatTheDeviceWouldDraw::onTheSecondFrame(theCopyingScreen(aCopyStillBeingTaken(), running: AStackThatCopies::holdingOpen(aCopyRunningThatIs(HowTheCopyMoves::stalled(aMomentOfTheCopy(-420))))))->said();
+
+    expect($paced)->toContain(aCopySlowedTo(52_428_800))
+        ->and($paced)->not->toContain(aCopyStuckFor(7), aLineOfTheCopy(HowTheCopyRunningReads::WORKING))
+        ->and($stalled)->toContain(aCopyStuckFor(7))
+        ->and($stalled)->not->toContain(aCopySlowedTo(52_428_800), aLineOfTheCopy(HowTheCopyRunningReads::WORKING));
+});
+
+it('says no copy is running where the stack says none is', function (): void {
+    expect(WhatTheDeviceWouldDraw::onTheSecondFrame(theCopyingScreen(aCopyStillBeingTaken()))->said())->toContain(aLineOfTheCopy(HowTheCopyRunningReads::NONE));
+});
+
+it('says it cannot tell, drawing neither working nor stalled, where the stack gives no reading', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame(theCopyingScreen(aCopyStillBeingTaken(), running: AStackThatCopies::holdingOpen(HowTheCopyRunningWasRead::refused(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)))))->said();
+
+    expect($drawn)->toContain(aLineOfTheCopy(HowTheCopyRunningReads::CANNOT_TELL))
+        ->and($drawn)->not->toContain(aLineOfTheCopy(HowTheCopyRunningReads::WORKING), aCopyStuckFor(7), aLineOfTheCopy(HowTheCopyRunningReads::NONE));
+});
+
+it('takes what the stream says in place of what it read, and cannot tell once the stream no longer vouches for it', function (): void {
+    $running = AStackThatCopies::thenEnding(aCopyRunningThatIs(HowTheCopyMoves::working()), WhatAStreamSaid::said(WhatIsBeingCopied::running(new ACopyRunning(WhatIsCopied::Backup, aMomentOfTheCopy(-600), 734_003_200, 2_147_483_648, 'sonarr database', HowTheCopyMoves::stalled(aMomentOfTheCopy(-420))))));
+    $screen = theCopyingScreen(aCopyStillBeingTaken(), running: $running);
+    $screen->followTheCopy();
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $screen->followTheCopy();
+    $heard = WhatTheDeviceWouldDraw::by($screen)->said();
+    $screen->followTheCopy();
+    $ended = WhatTheDeviceWouldDraw::by($screen)->said();
+    $screen->followTheCopy();
+
+    expect($running->read())->toBe(1)
+        ->and($running->asked())->toBe(2)
+        ->and($heard)->toContain(aCopyStuckFor(7))
+        ->and($ended)->toContain(aLineOfTheCopy(HowTheCopyRunningReads::CANNOT_TELL))
+        ->and($ended)->not->toContain(aCopyStuckFor(7));
+});
+
+it('lets go of a stream gone quiet past the contract\'s silence', function (): void {
+    $running = AStackThatCopies::holdingOpen(aCopyRunningThatIs(HowTheCopyMoves::working()));
+    $clock = FrozenClock::at(aMomentOfTheCopy(0));
+    $screen = theCopyingScreen(aCopyStillBeingTaken(), running: $running, clock: $clock);
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $screen->followTheCopy();
+    $clock->moveTo(aMomentOfTheCopy(3_600));
+    $screen->followTheCopy();
+
+    expect($running->lettingsGo())->toBe(1)
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(aLineOfTheCopy(HowTheCopyRunningReads::CANNOT_TELL));
+});
+
+it('never asks with a member\'s session, nor without one, and draws nothing of a copy', function (bool $member): void {
+    $running = AStackThatCopies::holdingOpen(aCopyRunningThatIs(HowTheCopyMoves::working()), WhatAStreamSaid::said(WhatIsBeingCopied::nothing()));
+    $keychain = AKeychainInMemory::working();
+
+    if ($member) {
+        $keychain->keep(theStackACopyIsTakenOf()->id(), Session::of('a-session-not-a-secret'), Whose::member('a7f3'));
+    }
+
+    $screen = theCopyingScreen(aCopyStillBeingTaken(), keychain: $keychain, signedIn: false, running: $running);
+    $screen->followTheCopy();
+    $drawn = (string) json_encode(WhatTheDeviceWouldDraw::tree($screen));
+
+    expect($running->read())->toBe(0)
+        ->and($running->asked())->toBe(0)
+        ->and($screen->theCopyRunning())->toBeNull()
+        ->and($drawn)->not->toContain(aLineOfTheCopy(HowTheCopyRunningReads::CANNOT_TELL), aLineOfTheCopy(HowTheCopyRunningReads::NONE), aLineOfTheCopy('stacks.copy.how_they_run'));
+})->with(['a member\'s session' => true, 'no session' => false]);
+
+it('lets go of the copy\'s stream when nobody can see the screen, and when the screen stops', function (): void {
+    $running = AStackThatCopies::holdingOpen(aCopyRunningThatIs(HowTheCopyMoves::working()));
+    $capture = ACaptureInMemory::away();
+    $screen = theCopyingScreen(aCopyStillBeingTaken(), running: $running, capture: $capture);
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $screen->followTheCopy();
+    $away = $running->lettingsGo();
+    $capture->cameBack();
+    $screen->stop();
+
+    expect($running->asked())->toBe(0)
+        ->and($away)->toBe(1)
+        ->and($running->lettingsGo())->toBe(2);
+});
+
+it('reads what is being copied again when the operator asks again', function (): void {
+    $running = AStackThatCopies::copyingNothing();
+    $screen = theCopyingScreen(aCopyStillBeingTaken(), running: $running);
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $screen->again();
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+
+    expect($running->read())->toBe(2);
 });

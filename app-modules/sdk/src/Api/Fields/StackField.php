@@ -28,7 +28,4 @@ enum StackField: string implements NamesAWireField
 
     /** How any action is run without a question being put. */
     case NonInteractive = 'non_interactive';
-
-    /** A part the plain Compose words do not bring up as lemonfiber does, by its id. */
-    case Part = 'part';
 }

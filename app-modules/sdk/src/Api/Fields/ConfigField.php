@@ -29,9 +29,6 @@ enum ConfigField: string implements NamesAWireField
     /** The hand-edit found in the configuration file. */
     case Edited = 'edited';
 
-    /** What lemonfiber last wrote where a hand-edit was found. */
-    case Wrote = 'wrote';
-
     /** Every decision setup makes, held or not. */
     case Decisions = 'decisions';
 

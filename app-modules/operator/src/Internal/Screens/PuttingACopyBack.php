@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
+use Illuminate\View\View;
 use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyPutBack;
 use Modules\Kernel\Api\ARefusalInItsWords;
+use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\FollowingTheCopyRunning;
 use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
@@ -23,18 +26,19 @@ use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsOneJobAtATime;
+use Modules\Operator\Internal\FollowsTheCopyRunning;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowPuttingItBackReads;
 use Modules\Operator\Internal\ViewModels\HowPuttingItBackWent;
 use Modules\Operator\Internal\ViewModels\WhatPuttingItBackWouldShow;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
-use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
+use function view;
 
 /**
  * Putting one copy back, rehearsed first and carried out only on a yes.
@@ -80,7 +84,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
     use FollowsOneJobAtATime, FindsItsWayAround {
         FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
     }
-    use DrawsItsTemplate;
+    use FollowsTheCopyRunning;
 
     public const string TEMPLATE = 'operator::putting-a-copy-back';
 
@@ -108,8 +112,10 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        private readonly Clock $clock,
+        protected readonly Clock $clock,
         protected readonly HearingTheJobs $hearingTheJobs,
+        protected readonly FollowingTheCopyRunning $followingTheCopy,
+        protected readonly Capture $capture,
     ) {}
 
     /** The copy this screen is about, by the name the route carries. */
@@ -121,7 +127,19 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
     /** What putting the copy back would do, asked once per frame. */
     public function answer(): WhatPuttingItBackWouldShow
     {
+        if (! $this->answered instanceof WhatPuttingItBackWouldShow) {
+            $this->readsItsStack();
+        }
+
         return $this->answered ??= $this->rehearse();
+    }
+
+    /** Draw the screen, a frame at a time. */
+    public function render(): View
+    {
+        $this->aFrameBegins();
+
+        return view(self::TEMPLATE);
     }
 
     /** Whether the operator has agreed to the listing. */
@@ -178,6 +196,7 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
     public function again(): void
     {
         $this->askAfterAgain();
+        $this->copyHeard = null;
 
         if ($this->agreed && $this->follows()) {
             return;
@@ -219,6 +238,12 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
             ended: static fn(?WhyTheWorkEnded $why): HowPuttingItBackWent => new HowPuttingItBackReads()->ended($why),
             met: $this->lettingGoIfRefused($stack, new HowPuttingItBackReads()->met(...)),
         );
+    }
+
+    protected function letGoOfWhatElseItHears(): void
+    {
+        $this->hearingTheJobs->letGo();
+        $this->letGoOfTheCopy();
     }
 
     protected function whileNoJobIsFollowed(): HowPuttingItBackWent

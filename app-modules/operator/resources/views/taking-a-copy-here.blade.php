@@ -4,6 +4,10 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
+@if ($this->theCopyRunning() !== null)
+    <x-operator::a-copy-running :copy="$this->theCopyRunning()" />
+    <x-operator::quiet-action :label="__('stacks.copy.how_they_run')" :goes="$this->goes()->to(AStacksScreen::CopiesRun)" />
+@endif
 @if ($this->askingAbout() !== null)
     {{-- Asked before it runs, naming what the copy would cover: the whole
          stack and one service are different undertakings, and the yes is to
@@ -27,11 +31,6 @@
         />
 
         <x-operator::following-a-job :said="$this->whatItSays()" />
-
-        {{-- The stack says how far a copy got once it has finished, and not
-             while it runs, so this says that rather than drawing progress
-             nobody measured. --}}
-        <x-design::body>{{ __('stacks.copy.no_progress_while_running') }}</x-design::body>
     @elseif ($this->lastCopy()->stands->hasEnded())
         <x-operator::why-it-ended :stands="$this->lastCopy()->stands" />
         {{-- Not a failure: the copy may well exist, and the list of copies
@@ -117,6 +116,10 @@
         :went="$this->answer()->went"
         :goes="$this->goes()"
     />
+@endif
+
+@if ($this->waitsForTheNextFrame())
+    <x-design::the-next-frame />
 @endif
 
 <x-operator::screen-closes :goes="$this->goes()" :here="$this->itsTab()" :marks="$this->marks()" />

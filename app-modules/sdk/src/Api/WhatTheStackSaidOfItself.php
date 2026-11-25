@@ -106,7 +106,7 @@ final readonly class WhatTheStackSaidOfItself
         $table = is_array($row) ? $row : throw StackIsUnreadable::missing(WireField::Exceptions);
 
         return APartTheWordsLeaveOut::because(
-            Required::text($table, StackField::Part, StackIsUnreadable::missing(StackField::Part)),
+            Required::text($table, WireField::Part, StackIsUnreadable::missing(WireField::Part)),
             Required::text($table, WireField::Because, StackIsUnreadable::missing(WireField::Because)),
         );
     }

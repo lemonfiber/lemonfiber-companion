@@ -62,6 +62,7 @@ return [
         'uninstall' => 'Verwijderen',
         'general' => 'Algemeen',
         'own_settings' => 'Eigen instellingen',
+        'copies_run' => 'Hoe kopieën lopen',
         'left_alone' => 'Met rust gelaten',
         'quality' => 'Kwaliteit',
         'connections' => 'Verbindingen',

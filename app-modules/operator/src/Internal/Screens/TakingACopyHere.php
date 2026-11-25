@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Screens;
 
+use Illuminate\View\View;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\ACopyTaken;
+use Modules\Kernel\Api\Capture;
+use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
+use Modules\Kernel\Api\FollowingTheCopyRunning;
 use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
@@ -23,6 +27,7 @@ use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Operator\Internal\AsksWhatTheStackIsRunning;
 use Modules\Operator\Internal\AwaitsAnOutcome;
 use Modules\Operator\Internal\FollowsOneJobAtATime;
+use Modules\Operator\Internal\FollowsTheCopyRunning;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowACopyReads;
 use Modules\Operator\Internal\Presenters\HowAScopeReads;
@@ -30,13 +35,13 @@ use Modules\Operator\Internal\ViewModels\AScopeAsShown;
 use Modules\Operator\Internal\ViewModels\HowTheCopyWent;
 use Modules\Operator\Internal\ViewModels\WhatThisStackRunsTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
-use Modules\Wayfinding\Api\Screens\DrawsItsTemplate;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
 use Native\Mobile\Edge\NativeComponent;
 
 use function trim;
+use function view;
 
 /**
  * Taking a copy of this machine's stack: of all of it, or of one service.
@@ -48,8 +53,8 @@ use function trim;
  *
  * **Taking a copy answers a job,** followed by {@see FollowsOneJobAtATime}: while the
  * stack takes the copy the screen shows what the job says, and the report is
- * drawn once it finishes. The stack says how large a copy came to only once
- * it has finished, and the screen says so while it runs.
+ * drawn once it finishes. How far a copy has got while it runs is the stack's
+ * reading of whichever copy is running, followed by {@see FollowsTheCopyRunning}.
  *
  * The services a copy can be narrowed to are the ones the stack says it runs,
  * read once per frame.
@@ -69,7 +74,7 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
     use FollowsOneJobAtATime, FindsItsWayAround {
         FollowsOneJobAtATime::letGoOfWhatElseItHears insteadof FindsItsWayAround;
     }
-    use DrawsItsTemplate;
+    use FollowsTheCopyRunning;
 
     public const string TEMPLATE = 'operator::taking-a-copy-here';
 
@@ -92,12 +97,27 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
         protected readonly HearingTheJobs $hearingTheJobs,
+        protected readonly FollowingTheCopyRunning $followingTheCopy,
+        protected readonly Clock $clock,
+        protected readonly Capture $capture,
     ) {}
 
     /** The services a copy can be narrowed to, asked once per frame. */
     public function answer(): WhatThisStackRunsTurnedOutToBe
     {
+        if (! $this->answered instanceof WhatThisStackRunsTurnedOutToBe) {
+            $this->readsItsStack();
+        }
+
         return $this->answered ??= $this->askWhatIsRunning($this->stack(), $this->storage, $this->supervising);
+    }
+
+    /** Draw the screen, a frame at a time. */
+    public function render(): View
+    {
+        $this->aFrameBegins();
+
+        return view(self::TEMPLATE);
     }
 
     /** Ask about a copy of the whole stack. */
@@ -160,10 +180,11 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
         return $this->whatBecameOfTheJob();
     }
 
-    /** Ask the stack again: the services, and what became of the copy. */
+    /** Ask the stack again: the services, what became of the copy, and what is being copied now. */
     public function again(): void
     {
         $this->answered = null;
+        $this->copyHeard = null;
         $this->askAfterAgain();
     }
 
@@ -182,6 +203,12 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
             ended: static fn(?WhyTheWorkEnded $why): HowTheCopyWent => new HowACopyReads()->ended($why, $asked->scope()),
             met: $this->lettingGoIfRefused($stack, new HowACopyReads()->met(...)),
         );
+    }
+
+    protected function letGoOfWhatElseItHears(): void
+    {
+        $this->hearingTheJobs->letGo();
+        $this->letGoOfTheCopy();
     }
 
     protected function whileNoJobIsFollowed(): HowTheCopyWent

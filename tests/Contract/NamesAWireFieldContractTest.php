@@ -15,6 +15,7 @@ use Modules\Sdk\Api\Fields\CapabilitiesField;
 use Modules\Sdk\Api\Fields\CatalogueField;
 use Modules\Sdk\Api\Fields\ClientsField;
 use Modules\Sdk\Api\Fields\ConfigField;
+use Modules\Sdk\Api\Fields\CopyingField;
 use Modules\Sdk\Api\Fields\CredentialsField;
 use Modules\Sdk\Api\Fields\DashboardField;
 use Modules\Sdk\Api\Fields\DeviceChallengeField;
@@ -108,6 +109,7 @@ function everyFieldNamedOnTheWire(): array
         ...CapabilitiesField::cases(),
         ...ClientsField::cases(),
         ...ConfigField::cases(),
+        ...CopyingField::cases(),
         ...CredentialsField::cases(),
         ...KeysField::cases(),
         ...DeviceChallengeField::cases(),
