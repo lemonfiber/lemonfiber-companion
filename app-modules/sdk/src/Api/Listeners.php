@@ -86,9 +86,10 @@ use Psr\Log\LoggerInterface;
  * raised while this phone was not listening are heard when it listens again:
  * after a stream that broke, after another screen, after the app was away, and
  * after a launch. They arrive as the stack hands them back, and only `alert`
- * events among them are told. A stack that no longer holds all of what came
- * after hands back nothing, and does not say so, so nothing here calls what
- * arrived everything.
+ * events among them are told. A stack says first whether that is every alert
+ * it raised since; where it says `partial`, or says nothing, which is how a
+ * stack too old to say it answers, what was heard says some alerts may be
+ * missing, so nothing here calls what arrived everything.
  *
  * **A stream that ends is said to have ended once.** The call that finds the
  * end hands back what arrived before it, and the next hands back `closed`
@@ -196,6 +197,8 @@ final class Listeners implements Hearing
         $heard = $newest instanceof ServerEvent ? $heard->naming(WhatIsNamedAsNewest::in(new EnvelopeReader()->read($newest->data))) : $heard;
 
         $heard = $heard->alerting($alerts);
+
+        $heard = $arrived->someAlertsMayBeMissing ? $heard->missingSomeAlerts() : $heard;
 
         $heard = $settings instanceof ServerEvent ? $heard->settledAs(TheSettingsListed::in(new EnvelopeReader()->read($settings->data))) : $heard;
 

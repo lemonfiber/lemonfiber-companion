@@ -88,3 +88,16 @@ it('carries the kind and the severity it was sorted by', function (): void {
 it('names each kind for the notification page by its wire word', function (KindOfNotification $kind): void {
     expect($kind->saidOnTheScreen())->toBe(sprintf('notifications.kind.%s', $kind->value));
 })->with(KindOfNotification::cases());
+
+it('tells that some alerts may be missing until the operator turns it off, kept through every other choice', function (): void {
+    $off = WhatMayReachThePhone::everything()->tellingWhenSomeMayBeMissing(told: false);
+
+    expect(WhatMayReachThePhone::everything()->tellsWhenSomeMayBeMissing())->toBeTrue()
+        ->and(WhatMayReachThePhone::from(Severity::Critical, KindOfNotification::Problem)->tellsWhenSomeMayBeMissing())->toBeTrue()
+        ->and($off->tellsWhenSomeMayBeMissing())->toBeFalse()
+        ->and($off->withOff(KindOfNotification::Backup)->tellsWhenSomeMayBeMissing())->toBeFalse()
+        ->and($off->withOn(KindOfNotification::Backup)->tellsWhenSomeMayBeMissing())->toBeFalse()
+        ->and($off->withFloor(Severity::Error)->tellsWhenSomeMayBeMissing())->toBeFalse()
+        ->and($off->tellingWhenSomeMayBeMissing(told: true)->tellsWhenSomeMayBeMissing())->toBeTrue()
+        ->and($off->withFloor(Severity::Error)->floor())->toBe(Severity::Error);
+});

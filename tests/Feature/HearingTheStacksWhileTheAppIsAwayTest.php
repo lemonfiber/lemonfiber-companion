@@ -205,3 +205,87 @@ it('is made by the composition root, afresh each time', function (): void {
     expect(whatTheContainerMakesForAWake())->toBeInstanceOf(HearingWhileAway::class)
         ->and(whatTheContainerMakesForAWake())->not->toBe(whatTheContainerMakesForAWake());
 });
+
+/** What a wake tells of a stack that may be missing alerts, as the notifier records it. */
+function someMayBeMissingFrom(Stack $stack): string
+{
+    return sprintf('plain %s missing as %s opening lemonfiber://stacks/%s', $stack->name()->shown(), AnAlertsName::someMayBeMissing()->filedFor($stack->id()), $stack->id()->stored());
+}
+
+/** What a wake tells of the VPN going down on a stack, as the notifier records it. */
+function theVpnWentDownOn(Stack $stack): string
+{
+    return sprintf('plain vpn.down %s onset as %s opening lemonfiber://stacks/%s', $stack->name()->shown(), AnAlertsName::of('vpn.down#1')->filedFor($stack->id()), $stack->id()->stored());
+}
+
+/** Three alerts raised while the phone was away, two of them the same condition. */
+function threeAlertsRaisedMeanwhile(): TheAlerts
+{
+    return TheAlerts::of(
+        AnAlert::raised(WhatTheCoreDecided::toSay('vpn.down'), WhichWayItWent::Onset, AnAlertsName::of('vpn.down#1'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)),
+        AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#1'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)),
+        AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Resolved, AnAlertsName::of('disk.full#1'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)),
+    );
+}
+
+it('marks a stack that may be missing alerts, and tells the operator so once, before the alerts it handed back', function (): void {
+    $phone = AWakeOnThePhone::holding(AStackThatSpeaksUp::holdingOpen(itIsHealthy()->alerting(theVpnWentDown())->missingSomeAlerts()), Instant::atEpochSeconds(WOKEN_AT), theBoathouse())
+        ->signedInTo(theBoathouse(), Whose::theOperator());
+
+    expect($phone->hearing()->hear())->toBe(HowTheWakeWent::HeardEveryStack)
+        ->and($phone->notifier->told())->toBe([someMayBeMissingFrom(theBoathouse()), theVpnWentDownOn(theBoathouse())])
+        ->and($phone->missing->keepsAnythingOf(theBoathouse()->id()))->toBeTrue();
+});
+
+it('tells that some alerts may be missing once a wake, however many alerts and reads it carried', function (): void {
+    $phone = AWakeOnThePhone::holding(AStackThatSpeaksUp::holdingOpen(WhatWasHeard::aSignOfLife()->alerting(threeAlertsRaisedMeanwhile())->missingSomeAlerts(), WhatWasHeard::aSignOfLife()->alerting(theVpnWentDown()), itIsHealthy()), Instant::atEpochSeconds(WOKEN_AT), theBoathouse())
+        ->signedInTo(theBoathouse(), Whose::theOperator());
+
+    $phone->hearing()->hear();
+
+    expect(array_count_values($phone->notifier->told())[someMayBeMissingFrom(theBoathouse())] ?? 0)->toBe(1)
+        ->and($phone->notifier->told()[0])->toBe(someMayBeMissingFrom(theBoathouse()));
+});
+
+it('marks only the stack that may be missing alerts, and tells of no other', function (): void {
+    $phone = AWakeOnThePhone::holding(AStackThatSpeaksUp::holdingOpen(itIsHealthy()->missingSomeAlerts(), itIsHealthy()), Instant::atEpochSeconds(WOKEN_AT), theBoathouse(), theGarage())
+        ->signedInTo(theBoathouse(), Whose::theOperator())
+        ->signedInTo(theGarage(), Whose::theOperator());
+
+    $phone->hearing()->hear();
+
+    expect($phone->notifier->told())->toBe([someMayBeMissingFrom(theBoathouse())])
+        ->and($phone->missing->keepsAnythingOf(theBoathouse()->id()))->toBeTrue()
+        ->and($phone->missing->keepsAnythingOf(theGarage()->id()))->toBeFalse();
+});
+
+it('adds nothing where the stack handed back every alert, or made no claim', function (): void {
+    $phone = AWakeOnThePhone::holding(AStackThatSpeaksUp::holdingOpen(itIsHealthy()->alerting(theVpnWentDown())), Instant::atEpochSeconds(WOKEN_AT), theBoathouse())
+        ->signedInTo(theBoathouse(), Whose::theOperator());
+
+    $phone->hearing()->hear();
+
+    expect($phone->notifier->told())->toBe([theVpnWentDownOn(theBoathouse())])
+        ->and($phone->missing->keepsAnythingOf(theBoathouse()->id()))->toBeFalse();
+});
+
+it('still marks the stack, and tells nothing of it, where the operator turned that off for the stack', function (): void {
+    $phone = AWakeOnThePhone::holding(AStackThatSpeaksUp::holdingOpen(itIsHealthy()->alerting(theVpnWentDown())->missingSomeAlerts()), Instant::atEpochSeconds(WOKEN_AT), theBoathouse())
+        ->signedInTo(theBoathouse(), Whose::theOperator());
+    $phone->choosing->tellWhenSomeMayBeMissing(theBoathouse()->id(), told: false);
+
+    $phone->hearing()->hear();
+
+    expect($phone->notifier->told())->toBe([theVpnWentDownOn(theBoathouse())])
+        ->and($phone->missing->keepsAnythingOf(theBoathouse()->id()))->toBeTrue();
+});
+
+it('never marks a stack nor tells of it where the phone holds a household member\'s session for it', function (): void {
+    $phone = AWakeOnThePhone::holding(AStackThatSpeaksUp::holdingOpen(itIsHealthy()->missingSomeAlerts()), Instant::atEpochSeconds(WOKEN_AT), theGarage())
+        ->signedInTo(theGarage(), Whose::member('robin'));
+
+    $phone->hearing()->hear();
+
+    expect($phone->notifier->told())->toBe([])
+        ->and($phone->missing->keepsAnythingOf(theGarage()->id()))->toBeFalse();
+});

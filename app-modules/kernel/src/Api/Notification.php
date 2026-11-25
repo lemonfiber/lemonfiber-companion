@@ -14,11 +14,13 @@ use Closure;
  * Four requirements meet in this one type, and they belong together because
  * each of them is about what a notification may **not** carry.
  *
- * **The app raises no alerts of its own.** Every notification originates in the
- * core's notification decisions, so this carries an identifier the core
- * declared and no text at all. There is nowhere to put a sentence the app
- * wrote. That is the difference between a rule and a habit: the words come from
- * the translator, keyed by the identifier.
+ * **The app raises no alerts of its own.** Every alert's notification
+ * originates in the core's notification decisions, so this carries an
+ * identifier the core declared and no text at all. There is nowhere to put a
+ * sentence the app wrote. That is the difference between a rule and a habit:
+ * the words come from the translator, keyed by the identifier. The one
+ * notification that is the app's own says that some alerts from a stack may
+ * be missing, carries no identifier, and is worded by the translator alone.
  *
  * What it is filed under is the alert's name, which is never shown: it only
  * keys the notification, with its stack, so a resolution replaces its onset.
@@ -51,12 +53,12 @@ final readonly class Notification
     private function __construct(
         private StackId $about,
         private StackName $called,
-        private WhatTheCoreDecided $says,
+        private ?WhatTheCoreDecided $says,
         private bool $guarded,
         private HowItIsWorded $worded,
         private AnAlertsName $filedUnder,
         private WhereATapLeads $leadsTo,
-        private AnAlertsSort $sort,
+        private ?AnAlertsSort $sort,
     ) {}
 
     /**
@@ -68,6 +70,17 @@ final readonly class Notification
     public static function ofAnAlert(Stack $about, AnAlert $alert, WhereATapLeads $leadsTo): self
     {
         return new self($about->id(), $about->name(), $alert->kind(), guarded: false, worded: HowItIsWorded::forAnAlert($alert->way()), filedUnder: $alert->filedUnder(), leadsTo: $leadsTo, sort: $alert->sort());
+    }
+
+    /**
+     * The app's own notification that some alerts from this stack may be missing, filed once per stack.
+     *
+     * It carries nothing the core said, so it is shown in the translator's words
+     * alone, and a later one replaces it rather than stacking.
+     */
+    public static function someMayBeMissing(Stack $about, WhereATapLeads $leadsTo): self
+    {
+        return new self($about->id(), $about->name(), null, guarded: false, worded: HowItIsWorded::SomeMayBeMissing, filedUnder: AnAlertsName::someMayBeMissing(), leadsTo: $leadsTo, sort: null);
     }
 
     /**
@@ -113,7 +126,7 @@ final readonly class Notification
     /** Whether the operator lets it reach the phone, by what they chose for its stack. */
     public function isLetThroughBy(WhatMayReachThePhone $chosen): bool
     {
-        return $chosen->lets($this->sort);
+        return $this->sort instanceof AnAlertsSort ? $chosen->lets($this->sort) : $chosen->tellsWhenSomeMayBeMissing();
     }
 
     /** The stack it is about. */
@@ -151,15 +164,15 @@ final readonly class Notification
      *
      * The two arms take different arguments, and that asymmetry is the rule:
      * `$plain` is given the name of the stack it is about, `$guarded` only the
-     * code. A lock-screen renderer therefore has no stack to name, no service
+     * code, which the app's own notification has none of. A lock-screen renderer therefore has no stack to name, no service
      * to name and no reading to quote — not because it was told not to, but
      * because none of it arrived.
      *
      * @template TPlain of object
      * @template TGuarded of object
      *
-     * @param  Closure(WhatTheCoreDecided, StackName): TPlain  $plain
-     * @param  Closure(WhatTheCoreDecided): TGuarded  $guarded
+     * @param  Closure(?WhatTheCoreDecided, StackName): TPlain  $plain
+     * @param  Closure(?WhatTheCoreDecided): TGuarded  $guarded
      * @return TPlain|TGuarded
      */
     public function either(Closure $plain, Closure $guarded): object

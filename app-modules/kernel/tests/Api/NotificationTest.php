@@ -45,9 +45,10 @@ function aStackItTells(string $remembered): Stack
 
 it('is built from the core\'s decision and nothing else', function (): void {
     // The requirement has two halves and this is the one a type can keep: the
-    // one way to make a notification takes an alert the core raised, and no
-    // text. An app wanting to say something of its own has nowhere to put the
-    // sentence.
+    // one way to make a notification of an alert takes an alert the core
+    // raised, and no text, and the one notification of the app's own takes a
+    // stack and nothing it could say. An app wanting to say something else of
+    // its own has nowhere to put the sentence.
     //
     // The other half — not calling the platform's alert directly — is a
     // `disallowedStaticCalls` entry on `Dialog::alert()`, because a call this
@@ -60,7 +61,7 @@ it('is built from the core\'s decision and nothing else', function (): void {
         }
     }
 
-    expect($built)->toBe(['ofAnAlert']);
+    expect($built)->toBe(['ofAnAlert', 'someMayBeMissing']);
 });
 
 it('has nowhere to hold a credential, a name or a title', function (): void {
@@ -110,8 +111,8 @@ it('concerns nothing when the device has no stacks at all', function (): void {
 
 it('says what it is about when the device is unlocked', function (): void {
     $said = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('backup.finished'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading())->either(
-        plain: fn(WhatTheCoreDecided $says, StackName $called): Code => Code::of(sprintf('%s on %s', $says->shown(), $called->shown())),
-        guarded: fn(WhatTheCoreDecided $says): WhatTheCoreDecided => $says,
+        plain: fn(?WhatTheCoreDecided $says, StackName $called): Code => Code::of(sprintf('%s on %s', $says?->shown(), $called->shown())),
+        guarded: fn(?WhatTheCoreDecided $says): WhatTheCoreDecided => $says ?? WhatTheCoreDecided::toSay('nothing'),
     );
 
     expect($said->shown())->toBe('backup.finished on the-loft');
@@ -140,11 +141,11 @@ it('hands a locked device no stack to name', function (): void {
     Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('backup.finished'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading())
         ->whileLocked()
         ->either(
-            plain: fn(WhatTheCoreDecided $says, StackName $called): Code => Code::of(sprintf('%s%s', $says->shown(), $called->shown())),
-            guarded: function (WhatTheCoreDecided $says) use (&$handed): WhatTheCoreDecided {
-                $handed = $says->shown();
+            plain: fn(?WhatTheCoreDecided $says, StackName $called): Code => Code::of(sprintf('%s%s', $says?->shown(), $called->shown())),
+            guarded: function (?WhatTheCoreDecided $says) use (&$handed): WhatTheCoreDecided {
+                $handed = $says?->shown();
 
-                return $says;
+                return $says ?? WhatTheCoreDecided::toSay('nothing');
             },
         );
 
@@ -155,8 +156,8 @@ it('the guarded arm is the only one a locked device can run', function (): void 
     $ran = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::unnamed(WhatTheCoreDecided::toSay('backup.finished'), WhichWayItWent::Onset, AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading())
         ->whileLocked()
         ->either(
-            plain: fn(WhatTheCoreDecided $says, StackName $called): Code => Code::of(sprintf('plain %s %s', $says->shown(), $called->shown())),
-            guarded: fn(WhatTheCoreDecided $says): Code => Code::of(sprintf('guarded %s', $says->shown())),
+            plain: fn(?WhatTheCoreDecided $says, StackName $called): Code => Code::of(sprintf('plain %s %s', $says?->shown(), $called->shown())),
+            guarded: fn(?WhatTheCoreDecided $says): Code => Code::of(sprintf('guarded %s', $says?->shown())),
         );
 
     expect($ran->shown())->toBe('guarded backup.finished');
@@ -171,8 +172,8 @@ it('locking one notification does not unlock the original', function (): void {
     $notification->whileLocked();
 
     $ran = $notification->either(
-        plain: fn(WhatTheCoreDecided $says, StackName $called): Code => Code::of(sprintf('plain %s %s', $says->shown(), $called->shown())),
-        guarded: fn(WhatTheCoreDecided $says): Code => Code::of(sprintf('guarded %s', $says->shown())),
+        plain: fn(?WhatTheCoreDecided $says, StackName $called): Code => Code::of(sprintf('plain %s %s', $says?->shown(), $called->shown())),
+        guarded: fn(?WhatTheCoreDecided $says): Code => Code::of(sprintf('guarded %s', $says?->shown())),
     );
 
     expect($ran->shown())->toBe('plain backup.finished the-loft');
@@ -194,7 +195,7 @@ it('files a notification of an alert under the alert\'s name, which way it went,
     }
 
     expect($notification->either(
-        plain: static fn(WhatTheCoreDecided $says): WhatTheCoreDecided => $says,
+        plain: static fn(?WhatTheCoreDecided $says): WhatTheCoreDecided => $says ?? WhatTheCoreDecided::toSay('nothing'),
         guarded: static fn(): WhatTheCoreDecided => WhatTheCoreDecided::toSay('locked'),
     )->shown())->toBe('vpn.down');
 })->with(WhichWayItWent::cases());
@@ -237,4 +238,36 @@ it('is about the stack its alert came from, and is let through by what the opera
         ->and($backup->isLetThroughBy(WhatMayReachThePhone::everything()->withOff(KindOfNotification::Backup)))->toBeFalse()
         ->and($backup->whileLocked()->isLetThroughBy(WhatMayReachThePhone::everything()->withOff(KindOfNotification::Backup)))->toBeFalse()
         ->and($backup->beyondTheCap()->isLetThroughBy(WhatMayReachThePhone::everything()->withOff(KindOfNotification::Backup)))->toBeFalse();
+});
+
+it('says some alerts from its stack may be missing in the translator\'s words alone, filed once per stack apart from every alert, leading where it was given', function (): void {
+    $loft = Notification::someMayBeMissing(aStackItTells('the-loft'), aTapLeading());
+    $alert = Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::raised(WhatTheCoreDecided::toSay('disk.full'), WhichWayItWent::Onset, AnAlertsName::of('disk.full#1'), AnAlertsSort::of(KindOfNotification::Problem, Severity::Warning)), aTapLeading());
+
+    expect($loft->worded())->toBe(HowItIsWorded::SomeMayBeMissing)
+        ->and($loft->about()->is(StackId::rememberedAs('the-loft')))->toBeTrue()
+        ->and(Notification::someMayBeMissing(aStackItTells('the-loft'), aTapLeading())->filedAs())->toBe($loft->filedAs())
+        ->and(Notification::someMayBeMissing(aStackItTells('the-shed'), aTapLeading())->filedAs())->not->toBe($loft->filedAs())
+        ->and($loft->filedAs())->not->toBe($alert->filedAs())
+        ->and($loft->filedAs())->not->toBe($alert->beyondTheCap()->filedAs())
+        ->and($loft->leadsTo()->asALink())->toBe(aTapLeading()->asALink())
+        ->and($loft->either(
+            plain: static fn(?WhatTheCoreDecided $says, StackName $called): Code => Code::of(sprintf('plain %s %s', $says instanceof WhatTheCoreDecided ? 'a code' : 'nothing', $called->shown())),
+            guarded: static fn(?WhatTheCoreDecided $says): Code => Code::of(sprintf('guarded %s', $says instanceof WhatTheCoreDecided ? 'a code' : 'nothing')),
+        )->shown())->toBe('plain nothing the-loft')
+        ->and($loft->whileLocked()->either(
+            plain: static fn(): Code => Code::of('plain'),
+            guarded: static fn(?WhatTheCoreDecided $says): Code => Code::of(sprintf('guarded %s', $says instanceof WhatTheCoreDecided ? 'a code' : 'nothing')),
+        )->shown())->toBe('guarded nothing');
+});
+
+it('is let through by whether the operator is told some alerts from its stack may be missing, and by no kind switched off', function (): void {
+    $loft = Notification::someMayBeMissing(aStackItTells('the-loft'), aTapLeading());
+    $everyKindOff = WhatMayReachThePhone::from(Severity::Critical, ...KindOfNotification::cases());
+
+    expect($loft->isLetThroughBy(WhatMayReachThePhone::everything()))->toBeTrue()
+        ->and($loft->isLetThroughBy($everyKindOff))->toBeTrue()
+        ->and($loft->isLetThroughBy(WhatMayReachThePhone::everything()->tellingWhenSomeMayBeMissing(told: false)))->toBeFalse()
+        ->and($loft->whileLocked()->isLetThroughBy(WhatMayReachThePhone::everything()->tellingWhenSomeMayBeMissing(told: false)))->toBeFalse()
+        ->and(Notification::ofAnAlert(aStackItTells('the-loft'), AnAlert::raised(WhatTheCoreDecided::toSay('backup.done'), WhichWayItWent::Onset, AnAlertsName::of('backup#1'), AnAlertsSort::of(KindOfNotification::Backup, Severity::Advisory)), aTapLeading())->isLetThroughBy(WhatMayReachThePhone::everything()->tellingWhenSomeMayBeMissing(told: false)))->toBeTrue();
 });

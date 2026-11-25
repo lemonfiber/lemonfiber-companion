@@ -147,6 +147,12 @@ final class WhatEachStackMayTellThisPhone extends NativeComponent implements Tak
         }
     }
 
+    /** Being told that some alerts from a stack may be missing was turned on or off, taken as the state the switch now shows. */
+    public function missingTurned(string $stack, bool $on): void
+    {
+        $this->chose($stack, fn(StackId $id): WhatMayReachThePhone => $this->choosing->tellWhenSomeMayBeMissing($id, $on));
+    }
+
     /** The operator chose the lowest severity of problem told from a stack. */
     public function problemsFrom(string $stack, string $severity): void
     {

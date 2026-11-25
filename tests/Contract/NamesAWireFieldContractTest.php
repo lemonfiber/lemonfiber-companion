@@ -54,6 +54,7 @@ use Modules\Sdk\Api\Fields\QueueField;
 use Modules\Sdk\Api\Fields\RemovalField;
 use Modules\Sdk\Api\Fields\RepairField;
 use Modules\Sdk\Api\Fields\ReplacementField;
+use Modules\Sdk\Api\Fields\ReplayField;
 use Modules\Sdk\Api\Fields\ResetField;
 use Modules\Sdk\Api\Fields\RestoreField;
 use Modules\Sdk\Api\Fields\SeedField;
@@ -142,6 +143,7 @@ function everyFieldNamedOnTheWire(): array
         ...RemovalField::cases(),
         ...RepairField::cases(),
         ...ReplacementField::cases(),
+        ...ReplayField::cases(),
         ...ResetField::cases(),
         ...RestoreField::cases(),
         ...SeedField::cases(),

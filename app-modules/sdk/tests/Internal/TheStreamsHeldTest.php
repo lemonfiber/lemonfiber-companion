@@ -11,6 +11,7 @@ use Closure;
 use function expect;
 use function it;
 
+use Modules\Kernel\Api\AnEventHeard;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\PinnedClients;
 use Modules\Sdk\Internal\TheStreamsHeld;
@@ -59,4 +60,18 @@ it('asks a store that kept where the stream got to nothing more until the stream
 
     expect($afterTwoTakes)->toBe(1)
         ->and($kept->timesNoted())->toBe(2);
+});
+
+it('makes no claim for a stream opened from the start in place of one opened after an event that was let go of before it said anything', function (): void {
+    $kept = WhereHearingLeftOffInMemory::nowhere()->heardBefore(TheStreamListenedTo::aStack()->id(), AnEventHeard::named('run-0'));
+    MockClient::destroyGlobal();
+    MockClient::global([AStreamThatStaysOpen::saying(), AStreamThatStaysOpen::saying(TheStreamListenedTo::anEvent('job', '{}'))]);
+    $streams = new TheStreamsHeld(new PinnedClients(), $kept, Listeners::NO_LONGER_THAN_MS);
+    $take = static fn(): bool => $streams->taken(TheStreamListenedTo::aStack(), TheStreamListenedTo::theSession())->someAlertsMayBeMissing;
+
+    $take();
+    $streams->letGoOfEvery();
+    $kept->forgetTheStack(TheStreamListenedTo::aStack()->id());
+
+    expect([$take(), $take(), $take()])->toBe([false, false, false]);
 });

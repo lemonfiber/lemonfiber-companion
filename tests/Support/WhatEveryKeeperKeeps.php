@@ -22,6 +22,7 @@ use Modules\Connection\Api\RememberingTheWayIn;
 use Modules\Connection\Api\TheWayIn;
 use Modules\Connection\Api\WakingThisPhone;
 use Modules\Device\Api\PlatformPhoneKeys;
+use Modules\Health\Api\AlertsThatMayBeMissing;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AGrant;
@@ -159,7 +160,7 @@ final readonly class WhatEveryKeeperKeeps
             return;
         }
 
-        if ($keeper instanceof KeepingTheLastReading || $keeper instanceof KeepingTheLastUpkeep || $keeper instanceof KeepingWhatItRuns || $keeper instanceof KeepingWhatWasAsked) {
+        if ($keeper instanceof KeepingTheLastReading || $keeper instanceof AlertsThatMayBeMissing || $keeper instanceof KeepingTheLastUpkeep || $keeper instanceof KeepingWhatItRuns || $keeper instanceof KeepingWhatWasAsked) {
             self::aReadingFor($keeper, $stack);
 
             return;
@@ -206,9 +207,10 @@ final readonly class WhatEveryKeeperKeeps
     }
 
     /** Have a keeper of readings hold the newest reading of its kind for this stack. */
-    private static function aReadingFor(KeepingTheLastReading|KeepingTheLastUpkeep|KeepingWhatItRuns|KeepingWhatWasAsked $keeper, Stack $stack): Noted
+    private static function aReadingFor(KeepingTheLastReading|AlertsThatMayBeMissing|KeepingTheLastUpkeep|KeepingWhatItRuns|KeepingWhatWasAsked $keeper, Stack $stack): Noted
     {
         return match (true) {
+            $keeper instanceof AlertsThatMayBeMissing => $keeper->mayBeMissingFrom($stack->id(), Instant::atEpochSeconds(1)),
             $keeper instanceof KeepingTheLastReading => $keeper->keep($stack->id(), TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing()), Instant::atEpochSeconds(1)),
             $keeper instanceof KeepingTheLastUpkeep => $keeper->keep($stack->id(), WhatIsKeptOfUpdates::aReadingOfAStackThatIsCurrent(), Instant::atEpochSeconds(1)),
             $keeper instanceof KeepingWhatItRuns => $keeper->keep($stack->id(), WhatIsKeptOfServices::aListingOfNothing()),

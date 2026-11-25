@@ -31,6 +31,7 @@ final readonly class WhatWasHeard
         private ?TheLinks $links = null,
         private ?TheAlerts $alerts = null,
         private ?TheServicesSettings $settings = null,
+        private bool $someAlertsMayBeMissing = false,
     ) {}
 
     public static function nothing(): self
@@ -61,25 +62,37 @@ final readonly class WhatWasHeard
     /** The same, with the newest of each kind the stack named in this wake. */
     public function naming(TheNewestNamed $newest): self
     {
-        return new self($this->arrived, $this->summary, $this->why, $newest, $this->links, $this->alerts, $this->settings);
+        return new self($this->arrived, $this->summary, $this->why, $newest, $this->links, $this->alerts, $this->settings, $this->someAlertsMayBeMissing);
     }
 
     /** The same, with what answers what as the stack said it in this wake. */
     public function wiredAs(TheLinks $links): self
     {
-        return new self($this->arrived, $this->summary, $this->why, $this->newest, $links, $this->alerts, $this->settings);
+        return new self($this->arrived, $this->summary, $this->why, $this->newest, $links, $this->alerts, $this->settings, $this->someAlertsMayBeMissing);
+    }
+
+    /** The same, with some alerts the stack raised before this stream opened maybe missing from what it handed back. */
+    public function missingSomeAlerts(): self
+    {
+        return new self($this->arrived, $this->summary, $this->why, $this->newest, $this->links, $this->alerts, $this->settings, someAlertsMayBeMissing: true);
+    }
+
+    /** Whether some alerts the stack raised before this stream opened may be missing from what it handed back. */
+    public function mayBeMissingAlerts(): bool
+    {
+        return $this->someAlertsMayBeMissing;
     }
 
     /** The same, with the alerts the stack raised in this wake. */
     public function alerting(TheAlerts $alerts): self
     {
-        return new self($this->arrived, $this->summary, $this->why, $this->newest, $this->links, $alerts, $this->settings);
+        return new self($this->arrived, $this->summary, $this->why, $this->newest, $this->links, $alerts, $this->settings, $this->someAlertsMayBeMissing);
     }
 
     /** The same, with every setting the services read as the stack said them in this wake. */
     public function settledAs(TheServicesSettings $settings): self
     {
-        return new self($this->arrived, $this->summary, $this->why, $this->newest, $this->links, $this->alerts, $settings);
+        return new self($this->arrived, $this->summary, $this->why, $this->newest, $this->links, $this->alerts, $settings, $this->someAlertsMayBeMissing);
     }
 
     /**

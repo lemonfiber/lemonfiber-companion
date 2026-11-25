@@ -103,6 +103,7 @@ return [
     'slow_heading' => 'Slow, not stuck',
     'slow_explained' => 'These are still moving. They need time, not a fix.',
     'no_findings' => 'Nothing needs attention.',
+    'alerts_may_be_missing' => 'Some alerts raised while you were away may be missing.',
     'repair_refused' => 'The stack refused that repair: :reason',
     'what_it_says_underneath' => 'What the check reported',
     'nothing_to_do_with_it' => 'There is nothing to do with it from here.',

@@ -116,6 +116,7 @@ use Modules\Kernel\Api\WhyItIsWedged;
 use Modules\Kernel\Api\WhyTheWalkthroughStopped;
 use Modules\Kernel\Api\WhyTheWorkEnded;
 use Modules\Sdk\Internal\HowThePluginCatalogueStands;
+use Modules\Sdk\Internal\WhatAReplayHolds;
 
 use function preg_match_all;
 use function preg_quote;
@@ -218,6 +219,7 @@ final readonly class TheWireUnions
         WhichWalk::class => 'shape',
         HowTheImportLinked::class => 'link',
         WhichWayItWent::class => 'moment',
+        WhatAReplayHolds::class => 'alerts',
         WhyTheWalkthroughStopped::class => 'reason',
         WhatToDoNext::class => 'next',
         HowDriftWasJudged::class => 'assessment',

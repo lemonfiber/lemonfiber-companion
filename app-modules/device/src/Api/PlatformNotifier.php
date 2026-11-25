@@ -76,10 +76,10 @@ final readonly class PlatformNotifier implements Notifier
         }
 
         return $this->whileTheLockStands($notification)->either(
-            plain: fn(WhatTheCoreDecided $says, StackName $called): Told => $this->centre->show(
+            plain: fn(?WhatTheCoreDecided $says, StackName $called): Told => $this->centre->show(
                 $this->idFor($notification),
                 $this->words->for(sprintf('notifications.plain.%s_title', $notification->worded()->value), ['stack' => $called->shown()]),
-                $this->words->for(sprintf('notifications.plain.%s_body', $notification->worded()->value), ['code' => $says->shown()]),
+                $this->words->for(sprintf('notifications.plain.%s_body', $notification->worded()->value), ['code' => $says?->shown() ?? '']),
                 $notification->leadsTo()->asALink(),
             ),
             guarded: fn(): Told => $this->centre->show(

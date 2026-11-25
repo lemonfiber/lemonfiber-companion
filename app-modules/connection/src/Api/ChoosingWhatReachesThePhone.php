@@ -62,6 +62,12 @@ final readonly class ChoosingWhatReachesThePhone implements ForgetsAStack
         return $this->keep($stack, $this->forTheStack($stack)->withFloor($floor));
     }
 
+    /** Tell the operator, or not, that some alerts from the stack may be missing, and answer what is in force after. */
+    public function tellWhenSomeMayBeMissing(StackId $stack, bool $told): WhatMayReachThePhone
+    {
+        return $this->keep($stack, $this->forTheStack($stack)->tellingWhenSomeMayBeMissing($told));
+    }
+
     public function forgetTheStack(StackId $stack): Forgotten
     {
         return $this->kept->forget($this->seal->stack($stack));

@@ -24,6 +24,7 @@ final readonly class WhatAStackMayTellAsShown
      * @param bool                             $problemsAreOn whether problems may reach the phone, without which the floor is drawn and not usable
      * @param list<string>                     $keptOff       the key for each kind switched off, said where the stack could not be read
      * @param string                           $floorSaid     the key for the floor in force, said where the stack could not be read
+     * @param bool                             $toldSomeMayBeMissing whether the operator is told that some alerts from it may be missing
      */
     public function __construct(
         public string $stack,
@@ -35,5 +36,6 @@ final readonly class WhatAStackMayTellAsShown
         public bool $problemsAreOn,
         public array $keptOff,
         public string $floorSaid,
+        public bool $toldSomeMayBeMissing,
     ) {}
 }

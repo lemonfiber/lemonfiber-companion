@@ -21,8 +21,9 @@ use Modules\Kernel\Api\WhatMayReachThePhone;
  *
  * What does not read degrades rather than refuses, toward telling more: a kind
  * that does not read is read as switched on, and a floor that does not read as
- * every problem, since a choice the phone cannot make out is never a reason to
- * stop telling the operator something.
+ * every problem, and whether it is told some alerts may be missing as on, since
+ * a choice the phone cannot make out is never a reason to stop telling the
+ * operator something.
  */
 final readonly class TheChoicesAsKept
 {
@@ -31,6 +32,8 @@ final readonly class TheChoicesAsKept
 
     /** Where the lowest severity of problem told is written. */
     private const string FLOOR = 'problems_from';
+
+    private const string MAY_BE_MISSING = 'some_may_be_missing';
 
     /** What is chosen, written. */
     public static function written(WhatMayReachThePhone $chosen): Unsealed
@@ -41,7 +44,7 @@ final readonly class TheChoicesAsKept
             $off[] = $kind->value;
         }
 
-        return Unsealed::of((string) json_encode([self::OFF => $off, self::FLOOR => $chosen->floor()->value]));
+        return Unsealed::of((string) json_encode([self::OFF => $off, self::FLOOR => $chosen->floor()->value, self::MAY_BE_MISSING => $chosen->tellsWhenSomeMayBeMissing()]));
     }
 
     /** What is chosen, read back. */
@@ -58,7 +61,8 @@ final readonly class TheChoicesAsKept
             return WhatMayReachThePhone::everything();
         }
 
-        return WhatMayReachThePhone::from(self::floorIn(self::fieldIn($written, self::FLOOR)), ...self::offIn(self::fieldIn($written, self::OFF)));
+        return WhatMayReachThePhone::from(self::floorIn(self::fieldIn($written, self::FLOOR)), ...self::offIn(self::fieldIn($written, self::OFF)))
+            ->tellingWhenSomeMayBeMissing(self::fieldIn($written, self::MAY_BE_MISSING) !== false);
     }
 
     /**

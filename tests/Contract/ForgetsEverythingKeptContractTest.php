@@ -10,6 +10,7 @@ use Modules\Connection\Internal\Store\WakingInTheDatabase;
 use Modules\Connection\Internal\Store\WaysInInTheDatabase;
 use Modules\Health\Internal\HealthReadingsKept;
 use Modules\Health\Internal\Store\HealthReadingsInTheDatabase;
+use Modules\Health\Internal\Store\MissingAlertsInTheDatabase;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnEventHeard;
 use Modules\Kernel\Api\AReleaseNamed;
@@ -50,6 +51,7 @@ use Tests\Support\Fakes\APlatformStore;
 use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\ConnectionSettingsInMemory;
 use Tests\Support\Fakes\FrozenClock;
+use Tests\Support\Fakes\MissingAlertsInMemory;
 use Tests\Support\Fakes\NewsKeptInMemory;
 use Tests\Support\Fakes\NotifyingKeptInMemory;
 use Tests\Support\Fakes\ReadingsInMemory;
@@ -163,6 +165,8 @@ it('forgets nothing where nothing is kept, and says so', function (): void {
         'the settings adapter' => new SettingsInTheDatabase(AKeptDatabase::migrated()),
         'the settings fake' => ConnectionSettingsInMemory::empty(),
         'the news adapter' => new NewsInTheDatabase(AKeptDatabase::migrated()),
+        'the missing alerts adapter' => new MissingAlertsInTheDatabase(AKeptDatabase::migrated()),
+        'the missing alerts fake' => MissingAlertsInMemory::empty(),
         'the news fake' => NewsKeptInMemory::empty(),
         'the notifying adapter' => new NotifyingInTheDatabase(AKeptDatabase::migrated()),
         'the notifying fake' => NotifyingKeptInMemory::empty(),
