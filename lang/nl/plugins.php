@@ -240,6 +240,7 @@ return [
         'not_installed' => 'Deze plug-in is niet meer geïnstalleerd op deze machine',
         'back' => 'Terug naar plug-ins',
         'default' => 'Standaard',
+        'default_is' => 'Standaard: :default',
         'set_by_you' => 'Door jou ingesteld',
         'the_cores' => 'Een instelling van lemonfiber zelf',
         'a_namespaces' => 'Hoort bij :namespace',

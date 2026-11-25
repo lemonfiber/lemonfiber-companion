@@ -33,7 +33,8 @@ use Native\Mobile\Edge\NativeComponent;
  * The stack's two settings for a running copy: how fast a backup may write, and the minutes with nothing moving after which a copy reads stalled.
  *
  * Each is drawn with its value where the operator set one, or as the stack's
- * default where none is recorded, and changed exactly as any of the stack's own
+ * default where none is recorded, with that default's value where the stack
+ * sends one, and changed exactly as any of the stack's own
  * settings is, through {@see ChangesASetting}. Only these two may be changed
  * here. The stream's settings replace what was read.
  */

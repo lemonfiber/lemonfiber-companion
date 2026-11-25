@@ -89,7 +89,7 @@ function whatAStackSaysOfItsSettings(array $changed = []): array
         'rehearsed' => false,
         'settings' => [
             ['name' => 'vpn.countries', 'whose' => ['of' => 'namespace', 'namespace' => 'gluetun'], 'readers' => [['service' => 'gluetun', 'variable' => 'SERVER_COUNTRIES', 'default' => 'Netherlands', 'needs' => [], 'met' => true]], 'value' => 'Belgium', 'environment' => 'GLUETUN_SERVER_COUNTRIES'],
-            ['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [['service' => 'caddy', 'variable' => 'DOMAIN', 'needs' => [], 'met' => true], ['service' => 'gluetun', 'variable' => 'PUBLIC_HOST', 'needs' => ['vpn.type' => ['wireguard']], 'met' => false]]],
+            ['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [['service' => 'caddy', 'variable' => 'DOMAIN', 'needs' => [], 'met' => true], ['service' => 'gluetun', 'variable' => 'PUBLIC_HOST', 'needs' => ['vpn.type' => ['wireguard']], 'met' => false]], 'default' => 'home.arpa'],
             ['name' => 'vpn.provider', 'whose' => ['of' => 'namespace', 'namespace' => 'gluetun'], 'readers' => [], 'value' => 'mullvad', 'choices' => [
                 ['value' => 'mullvad', 'needs' => [], 'open' => true],
                 ['value' => 'pia', 'needs' => ['vpn.type' => ['openvpn'], 'vpn.port' => ['1194', '1197']], 'open' => false],
@@ -142,7 +142,7 @@ function theSameSettingsTheServicesRead(): TheServicesSettings
     return TheServicesSettings::of(
         TheSettingsRead::these(
             ASetting::read('vpn.countries', WhoseASettingIs::theNamespaces('gluetun'), TheServicesReadingIt::these(AServiceReadingIt::of(ServiceId::called('gluetun'), 'SERVER_COUNTRIES', ASettingValue::value('Netherlands'))), ASettingValue::value('Belgium')),
-            ASetting::read('domain', WhoseASettingIs::theCores(), TheServicesReadingIt::these(AServiceReadingIt::of(ServiceId::called('caddy'), 'DOMAIN', ASettingValue::nothing()), AServiceReadingIt::of(ServiceId::called('gluetun'), 'PUBLIC_HOST', ASettingValue::nothing())), ASettingValue::nothing()),
+            ASetting::read('domain', WhoseASettingIs::theCores(), TheServicesReadingIt::these(AServiceReadingIt::of(ServiceId::called('caddy'), 'DOMAIN', ASettingValue::nothing()), AServiceReadingIt::of(ServiceId::called('gluetun'), 'PUBLIC_HOST', ASettingValue::nothing())), ASettingValue::nothing())->defaultingTo(ASettingValue::value('home.arpa')),
             ASetting::read('vpn.provider', WhoseASettingIs::theNamespaces('gluetun'), TheServicesReadingIt::these(), ASettingValue::value('mullvad'))->among(TheChoices::these(
                 AChoice::of('mullvad', WhatAChoiceNeeds::nothing(), open: true),
                 AChoice::of('pia', WhatAChoiceNeeds::holding('vpn.type', 'openvpn')->and(WhatAChoiceNeeds::holding('vpn.port', '1194', '1197')), open: false),
@@ -236,10 +236,11 @@ function everySettingSaid(TheServicesSettings $settings): string
 
     foreach ($settings->settings() as $setting) {
         $said[] = sprintf(
-            '%s(%s)[%s]%s%s',
+            '%s(%s)[%s]%s%s%s',
             $setting->name(),
             whoseItIsSaid($setting->whose()),
             theReadersSaid($setting->readers()),
+            $setting->default()->isHeld() ? sprintf(' default %s', $setting->default()->said()) : '',
             $setting->value()->isHeld() ? sprintf('=%s', $setting->value()->said()) : '',
             theChoicesSaid($setting->choices()),
         );
@@ -382,7 +383,7 @@ function theYesToGermany(): ASettingChangeAgreed
 }
 
 /** What the listing above folds to. */
-const EVERY_SETTING_SAID = 'vpn.countries(gluetun)[gluetun:SERVER_COUNTRIES=Netherlands]=Belgium | domain(core)[caddy:DOMAIN,gluetun:PUBLIC_HOST] | vpn.provider(gluetun)[]=mullvad{mullvad open; pia closed needs vpn.type=openvpn,vpn.port=1194/1197} | secret vpn.key(gluetun)[gluetun:WIREGUARD_PRIVATE_KEY] held operator | secret proxy.token(core)[caddy:TOKEN] unset unsaid | waiting gluetun: setting vpn.provider(mullvad,pia), setting vpn.countries(), secret vpn.key | waiting qbittorrent: service gluetun';
+const EVERY_SETTING_SAID = 'vpn.countries(gluetun)[gluetun:SERVER_COUNTRIES=Netherlands]=Belgium | domain(core)[caddy:DOMAIN,gluetun:PUBLIC_HOST] default home.arpa | vpn.provider(gluetun)[]=mullvad{mullvad open; pia closed needs vpn.type=openvpn,vpn.port=1194/1197} | secret vpn.key(gluetun)[gluetun:WIREGUARD_PRIVATE_KEY] held operator | secret proxy.token(core)[caddy:TOKEN] unset unsaid | waiting gluetun: setting vpn.provider(mullvad,pia), setting vpn.countries(), secret vpn.key | waiting qbittorrent: service gluetun';
 
 it('reads every setting and secret the services read, whose each is and who reads it, never a secret\'s value', function (): void {
     $ways = [
@@ -427,6 +428,7 @@ it('reads a listing it cannot read whole as one it could not read, never as a sh
     'a reader with no variable' => [['settings' => [['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [['service' => 'caddy']]]]]],
     'a default that is not text' => [['settings' => [['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [['service' => 'caddy', 'variable' => 'DOMAIN', 'default' => 443]]]]]],
     'a value that is not text' => [['settings' => [['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [], 'value' => false]]]],
+    'a setting\'s own default that is not text' => [['settings' => [['name' => 'domain', 'whose' => ['of' => 'core'], 'readers' => [], 'default' => 443]]]],
     'no secrets' => [['secrets' => 'none']],
     'choices that are a word' => [['settings' => [['name' => 'vpn.provider', 'whose' => ['of' => 'core'], 'readers' => [], 'choices' => 'mullvad']]]],
     'choices keyed rather than listed' => [['settings' => [['name' => 'vpn.provider', 'whose' => ['of' => 'core'], 'readers' => [], 'choices' => ['first' => ['value' => 'mullvad', 'needs' => [], 'open' => true]]]]]],

@@ -94,6 +94,8 @@ final readonly class HowASettingIsShown
             whose: $this->unlessUnsaid($setting->whose()),
             isSet: $setting->value()->isHeld(),
             value: $setting->value()->said(),
+            declaresADefault: $setting->default()->isHeld(),
+            default: $setting->default()->said(),
             readers: $this->readers($setting->readers()),
             choices: $this->choices($setting->choices()),
         );

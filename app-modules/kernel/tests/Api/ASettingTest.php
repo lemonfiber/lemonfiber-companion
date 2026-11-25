@@ -28,6 +28,18 @@ it('holds no choices until it is said to be among some, then those', function ()
         ->and($setting->among($choices)->name())->toBe('vpn.provider');
 });
 
+it('holds no default until the stack declares one, then that, keeping its choices whichever is said first', function (): void {
+    $setting = ASetting::read('LEMONFIBER_COPY_STALLED_MINUTES', WhoseASettingIs::theCores(), TheServicesReadingIt::these(), ASettingValue::nothing());
+    $choices = TheChoices::these(AChoice::of('30', WhatAChoiceNeeds::nothing(), open: true));
+    $declared = $setting->among($choices)->defaultingTo(ASettingValue::value('30'));
+
+    expect($setting->default()->isHeld())->toBeFalse()
+        ->and($declared->default()->said())->toBe('30')
+        ->and($declared->choices())->toBe($choices)
+        ->and($declared->among($choices)->default()->said())->toBe('30')
+        ->and($declared->name())->toBe('LEMONFIBER_COPY_STALLED_MINUTES');
+});
+
 it('hangs together with a setting its choices hang on, and with one whose choices hang on it, never with itself or one apart', function (): void {
     $provider = ASetting::read('vpn.provider', WhoseASettingIs::theCores(), TheServicesReadingIt::these(), ASettingValue::nothing())
         ->among(TheChoices::these(AChoice::of('pia', WhatAChoiceNeeds::holding('vpn.type', 'openvpn'), open: false)));

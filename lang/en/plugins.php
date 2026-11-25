@@ -240,6 +240,7 @@ return [
         'not_installed' => 'This plugin is no longer installed on this machine',
         'back' => 'Back to plugins',
         'default' => 'Default',
+        'default_is' => 'Default: :default',
         'set_by_you' => 'Set by you',
         'the_cores' => 'lemonfiber\'s own setting',
         'a_namespaces' => 'Belongs to :namespace',

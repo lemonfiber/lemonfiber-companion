@@ -32,7 +32,7 @@ use Modules\Sdk\Internal\TheWaitingRead;
 use Modules\Sdk\Internal\WhichOwner;
 
 /**
- * Reads the `settings` envelope into every setting and secret the services read, each setting with its choices, and every service held back.
+ * Reads the `settings` envelope into every setting and secret the services read, each setting with its choices and the default the stack declares for it, and every service held back.
  *
  * Refused whole with {@see SettingsAreUnreadable} where any part cannot be read.
  */
@@ -72,7 +72,8 @@ final readonly class TheSettingsListed
             self::whose($row, $where),
             self::readers($row, $where),
             SettingsRows::held($row, WireField::Value, $where),
-        )->among(self::choices($row, APath::beneath($where, WireField::Choices->value)));
+        )->among(self::choices($row, APath::beneath($where, WireField::Choices->value)))
+            ->defaultingTo(SettingsRows::held($row, SettingsField::Default, $where));
     }
 
     /**

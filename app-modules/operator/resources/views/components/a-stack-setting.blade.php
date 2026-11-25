@@ -11,6 +11,8 @@
     @if ($setting->isSet)
         <x-design::body>{{ __('plugins.settings.set_by_you') }}</x-design::body>
         <x-design::body>{{ $setting->value }}</x-design::body>
+    @elseif ($setting->declaresADefault)
+        <x-design::body>{{ __('plugins.settings.default_is', ['default' => $setting->default]) }}</x-design::body>
     @else
         <x-design::body>{{ __('plugins.settings.default') }}</x-design::body>
     @endif

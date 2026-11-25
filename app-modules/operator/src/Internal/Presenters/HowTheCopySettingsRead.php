@@ -12,7 +12,7 @@ use Modules\Operator\Internal\ViewModels\HowCopiesRunShows;
 use Modules\Operator\Internal\ViewModels\HowTheReadingWent;
 
 /**
- * How the stack's two settings for a running copy read: each with its value where the operator set one, or that it is at the stack's default.
+ * How the stack's two settings for a running copy read: each with its value where the operator set one, or that it is at the stack's default, with that default's value where the stack sends one.
  */
 final readonly class HowTheCopySettingsRead
 {
