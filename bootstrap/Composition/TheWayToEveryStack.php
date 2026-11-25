@@ -43,6 +43,7 @@ use Modules\Kernel\Api\Explaining;
 use Modules\Kernel\Api\ExtendingTheStack;
 use Modules\Kernel\Api\FetchingArtwork;
 use Modules\Kernel\Api\FindingTitles;
+use Modules\Kernel\Api\FollowingTheCopyRunning;
 use Modules\Kernel\Api\FollowingWhatIsPlaying;
 use Modules\Kernel\Api\Forgetting;
 use Modules\Kernel\Api\GivingBackRoom;
@@ -128,6 +129,7 @@ use Modules\Sdk\Api\ClientsThatAskWhatIsOffered;
 use Modules\Sdk\Api\Connectors;
 use Modules\Sdk\Api\Copiers;
 use Modules\Sdk\Api\Copyists;
+use Modules\Sdk\Api\CopyWatchers;
 use Modules\Sdk\Api\Dismantlers;
 use Modules\Sdk\Api\Doorkeepers;
 use Modules\Sdk\Api\Doors;
@@ -301,6 +303,7 @@ final class TheWayToEveryStack extends ServiceProvider
         // for the reason above: the screen following a walk holds its own.
         $this->app->bind(HearingTheWalk::class, Narrators::class);
         $this->app->bind(FollowingWhatIsPlaying::class, Players::class);
+        $this->app->bind(FollowingTheCopyRunning::class, CopyWatchers::class);
         $this->app->bind(FetchingArtwork::class, Pictures::class);
 
         // Holding the same stream for what a running start is waiting for,

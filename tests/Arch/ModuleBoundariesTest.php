@@ -8,6 +8,7 @@ use Modules\Dx\Adapters\TheStoreThisRunKeeps;
 use Modules\Dx\Providers\DxServiceProvider;
 use Modules\Kernel\Api\Credential;
 use Modules\News\Internal\WhatEachStackLastNamed;
+use Modules\Sdk\Api\CopyWatchers;
 use Modules\Sdk\Api\Listeners;
 use Modules\Sdk\Api\Narrators;
 use Modules\Sdk\Api\Players;
@@ -107,6 +108,9 @@ const MUTABLE_BY_DESIGN = [
     // What the household is playing, heard on the same stream, keeping whether
     // it ended and has not yet been said to have ended. Mutable for the reason above.
     Players::class,
+    // The backup or restore running now, heard on the same stream, keeping whether
+    // it ended and has not yet been said to have ended. Mutable for the reason above.
+    CopyWatchers::class,
     // What each stack last named as newest on that stream, held in memory for
     // the life of the process so a screen that opens draws the marks an
     // earlier one heard. What one screen hears and the next draws is a thing

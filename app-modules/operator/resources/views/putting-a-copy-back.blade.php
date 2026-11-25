@@ -4,6 +4,10 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
+@if ($this->theCopyRunning() !== null)
+    <x-operator::a-copy-running :copy="$this->theCopyRunning()" />
+    <x-operator::quiet-action :label="__('navigation.menu.copies_run')" :goes="$this->goes()->to(AStacksScreen::CopiesRun)" />
+@endif
 @if (! $this->answer()->namesACopy)
     {{-- Opened on no copy at all, so there is nothing to rehearse and
          nothing to agree to. The copies are where one is chosen. --}}
@@ -35,10 +39,6 @@
         />
 
         <x-operator::following-a-job :said="$this->whatItSays()" />
-
-        {{-- The stack says how far a restore got once it has finished, and
-             not while it runs. --}}
-        <x-design::body>{{ __('stacks.put_back.no_progress_while_running') }}</x-design::body>
     @elseif ($this->done()->refused !== null)
         {{-- The stack's answer about the yes, in its words. Asking after the
              same work is answered the same way; reading the listing again is
@@ -136,6 +136,10 @@
         :went="$this->answer()->went"
         :goes="$this->goes()"
     />
+@endif
+
+@if ($this->waitsForTheNextFrame())
+    <x-design::the-next-frame />
 @endif
 
 <x-operator::screen-closes :goes="$this->goes()" :here="$this->itsTab()" :marks="$this->marks()" />

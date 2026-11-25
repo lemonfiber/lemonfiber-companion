@@ -58,6 +58,7 @@ use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatGoingBackDoes;
 use Modules\Kernel\Api\WhatHappenedToIt;
+use Modules\Kernel\Api\WhatIsCopied;
 use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
 use Modules\Kernel\Api\WhatKeepsItRunning;
@@ -681,6 +682,13 @@ it('everywhere a copy of lemonfiber can stand has a case', function (): void {
 
     expect($words)->not->toBe([], 'no standing union was found in the generated envelope');
     expect(TheWireUnions::valuesOf(WhereThisCopyStands::cases()))->toBe($words);
+});
+
+it('everything a running copy can be has a case', function (): void {
+    $words = TheWireUnions::unionIn(TheGeneratedEnvelopes::theGeneratedEnvelope('CopyingEnvelope'), 'what');
+
+    expect($words)->not->toBe([], 'no what union was found in the generated envelope');
+    expect(TheWireUnions::valuesOf(WhatIsCopied::cases()))->toBe($words);
 });
 
 it('every state a credential can be in has a case', function (): void {

@@ -78,6 +78,7 @@ use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatGoingBackDoes;
 use Modules\Kernel\Api\WhatHappenedToIt;
+use Modules\Kernel\Api\WhatIsCopied;
 use Modules\Kernel\Api\WhatIsLeftAlone;
 use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
@@ -244,6 +245,7 @@ final readonly class TheWireUnions
         // which envelope it reads.
         Waiting::class => 'state',
         WhatBecameOfIt::class => 'outcome',
+        WhatIsCopied::class => 'what',
     ];
 
     /**

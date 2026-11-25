@@ -148,9 +148,6 @@ return [
         'about_to' => 'About to take a copy of :scope',
         'may_remove' => 'The stack keeps a set number of copies, so taking one can remove the oldest. What it removed is said when it finishes.',
         'taking' => 'Taking a copy of :scope',
-        // The stack reports how large a copy came to when it finishes, and
-        // nothing while it runs, so nothing here pretends to know.
-        'no_progress_while_running' => 'The stack says how large a copy came to once it has finished, and nothing about how far it has got while it runs.',
         'no_outcome' => 'The stack no longer knows what became of the copy of :scope',
         'no_outcome_action' => 'It may have been taken. The list of copies says whether it is there.',
         // A rehearsal is said to be one, and nothing about it is in the past tense.
@@ -171,6 +168,27 @@ return [
         'would_hold_credentials' => 'It would hold the stack\'s passwords and keys.',
         'would_hold_no_credentials' => 'It would hold none of the stack\'s passwords or keys.',
         'see_the_copies' => 'See the copies',
+        'running' => [
+            'what' => [
+                'backup' => 'A copy is being taken',
+                'restore' => 'A copy is being put back',
+            ],
+            'none' => 'No copy is being taken or put back',
+            'cannot_tell' => 'The stack is not saying whether a copy is running or how it is going, so this cannot tell',
+            'written' => ':written :written_unit of :whole :whole_unit written',
+            'part' => 'Writing :part now',
+            'working' => 'Writing as fast as it can',
+            'paced' => 'Slowed on purpose, to at most :limit :limit_unit a second, as your limit says',
+            'stalled' => [
+                'minutes' => '{0} Stuck: nothing has moved for under a minute|{1} Stuck: nothing has moved for a minute|[2,*] Stuck: nothing has moved for :count minutes',
+                'hours' => '{1} Stuck: nothing has moved for an hour|[2,*] Stuck: nothing has moved for :count hours',
+                'days' => '{1} Stuck: nothing has moved for a day|[2,*] Stuck: nothing has moved for :count days',
+            ],
+        ],
+        'settings' => [
+            'of' => 'The stack\'s two settings for a copy while it runs: how fast a copy may be taken, and how many minutes with nothing moving make it stuck. A copy is never slowed while it is put back.',
+            'none' => 'The stack lists neither setting, so it is a lemonfiber that does not have them.',
+        ],
         'scope' => [
             'whole_stack' => 'the whole stack',
             'service' => ':name alone',
@@ -193,7 +211,6 @@ return [
         'only_while_stopped' => 'The stack puts a copy back only while it is stopped, and says so if it is not.',
         'put_it_back' => 'Put it back',
         'putting_back' => 'Putting :copy back',
-        'no_progress_while_running' => 'The stack says what it put back once it has finished, and nothing about how far it has got while it runs.',
         'no_outcome' => 'The stack no longer knows what became of putting it back',
         'no_outcome_action' => 'It may have been put back. The machine\'s health is where to look.',
         'put_back' => 'Put back :scope, from a copy taken by lemonfiber :version',

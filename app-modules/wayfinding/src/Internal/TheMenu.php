@@ -47,6 +47,7 @@ enum TheMenu: string
     case Uninstall = 'uninstall';
     case General = 'general';
     case OwnSettings = 'own_settings';
+    case CopiesRun = 'copies_run';
     case LeftAlone = 'left_alone';
     case Quality = 'quality';
     case Connections = 'connections';
@@ -74,7 +75,7 @@ enum TheMenu: string
             self::Requests, self::Allowance, self::ViewAsMember, self::PlayingNow, self::StuckDownloads, self::FollowADownload => WhereInTheMenu::Household,
             self::InviteSomeone, self::FrontDoor, self::WatchApps, self::Passwords, self::AppKeys, self::PairAPhone, self::Serving => WhereInTheMenu::Access,
             self::Storage, self::Backups, self::AfterARestart, self::WhileNobodyWasLooking, self::Watcher, self::Queue, self::Scheduled, self::SetUpWith, self::Decided, self::AlreadyInstalled, self::OtherPrograms, self::About, self::Uninstall => WhereInTheMenu::Machine,
-            self::General, self::OwnSettings, self::LeftAlone, self::Quality, self::Connections, self::Plugins, self::Bandwidth, self::OutgoingTraffic, self::Alerts, self::WhereAlertsGo, self::History, self::Sources => WhereInTheMenu::Settings,
+            self::General, self::OwnSettings, self::CopiesRun, self::LeftAlone, self::Quality, self::Connections, self::Plugins, self::Bandwidth, self::OutgoingTraffic, self::Alerts, self::WhereAlertsGo, self::History, self::Sources => WhereInTheMenu::Settings,
             self::GetHelp, self::Glossary, self::ServicesExplained => WhereInTheMenu::Help,
         };
     }
@@ -111,6 +112,7 @@ enum TheMenu: string
             self::Uninstall => AStacksScreen::Uninstall,
             self::General => AStacksScreen::Settings,
             self::OwnSettings => AStacksScreen::OwnSettings,
+            self::CopiesRun => AStacksScreen::CopiesRun,
             self::LeftAlone => AStacksScreen::LeftAlone,
             self::Quality => AStacksScreen::Quality,
             self::Connections => AStacksScreen::Wiring,
@@ -175,6 +177,7 @@ enum TheMenu: string
             self::Uninstall => ['delete', 'trash'],
             self::General => ['tune', 'slider.horizontal.3'],
             self::OwnSettings => ['settings', 'gearshape'],
+            self::CopiesRun => ['timer', 'timer'],
             self::LeftAlone => ['do_not_touch', 'hand.raised'],
             self::Quality => ['high_quality', 'sparkles'],
             self::Connections => ['cable', 'cable.connector'],

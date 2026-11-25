@@ -105,7 +105,7 @@ enum WireField: string implements NamesAWireField
     /** How much a problem matters, in the engine's judgement. */
     case Severity = 'severity';
 
-    /** Where a problem stands with respect to being fixed; where a credential stands; what became of asking a service. */
+    /** Where a problem stands with respect to being fixed; where a credential stands; what became of asking a service; whether a running copy is working, paced or stalled. */
     case State = 'state';
 
     /**
@@ -157,10 +157,7 @@ enum WireField: string implements NamesAWireField
      */
     case Stopped = 'stopped';
 
-    /**
-     * Started: whether an install started the command it acted on, on the
-     * `hosting` envelope, and what a switch started, on the `lifecycle`.
-     */
+    /** Whether an install started the command it acted on (`hosting`), what a switch started (`lifecycle`), and when a running copy started (`copying`). */
     case Started = 'started';
 
     /**
@@ -213,12 +210,8 @@ enum WireField: string implements NamesAWireField
     case Wants = 'wants';
 
     /**
-     * Which of the two things an update reading is about — and, on a listing's
-     * limits, the thing the stack cannot act on.
-     *
-     * One case for both, unlike {@see self::Refusal}: here the wire spends one
-     * word on one idea in two places, and a second case would assert a
-     * distinction the contract does not draw.
+     * Which of the two things an update reading is about, the thing a listing's limits say the stack cannot act on, and
+     * whether a `copying` is a backup or a restore: one case, unlike {@see self::Refusal}, as the wire spends one word on one idea.
      */
     case What = 'what';
 
@@ -314,7 +307,8 @@ enum WireField: string implements NamesAWireField
      * `self-update` envelope, the release in use inside an `update`
      * changelog, which is absent where the stack has not determined one, and
      * on a `preview` which of the services that would start are already up,
-     * null where the stack could not read it.
+     * null where the stack could not read it; and on a `copying` the backup
+     * or restore running now, absent where none is.
      */
     case Running = 'running';
 
@@ -418,15 +412,17 @@ enum WireField: string implements NamesAWireField
      */
     case Address = 'address';
 
-    /**
-     * Where a Compose file saying where each service listens was written, on a
-     * move beside; and the pairing material as the one line a code carries and a
-     * person types, on a `pairing`.
-     */
+    /** Where a Compose file saying where each service listens was written (a move beside), the one line a code carries (`pairing`), and the bytes a running copy has written (`copying`). */
     case Written = 'written';
 
-    /** A volume's own size or its quota, and how far up the ratings an invited member may watch. */
+    /** A volume's own size or its quota, how far up the ratings an invited member may watch, and the bytes a second a paced backup is held to. */
     case Limit = 'limit';
+
+    /** A part the plain Compose words do not bring up as lemonfiber does, by its id; and the area a running copy is writing now. */
+    case Part = 'part';
+
+    /** What lemonfiber last wrote where a hand-edit was found; and when a stalled copy last wrote. */
+    case Wrote = 'wrote';
 
     /**
      * What was taken back: a release that no longer stands, or the invitations

@@ -55,7 +55,7 @@ it('lists the menu in the five groups, in the order the navigation page names th
         ['household' => ['requests', 'allowance', 'view_as_member', 'playing_now', 'stuck_downloads', 'follow_a_download']],
         ['access' => ['invite_someone', 'front_door', 'watch_apps', 'passwords', 'app_keys', 'pair_a_phone', 'serving']],
         ['machine' => ['storage', 'backups', 'after_a_restart', 'while_nobody_was_looking', 'watcher', 'queue', 'scheduled', 'set_up_with', 'decided', 'already_installed', 'other_programs', 'about', 'uninstall']],
-        ['settings' => ['general', 'own_settings', 'left_alone', 'quality', 'connections', 'plugins', 'bandwidth', 'outgoing_traffic', 'alerts', 'where_alerts_go', 'history', 'sources']],
+        ['settings' => ['general', 'own_settings', 'copies_run', 'left_alone', 'quality', 'connections', 'plugins', 'bandwidth', 'outgoing_traffic', 'alerts', 'where_alerts_go', 'history', 'sources']],
         ['help' => ['get_help', 'glossary', 'services_explained']],
     ]);
 });

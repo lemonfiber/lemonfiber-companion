@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyPutBack;
+use Modules\Kernel\Api\ACopyRunning;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\AnExistingSetup;
@@ -11,7 +12,10 @@ use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\ARelocation;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HearingTheJobs;
+use Modules\Kernel\Api\HowBig;
 use Modules\Kernel\Api\HowPuttingItBackIsGoing;
+use Modules\Kernel\Api\HowTheCopyMoves;
+use Modules\Kernel\Api\HowTheCopyRunningWasRead;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
@@ -24,6 +28,8 @@ use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackIsUnidentified;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\WhatACopyHolds;
+use Modules\Kernel\Api\WhatIsBeingCopied;
+use Modules\Kernel\Api\WhatIsCopied;
 use Modules\Kernel\Api\WhatPuttingItBackWouldDo;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
 use Modules\Kernel\Api\WhatWasHeardFromAJob;
@@ -37,9 +43,11 @@ use Modules\Operator\Internal\ViewModels\AScopeAsShown;
 use Modules\Operator\Internal\ViewModels\HowPuttingItBackWent;
 use Modules\Operator\Internal\ViewModels\WhatPuttingItBackWouldShow;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AStackThatCopies;
 use Tests\Support\Fakes\AStackThatPutsCopiesBack;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
@@ -85,6 +93,8 @@ function thePuttingBackScreen(
     bool $signedIn = true,
     string $copy = 'lemonfiber-20260924-0300-full',
     ?HearingTheJobs $hearing = null,
+    ?AStackThatCopies $running = null,
+    ?ACaptureInMemory $capture = null,
 ): PuttingACopyBack {
     $stack = theStackACopyGoesBackOn();
     $keychain ??= AKeychainInMemory::working();
@@ -93,7 +103,7 @@ function thePuttingBackScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new PuttingACopyBack($puttingBack, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), FrozenClock::at(Instant::atEpochSeconds(WHEN_A_COPY_IS_LISTED)), $hearing ?? AJobThatSays::nothing());
+    $screen = new PuttingACopyBack($puttingBack, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), FrozenClock::at(Instant::atEpochSeconds(WHEN_A_COPY_IS_LISTED)), $hearing ?? AJobThatSays::nothing(), $running ?? AStackThatCopies::copyingNothing(), $capture ?? ACaptureInMemory::inFront());
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $copy]);
 
     return $screen;
@@ -429,7 +439,6 @@ it('puts back exactly the listing it showed, and says it is running without draw
         ->and($screen->isWorking())->toBeTrue()
         ->and(everythingThePuttingBackShows($screen->done()))->toBe(nothingReportedOfPuttingItBack(['isWorking' => true]))
         ->and($drawn)->toContain(__('stacks.put_back.putting_back', ['copy' => 'lemonfiber-20260924-0300-full']))
-        ->and($drawn)->toContain(__('stacks.put_back.no_progress_while_running'))
         ->and($drawn)->not->toContain(__('stacks.a_rehearsal'))
         ->and($puttingBack->followed())->toBe([]);
 });
@@ -635,4 +644,32 @@ it('names no copy where the route carries one that is not text, and asks the sta
     expect($screen->copyNamed())->toBe('')
         ->and(everythingTheListingShows($screen->answer()))->toBe(nothingListedOfTheCopy(['namesACopy' => false]))
         ->and($puttingBack->rehearsed())->toBe([]);
+});
+
+it('draws a restore running as a backup running is drawn: how much of how much, the part now, and how it moves', function (): void {
+    $running = AStackThatCopies::holdingOpen(HowTheCopyRunningWasRead::said(WhatIsBeingCopied::running(new ACopyRunning(WhatIsCopied::Restore, Instant::atEpochSeconds(WHEN_A_COPY_IS_LISTED - 600), 734_003_200, 2_147_483_648, 'sonarr database', HowTheCopyMoves::stalled(Instant::atEpochSeconds(WHEN_A_COPY_IS_LISTED - 420))))));
+    $screen = thePuttingBackScreen(AStackThatPutsCopiesBack::listing(aListingOfTheCopy(WhereTheDataGoes::whereItWas()), HowPuttingItBackIsGoing::stillRunning()), running: $running);
+    $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
+    $written = HowBig::of(734_003_200);
+    $whole = HowBig::of(2_147_483_648);
+
+    expect($running->read())->toBe(1)
+        ->and($drawn)->toContain(
+            __('stacks.copy.running.what.restore'),
+            __('stacks.copy.running.written', ['written' => (string) $written->figure, 'written_unit' => aLineOfPuttingBack($written->said), 'whole' => (string) $whole->figure, 'whole_unit' => aLineOfPuttingBack($whole->said)]),
+            __('stacks.copy.running.part', ['part' => 'sonarr database']),
+            trans_choice('stacks.copy.running.stalled.minutes', 7),
+        );
+});
+
+it('lets go of the copy\'s stream with the job\'s when the screen stops, and reads it again when asked again', function (): void {
+    $running = AStackThatCopies::copyingNothing();
+    $screen = thePuttingBackScreen(AStackThatPutsCopiesBack::listing(aListingOfTheCopy(WhereTheDataGoes::whereItWas()), HowPuttingItBackIsGoing::stillRunning()), running: $running);
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $screen->again();
+    WhatTheDeviceWouldDraw::onTheSecondFrame($screen);
+    $screen->stop();
+
+    expect($running->read())->toBe(2)
+        ->and($running->lettingsGo())->toBe(1);
 });

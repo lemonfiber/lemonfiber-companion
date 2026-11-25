@@ -594,6 +594,7 @@ function adapterCallsThatAskNothing(): array
         'Listeners::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
         'Narrators::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
         'Players::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
+        'CopyWatchers::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
         'StartLines::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
         'JobLines::letGo' => 'lets go of the stream it holds, which asks the stack nothing',
         'JobLines::letGoKeepingThePlace' => 'lets go of the stream it holds, keeping where it left off, which asks the stack nothing',

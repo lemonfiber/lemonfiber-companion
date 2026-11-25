@@ -74,6 +74,7 @@ use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatGettingItBackCosts;
 use Modules\Kernel\Api\WhatGoingBackDoes;
 use Modules\Kernel\Api\WhatHappenedToIt;
+use Modules\Kernel\Api\WhatIsCopied;
 use Modules\Kernel\Api\WhatIsLeftAlone;
 use Modules\Kernel\Api\WhatItFaces;
 use Modules\Kernel\Api\WhatItWouldNeed;
@@ -598,6 +599,10 @@ function everyDerivedKey(): array
         HowTheDoorWasChosen::class => aPairPerCase(
             HowTheDoorWasChosen::cases(),
             static fn(HowTheDoorWasChosen $case): array => [$case->saidOnTheScreen()],
+        ),
+        WhatIsCopied::class => aPairPerCase(
+            WhatIsCopied::cases(),
+            static fn(WhatIsCopied $case): array => [$case->saidOnTheScreen()],
         ),
         WhereThisCopyStands::class => aPairPerCase(
             WhereThisCopyStands::cases(),

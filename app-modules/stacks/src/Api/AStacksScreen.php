@@ -230,6 +230,9 @@ enum AStacksScreen: string
     /** Taking a copy of this machine's stack, of all of it or of one service. */
     case Copy = '/stacks/{stack}/copy';
 
+    /** The stack's two settings for a running copy: the limit a backup is held to, and the minutes that make one stalled. */
+    case CopiesRun = '/stacks/{stack}/copy/settings';
+
     /**
      * Putting one copy back, rehearsed before anything is agreed to.
      *

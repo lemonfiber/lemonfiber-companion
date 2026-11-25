@@ -41,7 +41,7 @@ use Tests\Support\WhatTheReadersRead;
  * them, and no list was ever held to being true.
  */
 const OFFERED = [
-    'Adoption', 'Alert', 'Alerts', 'Archives', 'Askable', 'AskableKinds', 'Asked', 'Backup', 'Boot', 'Bandwidth', 'Beside', 'Bundle', 'Capabilities', 'Catalogue', 'Channels', 'Clients', 'Config',
+    'Adoption', 'Alert', 'Alerts', 'Archives', 'Askable', 'AskableKinds', 'Asked', 'Backup', 'Boot', 'Bandwidth', 'Beside', 'Bundle', 'Capabilities', 'Catalogue', 'Channels', 'Clients', 'Config', 'Copying',
     'Credentials', 'Dashboard', 'Doctor', 'Error', 'Forms', 'FrontDoor', 'Glossary', 'Grant', 'Guide', 'Held', 'History', 'Hosting',
     'Handoff', 'Household', 'Import', 'InFlight', 'Invitation', 'Job', 'Keys', 'DeviceKeys', 'DeviceKey', 'DeviceChallenge', 'KeyClaim', 'Lifecycle', 'Log', 'Migration', 'Music', 'News', 'NewsItems', 'Notify', 'NotifyMine', 'Outbound', 'Pairing', 'PartWay', 'Pausing', 'Playing', 'PluginCatalogue', 'Plugins', 'Preview',
     'Provenance', 'Pull', 'PushEndpoint', 'PushEndpoints', 'Quality', 'Queue', 'Ran', 'Removal', 'Repair', 'Replacement', 'Replay', 'Reset', 'Restore', 'Seed', 'SelfUpdate', 'Served', 'Settings', 'Settled', 'Space', 'Stack',
