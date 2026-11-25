@@ -157,11 +157,7 @@ enum WireField: string implements NamesAWireField
      */
     case Stopped = 'stopped';
 
-    /**
-     * Started: whether an install started the command it acted on, on the
-     * `hosting` envelope, and what a switch started, on the `lifecycle`; and when a running copy
-     * started, on the `copying`.
-     */
+    /** Whether an install started the command it acted on (`hosting`), what a switch started (`lifecycle`), and when a running copy started (`copying`). */
     case Started = 'started';
 
     /**
@@ -214,13 +210,8 @@ enum WireField: string implements NamesAWireField
     case Wants = 'wants';
 
     /**
-     * Which of the two things an update reading is about — and, on a listing's
-     * limits, the thing the stack cannot act on; on a `copying`, whether a backup
-     * or a restore is running.
-     *
-     * One case for all three, unlike {@see self::Refusal}: here the wire spends one
-     * word on one idea in two places, and a second case would assert a
-     * distinction the contract does not draw.
+     * Which of the two things an update reading is about, the thing a listing's limits say the stack cannot act on, and
+     * whether a `copying` is a backup or a restore: one case, unlike {@see self::Refusal}, as the wire spends one word on one idea.
      */
     case What = 'what';
 
@@ -421,12 +412,7 @@ enum WireField: string implements NamesAWireField
      */
     case Address = 'address';
 
-    /**
-     * Where a Compose file saying where each service listens was written, on a
-     * move beside; and the pairing material as the one line a code carries and a
-     * person types, on a `pairing`; and the bytes a running copy has written,
-     * on a `copying`.
-     */
+    /** Where a Compose file saying where each service listens was written (a move beside), the one line a code carries (`pairing`), and the bytes a running copy has written (`copying`). */
     case Written = 'written';
 
     /** A volume's own size or its quota, how far up the ratings an invited member may watch, and the bytes a second a paced backup is held to. */
