@@ -185,7 +185,6 @@ return [
                 'days' => '{1} Stuck: nothing has moved for a day|[2,*] Stuck: nothing has moved for :count days',
             ],
         ],
-        'how_they_run' => 'How copies run',
         'settings' => [
             'of' => 'The stack\'s two settings for a copy while it runs: how fast a copy may be taken, and how many minutes with nothing moving make it stuck. A copy is never slowed while it is put back.',
             'none' => 'The stack lists neither setting, so it is a lemonfiber that does not have them.',

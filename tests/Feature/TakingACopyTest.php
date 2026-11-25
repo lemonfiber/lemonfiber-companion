@@ -721,7 +721,7 @@ it('reads the copy running once when it opens mid-copy, and draws how much of ho
         ->and($first)->not->toContain(aLineOfTheCopy('stacks.copy.running.what.backup'))
         ->and($drawn)->toContain(aLineOfTheCopy('stacks.copy.running.what.backup'), ...howFarTheCopyHasGot())
         ->and($drawn)->toContain(aLineOfTheCopy(HowTheCopyRunningReads::WORKING))
-        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(aLineOfTheCopy('stacks.copy.how_they_run'))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(aLineOfTheCopy('navigation.menu.copies_run'))
         ->and($running->read())->toBe(1);
 });
 
@@ -792,7 +792,7 @@ it('never asks with a member\'s session, nor without one, and draws nothing of a
     expect($running->read())->toBe(0)
         ->and($running->asked())->toBe(0)
         ->and($screen->theCopyRunning())->toBeNull()
-        ->and($drawn)->not->toContain(aLineOfTheCopy(HowTheCopyRunningReads::CANNOT_TELL), aLineOfTheCopy(HowTheCopyRunningReads::NONE), aLineOfTheCopy('stacks.copy.how_they_run'));
+        ->and($drawn)->not->toContain(aLineOfTheCopy(HowTheCopyRunningReads::CANNOT_TELL), aLineOfTheCopy(HowTheCopyRunningReads::NONE), aLineOfTheCopy('navigation.menu.copies_run'));
 })->with(['a member\'s session' => true, 'no session' => false]);
 
 it('lets go of the copy\'s stream when nobody can see the screen, and when the screen stops', function (): void {

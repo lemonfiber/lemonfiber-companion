@@ -6,7 +6,7 @@
 <x-operator::content>
 @if ($this->theCopyRunning() !== null)
     <x-operator::a-copy-running :copy="$this->theCopyRunning()" />
-    <x-operator::quiet-action :label="__('stacks.copy.how_they_run')" :goes="$this->goes()->to(AStacksScreen::CopiesRun)" />
+    <x-operator::quiet-action :label="__('navigation.menu.copies_run')" :goes="$this->goes()->to(AStacksScreen::CopiesRun)" />
 @endif
 @if (! $this->answer()->namesACopy)
     {{-- Opened on no copy at all, so there is nothing to rehearse and

@@ -101,6 +101,10 @@ final readonly class UnreadOnEnvelopesAToL
             'because' => 'The member it was read for, by name, echoed back, for `HeldEnvelope.member`\'s reason.',
         ],
         [
+            'path' => 'CopyingEnvelope.running.scope',
+            'because' => 'What a running copy covers. The screens following a copy say how far it has got and how it moves (`N6-R4`); what it covers is named where the copy was asked for, and on its report.',
+        ],
+        [
             'path' => 'CopyingEnvelope.running.job',
             'because' => 'The job an accepting reply named the copy. A screen follows its own job by the name its own reply gave it, and the reading is drawn the same whoever started the copy (`N6-R4`).',
         ],

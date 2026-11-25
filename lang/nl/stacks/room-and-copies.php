@@ -170,7 +170,6 @@ return [
                 'days' => '{1} Vast: al een dag beweegt er niets|[2,*] Vast: al :count dagen beweegt er niets',
             ],
         ],
-        'how_they_run' => 'Hoe kopieën lopen',
         'settings' => [
             'of' => 'De twee instellingen van de stack voor een kopie die loopt: hoe snel een kopie gemaakt mag worden, en na hoeveel minuten zonder beweging hij vastzit. Terugzetten wordt nooit afgeremd.',
             'none' => 'De stack noemt geen van beide instellingen, dus het is een lemonfiber die ze niet heeft.',

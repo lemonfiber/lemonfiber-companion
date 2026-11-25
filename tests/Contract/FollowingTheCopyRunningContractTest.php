@@ -58,7 +58,7 @@ function whatTheCoreSaysIsBeingCopied(array $changed = []): array
 {
     return ['api_version' => 1, 'kind' => 'copying', 'data' => ['running' => [
         'what' => 'backup',
-        'scope' => 'whole_stack',
+        'scope' => ['scope' => 'whole_stack'],
         'job' => '9f2c1a7e04b3d815',
         'started' => 1_795_563_600,
         'written' => 734_003_200,

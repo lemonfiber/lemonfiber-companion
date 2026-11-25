@@ -4,7 +4,7 @@
 
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
-    <x-operator::heading>{{ __('stacks.copy.how_they_run') }}</x-operator::heading>
+    <x-operator::heading>{{ __('navigation.menu.copies_run') }}</x-operator::heading>
     <x-design::body>{{ __('stacks.copy.settings.of') }}</x-design::body>
 
     @forelse ($this->answer()->settings as $setting)
