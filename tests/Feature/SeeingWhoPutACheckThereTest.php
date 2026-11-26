@@ -8,6 +8,7 @@ use Modules\Kernel\Api\Conclusion;
 use Modules\Kernel\Api\Finding;
 use Modules\Kernel\Api\Findings;
 use Modules\Kernel\Api\Overall;
+use Modules\Kernel\Api\Remedies;
 use Modules\Kernel\Api\Report;
 use Modules\Kernel\Api\WhatTheCheckSaid;
 use Modules\Kernel\Api\WhoPutItThere;
@@ -72,4 +73,25 @@ it('a report of only the stack\'s own checks marks none and explains nothing', f
 
     expect($screen->answer()->marksAnOrigin)->toBeFalse()
         ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('health.origin.legend'));
+});
+
+it('a plugin\'s check that could not be run reads as that plugin\'s, with why, and never as the stack\'s own', function (): void {
+    $report = Report::of(Overall::Unknown, Findings::of(
+        Finding::of(
+            Check::of('plex.reachable'),
+            Category::Services,
+            'Plex answers',
+            Conclusion::Unverified,
+            WhatTheCheckSaid::couldNotSay('the proof the plex plugin declares did not finish in time', Remedies::none()),
+            WhoPutItThere::plugin('plex'),
+        ),
+    ));
+    $screen = TheHealthScreenOfTheLoft::theHealthScreen(AStackThatWasAsked::saying($report));
+    $drawn = WhatTheDeviceWouldDraw::by($screen)->said();
+
+    expect($screen->answer()->marksAnOrigin)->toBeTrue()
+        ->and($drawn)->toContain(__('health.origin.plugin', ['named' => 'plex']))
+        ->and($drawn)->toContain(__('health.conclusion.unverified'))
+        ->and($drawn)->toContain('the proof the plex plugin declares did not finish in time')
+        ->and($drawn)->not->toContain(__('health.origin.bundled'));
 });

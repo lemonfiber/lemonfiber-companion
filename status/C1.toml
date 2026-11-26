@@ -1,10 +1,11 @@
 # What this app implements of C1, one row per requirement (OPS-R74).
 #
-# `done` means the requirement is met in full by what is here, `partial` that this
-# repository holds its part and the rest lives elsewhere, `open` that nothing here
-# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# `done` means this repository's own share of the requirement is built, `partial`
+# that its share is begun and unfinished, `open` that its share has not started. A
+# `partial` or `open` row holds the requirement open whatever another repository
+# records. The release gate and the no-stubs gate read this directory; a pull
 # request that changes whether a requirement is met changes its row.
 
 requirement = [
-  { id = "C1-R15", state = "partial", evidence = ["app-modules/kernel/src/Api/Finding.php", "app-modules/sdk/src/Api/Reports.php", "app-modules/sdk/tests/Api/ReportsTest.php", "tests/Feature/SeeingWhoPutACheckThereTest.php"] },
+  { id = "C1-R15", state = "done", evidence = ["app-modules/sdk/src/Api/Reports.php", "app-modules/kernel/src/Api/WhoPutItThere.php", "app-modules/operator/src/Internal/Presenters/HowAFindingReads.php", "app-modules/sdk/tests/Api/ReportsTest.php", "tests/Feature/SeeingWhoPutACheckThereTest.php"] },
 ]

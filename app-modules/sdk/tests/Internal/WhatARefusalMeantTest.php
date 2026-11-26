@@ -253,7 +253,24 @@ it('reads a refusal of what was asked in the stack\'s own words, whatever its st
         ->and(WhatARefusalMeant::inItsOwnWords(refusedFor(RefusalCode::WrongMethod)))->toBe('The stack said no.');
 });
 
-it('reads a code it does not know by the status it came with', function (): void {
+it('reads only another run holding the stack as busy, of every code it knows', function (): void {
+    $busy = [];
+
+    foreach (RefusalCode::cases() as $code) {
+        if (WhatARefusalMeant::obstacle(refusedFor($code))->is(KindOfObstacle::StackIsBusy)) {
+            $busy[] = $code;
+        }
+    }
+
+    expect($busy)->toBe([RefusalCode::AlreadyWorking]);
+});
+
+it('answers a conflict that is not other work in the stack\'s own words', function (RefusalCode $code): void {
+    expect($code->status())->toBe(409)
+        ->and(WhatARefusalMeant::inItsOwnWords(refusedFor($code)))->toBe('The stack said no.');
+})->with([RefusalCode::ManifestUnkept, RefusalCode::VpnDeclined]);
+
+it('reads a code it does not know by the status it came with, and never as other work holding the stack', function (): void {
     // A stack newer than this app can refuse with a code this build has no case
     // for, and the status is what is left to go on.
     $unknown = static fn(int $status): Obstacle => WhatARefusalMeant::obstacle(
@@ -262,8 +279,12 @@ it('reads a code it does not know by the status it came with', function (): void
 
     expect($unknown(401)->kind())->toBe(KindOfObstacle::CredentialWasRefused)
         ->and($unknown(403)->kind())->toBe(KindOfObstacle::NotForThisAccount)
-        ->and($unknown(409)->kind())->toBe(KindOfObstacle::StackIsBusy)
+        ->and($unknown(409)->kind())->toBe(KindOfObstacle::StackDidNotAnswer)
         ->and($unknown(400)->kind())->toBe(KindOfObstacle::StackDidNotAnswer);
+});
+
+it('answers a conflict naming a code it does not know in the stack\'s own words', function (): void {
+    expect(WhatARefusalMeant::inItsOwnWords(aProblemTheStackSent(409, ['code' => 'NEWER-1', 'summary' => 'The stack said no.'])))->toBe('The stack said no.');
 });
 
 it('carries what the core wrote for the household beside the obstacle, as it wrote it, and nothing where it wrote nothing', function (): void {
