@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Design\View\Tone;
 use Modules\Health\Api\AlertsThatMayBeMissing;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAlert;
@@ -136,18 +137,34 @@ it('says some alerts may be missing beside what stopped the screen reading the s
         ->and($drawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 });
 
-it('neither marks a stack nor tells of it where its screen resumes a stream in front of the operator, whatever the stream says of its replay', function (): void {
+it('says it at once on the open screen whose stream resumes without vouching for every alert, telling only the alerts it handed back', function (): void {
     $missing = whatRemembersTheCellar(marked: false);
     $notifier = ANotifierInMemory::allowed();
     $screen = theCellarOpened($missing, stream: aResumedStreamThatSaysNothingOfItsReplay(), notifier: $notifier);
-    WhatTheDeviceWouldDraw::by($screen);
 
-    expect($missing->keepsAnythingOf(theStackAWakeMayHaveMarked()->id()))->toBeFalse()
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.alerts_may_be_missing'))
+        ->and($screen->someAlertsMayBeMissing)->toBeTrue()
+        ->and($missing->keepsAnythingOf(theStackAWakeMayHaveMarked()->id()))->toBeFalse()
         ->and($notifier->told())->toHaveCount(1)
         ->and($notifier->told()[0])->toContain('disk.full');
 });
 
-it('neither marks a stack nor tells of it where the list of stacks resumes its stream, whatever the stream says of its replay', function (): void {
+it('says nothing of missing alerts on the open screen whose stream resumes vouching for every one', function (): void {
+    $missing = whatRemembersTheCellar(marked: false);
+    $screen = theCellarOpened($missing, stream: AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing()))));
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('health.alerts_may_be_missing'))
+        ->and($missing->keepsAnythingOf(theStackAWakeMayHaveMarked()->id()))->toBeFalse();
+});
+
+it('draws the line calm, as a note about what the phone heard rather than about the stack', function (): void {
+    $notice = WhatTheDeviceWouldDraw::tree(theCellarOpened(whatRemembersTheCellar(marked: true)));
+
+    expect((string) json_encode($notice))->toContain((string) json_encode(Tone::Quiet->glyph()))
+        ->and((string) json_encode($notice))->not->toContain((string) json_encode(Tone::Attention->glyph()));
+});
+
+it('marks the stack without telling of it where the list of stacks resumes its stream without vouching for every alert', function (): void {
     $stack = theStackAWakeMayHaveMarked();
     $keychain = AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
@@ -157,7 +174,7 @@ it('neither marks a stack nor tells of it where the list of stacks resumes its s
     new HearingEachStack(AroundThePhone::listening(aResumedStreamThatSaysNothingOfItsReplay(), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_MARKED_STACK_WAS_OPENED)), notifier: $notifier, missing: $missing), $keychain)
         ->after(WhatEachStackSaidSoFar::nothingYet(), $stack);
 
-    expect($missing->keepsAnythingOf($stack->id()))->toBeFalse()
+    expect($missing->keepsAnythingOf($stack->id()))->toBeTrue()
         ->and($notifier->told())->toHaveCount(1)
         ->and($notifier->told()[0])->toContain('disk.full');
 });

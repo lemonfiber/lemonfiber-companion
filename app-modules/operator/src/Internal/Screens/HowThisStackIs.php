@@ -101,9 +101,10 @@ final class HowThisStackIs extends NativeComponent
     use WritesItsTaps;
     use AsksTheStackAgain;
     use OffersTheAppsSettings;
-    use HearsHowTheStackIs;
     use LetsGoOfARefusedSession;
-    use FindsItsWayAround;
+    use HearsHowTheStackIs, FindsItsWayAround {
+        HearsHowTheStackIs::heardSomeAlertsMayBeMissing insteadof FindsItsWayAround;
+    }
     use FollowsTheCopyRunning;
     use ReadsHowItRunsWithout;
 
