@@ -1,16 +1,17 @@
 # What this app implements of ARCH, one row per requirement (OPS-R74).
 #
-# `done` means the requirement is met in full by what is here, `partial` that this
-# repository holds its part and the rest lives elsewhere, `open` that nothing here
-# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# `done` means this repository's own share of the requirement is built, `partial`
+# that its share is begun and unfinished, `open` that its share has not started. A
+# `partial` or `open` row holds the requirement open whatever another repository
+# records. The release gate and the no-stubs gate read this directory; a pull
 # request that changes whether a requirement is met changes its row.
 
 requirement = [
   { id = "ARCH-R55", state = "partial", evidence = ["app-modules/kernel/src/Api/Obstacle.php", "app-modules/sdk/src/Api/Clients.php", "tests/Contract/ClientsContractTest.php"] },
   { id = "ARCH-R56", state = "partial", evidence = [".github/workflows/sdk-drift.yml", "tests/Support/WhatTheContractAccepts.php"] },
   { id = "ARCH-R62", state = "partial", evidence = ["app-modules/sdk/src/Api/Listeners.php", "app-modules/sdk/src/Api/Narrators.php", "tests/Contract/HearingContractTest.php", "tests/Contract/HearingTheStartContractTest.php"] },
-  { id = "ARCH-R79", state = "partial", evidence = ["app-modules/kernel/src/Api/Ability.php", "app-modules/sdk/src/Api/Lines.php", "app-modules/kernel/tests/Api/AvailabilityTest.php", "app-modules/kernel/tests/Api/CapabilitiesTest.php"] },
-  { id = "ARCH-R135", state = "partial", evidence = ["app-modules/sdk/src/Internal/WhatARefusalMeant.php", "app-modules/operator/src/Internal/ViewModels/HowTheReadingWent.php", "app-modules/dx/tests/Api/AStandInStackTest.php", "app-modules/sdk/tests/Internal/WhatARefusalMeantTest.php"] },
+  { id = "ARCH-R79", state = "done", evidence = ["app-modules/kernel/src/Api/Availability.php", "app-modules/sdk/src/Api/Abilities.php", "app-modules/sdk/tests/Api/AbilitiesTest.php", "app-modules/kernel/tests/Api/AvailabilityTest.php", "app-modules/kernel/tests/Api/CapabilitiesTest.php", "tests/Contract/KnowingWhatAStackOffersContractTest.php"] },
+  { id = "ARCH-R135", state = "done", evidence = ["app-modules/sdk/src/Internal/WhatARefusalMeant.php", "app-modules/operator/src/Internal/ViewModels/HowTheReadingWent.php", "app-modules/operator/src/Internal/SwitchesTheForms.php", "app-modules/sdk/tests/Internal/WhatARefusalMeantTest.php", "tests/Feature/SwitchingTheFormsTest.php", "tests/Feature/SeeingWhatAnUpdateTakenHereCameToTest.php", "tests/Feature/FollowingWhatAVerbCameToTest.php"] },
   { id = "ARCH-R153", state = "partial", evidence = ["app-modules/operator/src/Internal/ChoosesFromTheCatalogue.php", "app-modules/kernel/src/Api/ThePluginCatalogue.php", "tests/Feature/ChoosingFromThePluginCatalogueTest.php", "app-modules/sdk/src/Api/Extenders.php", "tests/Contract/ReadingThePluginCatalogueContractTest.php"] },
   { id = "ARCH-R431", state = "partial", evidence = ["app-modules/operator/src/Internal/Screens/TheScheduledRuns.php", "app-modules/sdk/src/Api/TheScheduleRead.php", "tests/Feature/SeeingWhatRunsOnAScheduleTest.php"] },
   { id = "ARCH-R450", state = "partial", evidence = ["app-modules/kernel/src/Api/ThePluginCatalogue.php", "app-modules/operator/src/Internal/Presenters/HowThePluginCatalogueReads.php", "app-modules/operator/tests/Internal/Presenters/HowThePluginCatalogueReadsTest.php", "tests/Feature/ChoosingFromThePluginCatalogueTest.php", "app-modules/sdk/src/Api/ThePluginCatalogueRead.php", "app-modules/sdk/tests/Api/ThePluginCatalogueReadTest.php", "tests/Contract/ReadingThePluginCatalogueContractTest.php"] },

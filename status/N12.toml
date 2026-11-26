@@ -1,8 +1,9 @@
 # What this app implements of N12, one row per requirement (OPS-R74).
 #
-# `done` means the requirement is met in full by what is here, `partial` that this
-# repository holds its part and the rest lives elsewhere, `open` that nothing here
-# meets it yet. The release gate and the no-stubs gate read this directory; a pull
+# `done` means this repository's own share of the requirement is built, `partial`
+# that its share is begun and unfinished, `open` that its share has not started. A
+# `partial` or `open` row holds the requirement open whatever another repository
+# records. The release gate and the no-stubs gate read this directory; a pull
 # request that changes whether a requirement is met changes its row.
 
 requirement = [

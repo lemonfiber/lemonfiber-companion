@@ -50,6 +50,9 @@ trait SwitchesTheForms
     /** The forms a yes sends, where the report on the screen is a rehearsal of them. */
     public ?TheFormsToSwitchTo $switchMayBeMade = null;
 
+    /** Whether what was last sent made the switch rather than rehearsed it. */
+    public bool $switchWasMade = false;
+
     abstract public function forms(): ?TheFormsAsFound;
 
     /** Choose a form for the active set, or take it out again. */
@@ -82,9 +85,9 @@ trait SwitchesTheForms
             return;
         }
 
-        $forms = TheFormsToSwitchTo::these(...$chosen);
-        $this->switchAsked = $forms;
-        $this->reported($this->switchPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->switching->rehearse($stack, $session, $forms)));
+        $this->switchAsked = TheFormsToSwitchTo::these(...$chosen);
+        $this->switchWasMade = false;
+        $this->sendTheSwitch($this->switchAsked);
     }
 
     /** Make the switch the rehearsal on the screen was asked with. */
@@ -97,8 +100,27 @@ trait SwitchesTheForms
         }
 
         $this->switchMayBeMade = null;
+        $this->switchWasMade = true;
         $this->forget();
-        $this->reported($this->switchPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->switching->carryOut($stack, $session, $forms)));
+        $this->sendTheSwitch($forms);
+    }
+
+    /**
+     * Send the rehearsal or the switch last sent again, where other work held the stack.
+     *
+     * Only then: the stack turned it away before acting on it, so nothing it
+     * did is done twice.
+     */
+    public function tryTheSwitchAgain(): void
+    {
+        $forms = $this->switchAsked;
+
+        if (! $forms instanceof TheFormsToSwitchTo || ! $this->howTheSwitchIsGoing()->stands->went->wasHeldByOtherWork()) {
+            return;
+        }
+
+        $this->forget();
+        $this->sendTheSwitch($forms);
     }
 
     public function howTheSwitchIsGoing(): TheSwitchTurnedOutToBe
@@ -119,6 +141,13 @@ trait SwitchesTheForms
     protected function withNoSessionHeld(): TheSwitchTurnedOutToBe
     {
         return new HowTheSwitchReads()->signedOut();
+    }
+
+    private function sendTheSwitch(TheFormsToSwitchTo $forms): void
+    {
+        $this->reported($this->switchPut(fn(Stack $stack, Session $session): WhatBecameOfTheWork => $this->switchWasMade
+            ? $this->switching->carryOut($stack, $session, $forms)
+            : $this->switching->rehearse($stack, $session, $forms)));
     }
 
     /** @param Closure(Stack, Session): WhatBecameOfTheWork<TheSwitch> $asking */

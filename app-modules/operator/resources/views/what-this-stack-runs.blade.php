@@ -180,6 +180,7 @@
                         <x-design::body>{{ __('connection.session_has_ended') }}</x-design::body>
                     @endif
                 </x-design::notice>
+                <x-operator::try-again :went="$this->howTheSwitchIsGoing()->stands->went" tap="tryTheSwitchAgain()" />
             @endif
         @endunless
     @endif

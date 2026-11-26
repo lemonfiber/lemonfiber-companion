@@ -87,6 +87,7 @@ final readonly class WhatARefusalMeant
         RefusalCode::Elsewhere,
         RefusalCode::NotOpen,
         RefusalCode::ShortChoice,
+        RefusalCode::AlreadyWorking,
     ];
 
     /**
@@ -259,6 +260,8 @@ final readonly class WhatARefusalMeant
         RefusalCode::RemovalMoved,
         RefusalCode::ResetMoved,
         RefusalCode::AnotherReading,
+        RefusalCode::ManifestUnkept,
+        RefusalCode::VpnDeclined,
     ];
 
     /**
@@ -319,7 +322,6 @@ final readonly class WhatARefusalMeant
         RefusalCode::PathNotPlain,
         RefusalCode::ValueWithheld,
         RefusalCode::NothingToRun,
-        RefusalCode::ManifestUnkept,
         RefusalCode::UnaimedCrossing,
         RefusalCode::NoGrant,
         RefusalCode::EarlierTaken,
@@ -332,11 +334,9 @@ final readonly class WhatARefusalMeant
         RefusalCode::WiringMoved,
         RefusalCode::Unreasonable,
         RefusalCode::AlreadyFills,
-        RefusalCode::VpnDeclined,
         RefusalCode::NothingToPlayFrom,
         RefusalCode::NotInTheHousehold,
         RefusalCode::SignsNoDeviceIn,
-        RefusalCode::AlreadyWorking,
     ];
     /**
      * The status a stack turns away a session it will not accept with.
@@ -468,6 +468,7 @@ final readonly class WhatARefusalMeant
             $code === RefusalCode::Elsewhere => Obstacle::of(KindOfObstacle::AddressIsNotTheStacks),
             $code === RefusalCode::NotOpen => Obstacle::of(KindOfObstacle::InvitationNotOpen),
             $code === RefusalCode::ShortChoice => Obstacle::of(KindOfObstacle::ChosenPasswordTooShort),
+            $code === RefusalCode::AlreadyWorking => Obstacle::of(KindOfObstacle::StackIsBusy),
             in_array($code, self::ANSWERED_IN_ITS_WORDS, strict: true) => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
             default => self::byFamily($why),
         };
@@ -495,8 +496,10 @@ final readonly class WhatARefusalMeant
      * so each is decided here rather than swept into an answer written for
      * another. A request turned away, for its credential or otherwise, is a
      * session not accepted where it was answered 401 and an account that may
-     * not ask everywhere else; other work holding the stack is a remedy of its
-     * own; and the rest are a stack that did not answer what was asked.
+     * not ask everywhere else; a conflict naming no code is other work holding
+     * the stack, a remedy of its own, while one naming a code this app does not
+     * know is the stack's answer about what was asked; and the rest are a stack
+     * that did not answer what was asked.
      */
     private static function byStatus(RequestFailed $why): Obstacle
     {
@@ -505,13 +508,21 @@ final readonly class WhatARefusalMeant
             $why instanceof Declined => Obstacle::of(
                 $why->status() === self::SESSION_IS_NOT_ACCEPTED ? KindOfObstacle::CredentialWasRefused : KindOfObstacle::NotForThisAccount,
             ),
-            $why instanceof Busy => Obstacle::of(KindOfObstacle::StackIsBusy),
+            $why instanceof Busy => Obstacle::of(self::namesACode($why) ? KindOfObstacle::StackDidNotAnswer : KindOfObstacle::StackIsBusy),
             $why instanceof TooManyAttempts,
             $why instanceof Misasked,
             $why instanceof Missing,
             $why instanceof Failed => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
             default => Obstacle::of(KindOfObstacle::StackDidNotAnswer),
         };
+    }
+
+    /** Whether the refusal carried a problem document naming a code, known to this app or not. */
+    private static function namesACode(RequestFailed $why): bool
+    {
+        $problem = $why->refusal();
+
+        return $problem instanceof Refusal && trim($problem->code()) !== '';
     }
 
     /** What a problem document named in `detail`, or nothing where it named nothing. */

@@ -233,3 +233,43 @@ it('makes a rehearsed switch once however often the yes is tapped, and never one
         ->and($replaced->carriedOut())->toBe([])
         ->and($other->howTheSwitchIsGoing()->notAskable)->toBe('stacks.switch.none_chosen');
 });
+
+it('offers the same rehearsal again where other work held the stack, and sends it only when tapped', function (): void {
+    $switching = aStackThatSwitchesItsForms(rehearsal: WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackIsBusy)));
+    $screen = aRehearsedSwitchToTheLibrary($switching);
+    $screen->toggleForm('full');
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.try_again'))
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__(KindOfObstacle::StackIsBusy->said()))
+        ->and($switching->rehearsed())->toHaveCount(1);
+
+    $screen->tryTheSwitchAgain();
+
+    expect(array_map(theFormsSentToSwitch(...), $switching->rehearsed()))->toBe([['library'], ['library']])
+        ->and($switching->carriedOut())->toBe([]);
+});
+
+it('makes the same switch again where other work held the stack, never rehearsing it in its place', function (): void {
+    $switching = aStackThatSwitchesItsForms(switch: WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackIsBusy)));
+    $screen = aRehearsedSwitchToTheLibrary($switching);
+    $screen->makeTheSwitch();
+    $screen->whileItRuns();
+    $screen->toggleForm('full');
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(__('connection.try_again'));
+
+    $screen->tryTheSwitchAgain();
+
+    expect(array_map(theFormsSentToSwitch(...), $switching->carriedOut()))->toBe([['library'], ['library']])
+        ->and($switching->rehearsed())->toHaveCount(1);
+});
+
+it('does not offer a switch again where anything but other work stood in its way', function (): void {
+    $switching = aStackThatSwitchesItsForms(rehearsal: WhatBecameOfTheWork::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)));
+    $screen = aRehearsedSwitchToTheLibrary($switching);
+    $screen->tryTheSwitchAgain();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->offers())->not->toContain(__('connection.try_again'))
+        ->and($switching->rehearsed())->toHaveCount(1)
+        ->and($switching->carriedOut())->toBe([]);
+});
