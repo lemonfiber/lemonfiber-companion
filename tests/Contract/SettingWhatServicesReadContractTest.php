@@ -550,7 +550,7 @@ it('reads every setting one change moves, each with what moving it costs, and th
         ->toBe('rehearsed|vpn.provider:mullvad>pia(declared=mullvad)[The tunnel drops for a moment],vpn.type:wireguard>openvpn(core=)|regenerates gluetun|restarts gluetun,qbittorrent|starts gluetun|waiting qbittorrent: secret vpn.user|settings-set:vpn.countries:7||3 settings');
 });
 
-it('reads what each moved setting falls back to as the stack said it, by value, empty, each met reader\'s own, or none', function (): void {
+it('reads what each moved setting falls back to as the stack said it: by value, empty, per met reader, or none', function (): void {
     $payload = whatAStackSaysOfAChangeToASetting([
         'settings' => [
             ['setting' => 'domain', 'was' => 'loft.example', 'value' => null, 'default' => ['of' => 'core', 'value' => 'home.arpa']],
