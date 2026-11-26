@@ -12,6 +12,7 @@ use Modules\Health\Api\AlertsThatMayBeMissing;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
+use Modules\Kernel\Api\FollowingTheCopyRunning;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KnowingWhatAStackOffers;
@@ -29,6 +30,7 @@ use Tests\Support\Fakes\ACaptureInMemory;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ANotifierInMemory;
 use Tests\Support\Fakes\ASealInMemory;
+use Tests\Support\Fakes\AStackThatCopies;
 use Tests\Support\Fakes\AStackThatOffers;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\FrozenClock;
@@ -108,6 +110,7 @@ final readonly class AroundThePhone
         ?Notifier $notifier = null,
         ?WakingThisPhone $waking = null,
         ?AlertsThatMayBeMissing $missing = null,
+        ?FollowingTheCopyRunning $copying = null,
     ): WhatItListensWith {
         return new WhatItListensWith(
             $hearing ?? AStackThatSpeaksUp::holdingOpen(),
@@ -119,6 +122,7 @@ final readonly class AroundThePhone
             $notifier ?? ANotifierInMemory::allowed(),
             $waking ?? AWakingPhone::waking(),
             $missing ?? new AlertsThatMayBeMissing(ASealInMemory::working(), MissingAlertsInMemory::empty()),
+            $copying ?? AStackThatCopies::copyingNothing(),
         );
     }
 }

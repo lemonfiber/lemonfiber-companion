@@ -2,11 +2,18 @@
 
 declare(strict_types=1);
 
+use Modules\Kernel\Api\ACopyRunning;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowBig;
+use Modules\Kernel\Api\HowTheCopyMoves;
+use Modules\Kernel\Api\HowTheCopyRunningWasRead;
+use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\ScopeOfACopy;
+use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\SomethingBeside;
 use Modules\Kernel\Api\SomethingKept;
@@ -18,12 +25,15 @@ use Modules\Kernel\Api\Storing;
 use Modules\Kernel\Api\TheCopies;
 use Modules\Kernel\Api\TheRoots;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
+use Modules\Kernel\Api\WhatIsBeingCopied;
 use Modules\Kernel\Api\WhatIsBeside;
+use Modules\Kernel\Api\WhatIsCopied;
 use Modules\Kernel\Api\WhatIsKept;
 use Modules\Kernel\Api\WhatThisMachineKeeps;
 use Modules\Kernel\Api\WhereThingsAreKept;
 use Modules\Kernel\Api\WhetherItHoldsASecret;
 use Modules\Kernel\Api\Whose;
+use Modules\Operator\Internal\Presenters\HowTheCopyRunningReads;
 use Modules\Operator\Internal\Screens\WhatThisMachineKeepsHere;
 use Modules\Operator\Internal\ViewModels\ARootAsShown;
 use Modules\Operator\Internal\ViewModels\SomethingBesideAsShown;
@@ -40,9 +50,11 @@ use Tests\Support\AroundThePhone;
 use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AStackThatCopies;
 use Tests\Support\Fakes\AStackThatForgets;
 use Tests\Support\Fakes\AStackThatListsItsCopies;
 use Tests\Support\Fakes\AStackThatSaysWhatItKeeps;
+use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\StacksInMemory;
 use Tests\Support\WhatTheDeviceWouldDraw;
 
@@ -85,6 +97,7 @@ function theKeepingScreen(
     AStackThatListsItsCopies $copying,
     ?AKeychainInMemory $keychain = null,
     bool $signedIn = true,
+    ?AStackThatCopies $running = null,
 ): WhatThisMachineKeepsHere {
     $stack = theStackWhoseKeepingIsRead();
     $keychain ??= AKeychainInMemory::working();
@@ -93,7 +106,7 @@ function theKeepingScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new WhatThisMachineKeepsHere($storing, $copying, AStackThatForgets::sayingAtOnce(WhatBecameOfTheWork::noOutcome()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), AJobThatSays::nothing());
+    $screen = new WhatThisMachineKeepsHere($storing, $copying, AStackThatForgets::sayingAtOnce(WhatBecameOfTheWork::noOutcome()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(clock: FrozenClock::at(aMomentOfTheBackup(0)), copying: $running ?? AStackThatCopies::copyingNothing()), AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -289,7 +302,7 @@ it('copies that could not be read for another reason leave the session standing'
         ->and($keychain->isHolding(theStackWhoseKeepingIsRead()->id()))->toBeTrue();
 });
 
-it('reads what is kept on the first frame and the copies on the next, each once, about the machine the route names', function (): void {
+it('reads what is kept on the first frame, the copies on the next and the copy running on the third, each once, about the machine the route names', function (): void {
     $storing = AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps());
     $copying = twoCopies();
     $screen = theKeepingScreen($storing, $copying);
@@ -305,10 +318,13 @@ it('reads what is kept on the first frame and the copies on the next, each once,
     WhatTheDeviceWouldDraw::by($screen);
     $askedForAfter = howSoonItAskedForTheNextFrame($screen);
     WhatTheDeviceWouldDraw::by($screen);
+    $askedForLast = howSoonItAskedForTheNextFrame($screen);
+    WhatTheDeviceWouldDraw::by($screen);
 
     expect($storing->askings())->toBe(1)
         ->and($copying->askings())->toBe(1)
-        ->and($askedForAfter)->toBe([])
+        ->and($askedForAfter)->toBe([16])
+        ->and($askedForLast)->toBe([])
         ->and($storing->wasGivenASession())->toBeTrue()
         ->and($copying->wasGivenASession())->toBeTrue()
         ->and($storing->askedAbout()?->id()->stored())->toBe(theStackWhoseKeepingIsRead()->id()->stored())
@@ -376,4 +392,84 @@ it('reads what is kept again once a minute, and the copies on the frame after', 
 
     expect($kept)->toBe([2, 1])
         ->and([$storing->askings(), $copying->askings()])->toBe([2, 2]);
+});
+
+function aMomentOfTheBackup(int $seconds): Instant
+{
+    return Instant::atEpochSeconds(1_790_000_000 + $seconds);
+}
+
+/** A backup of one service, a quarter written, started ten minutes before the screen's moment, moving as a case says. */
+function aBackupOfSonarrThatIs(HowTheCopyMoves $moves): AStackThatCopies
+{
+    return AStackThatCopies::holdingOpen(HowTheCopyRunningWasRead::said(WhatIsBeingCopied::running(new ACopyRunning(WhatIsCopied::Backup, ScopeOfACopy::oneService(ServiceId::called('sonarr')), aMomentOfTheBackup(-600), 536_870_912, 2_147_483_648, 'sonarr database', $moves))));
+}
+
+/** @param array<string, string> $with */
+function aLineOfTheBackup(string $key, array $with = []): string
+{
+    $said = __($key, $with);
+
+    return is_string($said) ? $said : $key;
+}
+
+/**
+ * Every progress bar drawn, as how far each says it has got.
+ *
+ * @param array<mixed> $node
+ *
+ * @return list<mixed>
+ */
+function theBarsIn(array $node): array
+{
+    $bars = ($node['type'] ?? null) === 'progress_bar' ? [data_get($node, 'props.value')] : [];
+
+    foreach ($node as $child) {
+        if (is_array($child)) {
+            $bars = [...$bars, ...theBarsIn($child)];
+        }
+    }
+
+    return $bars;
+}
+
+it('draws a backup running above the copies: of what, a bar and how much of how much, the part, when it started and how it moves', function (): void {
+    $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies(), running: aBackupOfSonarrThatIs(HowTheCopyMoves::working()));
+    $drawn = WhatTheDeviceWouldDraw::onTheThirdFrame($screen)->said();
+    $written = HowBig::of(536_870_912);
+    $whole = HowBig::of(2_147_483_648);
+    $title = aLineOfTheBackup('stacks.copy.running.what.backup', ['scope' => aLineOfTheBackup('stacks.copy.scope.service', ['name' => 'sonarr'])]);
+
+    expect($drawn)->toContain(
+        $title,
+        aLineOfTheBackup('stacks.copy.running.written', ['written' => (string) $written->figure, 'written_unit' => aLineOfTheBackup($written->said), 'whole' => (string) $whole->figure, 'whole_unit' => aLineOfTheBackup($whole->said)]),
+        aLineOfTheBackup('stacks.copy.running.part', ['part' => 'sonarr database']),
+        trans_choice('stacks.copy.running.started.minutes', 10),
+        aLineOfTheBackup(HowTheCopyRunningReads::WORKING),
+    )
+        ->and(theBarsIn(WhatTheDeviceWouldDraw::tree($screen)))->toBe([0.25])
+        ->and(array_keys($drawn, $title, strict: true)[0] ?? null)->toBeLessThan(array_keys($drawn, 'lemonfiber-20260924-0300-full', strict: true)[0] ?? 0)
+        ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(aLineOfTheBackup('navigation.menu.copies_run'));
+});
+
+it('draws nothing of a copy where none runs, and says it cannot tell where the stack gives no reading', function (): void {
+    $none = WhatTheDeviceWouldDraw::onTheThirdFrame(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies()))->said();
+    $unread = WhatTheDeviceWouldDraw::onTheThirdFrame(theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies(), running: AStackThatCopies::holdingOpen(HowTheCopyRunningWasRead::refused(Obstacle::of(KindOfObstacle::AnswerCouldNotBeRead)))))->said();
+
+    expect($none)->not->toContain(aLineOfTheBackup(HowTheCopyRunningReads::NONE), aLineOfTheBackup(HowTheCopyRunningReads::CANNOT_TELL), aLineOfTheBackup('navigation.menu.copies_run'))
+        ->and($unread)->toContain(aLineOfTheBackup(HowTheCopyRunningReads::CANNOT_TELL));
+});
+
+it('follows the copy on the stream without reading it again when it looks again, and lets go of it when the screen stops', function (): void {
+    $running = aBackupOfSonarrThatIs(HowTheCopyMoves::working());
+    $screen = theKeepingScreen(AStackThatSaysWhatItKeeps::with(whatTheLoftKeeps()), twoCopies(), running: $running);
+    WhatTheDeviceWouldDraw::onTheThirdFrame($screen);
+    $screen->followTheCopy();
+    $screen->whileOpen();
+    WhatTheDeviceWouldDraw::onTheThirdFrame($screen);
+    $screen->stop();
+
+    expect($running->read())->toBe(1)
+        ->and($running->asked())->toBe(1)
+        ->and($running->lettingsGo())->toBe(1);
 });

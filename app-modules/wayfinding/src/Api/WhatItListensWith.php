@@ -9,6 +9,7 @@ use Modules\Health\Api\AlertsThatMayBeMissing;
 use Modules\Health\Api\KeepingTheLastReading;
 use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
+use Modules\Kernel\Api\FollowingTheCopyRunning;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Notification;
@@ -28,8 +29,8 @@ use Modules\Stacks\Api\AStacksScreen;
  * What hears the stream, the clock and whether anybody can see the screen,
  * where what was heard is kept, what answers how much is new by it, where
  * the alerts it carried are told to the operator, whether the stack is
- * owed the removal of this phone's endpoint, and which stacks may be missing
- * alerts from what a wake heard.
+ * owed the removal of this phone's endpoint, which stacks may be missing
+ * alerts from what a wake heard, and what hears the backup or restore running.
  *
  * The traits that hold a stream are where they are used, and a screen is where
  * they arrive, so the screen is handed them in one value and a trait holding a
@@ -48,6 +49,7 @@ final readonly class WhatItListensWith
         public Notifier $notifier,
         public WakingThisPhone $waking,
         public AlertsThatMayBeMissing $missing,
+        public FollowingTheCopyRunning $copying,
     ) {}
 
     /**

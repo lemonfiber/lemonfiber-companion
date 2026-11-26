@@ -109,7 +109,8 @@ function theCopyingScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new TakingACopyHere($copying, $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), $hearing ?? AJobThatSays::nothing(), $running ?? AStackThatCopies::copyingNothing(), $clock ?? FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), $capture ?? ACaptureInMemory::inFront());
+    $listening = AroundThePhone::listening(clock: $clock ?? FrozenClock::at(Instant::atEpochSeconds(1_790_000_000)), capture: $capture ?? ACaptureInMemory::inFront(), copying: $running ?? AStackThatCopies::copyingNothing());
+    $screen = new TakingACopyHere($copying, $supervising ?? AStackThatSupervises::with(WhatAMachineRuns::twoThings()), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), $listening, $hearing ?? AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored()]);
 
     return $screen;
@@ -675,7 +676,7 @@ it('lets go of the job\'s stream when the screen stops', function (): void {
 /** A reading of a copy running, as a case moves it, taken ten minutes before the screen's moment. */
 function aCopyRunningThatIs(HowTheCopyMoves $moves, WhatIsCopied $what = WhatIsCopied::Backup): HowTheCopyRunningWasRead
 {
-    return HowTheCopyRunningWasRead::said(WhatIsBeingCopied::running(new ACopyRunning($what, aMomentOfTheCopy(-600), 734_003_200, 2_147_483_648, 'sonarr database', $moves)));
+    return HowTheCopyRunningWasRead::said(WhatIsBeingCopied::running(new ACopyRunning($what, ScopeOfACopy::theWholeStack(), aMomentOfTheCopy(-600), 734_003_200, 2_147_483_648, 'sonarr database', $moves)));
 }
 
 function aMomentOfTheCopy(int $seconds): Instant
@@ -696,6 +697,7 @@ function howFarTheCopyHasGot(): array
     return [
         aLineOfTheCopy('stacks.copy.running.written', ['written' => (string) $written->figure, 'written_unit' => aLineOfTheCopy($written->said), 'whole' => (string) $whole->figure, 'whole_unit' => aLineOfTheCopy($whole->said)]),
         aLineOfTheCopy('stacks.copy.running.part', ['part' => 'sonarr database']),
+        trans_choice('stacks.copy.running.started.minutes', 10),
     ];
 }
 
@@ -718,8 +720,8 @@ it('reads the copy running once when it opens mid-copy, and draws how much of ho
     $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
 
     expect($running->read())->toBe(1)
-        ->and($first)->not->toContain(aLineOfTheCopy('stacks.copy.running.what.backup'))
-        ->and($drawn)->toContain(aLineOfTheCopy('stacks.copy.running.what.backup'), ...howFarTheCopyHasGot())
+        ->and($first)->not->toContain(aLineOfTheCopy('stacks.copy.running.what.backup', ['scope' => aLineOfTheCopy('stacks.copy.scope.whole_stack')]))
+        ->and($drawn)->toContain(aLineOfTheCopy('stacks.copy.running.what.backup', ['scope' => aLineOfTheCopy('stacks.copy.scope.whole_stack')]), ...howFarTheCopyHasGot())
         ->and($drawn)->toContain(aLineOfTheCopy(HowTheCopyRunningReads::WORKING))
         ->and(WhatTheDeviceWouldDraw::by($screen)->offers())->toContain(aLineOfTheCopy('navigation.menu.copies_run'))
         ->and($running->read())->toBe(1);
@@ -747,7 +749,7 @@ it('says it cannot tell, drawing neither working nor stalled, where the stack gi
 });
 
 it('takes what the stream says in place of what it read, and cannot tell once the stream no longer vouches for it', function (): void {
-    $running = AStackThatCopies::thenEnding(aCopyRunningThatIs(HowTheCopyMoves::working()), WhatAStreamSaid::said(WhatIsBeingCopied::running(new ACopyRunning(WhatIsCopied::Backup, aMomentOfTheCopy(-600), 734_003_200, 2_147_483_648, 'sonarr database', HowTheCopyMoves::stalled(aMomentOfTheCopy(-420))))));
+    $running = AStackThatCopies::thenEnding(aCopyRunningThatIs(HowTheCopyMoves::working()), WhatAStreamSaid::said(WhatIsBeingCopied::running(new ACopyRunning(WhatIsCopied::Backup, ScopeOfACopy::theWholeStack(), aMomentOfTheCopy(-600), 734_003_200, 2_147_483_648, 'sonarr database', HowTheCopyMoves::stalled(aMomentOfTheCopy(-420))))));
     $screen = theCopyingScreen(aCopyStillBeingTaken(), running: $running);
     $screen->followTheCopy();
     WhatTheDeviceWouldDraw::onTheSecondFrame($screen);

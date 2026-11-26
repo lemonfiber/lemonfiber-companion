@@ -170,13 +170,20 @@ return [
         'see_the_copies' => 'See the copies',
         'running' => [
             'what' => [
-                'backup' => 'A copy is being taken',
-                'restore' => 'A copy is being put back',
+                'backup' => 'Taking a copy of :scope',
+                'restore' => 'Putting back a copy of :scope',
             ],
             'none' => 'No copy is being taken or put back',
             'cannot_tell' => 'The stack is not saying whether a copy is running or how it is going, so this cannot tell',
             'written' => ':written :written_unit of :whole :whole_unit written',
             'part' => 'Writing :part now',
+            'so_far' => ':percent% written. :moves',
+            'see_it' => 'See it in Backups',
+            'started' => [
+                'minutes' => '{0} Started under a minute ago|{1} Started a minute ago|[2,*] Started :count minutes ago',
+                'hours' => '{1} Started an hour ago|[2,*] Started :count hours ago',
+                'days' => '{1} Started a day ago|[2,*] Started :count days ago',
+            ],
             'working' => 'Writing as fast as it can',
             'paced' => 'Slowed on purpose, to at most :limit :limit_unit a second, as your limit says',
             'stalled' => [

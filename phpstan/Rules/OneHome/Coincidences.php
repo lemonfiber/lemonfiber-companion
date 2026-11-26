@@ -24,6 +24,7 @@ use Modules\Kernel\Api\AtAGlance;
 use Modules\Kernel\Api\HowFarADownloadIs;
 use Modules\Kernel\Api\Nonce;
 use Modules\News\Internal\TheNewsAsKept;
+use Modules\Operator\Internal\Presenters\HowTheCopyRunningReads;
 use Modules\Sdk\Api\WhatTheStackSaidOfItself;
 use Modules\Sdk\Internal\WhatARefusalMeant;
 use Modules\Vault\Api\PlatformWorkLeftRunning;
@@ -75,6 +76,7 @@ final readonly class Coincidences
         APushName::class => ['PHONE' => 'the name this phone registers a push endpoint under where its key\'s name holds nothing a stack accepts, which the notify read\'s `phone` field only shares a word with'],
         HowAShelfReads::class => ['NEW_IN_THE_HOUSE' => 'the newest holdings the first row of a member\'s shelf shows'],
         HowFarADownloadIs::class => ['ALL_OF_IT' => 'the percentage a finished download has reached'],
+        HowTheCopyRunningReads::class => ['ALL_WRITTEN' => 'the percentage a backup or restore has written once it has written all of it'],
         NotifyingWithinACap::class => ['AT_MOST' => 'how many notifications one stack may raise within a minute'],
         AtAGlance::class => ['MIXED_BY' => 'the hash a fingerprint is mixed by before it is read at a glance'],
         Link::class => ['UNREACHABLE' => "the native half's word for no network"],
