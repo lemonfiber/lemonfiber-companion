@@ -79,6 +79,10 @@ const WHAT_A_COMPONENT_IS = [
     // platform says it is busy in its own words, and nothing on it is pressed.
     'activity-indicator' => false,
 
+    // How far something has got, drawn beside the words that say the same
+    // figures, and read aloud as those words. Nothing on it is pressed.
+    'progress-bar' => false,
+
     // A glyph beside the words that say the same thing: furniture, because the
     // words are what a reader hears, and a glyph announced before them is the
     // same news twice.
