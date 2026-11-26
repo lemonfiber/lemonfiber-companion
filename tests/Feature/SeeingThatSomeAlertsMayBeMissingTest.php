@@ -32,9 +32,11 @@ use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\WhichWayItWent;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
+use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Wayfinding\Api\HearingEachStack;
 use Modules\Wayfinding\Api\WhatEachStackSaidSoFar;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ANotifierInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -42,6 +44,7 @@ use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
+use Tests\Support\Fakes\AStackThatWouldMend;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\MissingAlertsInMemory;
 use Tests\Support\Fakes\StacksInMemory;
@@ -177,4 +180,21 @@ it('marks the stack without telling of it where the list of stacks resumes its s
     expect($missing->keepsAnythingOf($stack->id()))->toBeTrue()
         ->and($notifier->told())->toHaveCount(1)
         ->and($notifier->told()[0])->toContain('disk.full');
+});
+
+it('marks the stack from another of its screens whose stream resumes without vouching for every alert, saying nothing of it there', function (): void {
+    $stack = theStackAWakeMayHaveMarked();
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
+    $missing = whatRemembersTheCellar(marked: false);
+    $notifier = ANotifierInMemory::allowed();
+    $listening = AroundThePhone::listening(aResumedStreamThatSaysNothingOfItsReplay(), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_MARKED_STACK_WAS_OPENED)), notifier: $notifier, missing: $missing);
+    $screen = new WhatWouldBePutRight(AStackThatWouldMend::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), $listening, AJobThatSays::nothing());
+    $screen->setParams(['stack' => $stack->id()->stored()]);
+    $screen->listen();
+
+    expect($missing->keepsAnythingOf($stack->id()))->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('health.alerts_may_be_missing'))
+        ->and($notifier->told())->toHaveCount(1)
+        ->and(WhatTheDeviceWouldDraw::by(theCellarOpened($missing))->said())->toContain(__('health.alerts_may_be_missing'));
 });
