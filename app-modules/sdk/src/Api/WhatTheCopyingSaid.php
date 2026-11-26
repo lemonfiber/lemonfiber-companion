@@ -18,14 +18,16 @@ use Modules\Sdk\Api\Fields\CopyingField;
 use Modules\Sdk\Internal\APath;
 use Modules\Sdk\Internal\HowACopyIsGoing;
 use Modules\Sdk\Internal\Required;
+use Modules\Sdk\Internal\Scopes;
 use Modules\Sdk\Internal\Wire;
 
 /**
  * Reads a `copying` envelope: the backup or restore running now, or that none is.
  *
- * Every field the screen draws is required, and a `state` this app has no word
- * for is refused rather than drawn as working: the stack's reading is the only
- * one shown, and a guess at it would be this side's reckoning.
+ * Every field the screen draws is required, its `scope` read as every copy's
+ * is, and a `state` this app has no word for is refused rather than drawn as
+ * working: the stack's reading is the only one shown, and a guess at it would
+ * be this side's reckoning.
  */
 final readonly class WhatTheCopyingSaid
 {
@@ -63,6 +65,7 @@ final readonly class WhatTheCopyingSaid
         return new ACopyRunning(
             what: WhatIsCopied::tryFrom(Required::text($running, WireField::What, self::missing(WireField::What)))
                 ?? throw self::missing(WireField::What),
+            scope: Scopes::in($running),
             started: Instant::atEpochSeconds(Required::number($running, WireField::Started, self::missing(WireField::Started))),
             written: Required::count($running, WireField::Written, self::missing(WireField::Written)),
             whole: Required::count($running, CopyingField::Whole, self::missing(CopyingField::Whole)),

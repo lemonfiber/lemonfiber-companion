@@ -103,7 +103,9 @@ function thePuttingBackScreen(
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
     }
 
-    $screen = new PuttingACopyBack($puttingBack, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), FrozenClock::at(Instant::atEpochSeconds(WHEN_A_COPY_IS_LISTED)), $hearing ?? AJobThatSays::nothing(), $running ?? AStackThatCopies::copyingNothing(), $capture ?? ACaptureInMemory::inFront());
+    $clock = FrozenClock::at(Instant::atEpochSeconds(WHEN_A_COPY_IS_LISTED));
+    $listening = AroundThePhone::listening(clock: $clock, capture: $capture ?? ACaptureInMemory::inFront(), copying: $running ?? AStackThatCopies::copyingNothing());
+    $screen = new PuttingACopyBack($puttingBack, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), $listening, $clock, $hearing ?? AJobThatSays::nothing());
     $screen->setParams(['stack' => $stack->id()->stored(), 'about' => $copy]);
 
     return $screen;
@@ -647,7 +649,7 @@ it('names no copy where the route carries one that is not text, and asks the sta
 });
 
 it('draws a restore running as a backup running is drawn: how much of how much, the part now, and how it moves', function (): void {
-    $running = AStackThatCopies::holdingOpen(HowTheCopyRunningWasRead::said(WhatIsBeingCopied::running(new ACopyRunning(WhatIsCopied::Restore, Instant::atEpochSeconds(WHEN_A_COPY_IS_LISTED - 600), 734_003_200, 2_147_483_648, 'sonarr database', HowTheCopyMoves::stalled(Instant::atEpochSeconds(WHEN_A_COPY_IS_LISTED - 420))))));
+    $running = AStackThatCopies::holdingOpen(HowTheCopyRunningWasRead::said(WhatIsBeingCopied::running(new ACopyRunning(WhatIsCopied::Restore, ScopeOfACopy::theWholeStack(), Instant::atEpochSeconds(WHEN_A_COPY_IS_LISTED - 600), 734_003_200, 2_147_483_648, 'sonarr database', HowTheCopyMoves::stalled(Instant::atEpochSeconds(WHEN_A_COPY_IS_LISTED - 420))))));
     $screen = thePuttingBackScreen(AStackThatPutsCopiesBack::listing(aListingOfTheCopy(WhereTheDataGoes::whereItWas()), HowPuttingItBackIsGoing::stillRunning()), running: $running);
     $drawn = WhatTheDeviceWouldDraw::onTheSecondFrame($screen)->said();
     $written = HowBig::of(734_003_200);
@@ -655,7 +657,7 @@ it('draws a restore running as a backup running is drawn: how much of how much, 
 
     expect($running->read())->toBe(1)
         ->and($drawn)->toContain(
-            __('stacks.copy.running.what.restore'),
+            __('stacks.copy.running.what.restore', ['scope' => aLineOfPuttingBack('stacks.copy.scope.whole_stack')]),
             __('stacks.copy.running.written', ['written' => (string) $written->figure, 'written_unit' => aLineOfPuttingBack($written->said), 'whole' => (string) $whole->figure, 'whole_unit' => aLineOfPuttingBack($whole->said)]),
             __('stacks.copy.running.part', ['part' => 'sonarr database']),
             trans_choice('stacks.copy.running.stalled.minutes', 7),

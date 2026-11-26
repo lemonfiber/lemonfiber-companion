@@ -12,6 +12,7 @@ use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
+use Modules\Kernel\Api\ScopeOfACopy;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
@@ -25,6 +26,7 @@ use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Tests\Support\Fakes\AStackThatCopies;
 use Tests\Support\TheWordCarriedOut;
+use Tests\Support\WhatAScopeSays;
 use Tests\Support\WhatTheContractAccepts;
 use Tests\Support\WhereEachOpenResumed;
 
@@ -115,8 +117,9 @@ function whatIsBeingCopiedAsAWord(WhatIsBeingCopied $copying): string
     return $copying->either(
         nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('none running'),
         running: static fn(ACopyRunning $running): TheWordCarriedOut => new TheWordCarriedOut(sprintf(
-            '%s since %d: %d of %d, %s, %s',
+            '%s of %s since %d: %d of %d, %s, %s',
             $running->what->value,
+            WhatAScopeSays::of($running->scope),
             $running->started->epochSeconds(),
             $running->written,
             $running->whole,
@@ -152,10 +155,10 @@ function whatTheStreamSaidOfTheCopy(WhatAStreamSaid $said): string
 
 function aBackupWorking(): WhatIsBeingCopied
 {
-    return WhatIsBeingCopied::running(new ACopyRunning(WhatIsCopied::Backup, Instant::atEpochSeconds(1_795_563_600), 734_003_200, 2_147_483_648, 'sonarr database', HowTheCopyMoves::working()));
+    return WhatIsBeingCopied::running(new ACopyRunning(WhatIsCopied::Backup, ScopeOfACopy::theWholeStack(), Instant::atEpochSeconds(1_795_563_600), 734_003_200, 2_147_483_648, 'sonarr database', HowTheCopyMoves::working()));
 }
 
-const A_BACKUP_WORKING = 'backup since 1795563600: 734003200 of 2147483648, sonarr database, working';
+const A_BACKUP_WORKING = 'backup of whole since 1795563600: 734003200 of 2147483648, sonarr database, working';
 
 it('reads a running copy as the core says it, and none running as nothing', function (): void {
     $table = [
@@ -173,9 +176,11 @@ it('reads a running copy as the core says it, and none running as nothing', func
 
 it('reads a restore, a paced copy with its limit and a stalled one with when it last wrote, each as the stack says', function (): void {
     $table = [
-        [['what' => 'restore'], 'restore since 1795563600: 734003200 of 2147483648, sonarr database, working'],
-        [['state' => 'paced', 'limit' => 52_428_800], 'backup since 1795563600: 734003200 of 2147483648, sonarr database, paced to 52428800'],
-        [['state' => 'stalled', 'wrote' => 1_795_563_900], 'backup since 1795563600: 734003200 of 2147483648, sonarr database, stalled since 1795563900'],
+        [['what' => 'restore'], 'restore of whole since 1795563600: 734003200 of 2147483648, sonarr database, working'],
+        [['state' => 'paced', 'limit' => 52_428_800], 'backup of whole since 1795563600: 734003200 of 2147483648, sonarr database, paced to 52428800'],
+        [['state' => 'stalled', 'wrote' => 1_795_563_900], 'backup of whole since 1795563600: 734003200 of 2147483648, sonarr database, stalled since 1795563900'],
+        [['scope' => ['scope' => 'service', 'name' => 'sonarr']], 'backup of service:sonarr since 1795563600: 734003200 of 2147483648, sonarr database, working'],
+        [['scope' => ['scope' => 'existing', 'project' => 'media', 'trees' => [['host_path' => '/srv/arr', 'archive_path' => 'trees/0']]]], 'backup of existing:media:/srv/arr since 1795563600: 734003200 of 2147483648, sonarr database, working'],
     ];
 
     foreach ($table as [$changed, $word]) {
@@ -241,6 +246,10 @@ it('says a refused session as refused, and a reading it cannot read as an answer
         ['state' => null],
         ['state' => 'paced'],
         ['state' => 'stalled'],
+        ['scope' => null],
+        ['scope' => ['scope' => 'everything']],
+        ['scope' => ['scope' => 'service', 'name' => ' ']],
+        ['scope' => ['scope' => 'existing', 'project' => ' ', 'trees' => []]],
     ];
     $table = [
         [MockResponse::make('{"error":"no"}', 401), KindOfObstacle::CredentialWasRefused],
@@ -257,7 +266,7 @@ it('says a refused session as refused, and a reading it cannot read as an answer
 });
 
 it('stands in for a stack with payloads the contract would accept', function (): void {
-    foreach ([whatTheCoreSaysIsBeingCopied(), whatTheCoreSaysIsBeingCopied(['state' => 'paced', 'limit' => 52_428_800]), whatTheCoreSaysIsBeingCopied(['what' => 'restore', 'state' => 'stalled', 'wrote' => 1_795_563_900]), nothingTheCoreIsCopying()] as $payload) {
+    foreach ([whatTheCoreSaysIsBeingCopied(), whatTheCoreSaysIsBeingCopied(['state' => 'paced', 'limit' => 52_428_800]), whatTheCoreSaysIsBeingCopied(['what' => 'restore', 'state' => 'stalled', 'wrote' => 1_795_563_900]), whatTheCoreSaysIsBeingCopied(['scope' => ['scope' => 'service', 'name' => 'sonarr']]), whatTheCoreSaysIsBeingCopied(['scope' => ['scope' => 'existing', 'project' => 'media', 'trees' => [['host_path' => '/srv/arr', 'archive_path' => 'trees/0']]]]), nothingTheCoreIsCopying()] as $payload) {
         expect(WhatTheContractAccepts::complaintsAbout('CopyingEnvelope', $payload))
             ->toBe([], "The payload this suite stands in for a stack with is not one a stack would send.\n");
     }

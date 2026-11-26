@@ -56,6 +56,10 @@
         @endif
     @endif
 
+    @if ($this->theCopyTheStreamSaysRuns() !== null)
+        <x-operator::a-copy-running-line :copy="$this->theCopyTheStreamSaysRuns()" :goes="$this->goes()->to(AStacksScreen::Keeps)" />
+    @endif
+
     {{-- What needs the operator, drawn whenever the core counted something:
          how many, counted by cause, as a figure under its label, and each
          affected item on its severity's ground with what it costs, what to try

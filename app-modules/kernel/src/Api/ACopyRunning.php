@@ -16,6 +16,7 @@ final readonly class ACopyRunning
      */
     public function __construct(
         public WhatIsCopied $what,
+        public ScopeOfACopy $scope,
         public Instant $started,
         public int $written,
         public int $whole,

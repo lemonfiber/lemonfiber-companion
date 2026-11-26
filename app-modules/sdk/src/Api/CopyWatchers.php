@@ -17,6 +17,8 @@ use Lemonfiber\Sdk\Exception\UnreadableResponse;
 use Lemonfiber\Sdk\Generated\CopyingEnvelope;
 use Modules\Kernel\Api\FollowingTheCopyRunning;
 use Modules\Kernel\Api\HowTheCopyRunningWasRead;
+use Modules\Kernel\Api\KeepingSaysNothing;
+use Modules\Kernel\Api\ServiceIsUnnamed;
 use Modules\Kernel\Api\Session;
 use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\WhatAStreamSaid;
@@ -54,7 +56,7 @@ final class CopyWatchers implements FollowingTheCopyRunning
             return HowTheCopyRunningWasRead::said(WhatTheCopyingSaid::in($client->read(Api::COPYING_ENDPOINT)));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return HowTheCopyRunningWasRead::refused(WhatARefusalMeant::obstacle($why));
-        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|CopyingIsUnreadable $why) {
+        } catch (ApiVersionMismatch|Unreachable|TheStackDoesNotOfferIt|UnreadableResponse|UnexpectedKind|CopyingIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed $why) {
             return HowTheCopyRunningWasRead::refused($this->clients->whatStoodInTheWay($stack, $why));
         }
     }
@@ -93,7 +95,7 @@ final class CopyWatchers implements FollowingTheCopyRunning
             return $this->arrived($stack, $this->streams->taken($stack, $session));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatAStreamSaid::met(WhatARefusalMeant::obstacle($why));
-        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|CopyingIsUnreadable $why) {
+        } catch (Unreachable|ApiVersionMismatch|UnreadableResponse|UnexpectedKind|StreamInterrupted|CopyingIsUnreadable|ScopeIsUnreadable|KeepingSaysNothing|ServiceIsUnnamed $why) {
             $this->letGoOf($stack);
 
             return WhatAStreamSaid::met($this->clients->whatStoodInTheWay($stack, $why));

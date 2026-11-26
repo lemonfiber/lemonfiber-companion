@@ -25,6 +25,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\TheAppsSettings;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatToFollow;
+use Modules\Operator\Internal\FollowsTheCopyRunning;
 use Modules\Operator\Internal\HearsHowTheStackIs;
 use Modules\Operator\Internal\OffersTheAppsSettings;
 use Modules\Operator\Internal\Presenters\HowAFamilyReads;
@@ -38,7 +39,6 @@ use Modules\Operator\Internal\ViewModels\WhatTheStackTurnedOutToBe;
 use Modules\Operator\Internal\ViewModels\WhichFamilyToRead;
 use Modules\Stacks\Api\AStacksScreen;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
-use Modules\Wayfinding\Api\Screens\ReadsAStackOnceAFrame;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -82,6 +82,11 @@ use function view;
  * operator whose session has ended meets the sign-in screen rather than an
  * error.
  *
+ * **A copy running is a line that leads to Backups.** While the stack's stream
+ * says a backup or restore runs, the screen says what and how far in one row,
+ * heard through {@see FollowsTheCopyRunning} without reading it; where none
+ * runs, or the app cannot tell, nothing is drawn of it.
+ *
  * **`#[Concealed]`, because a report names what is wrong with somebody's
  * machine.** The capture rule is written about credentials and pairing material, and a
  * diagnostic report is the other thing on this app's screens worth keeping out
@@ -99,7 +104,7 @@ final class HowThisStackIs extends NativeComponent
     use HearsHowTheStackIs;
     use LetsGoOfARefusedSession;
     use FindsItsWayAround;
-    use ReadsAStackOnceAFrame;
+    use FollowsTheCopyRunning;
     use ReadsHowItRunsWithout;
 
     public const string TEMPLATE = 'operator::how-this-stack-is';
@@ -327,6 +332,11 @@ final class HowThisStackIs extends NativeComponent
     public function answer(): WhatTheStackTurnedOutToBe
     {
         return $this->answered ??= $this->ask();
+    }
+
+    protected function letGoOfWhatElseItHears(): void
+    {
+        $this->letGoOfTheCopy();
     }
 
     /**

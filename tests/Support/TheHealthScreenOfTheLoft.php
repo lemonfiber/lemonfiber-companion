@@ -18,6 +18,7 @@ use function str_repeat;
 
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
+use Tests\Support\Fakes\AStackThatCopies;
 use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
 use Tests\Support\Fakes\AStackThatWasAsked;
 use Tests\Support\Fakes\StacksInMemory;
@@ -49,12 +50,13 @@ final readonly class TheHealthScreenOfTheLoft
         ?AKeychainInMemory $keychain = null,
         ?string $named = null,
         ?AStackThatSaysHowItRunsWithout $without = null,
+        ?AStackThatCopies $running = null,
     ): HowThisStackIs {
         $stack = self::theStackBeingLookedAt();
         $keychain ??= AKeychainInMemory::working();
         $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
 
-        $screen = new HowThisStackIs($asking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(), $without ?? AStackThatSaysHowItRunsWithout::bundled());
+        $screen = new HowThisStackIs($asking, $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), AroundThePhone::listening(copying: $running), $without ?? AStackThatSaysHowItRunsWithout::bundled());
         $screen->setParams(['stack' => $named ?? $stack->id()->stored()]);
 
         return $screen;

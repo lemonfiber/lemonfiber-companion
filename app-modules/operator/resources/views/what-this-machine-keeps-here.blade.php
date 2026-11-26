@@ -1,4 +1,5 @@
 @use('Modules\Kernel\Api\ForgettingWhatIsKept')
+@use('Modules\Operator\Internal\Presenters\HowTheCopyRunningReads')
 @use('Modules\Stacks\Api\AStacksScreen')
 <x-wayfinding::stack-opens :back="$this->hasAWayBack()" :title="$this->stack()->name()->shown()" :stacks="$this->stacksToChooseFrom()" :choosing="$this->choosingAStack" />
 
@@ -36,6 +37,11 @@
             <x-design::row :headline="__('stacks.keeps.nothing_beside')" />
         @endforelse
     </x-design::section>
+
+    @if (! $this->copiesAreBeingRead() && ($copy = $this->theCopyRunning()) !== null && $copy->said !== HowTheCopyRunningReads::NONE)
+        <x-operator::a-copy-running :copy="$copy" />
+        <x-operator::quiet-action :label="__('navigation.menu.copies_run')" :goes="$this->goes()->to(AStacksScreen::CopiesRun)" />
+    @endif
 
     @if ($this->copiesAreBeingRead())
         {{-- This frame read what the machine keeps, so the copies are read on
@@ -178,6 +184,10 @@
         :went="$this->answer()->went"
         :goes="$this->goes()"
     />
+@endif
+
+@if ($this->waitsForTheNextFrame() && ! $this->copiesAreBeingRead())
+    <x-design::the-next-frame />
 @endif
 
 <x-operator::screen-closes :goes="$this->goes()" :here="$this->itsTab()" :marks="$this->marks()" />

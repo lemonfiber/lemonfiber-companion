@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Modules\Operator\Internal\Presenters;
 
+use function intdiv;
+use function min;
+
 use Modules\Design\View\Tone;
 use Modules\Health\Api\WhatAStreamSaidSoFar;
 use Modules\Kernel\Api\ACopyRunning;
@@ -35,6 +38,10 @@ final readonly class HowTheCopyRunningReads
 
     private const string STALLED = 'stacks.copy.running.stalled.%s';
 
+    private const string STARTED = 'stacks.copy.running.started.%s';
+
+    private const int ALL_WRITTEN = 100;
+
     /**
      * What the screen has heard, as it stands at the frame's moment.
      *
@@ -54,15 +61,21 @@ final readonly class HowTheCopyRunningReads
 
     private function running(ACopyRunning $running, Instant $now): ACopyRunningAsShown
     {
+        $started = HowLongAgo::since($running->started, $now);
         $shown = static fn(string $moves, Tone $tone, ?ASizeAsShown $limit = null, int $count = 0): ACopyRunningAsShown => new ACopyRunningAsShown(
             said: $running->what->saidOnTheScreen(),
             tone: $tone->value,
+            scope: new HowAScopeReads()->of($running->scope),
             written: self::size($running->written),
             whole: self::size($running->whole),
             part: $running->part,
             moves: $moves,
             limit: $limit,
             count: $count,
+            started: sprintf(self::STARTED, $started->value),
+            since: $started->howManySince($running->started, $now),
+            done: self::done($running),
+            percent: $running->whole > 0 ? intdiv(min($running->written, $running->whole) * self::ALL_WRITTEN, $running->whole) : null,
         );
 
         return $running->moves->either(
@@ -74,6 +87,11 @@ final readonly class HowTheCopyRunningReads
                 return $shown(sprintf(self::STALLED, $since->value), Tone::Trouble, count: $since->howManySince($wrote, $now));
             },
         );
+    }
+
+    private static function done(ACopyRunning $running): float
+    {
+        return $running->whole > 0 ? min(1.0, $running->written / $running->whole) : 0.0;
     }
 
     private static function size(int $bytes): ASizeAsShown

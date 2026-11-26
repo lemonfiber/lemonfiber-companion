@@ -9,10 +9,8 @@ use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Kernel\Api\ACopy;
 use Modules\Kernel\Api\ACopyPutBack;
 use Modules\Kernel\Api\ARefusalInItsWords;
-use Modules\Kernel\Api\Capture;
 use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\FollowingTheCopyRunning;
 use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
@@ -112,10 +110,8 @@ final class PuttingACopyBack extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheWayAround $around,
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
-        protected readonly Clock $clock,
+        private readonly Clock $clock,
         protected readonly HearingTheJobs $hearingTheJobs,
-        protected readonly FollowingTheCopyRunning $followingTheCopy,
-        protected readonly Capture $capture,
     ) {}
 
     /** The copy this screen is about, by the name the route carries. */

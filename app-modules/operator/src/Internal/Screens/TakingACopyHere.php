@@ -8,10 +8,7 @@ use Illuminate\View\View;
 use Modules\Design\Api\WritesItsTaps;
 use Modules\Kernel\Api\ACopyAsked;
 use Modules\Kernel\Api\ACopyTaken;
-use Modules\Kernel\Api\Capture;
-use Modules\Kernel\Api\Clock;
 use Modules\Kernel\Api\Concealed;
-use Modules\Kernel\Api\FollowingTheCopyRunning;
 use Modules\Kernel\Api\HearingTheJobs;
 use Modules\Kernel\Api\ItsContent;
 use Modules\Kernel\Api\Job;
@@ -97,9 +94,6 @@ final class TakingACopyHere extends NativeComponent implements AwaitsAnOutcome
         protected readonly TheAppsSettings $settings,
         protected readonly WhatItListensWith $listening,
         protected readonly HearingTheJobs $hearingTheJobs,
-        protected readonly FollowingTheCopyRunning $followingTheCopy,
-        protected readonly Clock $clock,
-        protected readonly Capture $capture,
     ) {}
 
     /** The services a copy can be narrowed to, asked once per frame. */

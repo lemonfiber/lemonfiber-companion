@@ -20,6 +20,7 @@ use Modules\Kernel\Api\TheCopies;
 use Modules\Kernel\Api\WhatItShowsDoes;
 use Modules\Kernel\Api\WhatThisMachineKeeps;
 use Modules\Operator\Internal\AwaitsAnOutcome;
+use Modules\Operator\Internal\FollowsTheCopyRunning;
 use Modules\Operator\Internal\ForgetsWhatIsKept;
 use Modules\Operator\Internal\LooksAgainWhileOpen;
 use Modules\Operator\Internal\OffersTheAppsSettings;
@@ -27,7 +28,6 @@ use Modules\Operator\Internal\Presenters\HowWhatIsKeptReads;
 use Modules\Operator\Internal\ViewModels\TheCopiesAsFound;
 use Modules\Operator\Internal\ViewModels\WhatIsKeptTurnedOutToBe;
 use Modules\Wayfinding\Api\Screens\AsksTheStackAgain;
-use Modules\Wayfinding\Api\Screens\ReadsAStackOnceAFrame;
 use Modules\Wayfinding\Api\TheWayAround;
 use Modules\Wayfinding\Api\WhatItListensWith;
 use Native\Mobile\Attributes\Lazy;
@@ -43,12 +43,14 @@ use function view;
  * reads carries a value. What is on the machine and is not the stack's is
  * listed beside it.
  *
- * **Two readings, one a frame.** What the stack keeps is asked first, and an
+ * **Three readings, one a frame.** What the stack keeps is asked first, and an
  * obstacle there is the screen's obstacle, as on every other screen. A frame
  * reads a stack once, so the copies are asked on the frame after, and the
  * first frame says they are being read and asks for the next one at once.
  * A list that could not be read is drawn as its own sentence, never as an
- * empty list.
+ * empty list. The backup or restore running is read on the frame after the
+ * copies, drawn above them, and followed on the stream through
+ * {@see FollowsTheCopyRunning}; where none runs, nothing is drawn of it.
  *
  * **It reads and changes nothing.** Taking a copy and putting one back each
  * open a screen of their own, {@see TakingACopyHere} and
@@ -66,7 +68,7 @@ final class WhatThisMachineKeepsHere extends NativeComponent implements AwaitsAn
     use LooksAgainWhileOpen;
     use OffersTheAppsSettings;
     use LetsGoOfARefusedSession;
-    use ReadsAStackOnceAFrame;
+    use FollowsTheCopyRunning;
     use ForgetsWhatIsKept, FindsItsWayAround {
         ForgetsWhatIsKept::letGoOfWhatElseItHears insteadof FindsItsWayAround;
     }
@@ -92,7 +94,7 @@ final class WhatThisMachineKeepsHere extends NativeComponent implements AwaitsAn
         protected readonly HearingTheJobs $hearingTheJobs,
     ) {}
 
-    /** Ask the machine again, both readings. */
+    /** Ask the machine again, both readings; the copy running is followed on the stream already. */
     public function again(): void
     {
         $this->answered = null;
@@ -141,6 +143,12 @@ final class WhatThisMachineKeepsHere extends NativeComponent implements AwaitsAn
             held: fn(Session $session): TheCopiesAsFound => $this->copiesOn($stack, $session),
             notHeld: static fn(): TheCopiesAsFound => new HowWhatIsKeptReads()->copiesSignedOut(),
         );
+    }
+
+    protected function letGoOfWhatElseItHears(): void
+    {
+        $this->hearingTheJobs->letGo();
+        $this->letGoOfTheCopy();
     }
 
     /** Resume the session, ask the machine, and flatten what came back. */

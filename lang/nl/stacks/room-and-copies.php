@@ -155,13 +155,20 @@ return [
         'see_the_copies' => 'Bekijk de kopieën',
         'running' => [
             'what' => [
-                'backup' => 'Er wordt een kopie gemaakt',
-                'restore' => 'Er wordt een kopie teruggezet',
+                'backup' => 'Er wordt een kopie gemaakt van :scope',
+                'restore' => 'Er wordt een kopie teruggezet van :scope',
             ],
             'none' => 'Er wordt geen kopie gemaakt of teruggezet',
             'cannot_tell' => 'De stack zegt niet of er een kopie loopt of hoe die gaat, dus dit is niet te zeggen',
             'written' => ':written :written_unit van :whole :whole_unit geschreven',
             'part' => 'Schrijft nu :part',
+            'so_far' => ':percent% geschreven. :moves',
+            'see_it' => 'Bekijk het bij Back-ups',
+            'started' => [
+                'minutes' => '{0} Minder dan een minuut geleden begonnen|{1} Een minuut geleden begonnen|[2,*] :count minuten geleden begonnen',
+                'hours' => '{1} Een uur geleden begonnen|[2,*] :count uur geleden begonnen',
+                'days' => '{1} Een dag geleden begonnen|[2,*] :count dagen geleden begonnen',
+            ],
             'working' => 'Schrijft zo snel als hij kan',
             'paced' => 'Met opzet afgeremd, tot hoogstens :limit :limit_unit per seconde, zoals jouw limiet zegt',
             'stalled' => [
