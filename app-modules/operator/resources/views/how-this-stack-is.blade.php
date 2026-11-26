@@ -4,7 +4,7 @@
 @if ($this->answer()->went->cameBack())
 <x-operator::content>
     @if ($this->someAlertsMayBeMissing)
-        <x-design::notice tone="attention">
+        <x-design::notice tone="quiet">
             <x-design::body>{{ __('health.alerts_may_be_missing') }}</x-design::body>
         </x-design::notice>
     @endif
@@ -243,7 +243,7 @@
 </x-operator::content>
 @elseif ($this->someAlertsMayBeMissing)
 <x-operator::content>
-    <x-design::notice tone="attention">
+    <x-design::notice tone="quiet">
         <x-design::body>{{ __('health.alerts_may_be_missing') }}</x-design::body>
     </x-design::notice>
 

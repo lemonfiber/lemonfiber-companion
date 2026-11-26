@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Modules\Design\View\Tone;
 use Modules\Health\Api\AlertsThatMayBeMissing;
 use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnAlert;
@@ -31,9 +32,11 @@ use Modules\Kernel\Api\WhatWasHeard;
 use Modules\Kernel\Api\WhichWayItWent;
 use Modules\Kernel\Api\Whose;
 use Modules\Operator\Internal\Screens\HowThisStackIs;
+use Modules\Operator\Internal\Screens\WhatWouldBePutRight;
 use Modules\Wayfinding\Api\HearingEachStack;
 use Modules\Wayfinding\Api\WhatEachStackSaidSoFar;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Fakes\AJobThatSays;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\ANotifierInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
@@ -41,6 +44,7 @@ use Tests\Support\Fakes\ASealInMemory;
 use Tests\Support\Fakes\AStackThatSaysHowItRunsWithout;
 use Tests\Support\Fakes\AStackThatSpeaksUp;
 use Tests\Support\Fakes\AStackThatWasAsked;
+use Tests\Support\Fakes\AStackThatWouldMend;
 use Tests\Support\Fakes\FrozenClock;
 use Tests\Support\Fakes\MissingAlertsInMemory;
 use Tests\Support\Fakes\StacksInMemory;
@@ -136,18 +140,34 @@ it('says some alerts may be missing beside what stopped the screen reading the s
         ->and($drawn)->toContain(__(KindOfObstacle::StackDidNotAnswer->said()));
 });
 
-it('neither marks a stack nor tells of it where its screen resumes a stream in front of the operator, whatever the stream says of its replay', function (): void {
+it('says it at once on the open screen whose stream resumes without vouching for every alert, telling only the alerts it handed back', function (): void {
     $missing = whatRemembersTheCellar(marked: false);
     $notifier = ANotifierInMemory::allowed();
     $screen = theCellarOpened($missing, stream: aResumedStreamThatSaysNothingOfItsReplay(), notifier: $notifier);
-    WhatTheDeviceWouldDraw::by($screen);
 
-    expect($missing->keepsAnythingOf(theStackAWakeMayHaveMarked()->id()))->toBeFalse()
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(__('health.alerts_may_be_missing'))
+        ->and($screen->someAlertsMayBeMissing)->toBeTrue()
+        ->and($missing->keepsAnythingOf(theStackAWakeMayHaveMarked()->id()))->toBeFalse()
         ->and($notifier->told())->toHaveCount(1)
         ->and($notifier->told()[0])->toContain('disk.full');
 });
 
-it('neither marks a stack nor tells of it where the list of stacks resumes its stream, whatever the stream says of its replay', function (): void {
+it('says nothing of missing alerts on the open screen whose stream resumes vouching for every one', function (): void {
+    $missing = whatRemembersTheCellar(marked: false);
+    $screen = theCellarOpened($missing, stream: AStackThatSpeaksUp::holdingOpen(WhatWasHeard::said(TheHealthSummary::of(HowItStands::Healthy, 0, '', WhatStoppedMoving::nothing()))));
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('health.alerts_may_be_missing'))
+        ->and($missing->keepsAnythingOf(theStackAWakeMayHaveMarked()->id()))->toBeFalse();
+});
+
+it('draws the line calm, as a note about what the phone heard rather than about the stack', function (): void {
+    $notice = WhatTheDeviceWouldDraw::tree(theCellarOpened(whatRemembersTheCellar(marked: true)));
+
+    expect((string) json_encode($notice))->toContain((string) json_encode(Tone::Quiet->glyph()))
+        ->and((string) json_encode($notice))->not->toContain((string) json_encode(Tone::Attention->glyph()));
+});
+
+it('marks the stack without telling of it where the list of stacks resumes its stream without vouching for every alert', function (): void {
     $stack = theStackAWakeMayHaveMarked();
     $keychain = AKeychainInMemory::working();
     $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
@@ -157,7 +177,24 @@ it('neither marks a stack nor tells of it where the list of stacks resumes its s
     new HearingEachStack(AroundThePhone::listening(aResumedStreamThatSaysNothingOfItsReplay(), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_MARKED_STACK_WAS_OPENED)), notifier: $notifier, missing: $missing), $keychain)
         ->after(WhatEachStackSaidSoFar::nothingYet(), $stack);
 
-    expect($missing->keepsAnythingOf($stack->id()))->toBeFalse()
+    expect($missing->keepsAnythingOf($stack->id()))->toBeTrue()
         ->and($notifier->told())->toHaveCount(1)
         ->and($notifier->told()[0])->toContain('disk.full');
+});
+
+it('marks the stack from another of its screens whose stream resumes without vouching for every alert, saying nothing of it there', function (): void {
+    $stack = theStackAWakeMayHaveMarked();
+    $keychain = AKeychainInMemory::working();
+    $keychain->keep($stack->id(), Session::of('a-session-not-a-secret'), Whose::theOperator());
+    $missing = whatRemembersTheCellar(marked: false);
+    $notifier = ANotifierInMemory::allowed();
+    $listening = AroundThePhone::listening(aResumedStreamThatSaysNothingOfItsReplay(), FrozenClock::at(Instant::atEpochSeconds(WHEN_THE_MARKED_STACK_WAS_OPENED)), notifier: $notifier, missing: $missing);
+    $screen = new WhatWouldBePutRight(AStackThatWouldMend::met(Obstacle::of(KindOfObstacle::StackDidNotAnswer)), $keychain, AroundThePhone::holding(StacksInMemory::holding($stack)), new AppsSettingsThatOpen(), $listening, AJobThatSays::nothing());
+    $screen->setParams(['stack' => $stack->id()->stored()]);
+    $screen->listen();
+
+    expect($missing->keepsAnythingOf($stack->id()))->toBeTrue()
+        ->and(WhatTheDeviceWouldDraw::by($screen)->said())->not->toContain(__('health.alerts_may_be_missing'))
+        ->and($notifier->told())->toHaveCount(1)
+        ->and(WhatTheDeviceWouldDraw::by(theCellarOpened($missing))->said())->toContain(__('health.alerts_may_be_missing'));
 });

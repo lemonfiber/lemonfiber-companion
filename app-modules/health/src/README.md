@@ -21,7 +21,7 @@ And two decisions about what the phone keeps of it between launches:
 | | |
 |---|---|
 | `KeepingTheLastReading` | The newest summary per stack, sealed before it is kept, handed back on opening with when it was read, and let go of where it does not read |
-| `AlertsThatMayBeMissing` | Which stacks a wake heard from may not have handed back every alert they raised, marked until the operator opens the stack's health screen |
+| `AlertsThatMayBeMissing` | Which stacks a resumed stream heard from may not have handed back every alert they raised, marked until the operator opens the stack's health screen |
 
 It depends on `kernel`, and on Laravel's database in its store alone. The
 report is read by `Questions` in `sdk`, and the repairs a stack offers are asked

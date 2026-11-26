@@ -117,6 +117,11 @@ trait HoldsItsStacksStream
 
         $stack = $this->stack();
         $thisWake = $this->heardFrom($stack, $now);
+
+        if ($thisWake->mayBeMissingAlerts()) {
+            $this->heardSomeAlertsMayBeMissing();
+        }
+
         $this->noticeTheNewest($thisWake, $stack);
         $this->handOnWhatAnswersWhat($thisWake);
         $this->handOnTheSettings($thisWake);
@@ -193,6 +198,14 @@ trait HoldsItsStacksStream
      * walk or a start says otherwise, through the trait that holds it.
      */
     protected function letGoOfWhatElseItHears(): void {}
+
+    /**
+     * The stream resumed without vouching for every alert it handed back, and has marked the stack.
+     *
+     * Nothing more, for a screen that does not say so. The stack's health
+     * screen says it at once, and sees the mark.
+     */
+    protected function heardSomeAlertsMayBeMissing(): void {}
 
     /** Let go of what the list of stacks the top bar's name opens holds, which {@see Screens\ChoosesAStack} does. */
     abstract private function letTheListOfStacksGo(): void;

@@ -15,11 +15,12 @@ use Modules\Kernel\Api\SealStanding;
 use Modules\Kernel\Api\StackId;
 
 /**
- * The stacks a wake heard from that may not have handed back every alert they raised, until the operator opens one.
+ * The stacks a resumed stream heard from that may not have handed back every alert they raised, until the operator opens one.
  *
  * Marked where a stack said its replay was `partial`, or said nothing of it,
- * and kept on the phone, named by the stack's keyed hash, so a mark made while
- * the app was away is there when it opens. Opening the stack's health screen
+ * on a wake or on a stream resumed while the app is open, and kept on the
+ * phone, named by the stack's keyed hash, so a mark made while the app was
+ * away is there when it opens. Opening the stack's health screen
  * sees the mark, and seeing it clears it.
  */
 final readonly class AlertsThatMayBeMissing implements ForgetsAStack

@@ -11,7 +11,6 @@ use Modules\Connection\Api\LetsGoOfARefusedSession;
 use Modules\Connection\Api\TurningNotificationsOn;
 use Modules\Kernel\Api\Hearing;
 use Modules\Kernel\Api\HowLongEachReadWaits;
-use Modules\Kernel\Api\Instant;
 use Modules\Kernel\Api\Notification;
 use Modules\Kernel\Api\Notifying;
 use Modules\Kernel\Api\Obstacle;
@@ -43,10 +42,11 @@ use Modules\Wayfinding\Internal\TheStacksToHear;
  *
  * **Where a stack may not have handed back every alert, it says so once.**
  * A stack whose resumed stream says its replay is `partial`, or says nothing
- * of it, is marked, so its health screen says some alerts may be missing until
- * it is opened, and the operator is told so in one notification of the app's
- * own, before the alerts it did hand back, where the operator lets that reach
- * the phone for the stack.
+ * of it, is marked as {@see WhatItListensWith::kept()} marks one, and the
+ * operator is told so in one notification of the app's own, before the alerts
+ * it did hand back, where the operator lets that reach the phone for the
+ * stack. A stream resumed in front of the operator marks the stack and tells
+ * nothing of it.
  *
  * **Only while notifications are on, and only while the app is away.** A wake
  * with them off, or with the operator's choice unreadable on a locked phone,
@@ -170,7 +170,7 @@ final readonly class HearingWhileAway
     private function saidAll(Stack $stack, Session $session): bool
     {
         $now = $this->with->clock->now();
-        $heard = $this->with->kept($this->toldWhatMayBeMissing($this->hearing->howItIs($stack, $session), $stack, $now), $stack, $session, $now);
+        $heard = $this->with->kept($this->toldWhatMayBeMissing($this->hearing->howItIs($stack, $session), $stack), $stack, $session, $now);
 
         return $heard->either(
             nothing: static fn(): HowFarItGot => HowFarItGot::StillSpeaking,
@@ -185,11 +185,10 @@ final readonly class HearingWhileAway
         ) === HowFarItGot::HeardOut;
     }
 
-    /** What was heard, the stack marked and the operator told once where some of its alerts may be missing. */
-    private function toldWhatMayBeMissing(WhatWasHeard $heard, Stack $stack, Instant $now): WhatWasHeard
+    /** What was heard, the operator told once where some of its alerts may be missing. */
+    private function toldWhatMayBeMissing(WhatWasHeard $heard, Stack $stack): WhatWasHeard
     {
         if ($heard->mayBeMissingAlerts()) {
-            $this->with->missing->mayBeMissingFrom($stack->id(), $now);
             $this->with->notifier->show(Notification::someMayBeMissing($stack, WhereATapLeads::to(AStacksScreen::Health->forTheStack($stack->id()))));
         }
 

@@ -30,7 +30,8 @@ use Modules\Stacks\Api\AStacksScreen;
  * where what was heard is kept, what answers how much is new by it, where
  * the alerts it carried are told to the operator, whether the stack is
  * owed the removal of this phone's endpoint, which stacks may be missing
- * alerts from what a wake heard, and what hears the backup or restore running.
+ * alerts from what a resumed stream heard, and what hears the backup or
+ * restore running.
  *
  * The traits that hold a stream are where they are used, and a screen is where
  * they arrive, so the screen is handed them in one value and a trait holding a
@@ -55,6 +56,10 @@ final readonly class WhatItListensWith
     /**
      * Tell the operator each alert the stack raised, keep what a summary said, and hand back what was heard.
      *
+     * A resumed stream that could not vouch for every alert it handed back
+     * marks the stack, so its health screen says some may be missing, whether
+     * a wake heard it or a screen in front of the operator did.
+     *
      * A summary is a read of the stack that came back, so a removal of this
      * phone's endpoint owed to it is sent then.
      *
@@ -70,6 +75,10 @@ final readonly class WhatItListensWith
      */
     public function kept(WhatWasHeard $heard, Stack $stack, Session $session, Instant $now): WhatWasHeard
     {
+        if ($heard->mayBeMissingAlerts()) {
+            $this->missing->mayBeMissingFrom($stack->id(), $now);
+        }
+
         foreach ($heard->theAlerts() as $alert) {
             $this->notifier->show(Notification::ofAnAlert($stack, $alert, WhereATapLeads::to(AStacksScreen::Health->forTheStack($stack->id()))));
         }
