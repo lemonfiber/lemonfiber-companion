@@ -15,6 +15,7 @@ use Lemonfiber\Sdk\Generated\InvitationEnvelope;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationToHand;
+use Modules\Kernel\Api\HowTheHouseholdAsks;
 use Modules\Kernel\Api\TheLibraries;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
 use Modules\Kernel\Api\WhatWasGranted;
@@ -37,6 +38,8 @@ use Modules\Sdk\Internal\Wire;
  * made nothing is never read as an account that exists. **What was granted is
  * read only where it was sent**: absent is an offer that wrote nothing about
  * access, which the kernel keeps apart from one that wrote no restrictions.
+ * **What they ask for is held to a policy only where the stack names one**:
+ * absent is no request service holding them, never a policy.
  */
 final readonly class Invitations
 {
@@ -182,13 +185,24 @@ final readonly class Invitations
             $limit = self::under($applied, WireField::Limit);
         }
 
-        return WhatWasGranted::granted(
+        $granted = WhatWasGranted::granted(
             TheLibraries::of(...self::libraries($applied)),
             WhatBecomesOfUnrated::tryFrom($unrated)
                 ?? throw InvitationIsUnreadable::word(InvitationField::Unrated, $unrated, ...array_map(static fn(WhatBecomesOfUnrated $case): string => $case->value, WhatBecomesOfUnrated::cases())),
             self::linked(self::under($applied, InvitationField::Requesting), InvitationField::Requesting),
             self::under($applied, InvitationField::Filtering),
             $limit,
+        );
+
+        if (! array_key_exists(InvitationField::Asking->value, $applied) || $applied[InvitationField::Asking->value] === null) {
+            return $granted;
+        }
+
+        $asking = self::under($applied, InvitationField::Asking);
+
+        return $granted->holdingTheirAskingTo(
+            HowTheHouseholdAsks::tryFrom($asking)
+                ?? throw InvitationIsUnreadable::word(InvitationField::Asking, $asking, ...array_map(static fn(HowTheHouseholdAsks $case): string => $case->value, HowTheHouseholdAsks::cases())),
         );
     }
 

@@ -10,19 +10,20 @@ use Modules\Kernel\Api\ASettingChange;
 use Modules\Kernel\Api\ASettingMove;
 use Modules\Kernel\Api\ASettingValue;
 use Modules\Kernel\Api\TheSettingMoves;
+use Modules\Kernel\Api\WhatASettingFallsBackTo;
 
 use function sprintf;
 
 /** A change to settings, as the stack reports it moved and as a test reads back what was asked. */
 final readonly class ASettingChangeAsReported
 {
-    /** Each setting the change moves, from what it held to what the change asks, each at this cost. */
-    public static function moves(ASettingChange $change, ASettingValue $was, string $consequence = ''): TheSettingMoves
+    /** Each setting the change moves, from what it held to what the change asks, each falling back to this default, where nothing declares one unless named, at this cost. */
+    public static function moves(ASettingChange $change, ASettingValue $was, string $consequence = '', ?WhatASettingFallsBackTo $default = null): TheSettingMoves
     {
         $moves = [];
 
         foreach ($change as $setting => $value) {
-            $moves[] = ASettingMove::said($setting, $was, $value, $consequence);
+            $moves[] = ASettingMove::said($setting, $was, $value, $default ?? WhatASettingFallsBackTo::nothing(), $consequence);
         }
 
         return TheSettingMoves::these(...$moves);

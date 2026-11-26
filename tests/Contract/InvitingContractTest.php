@@ -10,6 +10,7 @@ use Modules\Kernel\Api\AnInvitationAgreed;
 use Modules\Kernel\Api\AnInvitationAskedFor;
 use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowTheHouseholdAsks;
 use Modules\Kernel\Api\Inviting;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
@@ -68,7 +69,7 @@ function theSameInvitation(): AnInvitation
         WhetherTheyCanAsk::NotYet,
         WhoWasTakenBack::of('bob'),
         WhoWasSwitchedOff::of(),
-    )->granting(WhatWasGranted::granted(TheLibraries::of('Films'), WhatBecomesOfUnrated::HeldBack, WhetherTheyCanAsk::NotYet, 'A limit is not a lock', 'PG-13'));
+    )->granting(WhatWasGranted::granted(TheLibraries::of('Films'), WhatBecomesOfUnrated::HeldBack, WhetherTheyCanAsk::NotYet, 'A limit is not a lock', 'PG-13')->holdingTheirAskingTo(HowTheHouseholdAsks::EverythingWaits));
 }
 
 /**
@@ -91,7 +92,7 @@ function whatAStackSaysOfTheInvitation(): array
             'standing' => 'made',
             'suspended' => [],
             'withdrawn' => ['bob'],
-            'applied' => ['libraries' => ['Films'], 'limit' => 'PG-13', 'unrated' => 'held-back', 'requesting' => 'not-yet', 'filtering' => 'A limit is not a lock'],
+            'applied' => ['libraries' => ['Films'], 'limit' => 'PG-13', 'unrated' => 'held-back', 'requesting' => 'not-yet', 'asking' => 'everything-waits', 'filtering' => 'A limit is not a lock'],
         ],
     ];
 }
@@ -141,7 +142,7 @@ function everythingTheInvitingSays(WhatBecameOfTheInvitation $became): string
                 $invitation->wasRehearsed() ? 'rehearsed' : 'carried out',
                 implode(',', $withdrawn),
                 $invitation->granted(
-                    these: static fn(WhatWasGranted $granted): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s %s %s', $granted->limit(), $granted->unrated()->value, $granted->filtering())),
+                    these: static fn(WhatWasGranted $granted): TheWordCarriedOut => new TheWordCarriedOut(sprintf('%s %s %s %s', $granted->limit(), $granted->unrated()->value, $granted->asking(heldTo: static fn(HowTheHouseholdAsks $policy): TheWordCarriedOut => new TheWordCarriedOut($policy->value), untold: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no policy told'))->said, $granted->filtering())),
                     nothing: static fn(): TheWordCarriedOut => new TheWordCarriedOut('nothing'),
                 )->said,
             ));
@@ -162,7 +163,7 @@ it('takes a password off, and follows the work to the invitation to hand over', 
         $finished = $inviting->whatBecameOf(aStackToInviteSomebodyTo(), Session::of('a-session-not-a-secret'), Job::named('j-1'));
 
         expect(everythingTheInvitingSays($started))->toBe('underway j-1', $which)
-            ->and(everythingTheInvitingSays($finished))->toBe('anna|http://192.168.1.42:8096|The number can change|72|made|not-yet|carried out|bob|PG-13 held-back A limit is not a lock', $which);
+            ->and(everythingTheInvitingSays($finished))->toBe('anna|http://192.168.1.42:8096|The number can change|72|made|not-yet|carried out|bob|PG-13 held-back everything-waits A limit is not a lock', $which);
     }
 });
 

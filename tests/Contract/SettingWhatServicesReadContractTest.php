@@ -36,10 +36,12 @@ use Modules\Kernel\Api\TheSettingMoves;
 use Modules\Kernel\Api\TheSettingsRead;
 use Modules\Kernel\Api\WhatAChoiceNeeds;
 use Modules\Kernel\Api\WhatAServiceWaitsFor;
+use Modules\Kernel\Api\WhatASettingFallsBackTo;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheChangeReaches;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
 use Modules\Kernel\Api\WhatWasFoundOfTheSettings;
+use Modules\Kernel\Api\WhereADefaultComesFrom;
 use Modules\Kernel\Api\WhereASecretCameFrom;
 use Modules\Kernel\Api\WhoseASettingIs;
 use Modules\Sdk\Api\PinnedClients;
@@ -123,7 +125,7 @@ function whatAStackSaysOfAChangeToASetting(array $change = [], array $changed = 
     return whatAStackSaysOfItsSettings([
         'rehearsed' => true,
         'change' => [
-            'settings' => [['setting' => 'vpn.countries', 'value' => 'Germany', 'was' => 'Belgium']],
+            'settings' => [['setting' => 'vpn.countries', 'value' => 'Germany', 'was' => 'Belgium', 'default' => ['of' => 'declared', 'value' => 'Netherlands']]],
             'regenerates' => ['gluetun'],
             'restarts' => ['gluetun', 'qbittorrent'],
             'starts' => [],
@@ -162,7 +164,7 @@ function theSameSettingsTheServicesRead(): TheServicesSettings
 function theSameRehearsalOfASetting(): TheSettingAsChanged
 {
     return TheSettingAsChanged::said(
-        ASettingChangeAsReported::moves(ASettingChange::toHold('vpn.countries', 'Germany'), ASettingValue::value('Belgium')),
+        ASettingChangeAsReported::moves(ASettingChange::toHold('vpn.countries', 'Germany'), ASettingValue::value('Belgium'), default: WhatASettingFallsBackTo::declared('Netherlands')),
         WhatTheChangeReaches::said(Services::these(ServiceId::called('gluetun')), Services::these(ServiceId::called('gluetun'), ServiceId::called('qbittorrent')), Services::none(), TheServicesWaiting::none(), ''),
         WhatTheSettingRunDid::Rehearsed,
         AnOffer::named('settings-set:vpn.countries:7'),
@@ -317,15 +319,27 @@ function theMovesSaid(TheSettingMoves $moves): string
 
     foreach ($moves as $move) {
         $said[] = sprintf(
-            '%s:%s>%s%s',
+            '%s:%s>%s(%s)%s',
             $move->setting(),
             $move->was()->isHeld() ? $move->was()->said() : 'default',
             $move->value()->isHeld() ? $move->value()->said() : 'default',
+            theDefaultSaid($move->fallsBackTo()),
             $move->consequence() === '' ? '' : sprintf('[%s]', $move->consequence()),
         );
     }
 
     return implode(',', $said);
+}
+
+/** What a moved setting falls back to, folded to one word or a list of readers. */
+function theDefaultSaid(WhatASettingFallsBackTo $default): string
+{
+    return sprintf(
+        '%s%s%s',
+        $default->from()->value,
+        $default->value()->isHeld() ? sprintf('=%s', $default->value()->said()) : '',
+        $default->from() === WhereADefaultComesFrom::EachReader ? sprintf(' %s', theReadersSaid($default->readers())) : '',
+    );
 }
 
 /** What reading came to, folded to one line. */
@@ -508,32 +522,52 @@ it('reads what the work came to, the rehearsal labelled as one with what it rege
 
     foreach ($ways as $which => $build) {
         expect(whatTheSettingChangeCameTo($build()->whatBecameOf(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith(), Job::named(AStackThatTunesItsSettings::THE_REHEARSAL))))
-            ->toBe('rehearsed|vpn.countries:Belgium>Germany|regenerates gluetun|restarts gluetun,qbittorrent|starts |waiting |settings-set:vpn.countries:7||3 settings', $which);
+            ->toBe('rehearsed|vpn.countries:Belgium>Germany(declared=Netherlands)|regenerates gluetun|restarts gluetun,qbittorrent|starts |waiting |settings-set:vpn.countries:7||3 settings', $which);
     }
 });
 
 it('reads a written change back to the default, with what it costs and why nothing restarted', function (): void {
     $written = aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfAChangeToASetting(
-        ['settings' => [['setting' => 'vpn.countries', 'value' => null, 'was' => null, 'consequence' => ' The tunnel drops for a moment ']], 'applied' => true, 'restarts' => [], 'unrestarted' => ' gluetun was stopped '],
+        ['settings' => [['setting' => 'vpn.countries', 'value' => null, 'was' => null, 'default' => ['of' => 'none'], 'consequence' => ' The tunnel drops for a moment ']], 'applied' => true, 'restarts' => [], 'unrestarted' => ' gluetun was stopped '],
         ['rehearsed' => false],
     ))));
 
     expect(whatTheSettingChangeCameTo($written->whatBecameOf(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith(), Job::named('a-job'))))
-        ->toBe('applied|vpn.countries:default>default[The tunnel drops for a moment]|regenerates gluetun|restarts |starts |waiting |settings-set:vpn.countries:7|gluetun was stopped|3 settings');
+        ->toBe('applied|vpn.countries:default>default(none)[The tunnel drops for a moment]|regenerates gluetun|restarts |starts |waiting |settings-set:vpn.countries:7|gluetun was stopped|3 settings');
 });
 
 it('reads every setting one change moves, each with what moving it costs, and the services it starts and leaves waiting', function (): void {
     $moved = aTunerAnswered(MockResponse::make((string) json_encode(whatAStackSaysOfAChangeToASetting([
         'settings' => [
-            ['setting' => 'vpn.provider', 'was' => 'mullvad', 'value' => 'pia', 'consequence' => 'The tunnel drops for a moment'],
-            ['setting' => 'vpn.type', 'was' => 'wireguard', 'value' => 'openvpn'],
+            ['setting' => 'vpn.provider', 'was' => 'mullvad', 'value' => 'pia', 'default' => ['of' => 'declared', 'value' => 'mullvad'], 'consequence' => 'The tunnel drops for a moment'],
+            ['setting' => 'vpn.type', 'was' => 'wireguard', 'value' => 'openvpn', 'default' => ['of' => 'core', 'value' => '']],
         ],
         'starts' => ['gluetun'],
         'waiting' => [['service' => 'qbittorrent', 'wants' => [['kind' => 'secret', 'secret' => 'vpn.user']]]],
     ]))));
 
     expect(whatTheSettingChangeCameTo($moved->whatBecameOf(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith(), Job::named('a-job'))))
-        ->toBe('rehearsed|vpn.provider:mullvad>pia[The tunnel drops for a moment],vpn.type:wireguard>openvpn|regenerates gluetun|restarts gluetun,qbittorrent|starts gluetun|waiting qbittorrent: secret vpn.user|settings-set:vpn.countries:7||3 settings');
+        ->toBe('rehearsed|vpn.provider:mullvad>pia(declared=mullvad)[The tunnel drops for a moment],vpn.type:wireguard>openvpn(core=)|regenerates gluetun|restarts gluetun,qbittorrent|starts gluetun|waiting qbittorrent: secret vpn.user|settings-set:vpn.countries:7||3 settings');
+});
+
+it('reads what each moved setting falls back to as the stack said it, by value, empty, each met reader\'s own, or none', function (): void {
+    $payload = whatAStackSaysOfAChangeToASetting([
+        'settings' => [
+            ['setting' => 'domain', 'was' => 'loft.example', 'value' => null, 'default' => ['of' => 'core', 'value' => 'home.arpa']],
+            ['setting' => 'vpn.countries', 'was' => null, 'value' => null, 'default' => ['of' => 'per-reader', 'readers' => [
+                ['service' => 'gluetun', 'variable' => 'SERVER_COUNTRIES', 'default' => 'Netherlands', 'met' => true],
+                ['service' => 'qbittorrent', 'variable' => 'COUNTRY', 'met' => false],
+                ['service' => 'sabnzbd', 'variable' => 'REGION', 'default' => null, 'met' => true],
+            ]]],
+            ['setting' => 'vpn.port', 'was' => '1194', 'value' => null, 'default' => ['of' => 'declared', 'value' => '']],
+            ['setting' => 'vpn.user', 'was' => 'anna', 'value' => null, 'default' => ['of' => 'none']],
+        ],
+    ]);
+    $moved = aTunerAnswered(MockResponse::make((string) json_encode($payload)));
+
+    expect(WhatTheContractAccepts::complaintsAbout('SettingsEnvelope', $payload))->toBe([])
+        ->and(whatTheSettingChangeCameTo($moved->whatBecameOf(aStackWhoseSettingsAreRead(), theSessionTheSettingsAreReadWith(), Job::named('a-job'))))
+        ->toStartWith('rehearsed|domain:loft.example>default(core=home.arpa),vpn.countries:default>default(per-reader gluetun:SERVER_COUNTRIES=Netherlands,sabnzbd:REGION),vpn.port:1194>default(declared=),vpn.user:anna>default(none)|');
 });
 
 it('reads a run that neither rehearsed nor wrote as one that wrote nothing', function (): void {
@@ -580,11 +614,21 @@ it('reads work that came back unreadable as an answer it could not read', functi
     'settings moved that are a word' => [['settings' => 'vpn.countries'], []],
     'settings moved keyed rather than listed' => [['settings' => ['first' => ['setting' => 'vpn.countries']]], []],
     'a move that is a word' => [['settings' => ['vpn.countries']], []],
-    'a move of no setting' => [['settings' => [['setting' => '']]], []],
-    'a move with a value that is not text' => [['settings' => [['setting' => 'vpn.countries', 'value' => 3]]], []],
-    'a move from what it was, as a list' => [['settings' => [['setting' => 'vpn.countries', 'was' => ['Belgium']]]], []],
-    'a move whose cost is not text' => [['settings' => [['setting' => 'vpn.countries', 'value' => 'Germany', 'consequence' => 7]]], []],
-    'moves both giving a value and putting one back' => [['settings' => [['setting' => 'vpn.countries', 'value' => 'Germany'], ['setting' => 'vpn.type', 'value' => null]]], []],
+    'a move of no setting' => [['settings' => [['setting' => '', 'default' => ['of' => 'none']]]], []],
+    'a move with a value that is not text' => [['settings' => [['setting' => 'vpn.countries', 'value' => 3, 'default' => ['of' => 'none']]]], []],
+    'a move from what it was, as a list' => [['settings' => [['setting' => 'vpn.countries', 'was' => ['Belgium'], 'default' => ['of' => 'none']]]], []],
+    'a move whose cost is not text' => [['settings' => [['setting' => 'vpn.countries', 'value' => 'Germany', 'default' => ['of' => 'none'], 'consequence' => 7]]], []],
+    'a move with no default' => [['settings' => [['setting' => 'vpn.countries', 'value' => 'Germany']]], []],
+    'a default that is a word' => [['settings' => [[...['setting' => 'vpn.countries', 'value' => 'Germany', 'default' => 'none']]]], []],
+    'a default from nowhere this app knows' => [['settings' => [[...['setting' => 'vpn.countries', 'value' => 'Germany', 'default' => ['of' => 'plugin', 'value' => 'Germany']]]]], []],
+    'a default with no word for where it comes from' => [['settings' => [[...['setting' => 'vpn.countries', 'value' => 'Germany', 'default' => ['value' => 'Germany']]]]], []],
+    'the core\'s default with no value' => [['settings' => [[...['setting' => 'vpn.countries', 'value' => 'Germany', 'default' => ['of' => 'core']]]]], []],
+    'a declared default whose value is not text' => [['settings' => [[...['setting' => 'vpn.countries', 'value' => 'Germany', 'default' => ['of' => 'declared', 'value' => 3]]]]], []],
+    'each reader\'s own with no readers' => [['settings' => [[...['setting' => 'vpn.countries', 'value' => 'Germany', 'default' => ['of' => 'per-reader']]]]], []],
+    'each reader\'s own with a reader that is a word' => [['settings' => [[...['setting' => 'vpn.countries', 'value' => 'Germany', 'default' => ['of' => 'per-reader', 'readers' => ['gluetun']]]]]], []],
+    'each reader\'s own with a reader not saying whether its needs are met' => [['settings' => [[...['setting' => 'vpn.countries', 'value' => 'Germany', 'default' => ['of' => 'per-reader', 'readers' => [['service' => 'gluetun', 'variable' => 'SERVER_COUNTRIES']]]]]]], []],
+    'each reader\'s own with a met reader of no variable' => [['settings' => [[...['setting' => 'vpn.countries', 'value' => 'Germany', 'default' => ['of' => 'per-reader', 'readers' => [['service' => 'gluetun', 'variable' => ' ', 'met' => true]]]]]]], []],
+    'moves both giving a value and putting one back' => [['settings' => [['setting' => 'vpn.countries', 'value' => 'Germany', 'default' => ['of' => 'none']], ['setting' => 'vpn.type', 'value' => null, 'default' => ['of' => 'none']]]], []],
     'no word on what it starts' => [['starts' => null], []],
     'no word on what it leaves waiting' => [['waiting' => null], []],
     'a service left waiting that is a word' => [['waiting' => ['gluetun']], []],

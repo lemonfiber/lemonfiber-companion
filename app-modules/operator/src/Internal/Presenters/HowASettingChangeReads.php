@@ -94,14 +94,7 @@ final readonly class HowASettingChangeReads
         $shown = [];
 
         foreach ($moves as $move) {
-            $shown[] = new ASettingMoveAsShown(
-                setting: $move->setting(),
-                toDefault: ! $move->value()->isHeld(),
-                value: $move->value()->said(),
-                wasSet: $move->was()->isHeld(),
-                was: $move->was()->said(),
-                consequence: $move->consequence(),
-            );
+            $shown[] = new HowASettingMoveReads()->moved($move);
         }
 
         return $shown;

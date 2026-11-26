@@ -11,15 +11,17 @@ use function is_string;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Lemonfiber\Sdk\Generated\SettingsEnvelope;
+use Modules\Kernel\Api\AServiceReadingIt;
 use Modules\Kernel\Api\ASettingValue;
 use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\Services;
+use Modules\Sdk\Api\Fields\SettingsField;
 use Modules\Sdk\Api\NamesAWireField;
 use Modules\Sdk\Api\SettingsAreUnreadable;
 use Modules\Sdk\Api\WireField;
 
 /**
- * What every reader of the `settings` envelope reads alike: the payload, a list, a value that may be none, and services named in a list.
+ * What every reader of the `settings` envelope reads alike: the payload, a list, a value that may be none, a service reading a setting, and services named in a list.
  */
 final readonly class SettingsRows
 {
@@ -71,6 +73,20 @@ final readonly class SettingsRows
         }
 
         return ASettingValue::value($row[$field->value]);
+    }
+
+    /** One service reading a setting or a secret: the service, the variable it reads it into, and the default it declares. */
+    public static function reader(mixed $reader, string $where): AServiceReadingIt
+    {
+        if (! is_array($reader)) {
+            throw SettingsAreUnreadable::missing($where);
+        }
+
+        return AServiceReadingIt::of(
+            ServiceId::called(Required::text($reader, WireField::Service, SettingsAreUnreadable::missing(APath::beneath($where, WireField::Service->value)))),
+            Required::text($reader, SettingsField::Variable, SettingsAreUnreadable::missing(APath::beneath($where, SettingsField::Variable->value))),
+            self::held($reader, SettingsField::Default, $where),
+        );
     }
 
     /**

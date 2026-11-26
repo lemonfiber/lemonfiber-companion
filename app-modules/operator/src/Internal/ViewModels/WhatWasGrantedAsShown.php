@@ -19,6 +19,7 @@ final readonly class WhatWasGrantedAsShown
      * @param string       $limit          how far up the ratings they may watch, in the media server's words, or empty where no limit was set
      * @param string       $unratedSaid    the catalogue key for what becomes of unrated material, or empty
      * @param string       $requestingSaid the catalogue key for whether the request service was held to it, or empty
+     * @param string       $askingSaid     the catalogue key for the policy what they ask for is held to, or for none told, or empty
      * @param string       $filtering      what a limit is and is not, in the stack's words, or empty
      */
     public function __construct(
@@ -27,12 +28,13 @@ final readonly class WhatWasGrantedAsShown
         public string $limit,
         public string $unratedSaid,
         public string $requestingSaid,
+        public string $askingSaid,
         public string $filtering,
     ) {}
 
     /** An invitation that wrote nothing about access. */
     public static function nothing(): self
     {
-        return new self(wroteNothing: true, libraries: [], limit: '', unratedSaid: '', requestingSaid: '', filtering: '');
+        return new self(wroteNothing: true, libraries: [], limit: '', unratedSaid: '', requestingSaid: '', askingSaid: '', filtering: '');
     }
 }

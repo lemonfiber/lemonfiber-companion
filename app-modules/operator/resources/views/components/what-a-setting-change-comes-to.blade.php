@@ -1,11 +1,15 @@
-{{-- What a change to the settings store comes to, as the stack reported it, rehearsed or written. --}}
+{{-- What a change to the settings store comes to, as the stack reported it, rehearsed or written, each setting with the default it falls back to. --}}
 <x-design::notice>
     <x-design::strong>{{ __($change->didSaid) }}</x-design::strong>
 </x-design::notice>
 <x-operator::guards-moved :guards="$change->guards" />
 @forelse ($change->moves as $move)
-    <x-design::body>{{ $move->toDefault ? __('plugins.settings.moves_to_default', ['setting' => $move->setting]) : __('plugins.settings.moves_to', ['setting' => $move->setting, 'value' => $move->value]) }}</x-design::body>
-    <x-design::note>{{ $move->wasSet ? __('plugins.settings.was', ['was' => $move->was]) : __('plugins.settings.was_default') }}</x-design::note>
+    <x-design::body>{{ __($move->moves->key, $move->moves->filling) }}</x-design::body>
+    @forelse ($move->readers as $reader)
+        <x-operator::a-service-reading-it :reader="$reader" />
+    @empty
+    @endforelse
+    <x-design::note>{{ __($move->was->key, $move->was->filling) }}</x-design::note>
     @if ($move->consequence !== '')
         <x-design::note>{{ __('plugins.settings.consequence', ['consequence' => $move->consequence]) }}</x-design::note>
     @endif

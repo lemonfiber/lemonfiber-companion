@@ -26,23 +26,25 @@ use Modules\Kernel\Api\TheServicesWaiting;
 use Modules\Kernel\Api\TheSettingAsChanged;
 use Modules\Kernel\Api\TheSettingMoves;
 use Modules\Kernel\Api\TheSettingsRead;
+use Modules\Kernel\Api\WhatASettingFallsBackTo;
 use Modules\Kernel\Api\WhatTheChangeReaches;
 use Modules\Kernel\Api\WhatTheSettingRunDid;
 
-it('holds each setting moved with what it held, what it is to hold, and what moving it costs, the spaces around them left off', function (): void {
-    $move = ASettingMove::said(' vpn.provider ', ASettingValue::value('mullvad'), ASettingValue::value('pia'), ' The tunnel drops for a moment ');
+it('holds each setting moved with what it held, what it is to hold, what it falls back to, and what moving it costs, the spaces around them left off', function (): void {
+    $default = WhatASettingFallsBackTo::declared('mullvad');
+    $move = ASettingMove::said(' vpn.provider ', ASettingValue::value('mullvad'), ASettingValue::value('pia'), $default, ' The tunnel drops for a moment ');
 
-    expect([$move->setting(), $move->was()->said(), $move->value()->said(), $move->consequence()])
-        ->toBe(['vpn.provider', 'mullvad', 'pia', 'The tunnel drops for a moment']);
+    expect([$move->setting(), $move->was()->said(), $move->value()->said(), $move->fallsBackTo(), $move->consequence()])
+        ->toBe(['vpn.provider', 'mullvad', 'pia', $default, 'The tunnel drops for a moment']);
 });
 
 it('refuses a move of a setting nobody named', function (): void {
-    expect(static fn(): ASettingMove => ASettingMove::said(' ', ASettingValue::nothing(), ASettingValue::nothing(), ''))->toThrow(SettingSaysNothing::class, '`setting`');
+    expect(static fn(): ASettingMove => ASettingMove::said(' ', ASettingValue::nothing(), ASettingValue::nothing(), WhatASettingFallsBackTo::nothing(), ''))->toThrow(SettingSaysNothing::class, '`setting`');
 });
 
 it('is the change that gives each setting its value, in the order the stack listed them', function (): void {
-    $provider = ASettingMove::said('vpn.provider', ASettingValue::value('mullvad'), ASettingValue::value('pia'), '');
-    $type = ASettingMove::said('vpn.type', ASettingValue::nothing(), ASettingValue::value('openvpn'), '');
+    $provider = ASettingMove::said('vpn.provider', ASettingValue::value('mullvad'), ASettingValue::value('pia'), WhatASettingFallsBackTo::nothing(), '');
+    $type = ASettingMove::said('vpn.type', ASettingValue::nothing(), ASettingValue::value('openvpn'), WhatASettingFallsBackTo::nothing(), '');
     $moves = TheSettingMoves::these($provider, $type);
 
     expect(iterator_to_array($moves, preserve_keys: false))->toBe([$provider, $type])
@@ -52,8 +54,8 @@ it('is the change that gives each setting its value, in the order the stack list
 
 it('is the change that puts each setting back where every one goes back to its default', function (): void {
     $moves = TheSettingMoves::these(
-        ASettingMove::said('vpn.provider', ASettingValue::value('pia'), ASettingValue::nothing(), ''),
-        ASettingMove::said('vpn.type', ASettingValue::value('openvpn'), ASettingValue::nothing(), ''),
+        ASettingMove::said('vpn.provider', ASettingValue::value('pia'), ASettingValue::nothing(), WhatASettingFallsBackTo::nothing(), ''),
+        ASettingMove::said('vpn.type', ASettingValue::value('openvpn'), ASettingValue::nothing(), WhatASettingFallsBackTo::nothing(), ''),
     );
 
     expect($moves->change()->isTheSameAs(ASettingChange::backToDefault('vpn.provider')->andAlso(ASettingChange::backToDefault('vpn.type'))))->toBeTrue();
@@ -64,17 +66,17 @@ it('refuses a change that moves nothing, or that both gives values and puts sett
 })->with([
     'nothing moved' => [static fn(): TheSettingMoves => TheSettingMoves::these(), SettingSaysNothing::class],
     'a value, then one put back' => [static fn(): TheSettingMoves => TheSettingMoves::these(
-        ASettingMove::said('vpn.provider', ASettingValue::nothing(), ASettingValue::value('pia'), ''),
-        ASettingMove::said('vpn.type', ASettingValue::value('openvpn'), ASettingValue::nothing(), ''),
+        ASettingMove::said('vpn.provider', ASettingValue::nothing(), ASettingValue::value('pia'), WhatASettingFallsBackTo::nothing(), ''),
+        ASettingMove::said('vpn.type', ASettingValue::value('openvpn'), ASettingValue::nothing(), WhatASettingFallsBackTo::nothing(), ''),
     ), ASettingChangeIsOneAct::class],
     'one put back, then a value' => [static fn(): TheSettingMoves => TheSettingMoves::these(
-        ASettingMove::said('vpn.type', ASettingValue::value('openvpn'), ASettingValue::nothing(), ''),
-        ASettingMove::said('vpn.provider', ASettingValue::nothing(), ASettingValue::value('pia'), ''),
+        ASettingMove::said('vpn.type', ASettingValue::value('openvpn'), ASettingValue::nothing(), WhatASettingFallsBackTo::nothing(), ''),
+        ASettingMove::said('vpn.provider', ASettingValue::nothing(), ASettingValue::value('pia'), WhatASettingFallsBackTo::nothing(), ''),
     ), ASettingChangeIsOneAct::class],
 ]);
 
 it('rehearses a change only where it was a rehearsal of that same change', function (): void {
-    $moves = TheSettingMoves::these(ASettingMove::said('vpn.provider', ASettingValue::nothing(), ASettingValue::value('pia'), ''));
+    $moves = TheSettingMoves::these(ASettingMove::said('vpn.provider', ASettingValue::nothing(), ASettingValue::value('pia'), WhatASettingFallsBackTo::nothing(), ''));
     $reaches = WhatTheChangeReaches::said(Services::these(ServiceId::called('gluetun')), Services::none(), Services::these(ServiceId::called('qbittorrent')), TheServicesWaiting::none(), 'gluetun was stopped');
     $settings = TheServicesSettings::of(TheSettingsRead::these(), TheSecretsRead::these());
     $rehearsal = TheSettingAsChanged::said($moves, $reaches, WhatTheSettingRunDid::Rehearsed, AnOffer::named('an-offer'), $settings);

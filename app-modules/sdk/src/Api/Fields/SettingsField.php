@@ -24,8 +24,11 @@ enum SettingsField: string implements NamesAWireField
     /** The variable a service reads a setting or a secret into. */
     case Variable = 'variable';
 
-    /** What a service's manifest declares while no value is recorded. */
+    /** What a service's manifest declares while no value is recorded, or what a moved setting falls back to. */
     case Default = 'default';
+
+    /** Whether the settings a reader needs hold what it needs, so its variable is written. */
+    case Met = 'met';
 
     /** The namespace a setting or a secret belongs to, where it is not the core's. */
     case Namespace = 'namespace';

@@ -21,11 +21,12 @@ use Modules\Sdk\Internal\Optional;
 use Modules\Sdk\Internal\Required;
 use Modules\Sdk\Internal\SettingsRows;
 use Modules\Sdk\Internal\TheWaitingRead;
+use Modules\Sdk\Internal\WhatAMoveFallsBackTo;
 
 use function trim;
 
 /**
- * The `settings` envelope a run of a settings action answered with: each setting the change moves, what the run did, and every setting after it.
+ * The `settings` envelope a run of a settings action answered with: each setting the change moves and what it falls back to, what the run did, and every setting after it.
  *
  * Refused whole with {@see SettingsAreUnreadable} where any part cannot be read,
  * an answer with no change among them; a change that moves no setting, or that
@@ -88,6 +89,7 @@ final readonly class WhatTheSettingCameTo
             Required::text($move, WireField::Setting, SettingsAreUnreadable::missing(APath::beneath($where, WireField::Setting->value))),
             SettingsRows::held($move, WireField::Was, $where),
             SettingsRows::held($move, WireField::Value, $where),
+            WhatAMoveFallsBackTo::in($move, $where),
             Optional::text($move, WireField::Consequence, SettingsAreUnreadable::missing(APath::beneath($where, WireField::Consequence->value))),
         );
     }

@@ -11,6 +11,7 @@ use function iterator_to_array;
 use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationToHand;
+use Modules\Kernel\Api\HowTheHouseholdAsks;
 use Modules\Kernel\Api\InvitationSaysNothing;
 use Modules\Kernel\Api\TheLibraries;
 use Modules\Kernel\Api\WhatBecomesOfUnrated;
@@ -89,6 +90,22 @@ it('keeps what was granted, with a limit or with none', function (): void {
     expect([$granted->libraries(), $granted->unrated(), $granted->requesting(), $granted->filtering(), $granted->limit()])
         ->toBe([$libraries, WhatBecomesOfUnrated::LetThrough, WhetherTheyCanAsk::NotYet, 'A limit is not a lock', 'PG-13'])
         ->and(WhatWasGranted::granted($libraries, WhatBecomesOfUnrated::HeldBack, WhetherTheyCanAsk::Made, 'A limit is not a lock', '')->limit())->toBe('');
+});
+
+it('holds what they ask for to a policy only where one is given, keeping the rest of the grant', function (): void {
+    $libraries = TheLibraries::of('Films');
+    $granted = WhatWasGranted::granted($libraries, WhatBecomesOfUnrated::LetThrough, WhetherTheyCanAsk::Made, 'A limit is not a lock', 'PG-13');
+    $held = $granted->holdingTheirAskingTo(HowTheHouseholdAsks::EverythingWaits);
+
+    $policy = static fn(WhatWasGranted $grant): string => $grant->asking(
+        heldTo: static fn(HowTheHouseholdAsks $policy): TheWordCarriedOut => new TheWordCarriedOut($policy->value),
+        untold: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no policy told'),
+    )->said;
+
+    expect($policy($granted))->toBe('no policy told')
+        ->and($policy($held))->toBe('everything-waits')
+        ->and([$held->libraries(), $held->unrated(), $held->requesting(), $held->filtering(), $held->limit()])
+        ->toBe([$libraries, WhatBecomesOfUnrated::LetThrough, WhetherTheyCanAsk::Made, 'A limit is not a lock', 'PG-13']);
 });
 
 it('refuses a grant with no word on what a limit is, or a limit that is blank rather than empty', function (): void {

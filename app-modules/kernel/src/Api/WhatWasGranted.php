@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
+use Closure;
+
 use function trim;
 
 /**
@@ -11,8 +13,8 @@ use function trim;
  *
  * The libraries they may open, how far up the ratings they may watch, what
  * becomes of material with no rating, whether the request service was held to
- * the same decision, and what a limit here is and is not. Together they are the
- * whole of what the operator is deciding.
+ * the same decision, what becomes of what they ask for, and what a limit here is
+ * and is not. Together they are the whole of what the operator is deciding.
  */
 final readonly class WhatWasGranted
 {
@@ -22,6 +24,7 @@ final readonly class WhatWasGranted
         private WhetherTheyCanAsk $requesting,
         private string $filtering,
         private string $limit,
+        private ?HowTheHouseholdAsks $asking = null,
     ) {}
 
     /**
@@ -49,6 +52,12 @@ final readonly class WhatWasGranted
         return new self($libraries, $unrated, $requesting, $filtering, $limit);
     }
 
+    /** The same, with what they ask for held to this policy. */
+    public function holdingTheirAskingTo(HowTheHouseholdAsks $policy): self
+    {
+        return new self($this->libraries, $this->unrated, $this->requesting, $this->filtering, $this->limit, $policy);
+    }
+
     /** The libraries they may open; none named is every one. */
     public function libraries(): TheLibraries
     {
@@ -65,6 +74,22 @@ final readonly class WhatWasGranted
     public function requesting(): WhetherTheyCanAsk
     {
         return $this->requesting;
+    }
+
+    /**
+     * The policy what they ask for is held to, or that the stack told none.
+     *
+     * @template THeldTo of object
+     * @template TUntold of object
+     *
+     * @param Closure(HowTheHouseholdAsks): THeldTo $heldTo
+     * @param Closure(): TUntold                    $untold
+     *
+     * @return THeldTo|TUntold
+     */
+    public function asking(Closure $heldTo, Closure $untold): object
+    {
+        return $this->asking instanceof HowTheHouseholdAsks ? $heldTo($this->asking) : $untold();
     }
 
     /** What a limit here is, and what it is not, in the stack's words. */
