@@ -384,6 +384,10 @@ it('says beside a setting put back the default it falls back to and the one it w
         new ALineToSay('plugins.settings.moves_to_default_empty', ['setting' => 'vpn.countries']),
         new ALineToSay('plugins.settings.was', ['was' => 'Belgium']),
     ],
+    'a declared one that is empty, from that default' => [WhatASettingFallsBackTo::declared(''), ASettingValue::nothing(),
+        new ALineToSay('plugins.settings.moves_to_default_empty', ['setting' => 'vpn.countries']),
+        new ALineToSay('plugins.settings.was_default_empty', []),
+    ],
     'each met reader\'s own' => [WhatASettingFallsBackTo::eachReadersOwn(TheServicesReadingIt::these(
         AServiceReadingIt::of(ServiceId::called('transmission'), 'PEER_COUNTRIES', ASettingValue::value('Norway')),
         AServiceReadingIt::of(ServiceId::called('sabnzbd'), 'REGION', ASettingValue::value('')),
