@@ -8,6 +8,7 @@ use Modules\Household\Internal\ViewModels\WhatCanBeSearchedAsShown;
 use Modules\Kernel\Api\KindOfTitle;
 use Modules\Kernel\Api\UnitOfTitle;
 use Modules\Kernel\Api\WhatCanBeAskedFor;
+use Tests\Support\Catalogue;
 use Tests\TestCase;
 
 // The catalogue is read, so the application is booted.
@@ -97,3 +98,18 @@ it('says every chip in every language, each in words of its own', function (stri
         expect(__($key))->not->toBe($key, sprintf('%s is not in the %s catalogue', $key, $locale));
     }
 })->with(['en', 'nl']);
+
+it('says a chip for every kind the core could list in every language, each in words of its own', function (string $locale): void {
+    $catalogue = Catalogue::all($locale);
+    $listed = WhatCanBeAskedFor::listing();
+
+    foreach (KindOfTitle::cases() as $kind) {
+        $listed = $listed->and($kind, ...UnitOfTitle::cases());
+    }
+
+    $keys = array_map(static fn(AChoiceAsShown $chip): string => $chip->said, theChipsFor($listed, '')->kinds);
+
+    expect($keys)->toHaveCount(count(KindOfTitle::cases()) - 1)
+        ->and(array_diff($keys, array_keys($catalogue)))->toBe([], sprintf('missing from the %s catalogue', $locale))
+        ->and(Catalogue::saidTwice($locale, array_intersect_key($catalogue, array_flip($keys))))->toBe([]);
+})->with(Catalogue::locales());

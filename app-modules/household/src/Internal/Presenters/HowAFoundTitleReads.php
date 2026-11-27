@@ -52,6 +52,12 @@ final readonly class HowAFoundTitleReads
     /** A title that is a book. */
     public const string BOOKS = 'household.search.kind.books';
 
+    /** A title that is an audiobook. */
+    public const string AUDIOBOOKS = 'household.search.kind.audiobooks';
+
+    /** A title that is a podcast. */
+    public const string PODCASTS = 'household.search.kind.podcasts';
+
     public const string MADE = 'household.search.line_by';
 
     public const string MADE_UNDATED = 'household.search.line_by_undated';
@@ -99,6 +105,8 @@ final readonly class HowAFoundTitleReads
             KindOfTitle::Series => Medium::Series->saidOnTheScreen(),
             KindOfTitle::Music => self::MUSIC,
             KindOfTitle::Books => self::BOOKS,
+            KindOfTitle::Audiobooks => self::AUDIOBOOKS,
+            KindOfTitle::Podcasts => self::PODCASTS,
         };
     }
 

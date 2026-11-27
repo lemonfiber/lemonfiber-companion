@@ -57,7 +57,7 @@ final readonly class AFoundTitle implements WhatAScreenIsAbout
         return $this->id;
     }
 
-    /** Whether it is a film, a series, music or books. */
+    /** Whether it is a film, a series, music, books, an audiobook or a podcast. */
     public function kind(): KindOfTitle
     {
         return $this->kind;

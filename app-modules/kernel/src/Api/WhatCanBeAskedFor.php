@@ -11,8 +11,8 @@ use function in_array;
  * What a member can search for and ask for, as the core lists it for them.
  *
  * Films and series are one choice, since a search looks among both at once.
- * Music and books are a choice for each unit the core lists, and a kind of
- * music or books listing no unit cannot be searched, so it offers nothing.
+ * Every other kind is a choice for each unit the core lists, and a kind
+ * listing no unit cannot be searched, so it offers nothing.
  */
 final readonly class WhatCanBeAskedFor
 {

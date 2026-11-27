@@ -12,7 +12,7 @@ namespace Modules\Household\Internal;
  */
 enum WhatAFoundTitleIsOpenedWith: string
 {
-    /** Whether it is a film, a series, music or books, as the search named it. */
+    /** Whether it is a film, a series, music, books, an audiobook or a podcast, as the search named it. */
     case Kind = 'found-kind';
 
     /** What a title of music or books is within its kind, empty for a film or a series. */

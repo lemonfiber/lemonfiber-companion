@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Modules\Kernel\Api;
 
 /**
- * Whether a title a member found is a film, a series, music or books, as the core's search names it.
+ * Whether a title a member found is a film, a series, music, books, an audiobook or a podcast, as the core's search names it.
  *
  * The wire's words, held to the contract by `EveryWireValueIsACaseTest`. A
  * search names a title by its id and this kind together, and asking for it or
@@ -24,4 +24,10 @@ enum KindOfTitle: string
 
     /** A book, a whole author or a series of books. */
     case Books = 'books';
+
+    /** An audiobook. */
+    case Audiobooks = 'audiobooks';
+
+    /** A podcast. */
+    case Podcasts = 'podcasts';
 }
