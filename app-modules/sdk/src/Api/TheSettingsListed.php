@@ -12,9 +12,7 @@ use function is_string;
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\AChoice;
 use Modules\Kernel\Api\ASecret;
-use Modules\Kernel\Api\AServiceReadingIt;
 use Modules\Kernel\Api\ASetting;
-use Modules\Kernel\Api\ServiceId;
 use Modules\Kernel\Api\TheChoices;
 use Modules\Kernel\Api\TheSecretsRead;
 use Modules\Kernel\Api\TheServicesReadingIt;
@@ -184,23 +182,10 @@ final readonly class TheSettingsListed
         $readers = [];
 
         foreach (SettingsRows::listed(Required::rows($row, SettingsField::Readers, SettingsAreUnreadable::missing($where)), $where) as $position => $reader) {
-            $readers[] = self::reader($reader, APath::beneath($where, $position));
+            $readers[] = SettingsRows::reader($reader, APath::beneath($where, $position));
         }
 
         return TheServicesReadingIt::these(...$readers);
-    }
-
-    private static function reader(mixed $reader, string $where): AServiceReadingIt
-    {
-        if (! is_array($reader)) {
-            throw SettingsAreUnreadable::missing($where);
-        }
-
-        return AServiceReadingIt::of(
-            ServiceId::called(Required::text($reader, WireField::Service, SettingsAreUnreadable::missing(APath::beneath($where, WireField::Service->value)))),
-            Required::text($reader, SettingsField::Variable, SettingsAreUnreadable::missing(APath::beneath($where, SettingsField::Variable->value))),
-            SettingsRows::held($reader, SettingsField::Default, $where),
-        );
     }
 
     private static function from(string $said, string $where): WhereASecretCameFrom

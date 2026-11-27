@@ -86,6 +86,7 @@
                     @endif
                     <x-design::row :headline="__('stacks.invitation.unrated_is', ['choice' => __($this->howItIsGoing()->invitation->granted->unratedSaid)])" />
                     <x-design::row :headline="__($this->howItIsGoing()->invitation->granted->requestingSaid)" />
+                    <x-design::row :headline="__($this->howItIsGoing()->invitation->granted->askingSaid)" />
                 @endif
             </x-design::section>
 

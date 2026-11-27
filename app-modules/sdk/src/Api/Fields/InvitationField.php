@@ -32,6 +32,9 @@ enum InvitationField: string implements NamesAWireField
     /** Whether the request service was held to the same decision. */
     case Requesting = 'requesting';
 
+    /** The policy what an invited member asks for is held to, where a request service holds them. */
+    case Asking = 'asking';
+
     /** What becomes of material with no rating: `block` or `allow`. */
     case Unrated = 'unrated';
 

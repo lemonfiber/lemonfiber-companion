@@ -11,6 +11,7 @@ use function it;
 
 use Lemonfiber\Sdk\Envelope\Envelope;
 use Modules\Kernel\Api\AnInvitation;
+use Modules\Kernel\Api\HowTheHouseholdAsks;
 use Modules\Kernel\Api\InvitationSaysNothing;
 use Modules\Kernel\Api\WhatWasGranted;
 use Modules\Sdk\Api\InvitationIsUnreadable;
@@ -101,11 +102,12 @@ function whatTheInvitationGrants(AnInvitation $invitation): string
             }
 
             return new TheWordCarriedOut(sprintf(
-                '%s|%s|%s|%s|%s',
+                '%s|%s|%s|%s|%s|%s',
                 implode(',', $libraries),
                 $granted->limit(),
                 $granted->unrated()->value,
                 $granted->requesting()->value,
+                $granted->asking(heldTo: static fn(HowTheHouseholdAsks $policy): TheWordCarriedOut => new TheWordCarriedOut($policy->value), untold: static fn(): TheWordCarriedOut => new TheWordCarriedOut('no policy told'))->said,
                 $granted->filtering(),
             ));
         },
@@ -133,7 +135,7 @@ it('reads an invitation carried out, with its caution, what it granted, and who 
         "anna|http://loft.local:8096|The number can change|72\n"
         . "waiting|made|carried out\n"
         . "bob,carol\n"
-        . 'Films,Kids|PG-13|held-back|not-yet|A limit is not a lock',
+        . 'Films,Kids|PG-13|held-back|not-yet|no policy told|A limit is not a lock',
     );
 });
 
@@ -163,9 +165,14 @@ it('reads a caution or an application sent as nothing as none, and a limit sent 
     $unlimited = array_diff_key(whatAnInvitationApplied(), ['limit' => true]);
 
     expect(everythingTheInvitationSays([...aPlainInvitation(), 'caution' => null, 'applied' => null]))->toBe("anna|http://loft.local:8096||72\nmade|not-tried|rehearsed\n\nnothing")
-        ->and(everythingTheInvitationSays([...aPlainInvitation(), 'applied' => $applied]))->toEndWith('Films,Kids||held-back|not-yet|A limit is not a lock')
-        ->and(everythingTheInvitationSays([...aPlainInvitation(), 'applied' => $unlimited]))->toEndWith('Films,Kids||held-back|not-yet|A limit is not a lock');
+        ->and(everythingTheInvitationSays([...aPlainInvitation(), 'applied' => $applied]))->toEndWith('Films,Kids||held-back|not-yet|no policy told|A limit is not a lock')
+        ->and(everythingTheInvitationSays([...aPlainInvitation(), 'applied' => $unlimited]))->toEndWith('Films,Kids||held-back|not-yet|no policy told|A limit is not a lock');
 });
+
+it('reads the policy what they ask for is held to in each of the stack\'s words, and none told where it was sent as nothing or left out', function (string $word): void {
+    expect(everythingTheInvitationSays([...aPlainInvitation(), 'applied' => [...whatAnInvitationApplied(), 'asking' => $word]]))->toEndWith(sprintf('Films,Kids|PG-13|held-back|not-yet|%s|A limit is not a lock', $word))
+        ->and(everythingTheInvitationSays([...aPlainInvitation(), 'applied' => [...whatAnInvitationApplied(), 'asking' => null]]))->toEndWith('Films,Kids|PG-13|held-back|not-yet|no policy told|A limit is not a lock');
+})->with(['trusted', 'within-a-limit', 'everything-waits']);
 
 it('refuses a payload that is not a table', function (): void {
     expect(fn(): AnInvitation => Invitations::in(invitationSaying('an invitation')))->toThrow(InvitationIsUnreadable::class, 'no readable `data`');
@@ -203,7 +210,13 @@ it('refuses a word from a closed set it has no case for, never reading the neare
         ->and(fn(): AnInvitation => Invitations::in(invitationSaying([...aPlainInvitation(), 'applied' => [...whatAnInvitationApplied(), 'unrated' => 'blocked']])))
         ->toThrow(InvitationIsUnreadable::class, 'says `unrated` is `blocked`, and this app reads `held-back`, `let-through`')
         ->and(fn(): AnInvitation => Invitations::in(invitationSaying([...aPlainInvitation(), 'applied' => [...whatAnInvitationApplied(), 'requesting' => 'maybe']])))
-        ->toThrow(InvitationIsUnreadable::class, 'says `requesting` is `maybe`');
+        ->toThrow(InvitationIsUnreadable::class, 'says `requesting` is `maybe`')
+        ->and(fn(): AnInvitation => Invitations::in(invitationSaying([...aPlainInvitation(), 'applied' => [...whatAnInvitationApplied(), 'asking' => 'unlimited']])))
+        ->toThrow(InvitationIsUnreadable::class, 'says `asking` is `unlimited`, and this app reads `trusted`, `within-a-limit`, `everything-waits`')
+        ->and(fn(): AnInvitation => Invitations::in(invitationSaying([...aPlainInvitation(), 'applied' => [...whatAnInvitationApplied(), 'asking' => ' ']])))
+        ->toThrow(InvitationIsUnreadable::class, 'no readable `applied.asking`')
+        ->and(fn(): AnInvitation => Invitations::in(invitationSaying([...aPlainInvitation(), 'applied' => [...whatAnInvitationApplied(), 'asking' => 3]])))
+        ->toThrow(InvitationIsUnreadable::class, 'no readable `applied.asking`');
 });
 
 it('refuses what was granted where it is not a table, or is missing what it owes', function (): void {
@@ -232,7 +245,7 @@ it('refuses libraries that are not a list of names', function (): void {
 });
 
 it('reads only payloads the contract would accept as an invitation', function (): void {
-    $full = [...aPlainInvitation(), 'caution' => 'The number can change', 'withdrawn' => ['bob'], 'applied' => whatAnInvitationApplied()];
+    $full = [...aPlainInvitation(), 'caution' => 'The number can change', 'withdrawn' => ['bob'], 'applied' => [...whatAnInvitationApplied(), 'asking' => 'everything-waits']];
 
     expect(WhatTheContractAccepts::complaintsAbout('InvitationEnvelope', ['api_version' => 1, 'kind' => 'invitation', 'data' => aPlainInvitation()]))->toBe([])
         ->and(WhatTheContractAccepts::complaintsAbout('InvitationEnvelope', ['api_version' => 1, 'kind' => 'invitation', 'data' => $full]))->toBe([]);

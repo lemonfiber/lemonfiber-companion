@@ -9,6 +9,7 @@ use Modules\Kernel\Api\AnAddressToHand;
 use Modules\Kernel\Api\AnInvitation;
 use Modules\Kernel\Api\AnInvitationToHand;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\HowTheHouseholdAsks;
 use Modules\Kernel\Api\Job;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
@@ -63,8 +64,8 @@ function theStackSomebodyIsAskedIn(): Stack
     );
 }
 
-/** What the stack answers for Anna, rehearsed or carried out, finding what is given. */
-function annasInvitation(bool $rehearsed, WhereTheInvitationStands $standing = WhereTheInvitationStands::Made, string $declines = ''): AnInvitation
+/** What the stack answers for Anna, rehearsed or carried out, finding what is given, what she asks for held to a policy only where one is given. */
+function annasInvitation(bool $rehearsed, WhereTheInvitationStands $standing = WhereTheInvitationStands::Made, string $declines = '', ?HowTheHouseholdAsks $asking = null): AnInvitation
 {
     $toHand = AnInvitationToHand::to('anna', $declines === ''
         ? AnAddressToHand::at('http://192.168.1.42:8096', 'The number can change when the router restarts')
@@ -76,7 +77,9 @@ function annasInvitation(bool $rehearsed, WhereTheInvitationStands $standing = W
         ? AnInvitation::rehearsed($toHand, $standing, $linked, $withdrawn, $suspended)
         : AnInvitation::carriedOut($toHand, $standing, $linked, $withdrawn, $suspended);
 
-    return $invitation->granting(WhatWasGranted::granted(TheLibraries::of('Films', 'Kids'), WhatBecomesOfUnrated::HeldBack, $linked, 'A limit holds back what is rated above it, and nothing else', 'PG-13'));
+    $granted = WhatWasGranted::granted(TheLibraries::of('Films', 'Kids'), WhatBecomesOfUnrated::HeldBack, $linked, 'A limit holds back what is rated above it, and nothing else', 'PG-13');
+
+    return $invitation->granting($asking instanceof HowTheHouseholdAsks ? $granted->holdingTheirAskingTo($asking) : $granted);
 }
 
 /**
@@ -250,6 +253,25 @@ it('says what the invitation would grant, and when it lapses, before anything is
         ->and($drawn->said())->toContain('carol')
         ->and($drawn->said())->not->toContain(__('stacks.invitation.switched_off'))
         ->and($drawn->offers())->toContain(__('stacks.invitation.send', ['name' => 'anna']));
+});
+
+it('says beside what the invitation sets up the policy what they ask for will be held to, before anything is sent', function (HowTheHouseholdAsks $policy, string $said): void {
+    $drawn = WhatTheDeviceWouldDraw::by(annaRehearsedOn(AStackThatInvites::answering(...theWorkThenIts(annasInvitation(rehearsed: true, asking: $policy)))));
+
+    expect($drawn->said())->toContain(__($said))
+        ->and($drawn->said())->toContain(__(WhetherTheyCanAsk::NotTried->saidOnTheScreen()))
+        ->and($drawn->said())->not->toContain(__('stacks.invitation.held_to.untold'));
+})->with([
+    'trusted' => [HowTheHouseholdAsks::Trusted, 'stacks.invitation.held_to.trusted'],
+    'within a limit' => [HowTheHouseholdAsks::WithinALimit, 'stacks.invitation.held_to.within-a-limit'],
+    'everything waits' => [HowTheHouseholdAsks::EverythingWaits, 'stacks.invitation.held_to.everything-waits'],
+]);
+
+it('says the stack told no policy for what they ask for where it named none, and draws none of the policies', function (): void {
+    $drawn = WhatTheDeviceWouldDraw::by(annaRehearsedOn(AStackThatInvites::answering(...theWorkThenIts(annasInvitation(rehearsed: true)))));
+
+    expect($drawn->said())->toContain(__('stacks.invitation.held_to.untold'))
+        ->and($drawn->said())->not->toContain(__('stacks.invitation.held_to.trusted'), __('stacks.invitation.held_to.within-a-limit'), __('stacks.invitation.held_to.everything-waits'));
 });
 
 it('never draws a rehearsal as an account that exists: no address, no code, nothing to hand over', function (): void {

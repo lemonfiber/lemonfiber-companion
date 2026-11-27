@@ -8,19 +8,15 @@ namespace Modules\Operator\Internal\ViewModels;
 final readonly class ASettingMoveAsShown
 {
     /**
-     * @param string $setting     the setting, by its name
-     * @param bool   $toDefault   whether it goes back to its default
-     * @param string $value       what it is to hold, blank where it goes back to its default
-     * @param bool   $wasSet      whether it held a value of the operator's before
-     * @param string $was         what it held before, blank where it was the default
-     * @param string $consequence what moving it costs, in the stack's words, blank where nothing
+     * @param ALineToSay                     $moves       what it is to hold, or what it falls back to where it goes back to its default
+     * @param ALineToSay                     $was         what it held before, or the default it was at
+     * @param list<AServiceReadingItAsShown> $readers     each reader whose needs are met with its own default, where it goes back to each reader's own
+     * @param string                         $consequence what moving it costs, in the stack's words, blank where nothing
      */
     public function __construct(
-        public string $setting,
-        public bool $toDefault,
-        public string $value,
-        public bool $wasSet,
-        public string $was,
+        public ALineToSay $moves,
+        public ALineToSay $was,
+        public array $readers,
         public string $consequence,
     ) {}
 }

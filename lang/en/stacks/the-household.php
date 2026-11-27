@@ -313,6 +313,12 @@ return [
             'not-yet' => 'They can watch, and cannot ask for anything yet: the request service has not been told, and the next run tells it',
             'not-tried' => 'The request service was not asked: this is a rehearsal, or this stack has none',
         ],
+        'held_to' => [
+            'trusted' => 'What they ask for arrives, and nothing is counted against them',
+            'within-a-limit' => 'What they ask for arrives until the period\'s limit is spent, and asking past it is refused',
+            'everything-waits' => 'What they ask for waits for you to rule on it',
+            'untold' => 'The stack told no policy for what they ask for: no request service holds them, or it could not be reached',
+        ],
         'lapses' => '{1} It stands for :count hour. If nobody takes it up by then, it is withdrawn and the account with it|[0,*] It stands for :count hours. If nobody takes it up by then, it is withdrawn and the account with it',
         'send' => 'Invite :name',
         'to_hand_over' => 'Address to share',

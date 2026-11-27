@@ -37,6 +37,7 @@ use Modules\Kernel\Api\TheSettingMoves;
 use Modules\Kernel\Api\TheSettingsRead;
 use Modules\Kernel\Api\WhatAChoiceNeeds;
 use Modules\Kernel\Api\WhatAServiceWaitsFor;
+use Modules\Kernel\Api\WhatASettingFallsBackTo;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheChangeReaches;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
@@ -123,8 +124,8 @@ function thePairMoved(WhatTheSettingRunDid $did): TheSettingAsChanged
 {
     return TheSettingAsChanged::said(
         TheSettingMoves::these(
-            ASettingMove::said('vpn.provider', ASettingValue::value('mullvad'), ASettingValue::value('pia'), 'The tunnel drops for a moment'),
-            ASettingMove::said('vpn.type', ASettingValue::nothing(), ASettingValue::value('openvpn'), ''),
+            ASettingMove::said('vpn.provider', ASettingValue::value('mullvad'), ASettingValue::value('pia'), WhatASettingFallsBackTo::declared('mullvad'), 'The tunnel drops for a moment'),
+            ASettingMove::said('vpn.type', ASettingValue::nothing(), ASettingValue::value('openvpn'), WhatASettingFallsBackTo::declared('wireguard'), ''),
         ),
         WhatTheChangeReaches::said(
             Services::these(ServiceId::called('gluetun')),
@@ -337,7 +338,7 @@ it('draws every setting the change moves with what it held and costs, and the se
         __('plugins.settings.was', ['was' => 'mullvad']),
         __('plugins.settings.consequence', ['consequence' => 'The tunnel drops for a moment']),
         __('plugins.settings.moves_to', ['setting' => 'vpn.type', 'value' => 'openvpn']),
-        __('plugins.settings.was_default'),
+        __('plugins.settings.was_default', ['default' => 'wireguard']),
         __('plugins.settings.starts', ['services' => 'caddy']),
         __('plugins.waiting.held_back', ['service' => 'qbittorrent']),
         __('plugins.waiting.secret', ['secret' => 'vpn.user']),

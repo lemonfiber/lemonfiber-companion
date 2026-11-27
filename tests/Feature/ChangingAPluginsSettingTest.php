@@ -16,6 +16,7 @@ use Modules\Kernel\Api\AServiceReadingIt;
 use Modules\Kernel\Api\ASetting;
 use Modules\Kernel\Api\ASettingChange;
 use Modules\Kernel\Api\ASettingChangeAgreed;
+use Modules\Kernel\Api\ASettingMove;
 use Modules\Kernel\Api\ASettingValue;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\Instant;
@@ -42,7 +43,9 @@ use Modules\Kernel\Api\TheServicesReadingIt;
 use Modules\Kernel\Api\TheServicesSettings;
 use Modules\Kernel\Api\TheServicesWaiting;
 use Modules\Kernel\Api\TheSettingAsChanged;
+use Modules\Kernel\Api\TheSettingMoves;
 use Modules\Kernel\Api\TheSettingsRead;
+use Modules\Kernel\Api\WhatASettingFallsBackTo;
 use Modules\Kernel\Api\WhatBecameOfTheWork;
 use Modules\Kernel\Api\WhatTheChangeReaches;
 use Modules\Kernel\Api\WhatTheRefusalNamed;
@@ -57,6 +60,7 @@ use Modules\Operator\Internal\ASettingChangeFollowed;
 use Modules\Operator\Internal\NotAJobItFollows;
 use Modules\Operator\Internal\Screens\HowThisPluginIsSet;
 use Modules\Operator\Internal\TheOnlyJob;
+use Modules\Operator\Internal\ViewModels\ALineToSay;
 use Modules\Operator\Internal\ViewModels\TheSettingChangeTurnedOutToBe;
 use Tests\Support\AroundThePhone;
 use Tests\Support\ASettingChangeAsReported;
@@ -138,11 +142,23 @@ function aChangeToTheCountries(WhatTheSettingRunDid $did, ?ASettingChange $chang
     $change ??= ASettingChange::toHold('vpn.countries', 'Germany');
 
     return TheSettingAsChanged::said(
-        ASettingChangeAsReported::moves($change, ASettingValue::value('Belgium'), $consequence),
+        ASettingChangeAsReported::moves($change, ASettingValue::value('Belgium'), $consequence, WhatASettingFallsBackTo::declared('Netherlands')),
         WhatTheChangeReaches::said(Services::these(ServiceId::called('gluetun')), $restarts ?? Services::these(ServiceId::called('gluetun'), ServiceId::called('qbittorrent')), Services::none(), TheServicesWaiting::none(), $unrestarted),
         $did,
         AnOffer::named('settings-set:vpn.countries:7'),
         theMachinesSettings($did === WhatTheSettingRunDid::Applied ? 'Germany' : 'Belgium'),
+    );
+}
+
+/** A rehearsal moving the countries from what they held to a value, or back to their default, falling back to `$default` as the stack said it. */
+function theCountriesMoved(ASettingValue $was, ASettingValue $value, WhatASettingFallsBackTo $default): TheSettingAsChanged
+{
+    return TheSettingAsChanged::said(
+        TheSettingMoves::these(ASettingMove::said('vpn.countries', $was, $value, $default, '')),
+        WhatTheChangeReaches::said(Services::these(ServiceId::called('gluetun')), Services::none(), Services::none(), TheServicesWaiting::none(), ''),
+        WhatTheSettingRunDid::Rehearsed,
+        AnOffer::named('settings-set:vpn.countries:7'),
+        theMachinesSettings(),
     );
 }
 
@@ -351,6 +367,53 @@ it('sends no yes against a rehearsal no longer on the screen: the setting closed
     expect($tuning->carriedOut())->toBe([]);
 })->with(['closed' => ['closed'], 'opened afresh' => ['opened afresh'], 'rehearsed again' => ['rehearsed again']]);
 
+it('says beside a setting put back the default it falls back to and the one it was at, as the stack said them at the move', function (WhatASettingFallsBackTo $default, ASettingValue $was, ALineToSay ...$lines): void {
+    $tuning = aStackThatSetsTheGuard(rehearsal: WhatBecameOfTheWork::answered(theCountriesMoved($was, ASettingValue::nothing(), $default)));
+    $screen = theGuardsSettingsScreen($tuning);
+    $screen->answer();
+    $screen->backToDefault('vpn.countries');
+    $screen->whileItRuns();
+
+    expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(...array_map(static fn(ALineToSay $line): mixed => __($line->key, $line->filling), $lines));
+})->with([
+    'the core\'s own, by its value' => [WhatASettingFallsBackTo::theCores('Sweden'), ASettingValue::nothing(),
+        new ALineToSay('plugins.settings.moves_to_default', ['setting' => 'vpn.countries', 'default' => 'Sweden']),
+        new ALineToSay('plugins.settings.was_default', ['default' => 'Sweden']),
+    ],
+    'a declared one that is empty, from a value of the operator\'s' => [WhatASettingFallsBackTo::declared(''), ASettingValue::value('Belgium'),
+        new ALineToSay('plugins.settings.moves_to_default_empty', ['setting' => 'vpn.countries']),
+        new ALineToSay('plugins.settings.was', ['was' => 'Belgium']),
+    ],
+    'a declared one that is empty, from that default' => [WhatASettingFallsBackTo::declared(''), ASettingValue::nothing(),
+        new ALineToSay('plugins.settings.moves_to_default_empty', ['setting' => 'vpn.countries']),
+        new ALineToSay('plugins.settings.was_default_empty', []),
+    ],
+    'each met reader\'s own' => [WhatASettingFallsBackTo::eachReadersOwn(TheServicesReadingIt::these(
+        AServiceReadingIt::of(ServiceId::called('transmission'), 'PEER_COUNTRIES', ASettingValue::value('Norway')),
+        AServiceReadingIt::of(ServiceId::called('sabnzbd'), 'REGION', ASettingValue::value('')),
+        AServiceReadingIt::of(ServiceId::called('prowlarr'), 'GEO', ASettingValue::nothing()),
+    )), ASettingValue::nothing(),
+        new ALineToSay('plugins.settings.moves_to_each_readers_own', ['setting' => 'vpn.countries']),
+        new ALineToSay('plugins.settings.read_by_default', ['service' => 'transmission', 'variable' => 'PEER_COUNTRIES', 'default' => 'Norway']),
+        new ALineToSay('plugins.settings.read_by_empty', ['service' => 'sabnzbd', 'variable' => 'REGION']),
+        new ALineToSay('plugins.settings.read_by', ['service' => 'prowlarr', 'variable' => 'GEO']),
+        new ALineToSay('plugins.settings.was_each_readers_own', []),
+    ],
+    'none declared' => [WhatASettingFallsBackTo::nothing(), ASettingValue::nothing(),
+        new ALineToSay('plugins.settings.moves_to_nothing', ['setting' => 'vpn.countries']),
+        new ALineToSay('plugins.settings.was_nothing', []),
+    ],
+]);
+
+it('says a value given that is its default is the same as its default, and nothing of the kind for another value', function (): void {
+    $same = aRehearsalOfGermany(aStackThatSetsTheGuard(rehearsal: WhatBecameOfTheWork::answered(theCountriesMoved(ASettingValue::value('Belgium'), ASettingValue::value('Germany'), WhatASettingFallsBackTo::declared('Germany')))));
+    $other = aRehearsalOfGermany(aStackThatSetsTheGuard(rehearsal: WhatBecameOfTheWork::answered(theCountriesMoved(ASettingValue::value('Belgium'), ASettingValue::value('Germany'), WhatASettingFallsBackTo::declared('Netherlands')))));
+
+    expect(WhatTheDeviceWouldDraw::by($same)->said())->toContain(__('plugins.settings.moves_to_its_default', ['setting' => 'vpn.countries', 'value' => 'Germany']))
+        ->and(WhatTheDeviceWouldDraw::by($other)->said())->toContain(__('plugins.settings.moves_to', ['setting' => 'vpn.countries', 'value' => 'Germany']))
+        ->and(WhatTheDeviceWouldDraw::by($other)->said())->not->toContain(__('plugins.settings.moves_to_its_default', ['setting' => 'vpn.countries', 'value' => 'Germany']));
+});
+
 it('rehearses putting a setting back to its default, and says where that restarts nothing', function (): void {
     $back = ASettingChange::backToDefault('vpn.countries');
     $tuning = aStackThatSetsTheGuard(rehearsal: WhatBecameOfTheWork::answered(aChangeToTheCountries(WhatTheSettingRunDid::Rehearsed, $back, restarts: Services::none())));
@@ -362,7 +425,7 @@ it('rehearses putting a setting back to its default, and says where that restart
     $drawn = WhatTheDeviceWouldDraw::by($screen);
 
     expect(array_map(static fn(ASettingChange $change): string => $change->how()->asked(), $tuning->rehearsed()))->toBe(['settings-clear'])
-        ->and($drawn->said())->toContain(__('plugins.settings.moves_to_default', ['setting' => 'vpn.countries']), __('plugins.settings.restarts_nothing'))
+        ->and($drawn->said())->toContain(__('plugins.settings.moves_to_default', ['setting' => 'vpn.countries', 'default' => 'Netherlands']), __('plugins.settings.restarts_nothing'))
         ->and($drawn->offers())->toContain(__('plugins.settings.agree_back'))
         ->and($drawn->offers())->not->toContain(__('plugins.settings.rehearse'));
 

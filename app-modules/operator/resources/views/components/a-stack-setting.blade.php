@@ -17,11 +17,7 @@
         <x-design::body>{{ __('plugins.settings.default') }}</x-design::body>
     @endif
     @forelse ($setting->readers as $reader)
-        @if ($reader->declaresADefault)
-            <x-design::note>{{ __('plugins.settings.read_by_default', ['service' => $reader->service, 'variable' => $reader->variable, 'default' => $reader->default]) }}</x-design::note>
-        @else
-            <x-design::note>{{ __('plugins.settings.read_by', ['service' => $reader->service, 'variable' => $reader->variable]) }}</x-design::note>
-        @endif
+        <x-operator::a-service-reading-it :reader="$reader" />
     @empty
         <x-design::note>{{ __('plugins.settings.read_by_none') }}</x-design::note>
     @endforelse

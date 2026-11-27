@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Modules\Operator\Internal\Presenters;
 
 use Modules\Kernel\Api\ASecret;
-use Modules\Kernel\Api\AServiceReadingIt;
 use Modules\Kernel\Api\ASetting;
 use Modules\Kernel\Api\PluginLines;
 use Modules\Kernel\Api\TheChoices;
@@ -147,20 +146,10 @@ final readonly class HowASettingIsShown
         $shown = [];
 
         foreach ($readers as $reader) {
-            $shown[] = $this->reader($reader);
+            $shown[] = AServiceReadingItAsShown::of($reader);
         }
 
         return $shown;
-    }
-
-    private function reader(AServiceReadingIt $reader): AServiceReadingItAsShown
-    {
-        return new AServiceReadingItAsShown(
-            service: $reader->service()->named(),
-            variable: $reader->variable(),
-            declaresADefault: $reader->default()->isHeld(),
-            default: $reader->default()->said(),
-        );
     }
 
     private function unlessUnsaid(WhoseASettingIs $whose): ?ALineToSay

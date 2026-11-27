@@ -34,6 +34,13 @@ const DRAWN_FOR_THE_OPERATOR = [
     'components/the-preview-mark.blade.php' => 'the mark that tells the operator the screen is a preview, drawn only over the preview',
 ];
 
+/**
+ * The operator's parts a member's screen is drawn in: the frame every screen opens with, and nothing that says what the machine did.
+ *
+ * @var list<string>
+ */
+const THE_FRAME_A_MEMBER_IS_DRAWN_IN = ['x-operator::screen-opens', 'x-operator::content'];
+
 /** The group of the member's catalogue drawn only on the operator's preview, for the same reason. */
 const THE_OPERATORS_PREVIEW = 'preview';
 
@@ -156,6 +163,24 @@ it('finds the member\'s lines and templates it holds to the household\'s words',
     expect(count(everyLineAMemberReads()))->toBeGreaterThan(100)
         ->and(theMembersTemplates())->toHaveKey('what-is-on-live-tv.blade.php')
         ->and(theMembersTemplates())->not->toHaveKey('what-a-member-would-see.blade.php');
+});
+
+it('draws a member none of the operator\'s parts but the frame a screen opens in', function (): void {
+    $drawn = [];
+
+    foreach (theMembersTemplates() as $path => $source) {
+        preg_match_all('/x-operator::[a-z-]+|operator::[a-z-.]+/', $source, $named);
+
+        foreach (array_diff($named[0], THE_FRAME_A_MEMBER_IS_DRAWN_IN) as $part) {
+            $drawn[] = sprintf('%s draws %s', $path, $part);
+        }
+    }
+
+    expect($drawn)->toBe([], sprintf(
+        "A member's screen draws these, which are the operator's and say what the machine did:\n  %s\n\n"
+        . 'A member sees no technical side: draw it in the household\'s own parts and words (G2-R16).',
+        implode("\n  ", $drawn),
+    ));
 });
 
 it('shows a member no service, no domain term, no size, no address and no version in any line it reads', function (): void {

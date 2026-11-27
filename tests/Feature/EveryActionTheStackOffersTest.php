@@ -101,6 +101,7 @@ const ELSEWHERE = [
     'Password' => 'N1-R80 — the surface\'s password is typed at the machine',
     'WalkthroughOffer' => 'N1-R80 — the walkthrough is offered by setup at the machine',
     'Logs' => 'N1-R80 — the command line\'s account of a read, whose lines the app takes from `GET /api/logs`',
+    'LogsExported' => 'N1-R80 — where the command line\'s log viewer wrote an export of what it showed',
     'PluginClaims' => 'N1-R80 — a plugin author\'s check at their own checkout',
     'PluginConformance' => 'N1-R80 — a plugin author\'s check at their own checkout',
     'PluginProvenance' => 'N1-R80 — a plugin author\'s check at their own checkout',
@@ -326,9 +327,9 @@ it('no kind a served read answers waits unread', function (): void {
         ));
 });
 
-it('excuses exactly the twelve kinds the core serves no remote caller', function (): void {
+it('excuses exactly the thirteen kinds the core serves no remote caller', function (): void {
     expect(everyKindNoRemoteCallerIsServed())->toBe([
-        'Caller', 'Standing', 'NotifyHeard', 'Renewed', 'Untuned', 'Password', 'WalkthroughOffer', 'Logs', 'PluginClaims', 'PluginConformance', 'PluginProvenance', 'PluginRecording',
+        'Caller', 'Standing', 'NotifyHeard', 'Renewed', 'Untuned', 'Password', 'WalkthroughOffer', 'Logs', 'LogsExported', 'PluginClaims', 'PluginConformance', 'PluginProvenance', 'PluginRecording',
     ]);
 });
 

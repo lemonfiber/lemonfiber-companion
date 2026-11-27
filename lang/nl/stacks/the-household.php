@@ -299,6 +299,12 @@ return [
             'not-yet' => 'Ze kunnen kijken, en nog nergens om vragen: de verzoekservice weet het nog niet, en de volgende ronde vertelt het',
             'not-tried' => 'De verzoekservice is niet gevraagd: dit is een generale repetitie, of deze stack heeft er geen',
         ],
+        'held_to' => [
+            'trusted' => 'Waar ze om vragen komt binnen, en er wordt niets meegeteld',
+            'within-a-limit' => 'Waar ze om vragen komt binnen tot de limiet van de periode op is, en vragen daarboven wordt geweigerd',
+            'everything-waits' => 'Waar ze om vragen wacht tot jij erover beslist',
+            'untold' => 'De stack noemde geen beleid voor waar ze om vragen: geen verzoekservice kent hen, of die was niet te bereiken',
+        ],
         'lapses' => '{1} Het staat :count uur. Neemt niemand het voor die tijd aan, dan wordt het ingetrokken en het account ook|[0,*] Het staat :count uur. Neemt niemand het voor die tijd aan, dan wordt het ingetrokken en het account ook',
         'send' => 'Nodig :name uit',
         'to_hand_over' => 'Adres om te delen',
