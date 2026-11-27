@@ -26,6 +26,7 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Kernel\Api\UnitOfTitle;
+use Modules\Kernel\Api\Waiting;
 use Modules\Kernel\Api\WhatAnAskBecame;
 use Modules\Kernel\Api\WhatAnAskCameTo;
 use Modules\Kernel\Api\WhatASearchFound;
@@ -38,6 +39,7 @@ use Modules\Kernel\Api\WhetherItWasRehearsed;
 use Modules\Kernel\Api\Whose;
 use Modules\Stacks\Api\AStacksScreen;
 use Tests\Support\AroundThePhone;
+use Tests\Support\Catalogue;
 use Tests\Support\Fakes\AKeychainInMemory;
 use Tests\Support\Fakes\AppsSettingsThatOpen;
 use Tests\Support\Fakes\ArtworkHeldInMemory;
@@ -199,11 +201,13 @@ it('opens a found title with the token its search vouched for it with, and with 
         ->and(theFoundPage($asking, rumours())->title()?->vouched()->vouches())->toBeFalse();
 });
 
-it('names music and books by their own kind on the page', function (): void {
+it('names music, books, audiobooks and podcasts by their own kind on the page', function (): void {
     $screen = theSearchTab(AStackThatFindsTitles::finding(WhatASearchFound::lastly(
         'What you ask for now waits for a yes.',
         AFoundTitle::listed('7', KindOfTitle::Music, 'Dune: Original Soundtrack', WhenItCameOut::in(2021), WhereAFoundTitleStands::Askable),
         AFoundTitle::listed('8', KindOfTitle::Books, 'Dune', WhenItCameOut::unstated(), WhereAFoundTitleStands::Here),
+        AFoundTitle::listed('9', KindOfTitle::Audiobooks, 'Dune Messiah', WhenItCameOut::in(2007), WhereAFoundTitleStands::OnItsWay),
+        AFoundTitle::listed('10', KindOfTitle::Podcasts, 'Dune Pod', WhenItCameOut::unstated(), WhereAFoundTitleStands::Askable),
     )));
     $screen->typed = 'dune';
     $screen->search();
@@ -211,8 +215,18 @@ it('names music and books by their own kind on the page', function (): void {
     expect(WhatTheDeviceWouldDraw::by($screen)->said())->toContain(
         aSearchLine('household.search.line', ['year' => '2021', 'kind' => aSearchLine('household.search.kind.music'), 'stands' => aSearchLine('household.search.askable')]),
         aSearchLine('household.search.line_undated', ['kind' => aSearchLine('household.search.kind.books'), 'stands' => aSearchLine('household.search.already_here')]),
+        aSearchLine('household.search.line', ['year' => '2007', 'kind' => aSearchLine('household.search.kind.audiobooks'), 'stands' => aSearchLine(Waiting::Getting->saidToTheMember())]),
+        aSearchLine('household.search.line_undated', ['kind' => aSearchLine('household.search.kind.podcasts'), 'stands' => aSearchLine('household.search.askable')]),
     );
 });
+
+it('names every kind of title in every language, each in a word of its own', function (string $locale): void {
+    $catalogue = Catalogue::all($locale);
+    $keys = array_map(static fn(KindOfTitle $kind): string => new HowAFoundTitleReads()->kind($kind), KindOfTitle::cases());
+
+    expect(array_diff($keys, array_keys($catalogue)))->toBe([], sprintf('missing from the %s catalogue', $locale))
+        ->and(Catalogue::saidTwice($locale, array_intersect_key($catalogue, array_flip($keys))))->toBe([]);
+})->with(Catalogue::locales());
 
 it('reads the next page as the member reaches the end, from the place the last page named, and adds it beneath', function (): void {
     $finding = AStackThatFindsTitles::finding(aFirstPage(), aLastPage());

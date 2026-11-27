@@ -140,6 +140,8 @@ return [
         'kind' => [
             'music' => 'Music',
             'books' => 'Book',
+            'audiobooks' => 'Audiobook',
+            'podcasts' => 'Podcast',
         ],
         'label' => 'What to look for',
         'placeholder' => 'A film or a series',
@@ -157,6 +159,8 @@ return [
             'films-and-series' => 'Films & series',
             'music' => 'Music',
             'books' => 'Books',
+            'audiobooks' => 'Audiobooks',
+            'podcasts' => 'Podcasts',
         ],
         'unit' => [
             'album' => 'Albums',

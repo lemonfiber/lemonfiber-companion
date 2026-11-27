@@ -134,6 +134,8 @@ return [
         'kind' => [
             'music' => 'Muziek',
             'books' => 'Boek',
+            'audiobooks' => 'Luisterboek',
+            'podcasts' => 'Podcast',
         ],
         'label' => 'Waar zoek je naar',
         'placeholder' => 'Een film of een serie',
@@ -151,6 +153,8 @@ return [
             'films-and-series' => 'Films & series',
             'music' => 'Muziek',
             'books' => 'Boeken',
+            'audiobooks' => 'Luisterboeken',
+            'podcasts' => 'Podcasts',
         ],
         'unit' => [
             'album' => 'Albums',
