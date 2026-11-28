@@ -23,4 +23,10 @@ final class PushEndpointIsUnreadable extends InvalidArgumentException
     {
         return new self(sprintf('The %s envelope has no readable `%s`, so it did not come from a lemonfiber this app can read.', $kind->value, $field->value));
     }
+
+    /** The fingerprint names another address than the one this phone sent. */
+    public static function anotherAddress(): self
+    {
+        return new self(sprintf('The %s envelope names an address by a fingerprint that is not the one this phone sent, so the registration is not one it can confirm.', Kind::PushEndpoint->value));
+    }
 }

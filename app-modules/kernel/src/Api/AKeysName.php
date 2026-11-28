@@ -15,10 +15,10 @@ final readonly class AKeysName
 {
     private function __construct(private string $name) {}
 
-    /** The one place a string becomes a key's name; a blank one is refused. */
+    /** The one place a string becomes a key's name; a blank one, or one that is no path segment, is refused. */
     public static function of(string $name): self
     {
-        if (trim($name) === '') {
+        if (trim($name) === '' || NoPathSegment::tryFrom($name) instanceof NoPathSegment) {
             throw KeySaysNothing::about('name');
         }
 

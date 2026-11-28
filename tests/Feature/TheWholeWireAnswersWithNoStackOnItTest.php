@@ -13,7 +13,15 @@ use Modules\Dx\Api\ClientsThatReachNothing;
 use Modules\Dx\Internal\WhatTheContractDeclares;
 use Modules\Dx\Internal\WhichEnvelopeAnEndpointAnswersWith;
 use Modules\Kernel\Api\Address;
+use Modules\Kernel\Api\AnEndpoint;
+use Modules\Kernel\Api\APushName;
+use Modules\Kernel\Api\ARefusalInItsWords;
+use Modules\Kernel\Api\AWakeFingerprint;
+use Modules\Kernel\Api\AWakeToRegister;
+use Modules\Kernel\Api\AWakingKey;
+use Modules\Kernel\Api\AWakingSecret;
 use Modules\Kernel\Api\Fingerprint;
+use Modules\Kernel\Api\KeyMaterial;
 use Modules\Kernel\Api\KindOfObstacle;
 use Modules\Kernel\Api\Nonce;
 use Modules\Kernel\Api\Obstacle;
@@ -22,7 +30,9 @@ use Modules\Kernel\Api\Stack;
 use Modules\Kernel\Api\StackId;
 use Modules\Kernel\Api\StackName;
 use Modules\Sdk\Api\PinnedClients;
+use Modules\Sdk\Api\PushEndpointKeepers;
 use Modules\Sdk\Internal\WhatARefusalMeant;
+use Tests\Support\TheWordCarriedOut;
 use Tests\Support\WhatTheContractAccepts;
 
 // The seam sits below the transport, and the app runs on it.
@@ -185,6 +195,24 @@ it('every endpoint the contract declares answers with a shape it accepts', funct
         . 'moved (N1-R59).',
         implode("\n  ", $refused),
     ));
+});
+
+it('answers a phone\'s registration with the fingerprint of the address it sent, which the phone confirms', function (): void {
+    $sent = 'https://ntfy.sh/upAbC?up=1';
+    $wake = new AWakeToRegister(
+        APushName::of('galaxy-a51-7f3a'),
+        AnEndpoint::of($sent),
+        AWakingKey::of(sprintf("\x04%s", str_repeat("\x01", AWakingKey::BYTES - 1))),
+        AWakingSecret::from(KeyMaterial::of(str_repeat('s', KeyMaterial::BYTES))),
+    );
+
+    $held = new PushEndpointKeepers(new ClientsThatReachNothing(new PinnedClients()))->registeredOn(aStackThatIsNotListening(), aSessionThatOpensNothing(), $wake)->either(
+        registered: static fn(AWakeFingerprint $held): TheWordCarriedOut => new TheWordCarriedOut($held->shown()),
+        refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut($why->summary()),
+        met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
+    )->said;
+
+    expect($held)->toBe(AWakeFingerprint::ofTheAddress($sent)->shown());
 });
 
 it('answers the scrollback as a document a line', function (): void {

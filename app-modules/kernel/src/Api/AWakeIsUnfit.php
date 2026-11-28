@@ -21,6 +21,11 @@ final class AWakeIsUnfit extends InvalidArgumentException
         return new self('An endpoint is the address a distributor gave, and this one is blank.');
     }
 
+    public static function aFingerprint(): self
+    {
+        return new self('A stack names an endpoint it keeps by the first sixteen lower-case hexadecimal digits of the SHA-256 of its address, and this is not that.');
+    }
+
     public static function aKey(int $bytes): self
     {
         return new self(sprintf('A WebPush key is an uncompressed P-256 point of %d bytes beginning 0x04, and this one is %d bytes or begins otherwise.', AWakingKey::BYTES, $bytes));

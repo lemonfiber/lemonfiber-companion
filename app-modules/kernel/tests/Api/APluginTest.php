@@ -55,13 +55,14 @@ function aRecipeAsking(string $id, WhenARecipeRuns $runs, string ...$approvals):
     );
 }
 
-it('asks once for each approval an install recipe needs, past any recipe run on demand, whatever the stack calls it', function (): void {
+it('asks once for each approval an install recipe and a claim recipe need, past any recipe run on demand, whatever the stack calls it', function (): void {
     $plugin = APlugin::named('tdarr', '2.1.0', 'Tdarr', WhatVouchesForAPlugin::recorded('', '', '', reviewed: false, upstream: '', licence: ''), TheRecipes::these(
         aRecipeAsking('first', WhenARecipeRuns::Install, 'field', 'plex.token@tdarr'),
         aRecipeAsking('asked', WhenARecipeRuns::Demand, 'asked@tdarr'),
+        aRecipeAsking('claimed', WhenARecipeRuns::Claim, 'claimed@tdarr', 'field'),
         aRecipeAsking('last', WhenARecipeRuns::Install, 'plex.token@tdarr', 'sonarr.key@tdarr'),
     ));
 
-    expect(iterator_to_array($plugin->approvals(), preserve_keys: false))->toBe(['field', 'plex.token@tdarr', 'sonarr.key@tdarr'])
+    expect(iterator_to_array($plugin->approvals(), preserve_keys: false))->toBe(['field', 'plex.token@tdarr', 'claimed@tdarr', 'sonarr.key@tdarr'])
         ->and(iterator_to_array(aRecipeAsking('one', WhenARecipeRuns::Demand, 'field', 'field')->approvals(), preserve_keys: false))->toBe(['field']);
 });

@@ -40,8 +40,9 @@ final readonly class AnEndpoint
         return $this->address;
     }
 
-    public function is(self $other): bool
+    /** What a stack names the address by once it keeps it. */
+    public function fingerprint(): AWakeFingerprint
     {
-        return $this->address === $other->address;
+        return AWakeFingerprint::ofTheAddress($this->address);
     }
 }

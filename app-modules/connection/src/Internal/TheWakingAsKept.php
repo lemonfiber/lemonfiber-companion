@@ -11,10 +11,10 @@ use function json_decode;
 use function json_encode;
 
 use Modules\Kernel\Api\ADistributor;
-use Modules\Kernel\Api\AnEndpoint;
 use Modules\Kernel\Api\APushName;
+use Modules\Kernel\Api\AWakeFingerprint;
 use Modules\Kernel\Api\AWakeIsUnfit;
-use Modules\Kernel\Api\AWakeToRegister;
+use Modules\Kernel\Api\AWakeRegistered;
 use Modules\Kernel\Api\AWakingKey;
 use Modules\Kernel\Api\AWakingSecret;
 use Modules\Kernel\Api\HowThisPhoneIsWoken;
@@ -44,8 +44,8 @@ final readonly class TheWakingAsKept
     /** Where what the distributor is called is written. */
     private const string CALLED = 'distributor_called';
 
-    /** Where the endpoint is written. */
-    private const string ENDPOINT = 'push_endpoint';
+    /** Where the fingerprint the stack names the endpoint by is written. */
+    private const string FINGERPRINT = 'push_fingerprint';
 
     /** Where the public key is written, in base64. */
     private const string KEY = 'webpush_key';
@@ -58,11 +58,11 @@ final readonly class TheWakingAsKept
     {
         return $waking->either(
             off: static fn(): Unsealed => self::encoded([]),
-            on: static fn(ADistributor $through, AWakeToRegister $wake): Unsealed => self::encoded([
+            on: static fn(ADistributor $through, AWakeRegistered $wake): Unsealed => self::encoded([
                 self::NAME => $wake->name->shown(),
                 self::DISTRIBUTOR => $through->package(),
                 self::CALLED => $through->called(),
-                self::ENDPOINT => $wake->endpoint->address(),
+                self::FINGERPRINT => $wake->fingerprint->shown(),
                 self::KEY => self::inBase64($wake->key->bytes()),
                 self::SECRET => self::inBase64($wake->secret->bytes()),
             ]),
@@ -100,9 +100,9 @@ final readonly class TheWakingAsKept
         try {
             return HowThisPhoneIsWoken::on(
                 ADistributor::of(self::textIn($written, self::DISTRIBUTOR), self::textIn($written, self::CALLED)),
-                new AWakeToRegister(
+                new AWakeRegistered(
                     $name,
-                    AnEndpoint::of(self::textIn($written, self::ENDPOINT)),
+                    AWakeFingerprint::of(self::textIn($written, self::FINGERPRINT)),
                     AWakingKey::of(self::bytesIn($written, self::KEY)),
                     AWakingSecret::of(self::bytesIn($written, self::SECRET)),
                 ),

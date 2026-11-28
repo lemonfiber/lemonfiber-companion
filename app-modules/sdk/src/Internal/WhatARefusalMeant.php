@@ -136,6 +136,7 @@ final readonly class WhatARefusalMeant
         RefusalCode::NotAKeyRequest,
         RefusalCode::NotAnIdempotencyKey,
         RefusalCode::IdempotencyKeyReused,
+        RefusalCode::NotARevocation,
         RefusalCode::Unwanted,
         RefusalCode::Repeated,
         RefusalCode::NoSuchRead,

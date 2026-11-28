@@ -11,6 +11,8 @@ use Modules\Kernel\Api\AnEndpoint;
 use Modules\Kernel\Api\APhoneKeysName;
 use Modules\Kernel\Api\APushName;
 use Modules\Kernel\Api\ARefusalInItsWords;
+use Modules\Kernel\Api\AWakeFingerprint;
+use Modules\Kernel\Api\AWakeRegistered;
 use Modules\Kernel\Api\AWakeToRegister;
 use Modules\Kernel\Api\AWakingKey;
 use Modules\Kernel\Api\AWakingSecret;
@@ -41,8 +43,9 @@ use Modules\Kernel\Api\WhyNoEndpoint;
  *
  * Turning it on makes a WebPush key pair for the stack alone, asks the
  * distributor for an endpoint, and registers it with the stack under the name
- * this phone's key carries there. What the stack keeps is kept on the phone,
- * sealed, one row a stack.
+ * this phone's key carries there. The phone keeps it sealed, one row a stack,
+ * the address named by the fingerprint the stack answered with: the whole
+ * address goes to the stack in the registration and is not kept with it.
  *
  * Turning it off drops the distributor's registration and the key pair at once,
  * so the wake stops whether or not the stack is reached. A removal the stack
@@ -99,7 +102,7 @@ final readonly class WakingThisPhone implements ForgetsAStack
 
         return $this->forTheStack($stack->id())->either(
             off: static fn(): HowThisPhoneIsWoken => HowThisPhoneIsWoken::off(),
-            on: fn(ADistributor $through, AWakeToRegister $wake): HowThisPhoneIsWoken => $this->removedOrOwed($stack, $session, $wake->name),
+            on: fn(ADistributor $through, AWakeRegistered $wake): HowThisPhoneIsWoken => $this->removedOrOwed($stack, $session, $wake->name),
             owed: fn(APushName $name): HowThisPhoneIsWoken => $this->removedOrOwed($stack, $session, $name),
         );
     }
@@ -109,7 +112,7 @@ final readonly class WakingThisPhone implements ForgetsAStack
     {
         return $this->forTheStack($stack->id())->either(
             off: static fn(): HowThisPhoneIsWoken => HowThisPhoneIsWoken::off(),
-            on: static fn(ADistributor $through, AWakeToRegister $wake): HowThisPhoneIsWoken => HowThisPhoneIsWoken::on($through, $wake),
+            on: static fn(ADistributor $through, AWakeRegistered $wake): HowThisPhoneIsWoken => HowThisPhoneIsWoken::on($through, $wake),
             owed: fn(APushName $name): HowThisPhoneIsWoken => $this->removedOrOwed($stack, $session, $name),
         );
     }
@@ -124,8 +127,8 @@ final readonly class WakingThisPhone implements ForgetsAStack
     {
         return $this->forTheStack($stack->id())->either(
             off: static fn(): HowThisPhoneIsWoken => HowThisPhoneIsWoken::off(),
-            on: fn(ADistributor $through, AWakeToRegister $wake): HowThisPhoneIsWoken => $this->distributor->endpointNowFor($stack->id())->either(
-                given: fn(AnEndpoint $now): HowThisPhoneIsWoken => $now->is($wake->endpoint)
+            on: fn(ADistributor $through, AWakeRegistered $wake): HowThisPhoneIsWoken => $this->distributor->endpointNowFor($stack->id())->either(
+                given: fn(AnEndpoint $now): HowThisPhoneIsWoken => $wake->isAt($now)
                     ? HowThisPhoneIsWoken::on($through, $wake)
                     : $this->movedTo($stack, $session, $through, $wake, $now),
                 not: fn(): HowThisPhoneIsWoken => $this->turnOff($stack, $session),
@@ -145,7 +148,7 @@ final readonly class WakingThisPhone implements ForgetsAStack
 
         return $this->forTheStack($stack->id())->either(
             off: static fn(): HowThisPhoneIsWoken => HowThisPhoneIsWoken::off(),
-            on: fn(ADistributor $through, AWakeToRegister $wake): HowThisPhoneIsWoken => $this->removedOrOwed($stack, $session, $wake->name),
+            on: fn(ADistributor $through, AWakeRegistered $wake): HowThisPhoneIsWoken => $this->removedOrOwed($stack, $session, $wake->name),
             owed: fn(APushName $name): HowThisPhoneIsWoken => $this->removedOrOwed($stack, $session, $name),
         )->owesARemoval();
     }
@@ -163,7 +166,7 @@ final readonly class WakingThisPhone implements ForgetsAStack
         foreach ($stacks as $stack) {
             $waking = $this->forTheStack($stack->id())->either(
                 off: static fn(): HowThisPhoneIsWoken => HowThisPhoneIsWoken::off(),
-                on: static fn(ADistributor $through, AWakeToRegister $wake): HowThisPhoneIsWoken => HowThisPhoneIsWoken::owed($wake->name),
+                on: static fn(ADistributor $through, AWakeRegistered $wake): HowThisPhoneIsWoken => HowThisPhoneIsWoken::owed($wake->name),
                 owed: static fn(APushName $name): HowThisPhoneIsWoken => HowThisPhoneIsWoken::owed($name),
             );
 
@@ -209,13 +212,13 @@ final readonly class WakingThisPhone implements ForgetsAStack
     private function registered(Stack $stack, Session $session, ADistributor $through, AWakeToRegister $wake): WhatTurningWakingOnCameTo
     {
         return $this->stacks->registeredOn($stack, $session, $wake)->either(
-            registered: fn(AnEndpoint $held): WhatTurningWakingOnCameTo => $this->keptOn($stack, $session, $through, $wake->at($held)),
+            registered: fn(AWakeFingerprint $held): WhatTurningWakingOnCameTo => $this->keptOn($stack, $session, $through, $wake->heldAs($held)),
             refused: fn(ARefusalInItsWords $why): WhatTurningWakingOnCameTo => $this->letGoBecause($stack, WhyWakingStayedOff::refused($why)),
             met: fn(Obstacle $why): WhatTurningWakingOnCameTo => $this->letGoBecause($stack, WhyWakingStayedOff::met($why)),
         );
     }
 
-    private function keptOn(Stack $stack, Session $session, ADistributor $through, AWakeToRegister $wake): WhatTurningWakingOnCameTo
+    private function keptOn(Stack $stack, Session $session, ADistributor $through, AWakeRegistered $wake): WhatTurningWakingOnCameTo
     {
         return $this->keep($stack->id(), HowThisPhoneIsWoken::on($through, $wake))->either(
             down: static fn(): WhatTurningWakingOnCameTo => WhatTurningWakingOnCameTo::on($through),
@@ -235,13 +238,13 @@ final readonly class WakingThisPhone implements ForgetsAStack
     }
 
     /** Register the endpoint the distributor gives now in place of the one the stack holds, where the stack is reached. */
-    private function movedTo(Stack $stack, Session $session, ADistributor $through, AWakeToRegister $wake, AnEndpoint $now): HowThisPhoneIsWoken
+    private function movedTo(Stack $stack, Session $session, ADistributor $through, AWakeRegistered $wake, AnEndpoint $now): HowThisPhoneIsWoken
     {
         $moved = $wake->at($now);
 
         return $this->stacks->removedFrom($stack, $session, $wake->name)->either(
             removed: fn(): HowThisPhoneIsWoken => $this->stacks->registeredOn($stack, $session, $moved)->either(
-                registered: fn(AnEndpoint $held): HowThisPhoneIsWoken => $this->kept($stack->id(), HowThisPhoneIsWoken::on($through, $moved->at($held))),
+                registered: fn(AWakeFingerprint $held): HowThisPhoneIsWoken => $this->kept($stack->id(), HowThisPhoneIsWoken::on($through, $moved->heldAs($held))),
                 refused: fn(): HowThisPhoneIsWoken => $this->turnOff($stack, $session),
                 met: fn(): HowThisPhoneIsWoken => $this->turnOff($stack, $session),
             ),

@@ -52,6 +52,10 @@ final readonly class UnreadOnEnvelopesMToZ
             'because' => 'The media server\'s identifier for the member watching. `N2-R28` asks for the member, and the name beside it is what the operator recognises; nothing opens a member from this screen.',
         ],
         [
+            'path' => 'PushEndpointEnvelope.host',
+            'because' => 'The push service the stack reaches this phone through. The phone confirms the registration by the `fingerprint` of the address it sent, the switch names the distributor by what it is called (`N4-R29`), and no requirement asks a screen to name the host.',
+        ],
+        [
             'path' => 'PushEndpointEnvelope.registered',
             'because' => 'When the stack registered the endpoint. The switch says whether the stack wakes this phone (`N4-R26`), and no requirement asks when it began to.',
         ],

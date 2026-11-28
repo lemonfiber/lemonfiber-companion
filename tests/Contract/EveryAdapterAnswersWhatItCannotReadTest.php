@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Lemonfiber\Sdk\Contract\Api;
 use Lemonfiber\Sdk\Exception\CertificateWasRefused;
 use Lemonfiber\Sdk\Exception\Unreachable;
+use Modules\Dx\Internal\AWakeAsItReads;
 use Modules\Dx\Internal\WhatAStackWouldSay;
 use Modules\Dx\Internal\WhatTheWireWouldAnswer;
 use Modules\Kernel\Api\KindOfObstacle;
@@ -165,6 +166,7 @@ function theEnvelopesBuiltFor(string $which, string $endpoint, string ...$asked)
     return match ($which) {
         'Guides::whatBecameOf' => [WalkthroughsToFollow::whatAStackSaysOfTheWalkThatWorked()],
         'Resetters::whatBecameOf' => [WhatAResetSays::envelope(confirmed: false)],
+        'PushEndpointKeepers::registeredOn' => [AWakeAsItReads::from(theEnvelopesAPathSends(theAnswerACallIsGiven($which, $endpoint), ...$asked)[0], EveryAdapterCallThatReads::A_WAKE_ADDRESS)],
         default => theEnvelopesAPathSends(theAnswerACallIsGiven($which, $endpoint), ...$asked),
     };
 }
@@ -405,7 +407,7 @@ function everySpoilingOf(string $which, Closure $ask): array
                 }
             }
 
-            return in_array($which, ['Guides::whatBecameOf', 'Resetters::whatBecameOf', 'Ushers::whatBecameOf'], strict: true)
+            return in_array($which, ['Guides::whatBecameOf', 'Resetters::whatBecameOf', 'Ushers::whatBecameOf', 'PushEndpointKeepers::registeredOn'], strict: true)
                 ? MockResponse::make($sent[0])
                 : theStandInsAnswerTo($endpoint, ...whatARequestAsked($asked));
         },

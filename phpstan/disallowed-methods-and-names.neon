@@ -220,6 +220,16 @@ parameters:
                 - 'Illuminate\Http\Client\Factory::withoutVerifying()'
             message: "N1-R21 — certificate verification is not turned off, in any build, under any flag. ADR-0018 pins a stack by a fingerprint from the pairing material rather than by a public authority, so this does not relax a check: it removes the only one there is, and leaves the pin being compared by code nothing reaches. If a certificate is being refused, the fingerprint is the thing to look at (N1-R21, S3)."
 
+        # --- A door the client has and this app does not open ---------------
+        #
+        # `TheAppOpensOnlyTheseDoorsTest` reads the client's doors by name, and
+        # this app's own stores call a `forget()` of their own at every turn, so
+        # that name is refused here, by the type it is called on.
+        -
+            method:
+                - 'Lemonfiber\Sdk\Client::forget()'
+            message: "The client's forget() lets a job's name go and leaves its work running (ARCH-R464). No screen of this app asks for it: open the door in TheAppOpensOnlyTheseDoorsTest, with the requirement it serves, before calling it."
+
         # --- C3: an exception that says nothing -----------------------------
         #
         # Matched on the constructor rather than on the class, so that naming

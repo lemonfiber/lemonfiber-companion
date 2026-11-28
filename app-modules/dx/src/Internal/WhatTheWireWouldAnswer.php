@@ -32,6 +32,7 @@ use Lemonfiber\Sdk\Generated\KeysEnvelope;
 use Lemonfiber\Sdk\Generated\LifecycleEnvelope;
 use Lemonfiber\Sdk\Generated\NotifyMineEnvelope;
 use Lemonfiber\Sdk\Generated\PartWayEnvelope;
+use Lemonfiber\Sdk\Generated\PushEndpointEnvelope;
 use Lemonfiber\Sdk\Generated\RefusalCode;
 use Lemonfiber\Sdk\Generated\RestoreAction;
 use Lemonfiber\Sdk\Generated\ServedEnvelope;
@@ -260,6 +261,7 @@ final readonly class WhatTheWireWouldAnswer
             '*' => static fn(PendingRequest $asked): MockResponse => match (true) {
                 self::answersAtOnce($asked) => new MockResponse(self::oneEnvelope(self::A_LISTING_OF_A_COPY), $status),
                 self::isLettingGo($asked) => new MockResponse(self::workNamedFor(self::lettingGo()), $status),
+                AWakeAsItReads::registeredBy($asked) !== '' => new MockResponse(AWakeAsItReads::from(self::oneEnvelope(WhatTheContractDeclares::envelopeOfKind(PushEndpointEnvelope::KIND->value)), AWakeAsItReads::registeredBy($asked)), $status),
                 TheDownloadsWork::askedBy($asked) !== '' => new MockResponse(self::workNamedFor(TheDownloadsWork::askedBy($asked)), $status),
                 $asked->getRequest()->resolveEndpoint() === Api::action(BandwidthAction::ACTION) => new MockResponse(self::workNamedFor(BandwidthAction::ACTION), $status),
                 $asked->getRequest()->resolveEndpoint() === Api::action(HouseholdAllowAction::ACTION) => new MockResponse(self::workNamedFor(HouseholdAllowAction::ACTION), $status),

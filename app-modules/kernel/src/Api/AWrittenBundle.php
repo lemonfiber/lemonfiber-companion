@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Modules\Kernel\Api;
 
-use function in_array;
 use function mb_strrpos;
 use function mb_substr;
 
@@ -19,9 +18,6 @@ use function mb_substr;
  */
 final readonly class AWrittenBundle
 {
-    /** The last segments that name no file. */
-    private const array NO_FILE = ['', '.', '..'];
-
     private function __construct(private string $path, private string $name) {}
 
     /** The bundle written to that path; a path ending in no file's name is refused. */
@@ -30,7 +26,7 @@ final readonly class AWrittenBundle
         $slash = mb_strrpos($path, '/');
         $name = $slash === false ? $path : mb_substr($path, $slash + 1);
 
-        if (in_array($name, self::NO_FILE, strict: true)) {
+        if (NoPathSegment::tryFrom($name) instanceof NoPathSegment) {
             throw ABundleHasNoName::whereItWasWritten();
         }
 
