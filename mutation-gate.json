@@ -14,8 +14,14 @@
     "tests": {
         "suites": ["Arch", "Templates", "Contract", "Modules", "Native", "Feature"]
     },
+    "ci": {
+        "trustMergedPullRequests": true
+    },
+    "reach": {
+        "lockMoves": "loaded"
+    },
     "shards": {
-        "max": 10
+        "max": 60
     },
     "timeouts": {
         "most": 900,
