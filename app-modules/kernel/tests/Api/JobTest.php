@@ -19,6 +19,8 @@ it('refuses an acknowledgement that names no work', function (string $named): vo
 })->with([
     'nothing' => [''],
     'only space' => [" \t\n"],
+    'a dot segment' => ['.'],
+    'a step up' => [' .. '],
 ]);
 
 it('is the same work only under the same name', function (): void {

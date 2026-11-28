@@ -828,7 +828,7 @@ enum WireField: string implements NamesAWireField
     /** The household's door: what the operator named as it, and the certificate it presents beside a title's location. */
     case Door = 'door';
 
-    /** A certificate's fingerprint: in pairing material, and on the door a title's location is pinned to. */
+    /** A fingerprint: a certificate's, in pairing material and on the door a title's location is pinned to, and a push endpoint's address's as a stack keeps it. */
     case Fingerprint = 'fingerprint';
 
     /** How far into a title a member is, in whole seconds: told by the player, and answered of what they were part-way through. */

@@ -6,7 +6,6 @@ namespace Tests\Support\Fakes;
 
 use function array_key_exists;
 
-use Modules\Kernel\Api\AnEndpoint;
 use Modules\Kernel\Api\APushName;
 use Modules\Kernel\Api\ARefusalInItsWords;
 use Modules\Kernel\Api\AWakeToRegister;
@@ -80,7 +79,7 @@ final class AStackThatKeepsWakes implements RegisteringAWake
 
         $this->endpoints[$held] = $wake->endpoint->address();
 
-        return WhatRegisteringAWakeCameTo::registered(AnEndpoint::of($this->endpoints[$held]));
+        return WhatRegisteringAWakeCameTo::registered($wake->endpoint->fingerprint());
     }
 
     public function removedFrom(Stack $stack, Session $session, APushName $name): WhatRemovingAWakeCameTo

@@ -49,7 +49,6 @@ use Modules\Sdk\Api\Fields\PluginCatalogueField;
 use Modules\Sdk\Api\Fields\PluginsField;
 use Modules\Sdk\Api\Fields\PreviewField;
 use Modules\Sdk\Api\Fields\ProvenanceField;
-use Modules\Sdk\Api\Fields\PushEndpointField;
 use Modules\Sdk\Api\Fields\QualityField;
 use Modules\Sdk\Api\Fields\QueueField;
 use Modules\Sdk\Api\Fields\RemovalField;
@@ -113,7 +112,6 @@ function everyFieldNamedOnTheWire(): array
         ...CredentialsField::cases(),
         ...KeysField::cases(),
         ...DeviceChallengeField::cases(),
-        ...PushEndpointField::cases(),
         ...DashboardField::cases(),
         ...DoctorField::cases(),
         ...GlossaryField::cases(),

@@ -34,7 +34,7 @@ final readonly class Job
     {
         $trimmed = trim($job);
 
-        if ($trimmed === '') {
+        if (NoPathSegment::tryFrom($trimmed) instanceof NoPathSegment) {
             throw JobHasNoName::inAnAcknowledgement();
         }
 

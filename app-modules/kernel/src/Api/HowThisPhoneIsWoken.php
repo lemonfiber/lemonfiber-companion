@@ -11,7 +11,7 @@ use Closure;
  */
 final readonly class HowThisPhoneIsWoken
 {
-    private function __construct(private ?ADistributor $through, private ?AWakeToRegister $registered, private ?APushName $owed) {}
+    private function __construct(private ?ADistributor $through, private ?AWakeRegistered $registered, private ?APushName $owed) {}
 
     public static function off(): self
     {
@@ -19,7 +19,7 @@ final readonly class HowThisPhoneIsWoken
     }
 
     /** The stack wakes this phone through `$through`, holding what was registered. */
-    public static function on(ADistributor $through, AWakeToRegister $registered): self
+    public static function on(ADistributor $through, AWakeRegistered $registered): self
     {
         return new self($through, $registered, null);
     }
@@ -32,13 +32,13 @@ final readonly class HowThisPhoneIsWoken
 
     public function isOn(): bool
     {
-        return $this->registered instanceof AWakeToRegister;
+        return $this->registered instanceof AWakeRegistered;
     }
 
     /** The distributor the stack wakes this phone through, which is none where waking is off. */
     public function through(): TheDistributors
     {
-        return $this->through instanceof ADistributor && $this->registered instanceof AWakeToRegister ? TheDistributors::of($this->through) : TheDistributors::of();
+        return $this->through instanceof ADistributor && $this->registered instanceof AWakeRegistered ? TheDistributors::of($this->through) : TheDistributors::of();
     }
 
     /** Whether the stack still holds the endpoint and is owed its removal. */
@@ -53,13 +53,13 @@ final readonly class HowThisPhoneIsWoken
      * @template TOwed of object
      *
      * @param  Closure(): TOff                             $off
-     * @param  Closure(ADistributor, AWakeToRegister): TOn $on
+     * @param  Closure(ADistributor, AWakeRegistered): TOn $on
      * @param  Closure(APushName): TOwed                   $owed
      * @return TOff|TOn|TOwed
      */
     public function either(Closure $off, Closure $on, Closure $owed): object
     {
-        if ($this->through instanceof ADistributor && $this->registered instanceof AWakeToRegister) {
+        if ($this->through instanceof ADistributor && $this->registered instanceof AWakeRegistered) {
             return $on($this->through, $this->registered);
         }
 

@@ -9,9 +9,9 @@ use function it;
 
 use Modules\Connection\Internal\TheWakingAsKept;
 use Modules\Kernel\Api\ADistributor;
-use Modules\Kernel\Api\AnEndpoint;
 use Modules\Kernel\Api\APushName;
-use Modules\Kernel\Api\AWakeToRegister;
+use Modules\Kernel\Api\AWakeFingerprint;
+use Modules\Kernel\Api\AWakeRegistered;
 use Modules\Kernel\Api\AWakingKey;
 use Modules\Kernel\Api\AWakingSecret;
 use Modules\Kernel\Api\HowThisPhoneIsWoken;
@@ -24,11 +24,11 @@ use function strlen;
 
 use Tests\Support\TheWordCarriedOut;
 
-function aWakeKept(): AWakeToRegister
+function aWakeKept(): AWakeRegistered
 {
-    return new AWakeToRegister(
+    return new AWakeRegistered(
         APushName::of('galaxy-a51-7f3a'),
-        AnEndpoint::of('https://ntfy.sh/upAbC?up=1'),
+        AWakeFingerprint::of('2fb15b007051cfa9'),
         AWakingKey::of(sprintf("\x04%s", str_repeat("\x01", 64))),
         AWakingSecret::of(str_repeat('s', 16)),
     );
@@ -39,7 +39,7 @@ function wokenAsRead(HowThisPhoneIsWoken $woken): string
 {
     return $woken->either(
         off: static fn(): TheWordCarriedOut => new TheWordCarriedOut('off'),
-        on: static fn(ADistributor $through, AWakeToRegister $wake): TheWordCarriedOut => new TheWordCarriedOut(sprintf('on %s %s %s %d %s', $through->package(), $through->called(), $wake->endpoint->address(), strlen($wake->key->bytes()), $wake->secret->bytes())),
+        on: static fn(ADistributor $through, AWakeRegistered $wake): TheWordCarriedOut => new TheWordCarriedOut(sprintf('on %s %s %s %d %s', $through->package(), $through->called(), $wake->fingerprint->shown(), strlen($wake->key->bytes()), $wake->secret->bytes())),
         owed: static fn(APushName $name): TheWordCarriedOut => new TheWordCarriedOut(sprintf('owed %s', $name->shown())),
     )->said;
 }
@@ -47,7 +47,7 @@ function wokenAsRead(HowThisPhoneIsWoken $woken): string
 it('reads back waking on, with everything it was registered with', function (): void {
     $written = TheWakingAsKept::written(HowThisPhoneIsWoken::on(ADistributor::of('io.heckel.ntfy', 'ntfy'), aWakeKept()));
 
-    expect(wokenAsRead(TheWakingAsKept::read(Shape::One, $written)))->toBe(sprintf('on io.heckel.ntfy ntfy https://ntfy.sh/upAbC?up=1 65 %s', str_repeat('s', 16)));
+    expect(wokenAsRead(TheWakingAsKept::read(Shape::One, $written)))->toBe(sprintf('on io.heckel.ntfy ntfy 2fb15b007051cfa9 65 %s', str_repeat('s', 16)));
 });
 
 it('reads back a removal owed, and off as nothing kept', function (): void {
@@ -63,7 +63,9 @@ it('reads waking it cannot make out whole as a removal owed where it has the nam
     'a name a stack would refuse' => ['{"push_name":"Galaxy A51"}', 'off'],
     'a name that is not text' => ['{"push_name":7}', 'off'],
     'a name with nothing else' => ['{"push_name":"galaxy-a51-7f3a"}', 'owed galaxy-a51-7f3a'],
-    'what the distributor is called, missing' => ['{"push_name":"galaxy-a51-7f3a","distributor_package":"io.heckel.ntfy","push_endpoint":"https://ntfy.sh/up","webpush_key":"BAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=","webpush_secret":"c3Nzc3Nzc3Nzc3Nzc3Nzcw=="}', sprintf('on io.heckel.ntfy io.heckel.ntfy https://ntfy.sh/up 65 %s', str_repeat('s', 16))],
-    'what the distributor is called, not text' => ['{"push_name":"galaxy-a51-7f3a","distributor_package":"io.heckel.ntfy","distributor_called":7,"push_endpoint":"https://ntfy.sh/up","webpush_key":"BAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=","webpush_secret":"c3Nzc3Nzc3Nzc3Nzc3Nzcw=="}', sprintf('on io.heckel.ntfy io.heckel.ntfy https://ntfy.sh/up 65 %s', str_repeat('s', 16))],
-    'keys that do not read' => ['{"push_name":"galaxy-a51-7f3a","distributor_package":"io.heckel.ntfy","distributor_called":"ntfy","push_endpoint":"https://ntfy.sh/up","webpush_key":"!!","webpush_secret":"c3M="}', 'owed galaxy-a51-7f3a'],
+    'what the distributor is called, missing' => ['{"push_name":"galaxy-a51-7f3a","distributor_package":"io.heckel.ntfy","push_fingerprint":"2fb15b007051cfa9","webpush_key":"BAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=","webpush_secret":"c3Nzc3Nzc3Nzc3Nzc3Nzcw=="}', sprintf('on io.heckel.ntfy io.heckel.ntfy 2fb15b007051cfa9 65 %s', str_repeat('s', 16))],
+    'what the distributor is called, not text' => ['{"push_name":"galaxy-a51-7f3a","distributor_package":"io.heckel.ntfy","distributor_called":7,"push_fingerprint":"2fb15b007051cfa9","webpush_key":"BAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=","webpush_secret":"c3Nzc3Nzc3Nzc3Nzc3Nzcw=="}', sprintf('on io.heckel.ntfy io.heckel.ntfy 2fb15b007051cfa9 65 %s', str_repeat('s', 16))],
+    'the whole address where the fingerprint goes' => ['{"push_name":"galaxy-a51-7f3a","distributor_package":"io.heckel.ntfy","distributor_called":"ntfy","push_endpoint":"https://ntfy.sh/up","webpush_key":"BAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=","webpush_secret":"c3Nzc3Nzc3Nzc3Nzc3Nzcw=="}', 'owed galaxy-a51-7f3a'],
+    'a fingerprint that is not one' => ['{"push_name":"galaxy-a51-7f3a","distributor_package":"io.heckel.ntfy","distributor_called":"ntfy","push_fingerprint":"https://ntfy.sh/up","webpush_key":"BAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=","webpush_secret":"c3Nzc3Nzc3Nzc3Nzc3Nzcw=="}', 'owed galaxy-a51-7f3a'],
+    'keys that do not read' => ['{"push_name":"galaxy-a51-7f3a","distributor_package":"io.heckel.ntfy","distributor_called":"ntfy","push_fingerprint":"2fb15b007051cfa9","webpush_key":"!!","webpush_secret":"c3M="}', 'owed galaxy-a51-7f3a'],
 ]);

@@ -9,10 +9,10 @@ use function it;
 
 use Modules\Connection\Api\WhyWakingStayedOff;
 use Modules\Kernel\Api\ADistributor;
-use Modules\Kernel\Api\AnEndpoint;
 use Modules\Kernel\Api\APushName;
 use Modules\Kernel\Api\ARefusalInItsWords;
-use Modules\Kernel\Api\AWakeToRegister;
+use Modules\Kernel\Api\AWakeFingerprint;
+use Modules\Kernel\Api\AWakeRegistered;
 use Modules\Kernel\Api\AWakingKey;
 use Modules\Kernel\Api\AWakingSecret;
 use Modules\Kernel\Api\HowThisPhoneIsWoken;
@@ -43,11 +43,11 @@ function nextPushToWakeThrough(): ADistributor
     return ADistributor::of('org.unifiedpush.distributor.nextpush', 'NextPush');
 }
 
-function theWakeTheSwitchShows(): AWakeToRegister
+function theWakeTheSwitchShows(): AWakeRegistered
 {
-    return new AWakeToRegister(
+    return new AWakeRegistered(
         APushName::of('galaxy-a51-7f3a'),
-        AnEndpoint::of('https://ntfy.sh/upAbC?up=1'),
+        AWakeFingerprint::of('2fb15b007051cfa9'),
         AWakingKey::of(sprintf("\x04%s", str_repeat("\x01", 64))),
         AWakingSecret::of(str_repeat('s', 16)),
     );

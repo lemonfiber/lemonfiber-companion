@@ -24,9 +24,9 @@ final readonly class AWakeToRegister
         return ['name' => $this->name->shown()];
     }
 
-    /** The same, at the endpoint the distributor gives now. */
-    public function at(AnEndpoint $endpoint): self
+    /** What the phone keeps once a stack holds this, under the fingerprint the stack named it by. */
+    public function heldAs(AWakeFingerprint $held): AWakeRegistered
     {
-        return new self($this->name, $endpoint, $this->key, $this->secret);
+        return new AWakeRegistered($this->name, $held, $this->key, $this->secret);
     }
 }

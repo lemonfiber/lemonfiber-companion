@@ -150,6 +150,17 @@ const DOORS_THE_APP_OPENS = [
     'withMockClient' => 'answers every request from the contract instead of the network, so a stand-in reaches no stack',
 ];
 
+/**
+ * Every door the client has under a name this application gives methods of its own, which it never opens.
+ *
+ * The rule reads doors by name, so it cannot tell these calls from a client's.
+ * The analyser can: each is a disallowed call on the client in
+ * `phpstan/disallowed-methods-and-names.neon`, refused by the type it is called on.
+ */
+const DOORS_THE_APP_ONLY_SHARES_A_NAME_WITH = [
+    'forget' => 'the stores this app keeps forget what they hold for a stack; the client\'s lets a job\'s name go and leaves its work running (`ARCH-R464`), which no screen asks for',
+];
+
 /** Every verb this application can ask a stack for, and why that one. */
 const VERBS_THE_APP_ASKS_FOR = [
     // The one that writes a setting, and the one this list exists to be read
@@ -528,7 +539,7 @@ it('the app opens only the doors it has a reason for', function (): void {
     expect($opened)->not->toBe([], 'no call on a client was found anywhere, so this rule read nothing');
 
     $explained = array_map(strval(...), array_keys(DOORS_THE_APP_OPENS));
-    $unexplained = array_values(array_diff($opened, $explained));
+    $unexplained = array_values(array_diff($opened, $explained, array_keys(DOORS_THE_APP_ONLY_SHARES_A_NAME_WITH)));
 
     expect($unexplained)->toBe([], sprintf(
         "These are called on a stack's client and this rule has no reason for them:\n  %s\n\n"
@@ -556,6 +567,24 @@ it('every door this rule names is one the client still has', function (): void {
     expect($missing)->toBe([], sprintf(
         "This rule names doors the SDK's client does not have:\n  %s\n",
         implode("\n  ", $missing),
+    ));
+});
+
+it('every door the app only shares a name with is one the client has, the app does not open, and the analyser refuses on the client', function (): void {
+    $refused = (string) file_get_contents(Tree::at('phpstan/disallowed-methods-and-names.neon'));
+    $unrefused = [];
+
+    foreach (array_keys(DOORS_THE_APP_ONLY_SHARES_A_NAME_WITH) as $door) {
+        $call = sprintf("'%s::%s()'", Client::class, $door);
+
+        if (! in_array($door, everyDoorTheClientHas(), strict: true) || array_key_exists($door, DOORS_THE_APP_OPENS) || ! str_contains($refused, $call)) {
+            $unrefused[] = $door;
+        }
+    }
+
+    expect($unrefused)->toBe([], sprintf(
+        "These are said to share a name with the client's doors, and are not a door of the client's that the app leaves shut and the analyser refuses:\n  %s\n",
+        implode("\n  ", $unrefused),
     ));
 });
 

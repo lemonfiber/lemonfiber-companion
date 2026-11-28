@@ -307,6 +307,9 @@ use Tests\Support\Fakes\WhereHearingLeftOffInMemory;
  */
 final readonly class EveryAdapterCallThatReads
 {
+    /** The address the push endpoint registration asks the stack to keep. */
+    public const string A_WAKE_ADDRESS = 'https://ntfy.sh/upAbC?up=1';
+
     /**
      * Every adapter call that reads an answer, by what it asks.
      *
@@ -340,7 +343,7 @@ final readonly class EveryAdapterCallThatReads
             'PhoneKeyKeepers::revokedOn' => static fn(): object => new PhoneKeyKeepers($clients)->revokedOn($stack, $session, APhoneKeysName::of('Galaxy A51 · 7f3a')),
             'PushEndpointKeepers::registeredOn' => static fn(): object => new PushEndpointKeepers($clients)->registeredOn($stack, $session, new AWakeToRegister(
                 APushName::of('galaxy-a51-7f3a'),
-                AnEndpoint::of('https://ntfy.sh/upAbC?up=1'),
+                AnEndpoint::of(self::A_WAKE_ADDRESS),
                 AWakingKey::of(sprintf("\x04%s", str_repeat("\x01", AWakingKey::BYTES - 1))),
                 AWakingSecret::from(KeyMaterial::of(str_repeat('s', KeyMaterial::BYTES))),
             )),

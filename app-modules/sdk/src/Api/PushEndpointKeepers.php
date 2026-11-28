@@ -41,7 +41,7 @@ final readonly class PushEndpointKeepers implements RegisteringAWake
         $asked = PushEndpointRegistering::of($wake->name->shown(), $wake->endpoint->address(), $wake->key->bytes(), $wake->secret->bytes());
 
         try {
-            return WhatRegisteringAWakeCameTo::registered(PushEndpointRegistered::in(GatedClient::of($this->clients, $stack, $session)->pushEndpoints()->register($asked)));
+            return WhatRegisteringAWakeCameTo::registered(PushEndpointRegistered::in(GatedClient::of($this->clients, $stack, $session)->pushEndpoints()->register($asked), $wake->endpoint));
         } catch (CertificateWasRefused|RequestFailed $why) {
             return WhatARefusalMeant::inItsWords(
                 $why,

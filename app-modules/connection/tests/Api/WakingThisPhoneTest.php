@@ -14,7 +14,8 @@ use Modules\Kernel\Api\ADistributor;
 use Modules\Kernel\Api\APhoneKeysName;
 use Modules\Kernel\Api\APushName;
 use Modules\Kernel\Api\ARefusalInItsWords;
-use Modules\Kernel\Api\AWakeToRegister;
+use Modules\Kernel\Api\AWakeFingerprint;
+use Modules\Kernel\Api\AWakeRegistered;
 use Modules\Kernel\Api\Configured;
 use Modules\Kernel\Api\Fingerprint;
 use Modules\Kernel\Api\HowThisPhoneIsWoken;
@@ -78,12 +79,18 @@ function turnedOn(WhatTurningWakingOnCameTo $came): string
     )->said;
 }
 
+/** How the phone keeps a wake registered at this address. */
+function keptAt(string $address): string
+{
+    return sprintf('on %s', AWakeFingerprint::ofTheAddress($address)->shown());
+}
+
 /** How the stack wakes the phone, as one word. */
 function wokenNow(HowThisPhoneIsWoken $woken): string
 {
     return $woken->either(
         off: static fn(): TheWordCarriedOut => new TheWordCarriedOut('off'),
-        on: static fn(ADistributor $through, AWakeToRegister $wake): TheWordCarriedOut => new TheWordCarriedOut(sprintf('on %s', $wake->endpoint->address())),
+        on: static fn(ADistributor $through, AWakeRegistered $wake): TheWordCarriedOut => new TheWordCarriedOut(sprintf('on %s', $wake->fingerprint->shown())),
         owed: static fn(APushName $name): TheWordCarriedOut => new TheWordCarriedOut(sprintf('owed %s', $name->shown())),
     )->said;
 }
@@ -95,7 +102,7 @@ it('registers the distributor\'s endpoint with the stack under the name this pho
 
     expect(turnedOn($waking->turnOn(theLoftWakingThePhone(), aSessionOnTheLoft(), DistributorsOnAPhone::ntfy())))->toBe('on through ntfy')
         ->and($stack->holds(theLoftWakingThePhone(), 'galaxy-a51-7f3a'))->toStartWith(DistributorsOnAPhone::PUSHED_AT)
-        ->and(wokenNow($waking->forTheStack(theLoftWakingThePhone()->id())))->toBe(sprintf('on %s', $stack->holds(theLoftWakingThePhone(), 'galaxy-a51-7f3a')))
+        ->and(wokenNow($waking->forTheStack(theLoftWakingThePhone()->id())))->toBe(keptAt($stack->holds(theLoftWakingThePhone(), 'galaxy-a51-7f3a')))
         ->and($phone->holdsARegistrationFor(theLoftWakingThePhone()->id()))->toBeTrue();
 });
 
@@ -170,11 +177,11 @@ it('follows the distributor: a changed endpoint is registered in place of the ol
     $waking->turnOn(theLoftWakingThePhone(), aSessionOnTheLoft(), DistributorsOnAPhone::ntfy());
     $held = $stack->holds(theLoftWakingThePhone(), 'galaxy-a51-7f3a');
 
-    expect(wokenNow($waking->followTheDistributor(theLoftWakingThePhone(), aSessionOnTheLoft())))->toBe(sprintf('on %s', $held));
+    expect(wokenNow($waking->followTheDistributor(theLoftWakingThePhone(), aSessionOnTheLoft())))->toBe(keptAt($held));
 
     $phone->movesTheEndpointOf(theLoftWakingThePhone()->id(), 'https://ntfy.sh/upMoved?up=1');
 
-    expect(wokenNow($waking->followTheDistributor(theLoftWakingThePhone(), aSessionOnTheLoft())))->toBe('on https://ntfy.sh/upMoved?up=1')
+    expect(wokenNow($waking->followTheDistributor(theLoftWakingThePhone(), aSessionOnTheLoft())))->toBe(keptAt('https://ntfy.sh/upMoved?up=1'))
         ->and($stack->holds(theLoftWakingThePhone(), 'galaxy-a51-7f3a'))->toBe('https://ntfy.sh/upMoved?up=1');
 
     $phone->letGo(theLoftWakingThePhone()->id());
@@ -193,7 +200,7 @@ it('keeps the old endpoint while the stack cannot be told of a new one', functio
     $phone->movesTheEndpointOf(theLoftWakingThePhone()->id(), 'https://ntfy.sh/upMoved?up=1');
     $stack->goesAway();
 
-    expect(wokenNow($waking->followTheDistributor(theLoftWakingThePhone(), aSessionOnTheLoft())))->toBe(sprintf('on %s', $held));
+    expect(wokenNow($waking->followTheDistributor(theLoftWakingThePhone(), aSessionOnTheLoft())))->toBe(keptAt($held));
 
     $waking->turnOff(theLoftWakingThePhone(), aSessionOnTheLoft());
 

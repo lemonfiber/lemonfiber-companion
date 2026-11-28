@@ -21,6 +21,7 @@ use Modules\Kernel\Api\AMomentAsWritten;
 use Modules\Kernel\Api\APushName;
 use Modules\Kernel\Api\ARatio;
 use Modules\Kernel\Api\AtAGlance;
+use Modules\Kernel\Api\AWakeFingerprint;
 use Modules\Kernel\Api\HowFarADownloadIs;
 use Modules\Kernel\Api\Nonce;
 use Modules\News\Internal\TheNewsAsKept;
@@ -79,6 +80,7 @@ final readonly class Coincidences
         HowTheCopyRunningReads::class => ['ALL_WRITTEN' => 'the percentage a backup or restore has written once it has written all of it'],
         NotifyingWithinACap::class => ['AT_MOST' => 'how many notifications one stack may raise within a minute'],
         AtAGlance::class => ['MIXED_BY' => 'the hash a fingerprint is mixed by before it is read at a glance'],
+        AWakeFingerprint::class => ['DIGITS' => 'the hexadecimal digits of a push endpoint\'s SHA-256 a stack names it by, which the base hexadecimal is read in only shares a number with'],
         Link::class => ['UNREACHABLE' => "the native half's word for no network"],
         AStoreOnAHandset::class => [
             'THE_NARROWEST' => 'what the double of the native store answers a word it does not know with, spelled apart from the bridge it stands behind',

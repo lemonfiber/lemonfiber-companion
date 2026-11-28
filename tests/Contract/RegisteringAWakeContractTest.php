@@ -6,6 +6,7 @@ use Modules\Kernel\Api\Address;
 use Modules\Kernel\Api\AnEndpoint;
 use Modules\Kernel\Api\APushName;
 use Modules\Kernel\Api\ARefusalInItsWords;
+use Modules\Kernel\Api\AWakeFingerprint;
 use Modules\Kernel\Api\AWakeToRegister;
 use Modules\Kernel\Api\AWakingSecret;
 use Modules\Kernel\Api\Fingerprint;
@@ -34,7 +35,7 @@ use Tests\Support\WhatTheContractAccepts;
 //
 // Every test of turning waking on and off runs over `AStackThatKeepsWakes`, so
 // what the fake promises is what those tests are written against: the endpoint
-// kept is answered as the stack keeps it, a name another holds is refused in the
+// kept is answered by the fingerprint the stack names it by, a name another holds is refused in the
 // stack's words, a name held by nothing is removed all the same, and a stack
 // that cannot be reached is what stood in the way.
 
@@ -47,6 +48,9 @@ const THE_PHONES_PUSH_NAME = 'galaxy-a51-7f3a';
 
 /** The endpoint the distributor gave in these tests. */
 const THE_PHONES_ENDPOINT = 'https://ntfy.sh/upAbC123?up=1';
+
+/** The first sixteen hexadecimal digits of the SHA-256 of that endpoint, as a stack names it. */
+const THE_PHONES_FINGERPRINT = 'd3486aeb5bbbae8b';
 
 function aStackThatWakesAPhone(): Stack
 {
@@ -75,7 +79,7 @@ function theWakeToRegister(): AWakeToRegister
  */
 function whatAStackSaysOfARegisteredWake(): array
 {
-    return ['api_version' => 1, 'kind' => 'push-endpoint', 'data' => ['endpoint' => THE_PHONES_ENDPOINT, 'name' => THE_PHONES_PUSH_NAME, 'registered' => 1_793_872_800, 'rehearsed' => false]];
+    return ['api_version' => 1, 'kind' => 'push-endpoint', 'data' => ['fingerprint' => THE_PHONES_FINGERPRINT, 'host' => 'ntfy.sh', 'name' => THE_PHONES_PUSH_NAME, 'registered' => 1_793_872_800, 'rehearsed' => false]];
 }
 
 /**
@@ -85,7 +89,7 @@ function whatAStackSaysOfARegisteredWake(): array
  */
 function whatAStackSaysOfARemovedWake(): array
 {
-    return ['api_version' => 1, 'kind' => 'push-endpoints', 'data' => ['endpoints' => [['endpoint' => 'https://ntfy.sh/upOther?up=1', 'name' => 'iphone-12-mini-01bc', 'registered' => 1_793_786_400]], 'rehearsed' => false, 'removed' => THE_PHONES_PUSH_NAME]];
+    return ['api_version' => 1, 'kind' => 'push-endpoints', 'data' => ['endpoints' => [['fingerprint' => '0f4e2a91c7b35d68', 'host' => 'ntfy.sh', 'name' => 'iphone-12-mini-01bc', 'registered' => 1_793_786_400]], 'rehearsed' => false, 'removed' => THE_PHONES_PUSH_NAME]];
 }
 
 /**
@@ -119,7 +123,7 @@ function everyWayOfRegisteringAWake(AStackThatKeepsWakes $fake, MockResponse ...
 function whatRegisteringCameTo(WhatRegisteringAWakeCameTo $came): string
 {
     return $came->either(
-        registered: static fn(AnEndpoint $held): TheWordCarriedOut => new TheWordCarriedOut(sprintf('registered: %s', $held->address())),
+        registered: static fn(AWakeFingerprint $held): TheWordCarriedOut => new TheWordCarriedOut(sprintf('registered: %s', $held->shown())),
         refused: static fn(ARefusalInItsWords $why): TheWordCarriedOut => new TheWordCarriedOut(sprintf('refused: %s', $why->summary())),
         met: static fn(Obstacle $why): TheWordCarriedOut => new TheWordCarriedOut($why->kind()->value),
     )->said;
@@ -134,10 +138,10 @@ function whatRemovingCameTo(WhatRemovingAWakeCameTo $came): string
     )->said;
 }
 
-it('registers the endpoint and answers it as the stack keeps it', function (): void {
+it('registers the endpoint and answers the fingerprint the stack keeps it by', function (): void {
     foreach (everyWayOfRegisteringAWake(AStackThatKeepsWakes::reachable(), MockResponse::make(whatAStackSaysOfARegisteredWake())) as $which => $make) {
         expect(whatRegisteringCameTo($make()->registeredOn(aStackThatWakesAPhone(), Session::of('a-session-not-a-secret'), theWakeToRegister())))
-            ->toBe(sprintf('registered: %s', THE_PHONES_ENDPOINT), $which);
+            ->toBe(sprintf('registered: %s', THE_PHONES_FINGERPRINT), $which);
     }
 });
 
@@ -210,10 +214,10 @@ it('registers with a POST carrying the name, the endpoint and both keys in base6
         ->and($removed?->getMethod())->toBe(Method::DELETE);
 });
 
-it('cannot read an answer that names no endpoint as the one registered or removed', function (): void {
+it('cannot read an answer that names no fingerprint as the one registered or removed', function (): void {
     foreach ([
         [MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoint', 'data' => 'registered']), MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoints', 'data' => 'removed'])],
-        [MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoint', 'data' => ['name' => THE_PHONES_PUSH_NAME, 'endpoint' => ' ', 'registered' => 1_793_872_800, 'rehearsed' => false]]), MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoints', 'data' => ['endpoints' => [], 'rehearsed' => false, 'removed' => null]])],
+        [MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoint', 'data' => ['name' => THE_PHONES_PUSH_NAME, 'fingerprint' => ' ', 'host' => 'ntfy.sh', 'registered' => 1_793_872_800, 'rehearsed' => false]]), MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoints', 'data' => ['endpoints' => [], 'rehearsed' => false, 'removed' => null]])],
     ] as [$registering, $removing]) {
         MockClient::destroyGlobal();
         MockClient::global([$registering, $removing]);
@@ -228,11 +232,24 @@ it('cannot read an answer that names no endpoint as the one registered or remove
 
 it('cannot read an answer naming no endpoint name as the one registered', function (): void {
     MockClient::destroyGlobal();
-    MockClient::global([MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoint', 'data' => ['endpoint' => THE_PHONES_ENDPOINT, 'name' => ' ', 'registered' => 1_793_872_800, 'rehearsed' => false]])]);
+    MockClient::global([MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoint', 'data' => ['fingerprint' => THE_PHONES_FINGERPRINT, 'host' => 'ntfy.sh', 'name' => ' ', 'registered' => 1_793_872_800, 'rehearsed' => false]])]);
 
     expect(whatRegisteringCameTo(new PushEndpointKeepers(new PinnedClients())->registeredOn(aStackThatWakesAPhone(), Session::of('a-session-not-a-secret'), theWakeToRegister())))
         ->toBe(KindOfObstacle::AnswerCouldNotBeRead->value);
 });
+
+it('cannot read an answer naming the endpoint by a fingerprint that is not sixteen hexadecimal digits, or not the address this phone sent', function (string $fingerprint): void {
+    MockClient::destroyGlobal();
+    MockClient::global([MockResponse::make(['api_version' => 1, 'kind' => 'push-endpoint', 'data' => ['fingerprint' => $fingerprint, 'host' => 'ntfy.sh', 'name' => THE_PHONES_PUSH_NAME, 'registered' => 1_793_872_800, 'rehearsed' => false]])]);
+
+    expect(whatRegisteringCameTo(new PushEndpointKeepers(new PinnedClients())->registeredOn(aStackThatWakesAPhone(), Session::of('a-session-not-a-secret'), theWakeToRegister())))
+        ->toBe(KindOfObstacle::AnswerCouldNotBeRead->value);
+})->with([
+    'another address' => ['0f4e2a91c7b35d68'],
+    'upper case' => [strtoupper(THE_PHONES_FINGERPRINT)],
+    'one digit short' => [substr(THE_PHONES_FINGERPRINT, 0, -1)],
+    'the whole address' => [THE_PHONES_ENDPOINT],
+]);
 
 it('says a removal the stack refused for another reason in its words', function (): void {
     MockClient::destroyGlobal();
